@@ -13,72 +13,23 @@ import {
   Select,
   Space,
   Table,
+  Spin,
+  Layout,
 } from "antd";
-import { useForm } from "antd/es/form/Form";
-import Input from "antd/es/input/Input";
 
-import React, { useState } from "react";
-const columns = [
-  {
-    title: "Sl. No.",
-    dataIndex: "SlNo",
-  },
-  {
-    title: "Type",
-    dataIndex: "LookupType",
-  },
-  {
-    title: "Description",
-    dataIndex: "LookupDescription",
-  },
-  {
-    title: "Action",
-    dataIndex: "",
-    key: "x",
-    render: () => (
-      <Button>
-        <EditOutlined />
-      </Button>
-    ),
-  },
-];
-const data = [
-  {
-    key: "1",
-    SlNo: "1",
-    LookupType: "Action Status",
-    LookupDescription: "Acknowledged",
-  },
-  {
-    key: "2",
-    SlNo: "2",
-    LookupType: "Action Status",
-    LookupDescription: "Acknowledged",
-  },
-  {
-    key: "3",
-    SlNo: "3",
-    LookupType: "Action Status",
-    LookupDescription: "Acknowledged",
-  },
-  {
-    key: "4",
-    SlNo: "4",
-    LookupType: "Action Status",
-    LookupDescription: "Acknowledged",
-  },
-];
+import Input from "antd/es/input/Input";
+import Title from "antd/es/typography/Title";
+import React, { useState, useEffect } from "react";
+import customAxios from "../../../components/customAxios/customAxios";
+
+import { urlGetAllGeneralLookUp } from "../../../../endpoints";
+import CustomTable from "../../../components/customTable";
 
 function Areas() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [columnData, setColumnData] = useState();
   const [form] = Form.useForm();
-
-  const onSearch = (value, _e, info) => console.log(info?.source, value);
-
-  const onChange = (pagination, filters, sorter, extra) => {
-    console.log("params", pagination, filters, sorter, extra);
-  };
+  const [loading, setLoading] = useState(false);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -86,6 +37,14 @@ function Areas() {
   const handleClose = () => {
     form.resetFields();
     setIsModalOpen(false);
+  };
+  const handleEdit = (record) => {
+    // edit the item in your data here
+    alert(`Editing item with key ${record.key}`);
+  };
+  const handleDelete = (record) => {
+    // edit the item in your data here
+    alert(`Deleting item with key ${record.key}`);
   };
 
   const options = [
@@ -103,158 +62,175 @@ function Areas() {
     },
   ];
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await customAxios.get(`${urlGetAllGeneralLookUp}`);
+      const newColumnData = response.data.data.masters.map((obj, index) => {
+        return { ...obj, key: index + 1 };
+      });
+      setColumnData(newColumnData);
+      console.log("data", newColumnData);
+    } catch (error) {
+      console.error(error);
+    }
+    setLoading(false);
+  };
+
+  const columns = [
+    {
+      title: "Sl. No.",
+      dataIndex: "key",
+      key: "key",
+    },
+    {
+      title: "Type",
+      dataIndex: "LookupType",
+      key: "key",
+    },
+    {
+      title: "Description",
+      dataIndex: "LookupDescription",
+      key: "key",
+    },
+  ];
+
   return (
     <>
-      <div
-        style={{
-          backgroundColor: "white",
-          minHeight: "80vh",
-          borderRadius: "10px",
-          overflow: "hidden",
-          padding: "1rem",
-        }}
-      >
-        <Row
+      <Layout>
+        <div
           style={{
-            backgroundColor: "#1a9bf0",
+            width: "100%",
+            backgroundColor: "white",
+            minHeight: "max-content",
             borderRadius: "10px",
-            height: "minContent",
-            padding: "0.5rem",
-            margin: "0 0.1rem",
-            alignItems: "center",
-          }}
-          gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-        >
-          <Col span={12}>
-            <span
-              style={{
-                color: "white",
-                fontWeight: "600",
-                fontSize: "1.2rem",
-                letterSpacing: "0.7px",
-              }}
-            >
-              Area Manager
-            </span>
-          </Col>
-
-          <Col span={1} offset={8}>
-            <Button type="default" size="large" onClick={showModal}>
-              <PlusCircleOutlined style={{ fontSize: "1.1rem" }} />
-              Add New Area
-            </Button>
-          </Col>
-        </Row>
-        <Row
-          style={{
-            display: "flex",
-            justifyContent: "end",
-            margin: "1rem 2rem 0rem 0.5rem",
           }}
         >
-          <Col>
-            <Input
-              suffix={<SearchOutlined />}
-              placeholder="Search"
-              onSearch={onSearch}
-              style={{
-                width: 300,
-              }}
-            />
-          </Col>
-        </Row>
-        <Table
-          style={{ margin: "1rem 0" }}
-          columns={columns}
-          dataSource={data}
-          onChange={onChange}
-          showSorterTooltip={{
-            target: "sorter-icon",
-          }}
-        />
-        <Modal
-          title="Add New Place"
-          open={isModalOpen}
-          maskClosable={false}
-          footer={null}
-          onCancel={handleClose}
-        >
-          <Form
-            style={{ margin: "1rem 0" }}
-            layout="vertical"
-            form={form}
-            onFinish={(values) => {
-              console.log(values);
-              handleClose(); // Log the form values
+          <Row
+            style={{
+              padding: "0.5rem 2rem 0.5rem 2rem",
+              backgroundColor: "#40A2E3",
+              borderRadius: "10px 10px 0px 0px ",
             }}
           >
-            <Form.Item
-              name="Country"
-              label="Country"
-              rules={[
-                {
-                  required: true,
-                  message: "Please select Country",
-                },
-              ]}
+            <Col span={16}>
+              <Title
+                level={4}
+                style={{
+                  color: "white",
+                  fontWeight: 500,
+                  margin: 0,
+                  paddingTop: 0,
+                }}
+              >
+                Area Manager
+              </Title>
+            </Col>
+            <Col offset={5} span={3}>
+              <Button icon={<PlusCircleOutlined />} onClick={showModal}>
+                Add New Area
+              </Button>
+            </Col>
+          </Row>
+
+          <Spin spinning={loading}>
+            <CustomTable
+              columns={columns}
+              dataSource={columnData}
+              actionColumn={true}
+              isFilter={true}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          </Spin>
+          <Modal
+            title="Add New Place"
+            open={isModalOpen}
+            maskClosable={false}
+            footer={null}
+            onCancel={handleClose}
+          >
+            <Form
+              style={{ margin: "1rem 0" }}
+              layout="vertical"
+              form={form}
+              onFinish={(values) => {
+                console.log(values);
+                handleClose(); // Log the form values
+              }}
             >
-              <Select style={{ width: "100%" }} options={options} />
-            </Form.Item>
-            <Form.Item
-              name="State"
-              label="State"
-              rules={[
-                {
-                  required: true,
-                  message: "Please select state",
-                },
-              ]}
-            >
-              <Select style={{ width: "100%" }} options={options} />
-            </Form.Item>
-            <Form.Item
-              name="PlaceName"
-              label="Place Name"
-              rules={[
-                {
-                  required: true,
-                  message: "Please select place name",
-                },
-              ]}
-            >
-              <Select style={{ width: "100%" }} options={options} />
-            </Form.Item>
-            <Form.Item
-              name="AreaName"
-              label="Area Name"
-              rules={[
-                {
-                  required: true,
-                  message: "Please enter area name",
-                },
-              ]}
-            >
-              <Input style={{ width: "100%" }} options={options} />
-            </Form.Item>
-            <Row gutter={32} style={{ height: "1.8rem" }}>
-              <Col offset={12} span={6}>
-                <Form.Item>
-                  <Button type="primary" htmlType="submit">
-                    Submit
-                  </Button>
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item>
-                  <Button type="default" onClick={handleClose}>
-                    Cancel
-                  </Button>
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
-        </Modal>
-      </div>
+              <Form.Item
+                name="Country"
+                label="Country"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select Country",
+                  },
+                ]}
+              >
+                <Select style={{ width: "100%" }} options={options} />
+              </Form.Item>
+              <Form.Item
+                name="State"
+                label="State"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select state",
+                  },
+                ]}
+              >
+                <Select style={{ width: "100%" }} options={options} />
+              </Form.Item>
+              <Form.Item
+                name="PlaceName"
+                label="Place Name"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select place name",
+                  },
+                ]}
+              >
+                <Select style={{ width: "100%" }} options={options} />
+              </Form.Item>
+              <Form.Item
+                name="AreaName"
+                label="Area Name"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter area name",
+                  },
+                ]}
+              >
+                <Input style={{ width: "100%" }} options={options} />
+              </Form.Item>
+              <Row gutter={32} style={{ height: "1.8rem" }}>
+                <Col offset={12} span={6}>
+                  <Form.Item>
+                    <Button type="primary" htmlType="submit">
+                      Submit
+                    </Button>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item>
+                    <Button type="default" onClick={handleClose}>
+                      Cancel
+                    </Button>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
+          </Modal>
+        </div>
+      </Layout>
     </>
   );
 }

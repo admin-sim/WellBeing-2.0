@@ -15,7 +15,6 @@ import Layout from "antd/es/layout/layout";
 import { SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router";
 const { Option } = Select;
-
 import {} from "../../../../../endpoints.js";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import Title from "antd/es/typography/Title";

@@ -29,7 +29,6 @@ import logo from "../../assets/smileslogo.png";
 
 // import { updateUserContext } from "../../store/features/userContext.jsx";
 
-// const mongoUrl = "http://localhost:5000/api/auth/login";
 
 const Login = () => {
   const navigate = useNavigate();
