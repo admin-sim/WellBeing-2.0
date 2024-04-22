@@ -108,7 +108,13 @@ const menuData = [
         icon: "FaUserPlus",
         title: "Patient Registration",
         link: "/Patient",
+      },{
+        key: "Queue-Mgmt",
+        title: "Queue Management",
+        icon: "FaPersonWalkingArrowRight",
+        link: "/Queue",
       },
+      
       // {
       //   key: "sub-subtask",
       //   title: "SubTask",

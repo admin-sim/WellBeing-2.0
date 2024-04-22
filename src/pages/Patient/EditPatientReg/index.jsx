@@ -18,6 +18,8 @@ import { SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 const { Option } = Select;
+import { IoIosPerson } from "react-icons/io";
+
 import {
   urlGetPatientDetail,
   urlAddNewPatient,
@@ -32,6 +34,7 @@ import WebcamImage from "../../../components/WebCam/index.jsx";
 import dayjs from "dayjs";
 
 const PatientEdit = () => {
+  debugger;
   const location = useLocation();
   const selectedRow = location.state.selectedRow;
 
@@ -51,6 +54,7 @@ const PatientEdit = () => {
     Religion: [],
     Ethnicity: [],
     Language: [],
+    CardType: [],
   });
   const [selectedDate, setSelectedDate] = useState(null);
   const [age, setAge] = useState({ years: 0, months: 0, days: 0 });
@@ -79,11 +83,11 @@ const PatientEdit = () => {
         const patientData = response.data.data.AddNewPatient;
         setPatientDropdown(apiData);
         setPatientDetails(patientData);
-        setFilteredStates(response.data.data.PermanentStates);
-        setFilteredCities(response.data.data.PermanentPlaces);
-        setFilteredAreas(response.data.data.PermanentAreas);
+        setFilteredStates(response.data.data.States);
+        setFilteredCities(response.data.data.Places);
+        setFilteredAreas(response.data.data.Areas);
         setDob(patientData.DateOfBirthstring);
-
+        handleDateChange(patientData.DateOfBirthstring);
         setLoading(false);
       });
   }, []);
@@ -107,21 +111,22 @@ const PatientEdit = () => {
     return inputDate; // Return as is if not in the expected format
   }
 
-  const handleDateChange = (date, dateString) => {
+  const handleDateChange = (dateString) => {
     debugger;
-    setSelectedDate(date);
+    // setSelectedDate(date);
     setDob(dateString);
 
     const today = dayjs();
-    const dob = dayjs(date, { format: "DD-MM-YYYY" }); // Assuming the date format is DD-MM-YYYY
-    const diff = today.diff(dob);
+    // const dob = dateString;
+    const dob = dayjs(dateString, { format: "DD-MM-YYYY" }); // Assuming the date format is DD-MM-YYYY
+    // const diff = today.diff(dob);
 
     const years = today.diff(dob, "year");
     const remainingMonths = today.diff(dob.add(years, "year"), "month");
     const months = remainingMonths % 12;
     let days = today.diff(dob.add(years, "year").add(months, "month"), "day");
 
-    if (date == null) {
+    if (dateString == null) {
       days = 0;
     }
 
@@ -171,9 +176,9 @@ const PatientEdit = () => {
     }
   };
 
-  const handleReset = () => {
-    form.resetFields();
-  };
+  // const handleReset = () => {
+  //   form.resetFields();
+  // };
 
   // Handle state change
   const handleStateChange = (newState) => {
@@ -216,14 +221,7 @@ const PatientEdit = () => {
     }
   };
 
-  // const handleBackToList = () => {
-  //   debugger;
-  //   const url = `/patient`;
-  //   // Navigate to the new URL
-  //   navigate(url);
-  // };
-
-  const handleSearchToVisit = () => {
+  const handleSearchPatientToVisit = () => {
     const url = `/patient/NewVisit`;
     // Navigate to the new URL
     navigate(url);
@@ -241,42 +239,44 @@ const PatientEdit = () => {
 
     values.DateOfBirthstring = dob;
     const postData = {
+      FacilityId: 1,
       PatientId: selectedRow.PatientId,
+      PatientTitle: values.PatientTitle,
       PatientFirstName: values.PatientFirstName,
       PatientMiddleName: values.PatientMiddleName,
       PatientLastName: values.PatientLastName,
-      FacilityId: 1,
-      MobileNumber: values.MobileNumber,
-      PatientTitle: values.PatientTitle,
       Gender: values.PatientGender,
+      BloodGroup: values.BloodGroup,
       DateOfBirthstring: values.DateOfBirthstring,
       FatherHusbandTitle: values.FatherHusbandTitle,
-      PresentAddress1: values.PermanentAddress1,
-      ReligionId: values.ReligionId,
+      FatherHusbandName: values.FatherHusbandName,
+      MaritalStatus: values.MaritalStatus,
       Height: values.Height,
       Weight: values.Weight,
-      MaritalStatus: values.MaritalStatus,
-      BloodGroup: values.BloodGroup,
+      MobileNumber: values.MobileNumber,
+      LandlineNumber: values.LandlineNumber,
       EmailId: values.EmailId,
-      FatherHusbandName: values.FatherHusbandName,
+      Occupation: values.Occupation,
       PermanentAddress1: values.PermanentAddress1,
-      PermanentCountryId: values.country,
+      PermanentCountryId: values?.country,
       PermanentStateId: values.state,
       PermanentPlaceId: values.city,
       PermanentAreaId: values.area,
       PermanentPinCode: values.PermanentPinCode,
+      PresentAddress1: values.PermanentAddress1,
       PresentCountryId: values.country,
       PresentStateId: values.state,
       PresentPlaceId: values.city,
       PresentAreaId: values.area,
       PresentPinCode: values.PermanentPinCode,
-      LandlineNumber: values.LandlineNumber,
-      Occupation: values.Occupation,
-      EthnicityId: values.EthnicityId,
+      ReligionId: values.Religion,
+      EthnicityId: values.Ethnicity,
       PrimaryLanguageId: values.PrimaryLanguageId,
       CanSpeakEnglish: values.CanSpeakEnglish,
       BirthPlace: values.BirthPlace,
       BirthIdentification1: values.BirthIdentification,
+      IdentificationId: values.idCardType,
+      IdNo: values.IdCardNumber,
     };
 
     try {
@@ -293,13 +293,24 @@ const PatientEdit = () => {
         throw new Error(`Server responded with status code ${response.status}`);
       }
 
-      // Display success notification
-      notification.success({
-        message: "Patient Details Updated",
-        description: `The patient details have been successfully updated.`,
-      });
-
-      setLoadings(false);
+      if (response.data == true) {
+        // Display success notification
+        notification.success({
+          message: "Patient Details Updated",
+          description: `The patient details have been successfully updated.`,
+        });
+        setLoadings(false);
+        const url = `/patient`;
+        navigate(url);
+      } else {
+        // Display error notification
+        notification.error({
+          message: "Error",
+          description:
+            "Failed to update patient details. Please try again later.",
+        });
+        setLoadings(false);
+      }
     } catch (error) {
       console.error("Failed to send data to server: ", error);
 
@@ -314,7 +325,7 @@ const PatientEdit = () => {
 
   return (
     <>
-      {/* {isloading ? (
+      {isloading ? (
         // Skeleton Loading for Header
         <div
           style={{
@@ -328,8 +339,7 @@ const PatientEdit = () => {
             <div className="content" />
           </Spin>
         </div>
-      ) :   */}
-      (
+      ) : (
         <Layout style={{ zIndex: "999999999" }}>
           <div
             style={{
@@ -359,10 +369,29 @@ const PatientEdit = () => {
                   Edit Patient Details
                 </Title>
               </Col>
-              <Col offset={5} span={3}>
-                <Button icon={<SearchOutlined />} onClick={handleSearchToVisit}>
-                  Search Patient
-                </Button>
+            </Row>
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+              <Col span={10}>
+                <div
+                  style={{
+                    backgroundColor: "#d6e4ff",
+                    padding: "10px",
+                    borderRadius: "10px",
+                    margin: "10px 10px",
+                  }}
+                >
+                  <span
+                    style={{
+                      marginLeft: "auto",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    You are editing details for the patient&nbsp;
+                    <IoIosPerson style={{ marginLeft: "5px" }} />
+                    &nbsp;{selectedRow.UhId}
+                  </span>
+                </div>
               </Col>
             </Row>
 
@@ -380,41 +409,64 @@ const PatientEdit = () => {
                   patientDetails.DateOfBirthstring,
                   "DD-MM-YYYY"
                 ),
+                PatientTitle: patientDetails.PatientTitle
+                  ? patientDetails.PatientTitle
+                  : undefined,
                 PatientFirstName: patientDetails.PatientFirstName,
                 PatientMiddleName: patientDetails.PatientMiddleName,
                 PatientLastName: patientDetails.PatientLastName,
-                MobileNumber: patientDetails.MobileNumber,
-                PatientTitle: patientDetails.PatientTitle,
-                PatientGender: patientDetails.Gender,
+
+                PatientGender: patientDetails.Gender
+                  ? patientDetails.Gender
+                  : undefined,
+                BloodGroup: patientDetails.BloodGroup
+                  ? patientDetails.BloodGroup
+                  : undefined,
                 FatherHusbandTitle: patientDetails.FatherHusbandTitle,
-                PermanentAddress1: patientDetails.PermanentAddress1,
-                ReligionId: patientDetails.ReligionId,
+                FatherHusbandName: patientDetails.FatherHusbandName,
+                MaritalStatus: patientDetails.MaritalStatus
+                  ? patientDetails.MaritalStatus
+                  : undefined,
                 Height: patientDetails.Height,
                 Weight: patientDetails.Weight,
-                MaritalStatus: patientDetails.MaritalStatus,
-                BloodGroup: patientDetails.BloodGroup,
-                EmailId: patientDetails.EmailId,
-                FatherHusbandName: patientDetails.FatherHusbandName,
-                PermanentPinCode: patientDetails.PermanentPinCode,
+                PermanentAddress1: patientDetails.PermanentAddress1,
+                PermanentPinCode: patientDetails.PermanentPinCode
+                  ? patientDetails.PermanentPinCode
+                  : undefined,
                 country: patientDetails.PermanentCountryId
                   ? patientDetails.PermanentCountryId
-                  : null,
+                  : undefined,
                 state: patientDetails.PermanentStateId
                   ? patientDetails.PermanentStateId
-                  : null,
+                  : undefined,
                 city: patientDetails.PermanentPlaceId
                   ? patientDetails.PermanentPlaceId
-                  : null,
+                  : undefined,
                 area: patientDetails.PermanentAreaId
                   ? patientDetails.PermanentAreaId
-                  : null,
+                  : undefined,
+                MobileNumber: patientDetails.MobileNumber,
+                EmailId: patientDetails.EmailId,
                 LandlineNumber: patientDetails.LandlineNumber,
                 Occupation: patientDetails.Occupation,
-                EthnicityId: patientDetails.EthnicityId,
-                PrimaryLanguageId: patientDetails.PrimaryLanguageId,
-                CanSpeakEnglish: patientDetails.CanSpeakEnglish,
+                Religion: patientDetails.ReligionId
+                  ? patientDetails.ReligionId
+                  : undefined,
+                Ethnicity: patientDetails.EthnicityId
+                  ? patientDetails.EthnicityId
+                  : undefined,
+                PrimaryLanguageId: patientDetails.PrimaryLanguageId
+                  ? patientDetails.PrimaryLanguageId
+                  : undefined,
+                CanSpeakEnglish: patientDetails.CanSpeakEnglish
+                  ? patientDetails.CanSpeakEnglish
+                  : undefined,
                 BirthPlace: patientDetails.BirthPlace,
-                BirthIdentification1: patientDetails.BirthIdentification,
+                BirthIdentification: patientDetails.BirthIdentification1,
+                idCardType: patientDetails.IdentificationId
+                  ? patientDetails.IdentificationId
+                  : undefined,
+                IdCardNumber: patientDetails.IdNo,
               }}
             >
               <Row gutter={20}>
@@ -639,6 +691,51 @@ const PatientEdit = () => {
                 </Col>
               </Row>
 
+              <Divider orientation="left">Contact Details</Divider>
+              <Row gutter={14}>
+                <Col span={6}>
+                  <Form.Item
+                    name="MobileNumber"
+                    label="Mobile Number"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter your mobile number.",
+                      },
+                      {
+                        pattern: new RegExp(/^(\+\d{1,3})?\d{10,12}$/),
+                        message: "Invalid mobile number!",
+                      },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item name="LandlineNumber" label="Landline Number">
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name="EmailId"
+                    label="Email Id"
+                    rules={[
+                      {
+                        type: "email",
+                        message: "Please input valid E-mail",
+                      },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item name="Occupation" label="Occupation">
+                    <Input />
+                  </Form.Item>
+                </Col>
+              </Row>
               <Divider orientation="left">Address</Divider>
               <Row gutter={14}>
                 <Col span={6}>
@@ -719,52 +816,16 @@ const PatientEdit = () => {
                   </Form.Item>
                 </Col>
                 <Col span={2}>
-                  <Form.Item name="PermanentPinCode" label="Pin Code">
-                    <Input />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Divider orientation="left">Contact Details</Divider>
-              <Row gutter={14}>
-                <Col span={6}>
                   <Form.Item
-                    name="MobileNumber"
-                    label="Mobile Number"
+                    name="PermanentPinCode"
+                    label="Pin Code"
                     rules={[
                       {
-                        required: true,
-                        message: "Please enter your mobile number.",
-                      },
-                      {
-                        pattern: new RegExp(/^(\+\d{1,3})?\d{10,12}$/),
-                        message: "Invalid mobile number!",
+                        pattern: new RegExp(/^\d{6}$/),
+                        message: "Invalid Pin Code",
                       },
                     ]}
                   >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="LandlineNumber" label="Landline Number">
-                    <Input type="number" min={0} />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="EmailId"
-                    label="Email Id"
-                    rules={[
-                      {
-                        type: "email",
-                        message: "Please input valid E-mail",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="Occupation" label="Occupation">
                     <Input />
                   </Form.Item>
                 </Col>
@@ -772,17 +833,7 @@ const PatientEdit = () => {
               <Divider orientation="left">Other Details</Divider>
               <Row gutter={14}>
                 <Col span={6}>
-                  <Form.Item name="idCardType" label="Id Card Type">
-                    <Select allowClear />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="BirthPlace" label="Id Card Number">
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="ReligionId" label="Religion">
+                  <Form.Item name="Religion" label="Religion">
                     <Select placeholder="Select Religion" allowClear>
                       {patientDropdown.Religion.map((option) => (
                         <Select.Option
@@ -810,6 +861,7 @@ const PatientEdit = () => {
                     </Select>
                   </Form.Item>
                 </Col>
+
                 <Col span={6}>
                   <Form.Item name="PrimaryLanguageId" label="Primary Language">
                     <Select allowClear>
@@ -826,10 +878,10 @@ const PatientEdit = () => {
                 </Col>
                 <Col span={6}>
                   <Form.Item name="CanSpeakEnglish" label="Can speak English?">
-                    <Select allowClear>
-                      <Option value="1">Yes</Option>
-                      <Option value="2">No</Option>
-                      <Option value="3">Maybe</Option>
+                    <Select>
+                      <Select.Option key="Y">Yes</Select.Option>
+                      <Select.Option key="N">No</Select.Option>
+                      <Select.Option key="M">Maybe</Select.Option>
                     </Select>
                   </Form.Item>
                 </Col>
@@ -847,19 +899,63 @@ const PatientEdit = () => {
                   </Form.Item>
                 </Col>
               </Row>
+              <Divider orientation="left">Identification Details</Divider>
+              <Row gutter={14}>
+                <Col span={6}>
+                  <Form.Item
+                    name="idCardType"
+                    label="Id Card Type"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select Id card Type",
+                      },
+                    ]}
+                  >
+                    <Select allowClear>
+                      {patientDropdown.CardType.map((option) => (
+                        <Select.Option
+                          key={option.LookupID}
+                          value={option.LookupID}
+                        >
+                          {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name="IdCardNumber"
+                    label="Id Card Number"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter patient card number",
+                      },
+                      {
+                        pattern: new RegExp(/^\d{1,15}$/),
+                        message: "Invalid mobile number!",
+                      },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+              </Row>
 
               <Row justify="end">
                 <Col style={{ marginRight: "10px" }}>
                   <Form.Item>
                     <Button type="primary" htmlType="submit" loading={loadings}>
-                      Submit
+                      Update
                     </Button>
                   </Form.Item>
                 </Col>
                 <Col>
                   <Form.Item>
-                    <Button type="primary" onClick={handleReset}>
-                      Reset
+                    <Button type="primary" onClick={handleSearchPatientToVisit}>
+                      Back
                     </Button>
                   </Form.Item>
                 </Col>
@@ -867,8 +963,7 @@ const PatientEdit = () => {
             </Form>
           </div>
         </Layout>
-      )
-      {/* } */}
+      )}
     </>
   );
 };
