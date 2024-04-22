@@ -1,0 +1,50 @@
+/* CSS for PatientHeader component */
+.patient-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.patient-image {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 10px;
+}
+
+.patient-image svg {
+  width: 100%;
+  height: 100%;
+}
+
+.patient-name {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.patient-details {
+  font-size: 14px;
+}
+
+.patient-details p {
+  margin: 5px 0;
+}
+
+/* CSS for male and female icons */
+.male-icon {
+  color: blue; /* Change the color as needed */
+}
+
+.female-icon {
+  color: pink; /* Change the color as needed */
+}
+
+.custom-table .ant-table-thead > tr > th {
+  background-color: #1a9bf0;
+  color: white;
+  font-weight: "bold";
+}
+.ant-card-head {
+  background-color: #1a9bf0 !important;
+}
