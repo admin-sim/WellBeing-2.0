@@ -1,0 +1,8 @@
+.custom-table .ant-table-thead > tr > th {
+  background-color: #1a9bf0;
+  color: white;
+  font-weight: "bold";
+}
+.custom-table .green-row {
+  background-color: #a1f7a1 !important; /* Change this to your desired green color */
+}
