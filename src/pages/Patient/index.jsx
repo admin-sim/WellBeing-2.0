@@ -82,8 +82,6 @@ const Patient = () => {
     });
   }, []);
 
- 
-
   useEffect(() => {
     form.setFieldsValue({
       PatientType: selectedRecord.PatientTypeName,
@@ -135,7 +133,7 @@ const Patient = () => {
 
   const handleEditVisitModal = (record) => {
     // debugger;
-    setSelectedRecord(record); 
+    setSelectedRecord(record);
     setIsCancelEncounter(false);
     console.log("see the values of reocrd", record);
 
@@ -245,7 +243,6 @@ const Patient = () => {
     }
   };
 
- 
   //   // debugger;
   //   try {
   //     await form1.validateFields(); // Trigger form validation
@@ -362,7 +359,7 @@ const Patient = () => {
       },
     },
     {
-      title: "Gender",
+      title: "Image",
       dataIndex: "Gender",
       key: "Gender",
       render: (text, record) => (
@@ -382,6 +379,8 @@ const Patient = () => {
             <strong>Mob No:</strong> {record.MobileNumber}
             <br />
             <strong>Dob:</strong> {formatDatefortable(record.DateOfBirth)}
+            <br />
+            <strong>Gender:</strong> {record.Gender == 7 ? "Male" : "Female"}
           </p>
         </div>
       ),
@@ -634,7 +633,7 @@ const Patient = () => {
             </Row>
           </div>
           <div>
-            <Form  form={form} layout="vertical">
+            <Form form={form} layout="vertical">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col span={6}>
                   <Form.Item
@@ -871,11 +870,15 @@ const Patient = () => {
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
                   Name :
                 </span>
-                <span>{selectedRecord && selectedRecord.PatientName}</span>
+                <span>{selectedRecord && selectedRecord.PatientFirstName}</span>
               </Col>
               <Col span={8}>
                 <span style={{ fontWeight: "bold" }}>Patient Gender : </span>
-                <span>{selectedRecord && selectedRecord.PatientGender}</span>
+                <span>
+                  {selectedRecord && selectedRecord.PatientGender == 7
+                    ? "Male"
+                    : "Female"}
+                </span>
               </Col>
             </Row>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
