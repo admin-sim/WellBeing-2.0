@@ -36,7 +36,35 @@ import Service from "./pages/Masters/GeneralMasters/AccountManagement/Service";
 import CreateService from "./pages/Masters/GeneralMasters/AccountManagement/CreateService";
 import FacilityPriceDefinition from "./pages/Masters/GeneralMasters/AccountManagement/FacilityPriceDefinition";
 import EditPriceDefinition from "./pages/Masters/GeneralMasters/AccountManagement/EditPriceDefinition";
-import Queue from "./pages/Patient/QueueManagement/Queue";
+import CreatePurchaseOrder from "./pages/Inventory/CreatePurchaseOrder";
+import DirectGRN from "./pages/Inventory/DirectGRN";
+import CreateDirectGRN from "./pages/Inventory/CreateDirectGRN";
+import GRNAgainstPO from "./pages/Inventory/GRNAgainstPO";
+import CreateGRNAgainstPO from "./pages/Inventory/CreateGRNAgainstPO";
+import Indent from "./pages/Inventory/Indent";
+import CreateIndent from "./pages/Inventory/CreateIndent";
+import PatientIndent from "./pages/Inventory/PatientIndent";
+import CreatePatientIndent from "./pages/Inventory/CreatePatientIndent";
+import IndentIssue from "./pages/Inventory/IndentIssue";
+import UrgentIssue from "./pages/Inventory/UrgentIssue";
+import CreateUrgentIssue from "./pages/Inventory/CreateUrgentIssue";
+import PatientIssue from "./pages/Inventory/PatientIssue";
+import PatientConsumption from "./pages/Inventory/PatientConsumption";
+import CreatePatientConsumption from "./pages/Inventory/CreatePatientConsumption";
+import ItemReceipt from "./pages/Inventory/ItemReceipt";
+import StoreConsumption from "./pages/Inventory/StoreConsumption";
+import CreateStoreConsumption from "./pages/Inventory/CreateStoreConsumption";
+import OpeningStock from "./pages/Inventory/OpeningStock";
+import CreateOpeningStock from "./pages/Inventory/CreateOpeningStock";
+import VendorReturn from "./pages/Inventory/VendorReturn";
+import CreateVendorReturn from "./pages/Inventory/CreateVendorReturn";
+import StoreReturn from "./pages/Inventory/StoreReturn";
+import CreateStoreReturn from "./pages/Inventory/CreateStoreReturn";
+import AcknowledgeReturn from "./pages/Inventory/AcknowledgeReturn";
+import CreateAcknowledageReturn from "./pages/Inventory/CreateAcknowledageReturn";
+import MedicalReturn from "./pages/Inventory/MedicalReturn";
+import StockExpiry from "./pages/Inventory/StockExpiry";
+import UpdateIndentIssue from "./pages/Inventory/UpdateIndentIssue";
 
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
@@ -145,6 +173,238 @@ function App() {
             element={
               <ProtectedRoute>
                 <PurchaseOrder />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/CreatePurchaseOrder"
+            element={
+              <ProtectedRoute>
+                <CreatePurchaseOrder />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/DirectGRN"
+            element={
+              <ProtectedRoute>
+                <DirectGRN />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/CreateDirectGRN"
+            element={
+              <ProtectedRoute>
+                <CreateDirectGRN />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/GRNAgainstPO"
+            element={
+              <ProtectedRoute>
+                <GRNAgainstPO />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/CreateGRNAgainstPO"
+            element={
+              <ProtectedRoute>
+                <CreateGRNAgainstPO />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Indent"
+            element={
+              <ProtectedRoute>
+                <Indent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/CreateIndent"
+            element={
+              <ProtectedRoute>
+                <CreateIndent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/PatientIndent"
+            element={
+              <ProtectedRoute>
+                <PatientIndent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/CreatePatientIndent"
+            element={
+              <ProtectedRoute>
+                <CreatePatientIndent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/IndentIssue"
+            element={
+              <ProtectedRoute>
+                <IndentIssue />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/UpdateIndentIssue"
+            element={
+              <ProtectedRoute>
+                <UpdateIndentIssue />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/UrgentIssue"
+            element={
+              <ProtectedRoute>
+                <UrgentIssue />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/CreateUrgentIssue"
+            element={
+              <ProtectedRoute>
+                <CreateUrgentIssue />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/PatientIssue"
+            element={
+              <ProtectedRoute>
+                <PatientIssue />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/PatientConsumption"
+            element={
+              <ProtectedRoute>
+                <PatientConsumption />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/CreatePatientConsumption"
+            element={
+              <ProtectedRoute>
+                <CreatePatientConsumption />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ItemReceipt"
+            element={
+              <ProtectedRoute>
+                <ItemReceipt />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/StoreConsumption"
+            element={
+              <ProtectedRoute>
+                <StoreConsumption />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/CreateStoreConsumption"
+            element={
+              <ProtectedRoute>
+                <CreateStoreConsumption />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/OpeningStock"
+            element={
+              <ProtectedRoute>
+                <OpeningStock />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/CreateOpeningStock"
+            element={
+              <ProtectedRoute>
+                <CreateOpeningStock />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/VendorReturn"
+            element={
+              <ProtectedRoute>
+                <VendorReturn />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/CreateVendorReturn"
+            element={
+              <ProtectedRoute>
+                <CreateVendorReturn />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/StoreReturn"
+            element={
+              <ProtectedRoute>
+                <StoreReturn />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/CreateStoreReturn"
+            element={
+              <ProtectedRoute>
+                <CreateStoreReturn />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/AcknowledgeReturn"
+            element={
+              <ProtectedRoute>
+                <AcknowledgeReturn />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/CreateAcknowledageReturn"
+            element={
+              <ProtectedRoute>
+                <CreateAcknowledageReturn />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/MedicalReturn"
+            element={
+              <ProtectedRoute>
+                <MedicalReturn />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/StockExpiry"
+            element={
+              <ProtectedRoute>
+                <StockExpiry />
               </ProtectedRoute>
             }
           />
