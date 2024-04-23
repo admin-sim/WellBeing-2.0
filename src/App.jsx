@@ -36,6 +36,7 @@ import Service from "./pages/Masters/GeneralMasters/AccountManagement/Service";
 import CreateService from "./pages/Masters/GeneralMasters/AccountManagement/CreateService";
 import FacilityPriceDefinition from "./pages/Masters/GeneralMasters/AccountManagement/FacilityPriceDefinition";
 import EditPriceDefinition from "./pages/Masters/GeneralMasters/AccountManagement/EditPriceDefinition";
+import Queue from "./pages/Patient/QueueManagement/Queue";
 
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
@@ -120,6 +121,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <PatientEdit />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="Queue"
+            element={
+              <ProtectedRoute>
+                <Queue />
               </ProtectedRoute>
             }
           />
@@ -243,7 +252,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-           <Route
+          <Route
             path="ServiceClassification"
             element={
               <ProtectedRoute>
@@ -259,7 +268,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-           <Route
+          <Route
             path="CreateService"
             element={
               <ProtectedRoute>
@@ -275,7 +284,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-            <Route
+          <Route
             path="EditPriceDefinition"
             element={
               <ProtectedRoute>
