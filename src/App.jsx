@@ -65,6 +65,7 @@ import CreateAcknowledageReturn from "./pages/Inventory/CreateAcknowledageReturn
 import MedicalReturn from "./pages/Inventory/MedicalReturn";
 import StockExpiry from "./pages/Inventory/StockExpiry";
 import UpdateIndentIssue from "./pages/Inventory/UpdateIndentIssue";
+import Queue from "./pages/Patient/QueueManagement/Queue";
 
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
