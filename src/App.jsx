@@ -66,6 +66,7 @@ import MedicalReturn from "./pages/Inventory/MedicalReturn";
 import StockExpiry from "./pages/Inventory/StockExpiry";
 import UpdateIndentIssue from "./pages/Inventory/UpdateIndentIssue";
 import Queue from "./pages/Patient/QueueManagement/Queue";
+import PatientVitalSigns from "./pages/Patient/QueueManagement/PatientVitalSigns";
 
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
@@ -158,6 +159,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Queue />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/PatientVitalSigns"
+            element={
+              <ProtectedRoute>
+                <PatientVitalSigns />
               </ProtectedRoute>
             }
           />

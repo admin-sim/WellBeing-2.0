@@ -114,3 +114,5 @@ export const urlEditIndentIssue = `${baseURL}/api/IndentIssue/EditIndentIssue`;
 export const urlAddNewIndentIssue = `${baseURL}/api/IndentIssue/AddNewIndentIssue`;
 export const urlEditPurchaseOrder = `${baseURL}/api/Purchaseorder/EditPurchaseOrder`;
 export const urlUpdatePurchaseOrder = `${baseURL}/api/Purchaseorder/UpdatePurchaseOrder`;
+export const urlGetCapturedVitalsDetails = `${baseURL}/api/Queue/getCapturedVitalsDetails`;
+
