@@ -65,7 +65,7 @@ const PurchaseOrder = () => {
     Draft: "geekblue",
     Pending: "volcano",
     "Partially Pending": "orange",
-    Completed: "green",
+    Finalize: "green",
   };
 
   const GetPobyId = (PoHeaderId) => {
