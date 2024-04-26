@@ -67,6 +67,8 @@ import StockExpiry from "./pages/Inventory/StockExpiry";
 import UpdateIndentIssue from "./pages/Inventory/UpdateIndentIssue";
 import Queue from "./pages/Patient/QueueManagement/Queue";
 import PatientVitalSigns from "./pages/Patient/QueueManagement/PatientVitalSigns";
+import Billing from "./pages/Billling/SearchPage";
+import CreateBilling from "./pages/Billling/CreateBilling";
 
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
