@@ -71,11 +71,9 @@ export const urlGetServicesForSelectedServiceClassification = `${baseURL}/api/Se
 export const urlFacilityPriceDefinitionIndex = `${baseURL}/api/PriceDefinition/FacilityPriceDefinitionIndex`;
 export const urlGetPriceDefinitionsForFacility = `${baseURL}/api/PriceDefinition/GetPriceDefinitionsForFacility`;
 export const urlGetAllServicePricesForSelectedServiceClassification = `${baseURL}/api/PriceDefinition/GetAllServicePricesForSelectedServiceClassification`;
-export const urlRevisionServicePrices = `${baseURL}/api/PriceDefinition/RevisionServicePrices`;
+export const urlRevisionServicePrices = `${baseURL}/api/PriceDefinition/UpdateFacilityPrices`;
 export const urlEditOrDeletePatientVisit = `${baseURL}/api/Encounter/EditOrCancelEncounter`;
-
 export const urlServiceIndex = `${baseURL}/api/Service/ServiceIndex`;
-
 export const urlGetAllQueues = `${baseURL}/api/Queue/GetAllQueues`;
 export const urlGetAllProviders = `${baseURL}/api/Queue/GetAllProviders`;
 export const urlGetMarkArrival = `${baseURL}/api/Queue/MarkArrival`;
@@ -114,3 +112,5 @@ export const urlEditIndentIssue = `${baseURL}/api/IndentIssue/EditIndentIssue`;
 export const urlAddNewIndentIssue = `${baseURL}/api/IndentIssue/AddNewIndentIssue`;
 export const urlEditPurchaseOrder = `${baseURL}/api/Purchaseorder/EditPurchaseOrder`;
 export const urlUpdatePurchaseOrder = `${baseURL}/api/Purchaseorder/UpdatePurchaseOrder`;
+export const urlGetCapturedVitalsDetails = `${baseURL}/api/Queue/getCapturedVitalsDetails`;
+
