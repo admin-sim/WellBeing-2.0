@@ -72,7 +72,7 @@ export const urlGetServicesForSelectedServiceClassification = `${baseURL}/api/Se
 export const urlFacilityPriceDefinitionIndex = `${baseURL}/api/PriceDefinition/FacilityPriceDefinitionIndex`;
 export const urlGetPriceDefinitionsForFacility = `${baseURL}/api/PriceDefinition/GetPriceDefinitionsForFacility`;
 export const urlGetAllServicePricesForSelectedServiceClassification = `${baseURL}/api/PriceDefinition/GetAllServicePricesForSelectedServiceClassification`;
-export const urlRevisionServicePrices = `${baseURL}/api/PriceDefinition/RevisionServicePrices`;
+export const urlRevisionServicePrices = `${baseURL}/api/PriceDefinition/UpdateFacilityPrices`;
 
 
 
