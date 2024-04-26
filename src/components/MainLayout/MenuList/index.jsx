@@ -127,6 +127,20 @@ const menuData = [
   },
 
   {
+    key: "Account",
+    icon: "ExperimentOutlined",
+    title: "AccountManagement",
+    children: [
+      {
+        key: "Billing",
+        icons: "FaUserFriends",
+        title: "Billing",
+        link: "Billing",
+      },
+    ],
+  },
+
+  {
     key: "Lab",
     icon: "ExperimentOutlined",
     title: "Laboratory",

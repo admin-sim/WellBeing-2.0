@@ -334,7 +334,7 @@ const Patient = () => {
       ),
     },
     {
-      title: "Encounter ID",
+      title: "Encounter",
       dataIndex: "VisitId",
       key: "VisitId",
 

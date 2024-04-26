@@ -781,12 +781,13 @@ const NewVisit = () => {
           maskClosable={false}
         >
           <div
-            style={{
-              border: "1px solid #d9d9d9",
-              padding: "16px",
-              borderRadius: "4px",
-              margin: "4px",
-            }}
+           style={{
+            padding: "16px",
+            borderRadius: "4px",
+            margin: "10px",
+            backgroundColor: "#f9f0ff",
+            boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
+          }}
           >
             <Row gutter={[16, 16]}>
               <Col span={8}>
@@ -809,7 +810,7 @@ const NewVisit = () => {
             <Row gutter={[16, 16]}>
               <Col span={8}>
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  Visit Id :
+                  Encounter :
                 </span>
                 <span
                   style={

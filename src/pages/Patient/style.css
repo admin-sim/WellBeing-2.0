@@ -45,6 +45,11 @@
   color: white;
   font-weight: "bold";
 }
+.vitals-table .ant-table-thead > tr > th {
+  background-color: #efdbff;
+ 
+  font-weight: "bold";
+}
 .ant-card-head {
   background-color: #1a9bf0 !important;
 }
