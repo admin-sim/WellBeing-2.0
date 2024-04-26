@@ -19,11 +19,14 @@ import Button from "antd/es/button";
 import {
   urlGetAllPatients,
   urlGetPatientDetail,
+  urlEditOrDeletePatientVisit,
   urlAddNewVisit,
   urlCancelVisit,
 } from "../../../endpoints.js";
 import { CalendarFilled, UserAddOutlined } from "@ant-design/icons";
-import "./style.css";
+import { EnvironmentOutlined } from "@ant-design/icons";
+
+import "../Patient/style.css";
 import male from "../../assets/m.png";
 import female from "../../assets/f.png";
 import defaultPic from "../../assets/defaultPic.png";
@@ -33,14 +36,16 @@ const Patient = () => {
   const { Title } = Typography;
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const [form1] = Form.useForm();
+  // const [form1] = Form.useForm();
   const [form] = Form.useForm();
   const [selectedRecord, setSelectedRecord] = useState([]); // New state variable to store selected record
-  const [isEditVisitModalVisible, setIsEditVisitModalVisible] = useState(false);
-  const [isCancelVisitModalVisible, setIsCancelVisitModalVisible] =
+
+  const [isEditOrDeleteVisitModalVisible, setIsEditOrDeleteVisitModalVisible] =
     useState(false);
+  const [isMoreModalVisible, setIsMoreModalVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isCancelEncounter, setIsCancelEncounter] = useState(false);
 
   const [patientDropdown, setPatientDropdown] = useState({
     Title: [],
@@ -76,22 +81,6 @@ const Patient = () => {
       setIsLoading(false);
     });
   }, []);
-
-  useEffect(() => {
-    form1.setFieldsValue({
-      PatientType: selectedRecord.PatientTypeName,
-      Provider: selectedRecord.ProviderName,
-      Department: selectedRecord.DepartmentName,
-      ServiceLocation: selectedRecord.ServiceLocationName,
-      EncounterType: selectedRecord.EncounterTypeId,
-      KinTitle: selectedRecord.KinTitle,
-      KinName: selectedRecord.KinName,
-      EncounterReason: selectedRecord.EncounterReasonId,
-      KinAddress: selectedRecord.KinAddress,
-      KinContactNo: selectedRecord.KinContactNo,
-      referredBy: selectedRecord.ReferredBy,
-    });
-  }, [selectedRecord]);
 
   useEffect(() => {
     form.setFieldsValue({
@@ -142,30 +131,38 @@ const Patient = () => {
     navigate(url);
   };
 
-  const handleeditvisitmodal = (record) => {
+  const handleEditVisitModal = (record) => {
     // debugger;
-    setSelectedRecord(record); // Set the selected record when the modal is opened
+    setSelectedRecord(record);
+    setIsCancelEncounter(false);
     console.log("see the values of reocrd", record);
 
-    setIsEditVisitModalVisible(true);
+    setIsEditOrDeleteVisitModalVisible(true);
   };
 
-  const handleEditVisitModalCancel = () => {
+  const handleEditOrDeleteVisitModalCancel = () => {
     // debugger;
-    setIsEditVisitModalVisible(false);
+    setIsCancelEncounter(false);
+    setIsEditOrDeleteVisitModalVisible(false);
   };
 
-  const handlecancelvisitmodal = (record) => {
+  const handleCancelVisitModal = (record) => {
     // debugger;
-    setSelectedRecord(record); // Set the selected record when the modal is opened
+    setSelectedRecord(record);
     console.log("see the values of reocrd", record);
+    setIsCancelEncounter(true);
 
-    setIsCancelVisitModalVisible(true);
+    setIsEditOrDeleteVisitModalVisible(true);
   };
 
-  const handleCancelVisitModalCancel = () => {
-    // debugger;
-    setIsCancelVisitModalVisible(false);
+  const handleMoreDetailsModal = (record) => {
+    debugger;
+    setSelectedRecord(record);
+    setIsMoreModalVisible(true);
+  };
+
+  const handleMoreModalCancel = () => {
+    setIsMoreModalVisible(false);
   };
 
   const handleOk = async () => {
@@ -185,26 +182,46 @@ const Patient = () => {
         EncounterId: selectedRecord.EncounterId,
         Encounter: selectedRecord.GeneratedEncounterId
           ? selectedRecord.GeneratedEncounterId
-          : 0,
-        EncounterTypeId: values.EncounterType,
-        EncounterReasonId: values.EncounterReason,
-        KinTitle: values.KinTitle,
-        KinName: values.KinName,
-        KinAddress: values.KinAddress,
-        KinContactNo: values.KinContactNo,
-        ReferredBy: values.referredBy,
-        AttendingProviderId: values.admittedUnder,
-        EncounterEditReason: values.EditReason,
-        EncounterDate: selectedRecord.CreatedDateTime,
+          : null,
+        EncounterTypeId:
+          values.EncounterType === undefined ? null : values.EncounterType,
+        EncounterReasonId:
+          values.EncounterReason === undefined ? null : values.EncounterReason,
+        KinTitle: values.KinTitle === undefined ? null : values.KinTitle,
+        KinName: values.KinName === undefined ? null : values.KinName,
+        KinAddress: values.KinAddress === undefined ? null : values.KinAddress,
+        KinContactNo:
+          values.KinContactNo === undefined ? null : values.KinContactNo,
+        ReferredBy: values.referredBy === undefined ? null : values.referredBy,
+        AttendingProviderId:
+          values.admittedUnder === undefined ? null : selectedRecord.ProviderId,
+        EncounterEditReason:
+          values.EditReason === undefined ? 0 : values.EditReason,
+        EncounterCancelReason:
+          values.CancelEdit === undefined ? 0 : values.CancelEdit,
       };
 
       try {
         // Send a POST request to the server
-        const response = await customAxios.post(urlAddNewVisit, Encounter);
+        const response = await customAxios.post(
+          urlEditOrDeletePatientVisit,
+          Encounter,
+          {
+            headers: {
+              "Content-Type": "application/json", // Replace with the appropriate content type if needed
+              // Add any other required headers here
+            },
+          }
+        );
 
-        notification.success({
-          message: "Visit details updated Successful",
-        });
+        if (response.data.data !== null) {
+          const encounterDetails = response.data.data.Patients;
+          setPatientDetails(encounterDetails);
+          notification.success({
+            message: "Visit details updated Successfully",
+          });
+        }
+
         // Check if the request was successful
         if (response.status !== 200) {
           throw new Error(
@@ -220,77 +237,76 @@ const Patient = () => {
       }
 
       form.resetFields();
-      setIsEditVisitModalVisible(false);
+      setIsEditOrDeleteVisitModalVisible(false);
     } catch (error) {
       // Handle errors if needed
     }
   };
 
-  const handleOkCancel = async () => {
-    // debugger;
-    try {
-      await form1.validateFields(); // Trigger form validation
-      const values = form1.getFieldsValue();
-      console.log("Selected submitting values", values);
+  //   // debugger;
+  //   try {
+  //     await form1.validateFields(); // Trigger form validation
+  //     const values = form1.getFieldsValue();
+  //     console.log("Selected submitting values", values);
 
-      const Encounter = {
-        PatientId: selectedRecord.PatientId,
-        PatientType: selectedRecord.PatientType,
-        FacilityDepartmentId: selectedRecord.FacilityDepartmentId,
-        FacilityDepartmentServiceLocationId:
-          selectedRecord.FacilityDepartmentServiceLocationId,
-        ProviderId: selectedRecord.ProviderId,
-        EncounterId: selectedRecord.EncounterId,
-        Encounter: selectedRecord.GeneratedEncounterId
-          ? selectedRecord.GeneratedEncounterId
-          : 0,
-        EncounterTypeId: values.EncounterType,
-        EncounterReasonId: values.EncounterReason,
-        KinTitle: values.KinTitle,
-        KinName: values.KinName,
-        KinAddress: values.KinAddress,
-        KinContactNo: values.KinContactNo,
-        ReferredBy: values.referredBy,
-        AttendingProviderId: values.admittedUnder,
-        EncounterCancelReason: values.CancelEdit,
-        EncounterDate: selectedRecord.CreatedDateTime,
-      };
+  //     const Encounter = {
+  //       PatientId: selectedRecord.PatientId,
+  //       PatientType: selectedRecord.PatientType,
+  //       FacilityDepartmentId: selectedRecord.FacilityDepartmentId,
+  //       FacilityDepartmentServiceLocationId:
+  //         selectedRecord.FacilityDepartmentServiceLocationId,
+  //       ProviderId: selectedRecord.ProviderId,
+  //       EncounterId: selectedRecord.EncounterId,
+  //       Encounter: selectedRecord.GeneratedEncounterId
+  //         ? selectedRecord.GeneratedEncounterId
+  //         : 0,
+  //       EncounterTypeId: values.EncounterType,
+  //       EncounterReasonId: values.EncounterReason,
+  //       KinTitle: values.KinTitle,
+  //       KinName: values.KinName,
+  //       KinAddress: values.KinAddress,
+  //       KinContactNo: values.KinContactNo,
+  //       ReferredBy: values.referredBy,
+  //       AttendingProviderId: values.admittedUnder,
+  //       EncounterCancelReason: values.CancelEdit,
+  //       EncounterDate: selectedRecord.CreatedDateTime,
+  //     };
 
-      try {
-        // Send a POST request to the server
-        const response = await customAxios.post(urlCancelVisit, Encounter);
+  //     try {
+  //       // Send a POST request to the server
+  //       const response = await customAxios.post(urlCancelVisit, Encounter);
 
-        notification.success({
-          message: "Visit cancellation Successful",
-        });
-        // Check if the request was successful
-        if (response.status !== 200) {
-          throw new Error(
-            `Server responded with status code ${response.status}`
-          );
-        }
+  //       notification.success({
+  //         message: "Visit cancellation Successful",
+  //       });
+  //       // Check if the request was successful
+  //       if (response.status !== 200) {
+  //         throw new Error(
+  //           `Server responded with status code ${response.status}`
+  //         );
+  //       }
 
-        setPatientDetails((prevPatients) =>
-          prevPatients.filter(
-            (patient) =>
-              patient.GeneratedEncounterId !==
-              selectedRecord.GeneratedEncounterId
-          )
-        );
-      } catch (error) {
-        console.error("Failed to send data to server: ", error);
-        notification.error({
-          message: "Visit cancellation UnSuccessful",
-          description: "Failed to cancel visit. Please try again later.",
-        });
-      }
+  //       setPatientDetails((prevPatients) =>
+  //         prevPatients.filter(
+  //           (patient) =>
+  //             patient.GeneratedEncounterId !==
+  //             selectedRecord.GeneratedEncounterId
+  //         )
+  //       );
+  //     } catch (error) {
+  //       console.error("Failed to send data to server: ", error);
+  //       notification.error({
+  //         message: "Visit cancellation UnSuccessful",
+  //         description: "Failed to cancel visit. Please try again later.",
+  //       });
+  //     }
 
-      form1.resetFields();
-      setIsCancelVisitModalVisible(false);
-    } catch (error) {
-      // Handle errors if needed
-    }
-  };
+  //     form1.resetFields();
+  //     setIsCancelVisitModalVisible(false);
+  //   } catch (error) {
+  //     // Handle errors if needed
+  //   }
+  // };
 
   const columns = [
     {
@@ -318,7 +334,7 @@ const Patient = () => {
       ),
     },
     {
-      title: "Encounter ID",
+      title: "Encounter",
       dataIndex: "VisitId",
       key: "VisitId",
 
@@ -343,9 +359,9 @@ const Patient = () => {
       },
     },
     {
-      title: "Avatar",
-      dataIndex: "Avatar",
-      key: "Avatar",
+      title: "Image",
+      dataIndex: "Gender",
+      key: "Gender",
       render: (text, record) => (
         <Avatar src={showGenderPic(record.Gender)} size="large" />
       ),
@@ -363,6 +379,8 @@ const Patient = () => {
             <strong>Mob No:</strong> {record.MobileNumber}
             <br />
             <strong>Dob:</strong> {formatDatefortable(record.DateOfBirth)}
+            <br />
+            <strong>Gender:</strong> {record.Gender == 7 ? "Male" : "Female"}
           </p>
         </div>
       ),
@@ -399,7 +417,7 @@ const Patient = () => {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  handlecancelvisitmodal(record);
+                  handleCancelVisitModal(record);
                 }}
               >
                 Cancel Visit
@@ -412,7 +430,7 @@ const Patient = () => {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleeditvisitmodal(record);
+                  handleEditVisitModal(record);
                 }}
               >
                 Edit Visit Details
@@ -425,6 +443,7 @@ const Patient = () => {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
+                  handleMoreDetailsModal(record);
                 }}
               >
                 More Details
@@ -469,7 +488,7 @@ const Patient = () => {
                 <UserAddOutlined
                   style={{ fontWeight: "bold", fontSize: "18px" }}
                 />
-                <strong> Add Patient </strong>
+                <strong> Add New Patient </strong>
               </Button>
             </Col>
             <Col span={3} offset={10}>
@@ -513,7 +532,7 @@ const Patient = () => {
             </Col>
             <Col span={1} offset={7}>
               <Button type="default" size="large" onClick={navigateToNewVisit}>
-                <strong>Add Visit</strong>
+                <strong>Create Visit</strong>
               </Button>
             </Col>
           </Row>
@@ -554,11 +573,10 @@ const Patient = () => {
         {/* {contextHolder} */}
         <Modal
           width={1000}
-          title="VisitModel"
-          open={isEditVisitModalVisible}
+          title={isCancelEncounter ? "CANCEL VISIT" : "EDIT VISIT DETAILS"}
+          open={isEditOrDeleteVisitModalVisible}
           onOk={handleOk}
-          // okButtonProps={{ disabled: IsVisitCreated }}
-          onCancel={handleEditVisitModalCancel}
+          onCancel={handleEditOrDeleteVisitModalCancel}
           okText="Update"
           maskClosable={false}
         >
@@ -615,7 +633,7 @@ const Patient = () => {
             </Row>
           </div>
           <div>
-            <Form key={selectedRecord.PatientId} form={form} layout="vertical">
+            <Form form={form} layout="vertical">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col span={6}>
                   <Form.Item
@@ -759,33 +777,58 @@ const Patient = () => {
                   </Form.Item>
                 </Col>
                 <Col span={6}>
-                  <Form.Item
-                    name="EditReason"
-                    label="Edit Reason"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please select Service Location",
-                      },
-                    ]}
-                  >
-                    <Select allowClear>
-                      {patientDropdown.EncounterEditReason.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
+                  {isCancelEncounter ? (
+                    <Form.Item
+                      name="CancelEdit"
+                      label="CancelEdit"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select Service Location",
+                        },
+                      ]}
+                    >
+                      <Select allowClear>
+                        {patientDropdown.EncounterCancelReason.map((option) => (
+                          <Select.Option
+                            key={option.LookupID}
+                            value={option.LookupID}
+                          >
+                            {option.LookupDescription}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  ) : (
+                    <Form.Item
+                      name="EditReason"
+                      label="Edit Reason"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select Service Location",
+                        },
+                      ]}
+                    >
+                      <Select allowClear>
+                        {patientDropdown.EncounterEditReason.map((option) => (
+                          <Select.Option
+                            key={option.LookupID}
+                            value={option.LookupID}
+                          >
+                            {option.LookupDescription}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  )}
                 </Col>
               </Row>
             </Form>
           </div>
         </Modal>
       </ConfigProvider>
+
       <ConfigProvider
         theme={{
           token: {
@@ -795,59 +838,59 @@ const Patient = () => {
       >
         {/* {contextHolder} */}
         <Modal
-          width={1000}
-          title="VisitModel"
-          open={isCancelVisitModalVisible}
-          onOk={handleOkCancel}
+          width={700}
+          title="More Details"
+          open={isMoreModalVisible}
+          // onOk={handleOk}
           // okButtonProps={{ disabled: IsVisitCreated }}
-          onCancel={handleCancelVisitModalCancel}
-          // okText="Submit"
+          onCancel={handleMoreModalCancel}
           maskClosable={false}
+          footer={null}
         >
           <div
             style={{
-              border: "1px solid #d9d9d9",
               padding: "16px",
               borderRadius: "4px",
-              margin: "4px",
+              margin: "10px",
+              backgroundColor: "#f9f0ff",
+              // display: "flex",
+              // border: "1px solid #d9d9d9",
+              // justifyContent: "space-between",
+              boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
             }}
           >
-            <Row gutter={[16, 16]}>
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col span={8}>
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  UHID:
+                  UHID :
                 </span>
                 <span>{selectedRecord && selectedRecord.UhId}</span>
               </Col>
               <Col span={8}>
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  Name:
+                  Name :
                 </span>
                 <span>{selectedRecord && selectedRecord.PatientFirstName}</span>
               </Col>
               <Col span={8}>
-                <span style={{ fontWeight: "bold" }}>PatientGender:</span>
-                <span>{selectedRecord && selectedRecord.PatientGender}</span>
+                <span style={{ fontWeight: "bold" }}>Patient Gender : </span>
+                <span>
+                  {selectedRecord && selectedRecord.PatientGender == 7
+                    ? "Male"
+                    : "Female"}
+                </span>
               </Col>
             </Row>
-            <Row gutter={[16, 16]}>
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col span={8}>
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  VisitId:
-                </span>
-                <span>
-                  {selectedRecord && selectedRecord.GeneratedEncounterId}
-                </span>
-              </Col>
-              <Col span={8}>
-                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  Age:
+                  Age :
                 </span>
                 <span>{selectedRecord && selectedRecord.Age}</span>
               </Col>
               <Col span={8}>
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  Dob:
+                  Dob :
                 </span>
                 <span>
                   {selectedRecord &&
@@ -856,176 +899,52 @@ const Patient = () => {
               </Col>
             </Row>
           </div>
-          <div>
-            <Form key={selectedRecord.PatientId} form={form1} layout="vertical">
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col span={6}>
-                  <Form.Item
-                    name="PatientType"
-                    label="Patient Type"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please select PatientType",
-                      },
-                    ]}
-                  >
-                    <Input disabled />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="EncounterType" label="Encounter Type">
-                    <Select allowClear>
-                      {patientDropdown.EncounterType.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={4}>
-                  <Form.Item name="KinTitle" label="Title">
-                    <Select allowClear>
-                      {patientDropdown.Title.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item name="KinName" label="Next of Kin. Name">
-                    <Input allowClear />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col span={6}>
-                  <Form.Item
-                    name="Department"
-                    label="Department"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please select Department",
-                      },
-                    ]}
-                  >
-                    <Input disabled />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="EncounterReason" label="Encounter Reason">
-                    <Select allowClear>
-                      {patientDropdown.EncounterReason.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="KinAddress" label="Next of Kin. Address">
-                    <Input allowClear />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col span={6}>
-                  <Form.Item
-                    name="Provider"
-                    label="Provider"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please select Provider",
-                      },
-                    ]}
-                  >
-                    <Input disabled />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="admittedUnder" label="Admitted Under">
-                    <Input allowClear />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="KinContactNo"
-                    label="Next of Kin. Contact No"
-                  >
-                    <Input allowClear />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col span={6}>
-                  <Form.Item
-                    name="ServiceLocation"
-                    label="Service Location"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please select Service Location",
-                      },
-                    ]}
-                  >
-                    <Input disabled />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="referredBy" label="Referred By">
-                    <Select allowClear>
-                      {patientDropdown.ReferredBy.map((option) => (
-                        <Select.Option
-                          key={option.ReferrerId}
-                          value={option.ReferrerId}
-                        >
-                          {option.ReferrerType}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="CancelEdit"
-                    label="CancelEdit"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please select Service Location",
-                      },
-                    ]}
-                  >
-                    <Select allowClear>
-                      {patientDropdown.EncounterCancelReason.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </div>
+          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+            <Col span={12}>
+              <div
+                style={{
+                  padding: "5px 5px",
+                  margin: "10px 10px",
+                }}
+              >
+                <strong style={{ fontSize: "15px" }}>
+                  <EnvironmentOutlined /> Present address
+                </strong>
+                <br></br>
+                <span>
+                  {selectedRecord && selectedRecord.PermanentAddress1
+                    ? selectedRecord.PermanentAddress1
+                    : "N/A"}
+                </span>
+                <br></br>
+                <span>{selectedRecord && selectedRecord.AreaName}</span>
+                <br></br>
+                <span>{selectedRecord && selectedRecord.PlaceName}</span>
+                <br></br>
+                <span>{selectedRecord && selectedRecord.StateName}</span>
+                <br></br>
+                <span>{selectedRecord && selectedRecord.CountryName}</span>
+              </div>
+            </Col>
+            <Col span={8}>
+              <div style={{ padding: "5px 5px", margin: "10px 10px" }}>
+                <strong>Marital Status : </strong>
+                <span>
+                  {selectedRecord && selectedRecord.MaritalStatusString
+                    ? selectedRecord.MaritalStatusString
+                    : "N/A"}
+                </span>
+                <br></br>
+                <strong>Father / Spouse name : </strong>
+                <span>
+                  {selectedRecord && selectedRecord.FatherHusbandName
+                    ? selectedRecord.FatherHusbandName
+                    : "N/A"}
+                </span>
+                <br></br>
+              </div>
+            </Col>
+          </Row>
         </Modal>
       </ConfigProvider>
     </>

@@ -253,7 +253,7 @@ function ProviderSearch() {
                     },
                   ]}
                 >
-                  <Input />
+                  <Input maxLength={10} />
                 </Form.Item>
               </Col>
               <Col span={3}>
@@ -292,7 +292,7 @@ function ProviderSearch() {
               </Col>
             </Row>
           </Form>
-          <div>
+          <div style={{ margin: "0 2rem" }}>
             <Table size="small" columns={columns} dataSource={data} />
           </div>
         </div>

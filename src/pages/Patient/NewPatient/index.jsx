@@ -43,6 +43,7 @@ const NewPatient = () => {
     Religion: [],
     Ethnicity: [],
     Language: [],
+    CardType: [],
   });
 
   const [selectedDate, setSelectedDate] = useState("");
@@ -99,7 +100,7 @@ const NewPatient = () => {
 
     const today = dayjs();
     const dob = dayjs(date, { format: "DD-MM-YYYY" }); // Assuming the date format is DD-MM-YYYY
-    const diff = today.diff(dob);
+    // const diff = today.diff(dob);
 
     const years = today.diff(dob, "year");
     const remainingMonths = today.diff(dob.add(years, "year"), "month");
@@ -336,46 +337,72 @@ const NewPatient = () => {
     setLoadings(true);
     console.log("Received values from form: ", values);
 
-    // values.dob = selecteddob;
+    values.dob = selecteddob;
     const postData = {
       PatientId: 0,
-      PatientFirstName: values.PatientFirstName,
-      PatientMiddleName: values.PatientMiddleName,
-      PatientLastName: values.PatientLastName,
-      FacilityId: 1,
-      MobileNumber: values.MobileNumber,
       PatientTitle: values.title,
+      PatientFirstName: values.PatientFirstName,
+      PatientMiddleName:
+        values.PatientMiddleName === undefined
+          ? null
+          : values.PatientMiddleName,
+      PatientLastName: values.PatientLastName,
       Gender: values.PatientGender,
-      /*  PatientType: values.PatientType,
-      FacilityDepartmentId: values.Department,
-      FacilityDepartmentServiceLocationId: values.ServiceLocation,
-      ProviderId: values.Provider, */
-      DateOfBirthstring: selecteddob,
-      FatherHusbandTitle: values.titleFatherHusband,
-      PresentAddress1: values.PermanentAddress1,
-      ReligionId: values.Religion,
-      Height: values.Height,
-      Weight: values.Weight,
-      MaritalStatus: values.MaritalStatus,
-      BloodGroup: values.BloodGroup,
-      EmailId: values.EmailId,
-      FatherHusbandName: values.FatherHusbandName,
-      PermanentAddress1: values.PermanentAddress1,
+      FacilityId: 1,
+      BloodGroup: values.BloodGroup === undefined ? null : values.BloodGroup,
+      DateOfBirthstring: values.dob,
+      FatherHusbandTitle:
+        values.titleFatherHusband === undefined
+          ? null
+          : values.titleFatherHusband,
+      FatherHusbandName:
+        values.FatherHusbandName === undefined
+          ? null
+          : values.FatherHusbandName,
+      MaritalStatus:
+        values.MaritalStatus === undefined ? null : values.MaritalStatus,
+      Height: values.Height === undefined ? null : values.Height,
+      Weight: values.Weight === undefined ? null : values.Weight,
+      MobileNumber: values.MobileNumber,
+      LandlineNumber:
+        values.LandlineNumber === undefined ? null : values.LandlineNumber,
+      EmailId: values.EmailId === undefined ? null : values.EmailId,
+      PresentAddress1:
+        values.PermanentAddress1 === undefined
+          ? null
+          : values.PermanentAddress1,
+      ReligionId: values.Religion === undefined ? null : values.Religion,
+      PermanentAddress1:
+        values.PermanentAddress1 === undefined
+          ? null
+          : values.PermanentAddress1,
       PermanentCountryId: values.country,
       PermanentStateId: values.state,
       PermanentPlaceId: values.city,
-      PermanentPinCode: values.PermanentPinCode,
+      PermanentAreaId: values.area === undefined ? null : values.area,
+      PermanentPinCode:
+        values.PresentPinCode === undefined ? null : values.PresentPinCode,
       PresentCountryId: values.country,
       PresentStateId: values.state,
       PresentPlaceId: values.city,
-      PresentPinCode: values.PermanentPinCode,
-      LandlineNumber: values.LandlineNumber,
-      Occupation: values.Occupation,
-      EthnicityId: values.Ethnicity,
-      PrimaryLanguageId: values.PrimaryLanguageId,
-      CanSpeakEnglish: values.CanSpeakEnglish,
-      BirthPlace: values.BirthPlace,
-      BirthIdentification1: values.BirthIdentification,
+      PresentAreaId: values.area === undefined ? null : values.area,
+      PresentPinCode:
+        values.PresentPinCode === undefined ? null : values.PresentPinCode,
+      Occupation: values.Occupation === undefined ? null : values.Occupation,
+      EthnicityId: values.Ethnicity === undefined ? null : values.Ethnicity,
+      PrimaryLanguageId:
+        values.PrimaryLanguageId === undefined
+          ? null
+          : values.PrimaryLanguageId,
+      CanSpeakEnglish:
+        values.CanSpeakEnglish === undefined ? null : values.CanSpeakEnglish,
+      BirthPlace: values.BirthPlace === undefined ? null : values.BirthPlace,
+      BirthIdentification1:
+        values.BirthIdentification === undefined
+          ? null
+          : values.BirthIdentification,
+      IdentificationId: values.idCardType,
+      IdNo: values.IdCardNumber,
     };
 
     try {
@@ -428,7 +455,7 @@ const NewPatient = () => {
           </Spin>
         </div>
       ) : (
-        <Layout>
+        <Layout style={{ zIndex: "999999999" }}>
           <div
             style={{
               width: "100%",
@@ -624,7 +651,7 @@ const NewPatient = () => {
                           <Form.Item label="Days">
                             <Input
                               style={{ width: "100%" }}
-                              // placeholder="Years"
+                              // placeholder=""
                               min={1}
                               max={100}
                               value={age.days}
@@ -697,6 +724,60 @@ const NewPatient = () => {
                 </Col>
               </Row>
 
+              <Divider orientation="left">Contact Details</Divider>
+              <Row gutter={14}>
+                <Col span={6}>
+                  <Form.Item
+                    name="MobileNumber"
+                    label="Mobile Number"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter your mobile number.",
+                      },
+                      {
+                        pattern: new RegExp(/^(\+\d{1,3})?\d{10,12}$/),
+                        message: "Invalid mobile number!",
+                      },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name="LandlineNumber"
+                    label="Landline Number"
+                    rules={[
+                      {
+                        pattern: new RegExp(/^\d{6,10}$/),
+                        message: "Invalid Landline Number",
+                      },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name="EmailId"
+                    label="Email Id"
+                    rules={[
+                      {
+                        type: "email",
+                        message: "Please input valid E-mail",
+                      },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item name="Occupation" label="Occupation">
+                    <Input />
+                  </Form.Item>
+                </Col>
+              </Row>
               <Divider orientation="left">Address</Divider>
               <Row gutter={14}>
                 <Col span={6}>
@@ -777,68 +858,22 @@ const NewPatient = () => {
                   </Form.Item>
                 </Col>
                 <Col span={2}>
-                  <Form.Item name="PermanentPinCode" label="Pin Code">
-                    <Input />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Divider orientation="left">Contact Details</Divider>
-              <Row gutter={14}>
-                <Col span={6}>
                   <Form.Item
-                    name="MobileNumber"
-                    label="Mobile Number"
+                    name="PresentPinCode"
+                    label="Pin Code"
                     rules={[
                       {
-                        required: true,
-                        message: "Please enter your mobile number.",
-                      },
-                      {
-                        pattern: new RegExp(/^(\+\d{1,3})?\d{10,12}$/),
-                        message: "Invalid mobile number!",
+                        pattern: new RegExp(/^\d{6}$/),
+                        message: "Invalid Pin Code",
                       },
                     ]}
                   >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="LandlineNumber" label="Landline Number">
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="EmailId"
-                    label="Email Id"
-                    rules={[
-                      {
-                        type: "email",
-                        message: "Please input valid E-mail",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="Occupation" label="Occupation">
                     <Input />
                   </Form.Item>
                 </Col>
               </Row>
               <Divider orientation="left">Other Details</Divider>
               <Row gutter={14}>
-                <Col span={6}>
-                  <Form.Item name="idCardType" label="Id Card Type">
-                    <Select allowClear />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="BirthPlace" label="Id Card Number">
-                    <Input />
-                  </Form.Item>
-                </Col>
                 <Col span={6}>
                   <Form.Item name="Religion" label="Religion">
                     <Select placeholder="Select Religion" allowClear>
@@ -868,6 +903,7 @@ const NewPatient = () => {
                     </Select>
                   </Form.Item>
                 </Col>
+
                 <Col span={6}>
                   <Form.Item name="PrimaryLanguageId" label="Primary Language">
                     <Select allowClear>
@@ -884,10 +920,10 @@ const NewPatient = () => {
                 </Col>
                 <Col span={6}>
                   <Form.Item name="CanSpeakEnglish" label="Can speak English?">
-                    <Select allowClear>
-                      <Option value="1">Yes</Option>
-                      <Option value="2">No</Option>
-                      <Option value="3">Maybe</Option>
+                    <Select>
+                      <Select.Option key="Y">Yes</Select.Option>
+                      <Select.Option key="N">No</Select.Option>
+                      <Select.Option key="M">Maybe</Select.Option>
                     </Select>
                   </Form.Item>
                 </Col>
@@ -901,6 +937,28 @@ const NewPatient = () => {
                     name="BirthIdentification"
                     label="Birth Identification"
                   >
+                    <Input />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Divider orientation="left">Identification Details</Divider>
+              <Row gutter={14}>
+                <Col span={6}>
+                  <Form.Item name="idCardType" label="Id Card Type">
+                    <Select allowClear>
+                      {patientDropdown.CardType.map((option) => (
+                        <Select.Option
+                          key={option.LookupID}
+                          value={option.LookupID}
+                        >
+                          {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item name="IdCardNumber" label="Id Card Number">
                     <Input />
                   </Form.Item>
                 </Col>

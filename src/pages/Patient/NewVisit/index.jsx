@@ -38,8 +38,10 @@ const NewVisit = () => {
     EncounterType: [],
     EncounterReason: [],
     ReferredBy: [],
+    CardType: [],
   });
   const [loading, setLoading] = useState(false);
+  
 
   const [options, setOptions] = useState([]);
 
@@ -71,9 +73,11 @@ const NewVisit = () => {
 
   useEffect(() => {
     debugger;
+    setLoading(true);
     customAxios.get(urlGetPatientDetail).then((response) => {
       const apiData = response.data.data;
       setPatientDropdown(apiData);
+      setLoading(false);
     });
   }, []);
 
@@ -167,6 +171,12 @@ const NewVisit = () => {
     navigate(url);
   };
 
+  const navigateToAddPatient = () => {
+    const url = `/patient/NewPatient`;
+    // Navigate to the new URL
+    navigate(url);
+  };
+
   const handleOnSearch = (values) => {
     // debugger;
 
@@ -199,9 +209,7 @@ const NewVisit = () => {
         identifierType:
           values.IdentifierType === undefined ? "" : values.IdentifierType,
         IdentifierTypeValue:
-          values.IdentifierTypeValue === undefined
-            ? '""'
-            : values.IdentifierTypeValue,
+          values.IdentifierValue === undefined ? '""' : values.IdentifierValue,
       };
       customAxios
         .get(
@@ -216,6 +224,7 @@ const NewVisit = () => {
           //resetForm();
           setPatientSearchDetails(response.data.data.Patients);
           setOptions([]);
+          setLoading(false);
         });
     } catch (error) {
       // Handle any errors here
@@ -302,7 +311,7 @@ const NewVisit = () => {
         } else {
           messageApi.open({
             type: "success",
-            content: `Successfully created visit for patient.`,
+            content: `Successfully  visit created for patient.`,
           });
         }
       } catch (error) {
@@ -589,7 +598,16 @@ const NewVisit = () => {
             <Col className="gutter-row" span={6}>
               <div>
                 <Form.Item label="Identifier Type" name="IdentifierType">
-                  <Select />
+                  <Select allowClear>
+                    {patientDropdown.CardType.map((option) => (
+                      <Select.Option
+                        key={option.LookupID}
+                        value={option.LookupID}
+                      >
+                        {option.LookupDescription}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </div>
             </Col>
@@ -626,7 +644,16 @@ const NewVisit = () => {
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col className="gutter-row" span={6}>
               <div>
-                <Form.Item label="Mobile Number :" name="MobileNumber">
+                <Form.Item
+                  label="Mobile Number :"
+                  name="MobileNumber"
+                  rules={[
+                    {
+                      pattern: new RegExp(/^\d{10}$/),
+                      message: "Invalid mobile number!",
+                    },
+                  ]}
+                >
                   <Input />
                 </Form.Item>
               </div>
@@ -640,7 +667,16 @@ const NewVisit = () => {
             </Col>
             <Col className="gutter-row" span={6}>
               <div>
-                <Form.Item label="Age" name="Age">
+                <Form.Item
+                  label="Age"
+                  name="Age"
+                  rules={[
+                    {
+                      pattern: new RegExp(/^\d{1,3}$/),
+                      message: "Invalid Age",
+                    },
+                  ]}
+                >
                   <Input />
                 </Form.Item>
               </div>
@@ -699,7 +735,33 @@ const NewVisit = () => {
             bordered
           />
         </Spin>
+        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+          <Col className="gutter-row" span={12} offset={6}>
+            <div
+              style={{
+                padding: "10px 10px",
+                borderRadius: "4px",
+                margin: "10px",
+                backgroundColor: "#d9f7be",
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <span>
+                If you are sure, patient is not registered, then
+                <Button
+                  type="primary"
+                  onClick={navigateToAddPatient}
+                  style={{ margin: "5px" }}
+                >
+                  Register New Patient
+                </Button>
+              </span>
+            </div>
+          </Col>
+        </Row>
       </Card>
+
       <ConfigProvider
         theme={{
           token: {
@@ -719,12 +781,13 @@ const NewVisit = () => {
           maskClosable={false}
         >
           <div
-            style={{
-              border: "1px solid #d9d9d9",
-              padding: "16px",
-              borderRadius: "4px",
-              margin: "4px",
-            }}
+           style={{
+            padding: "16px",
+            borderRadius: "4px",
+            margin: "10px",
+            backgroundColor: "#f9f0ff",
+            boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
+          }}
           >
             <Row gutter={[16, 16]}>
               <Col span={8}>
@@ -747,7 +810,7 @@ const NewVisit = () => {
             <Row gutter={[16, 16]}>
               <Col span={8}>
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  Visit Id :
+                  Encounter :
                 </span>
                 <span
                   style={
@@ -908,7 +971,16 @@ const NewVisit = () => {
                   </Form.Item>
                 </Col>
                 <Col span={6}>
-                  <Form.Item name="KinContactNo" label="Next of Kin Contact No">
+                  <Form.Item
+                    name="KinContactNo"
+                    label="Next of Kin Contact No"
+                    rules={[
+                      {
+                        pattern: new RegExp(/^\d{6,10}$/),
+                        message: "Invalid Contact Number",
+                      },
+                    ]}
+                  >
                     <Input allowClear />
                   </Form.Item>
                 </Col>
@@ -966,19 +1038,7 @@ const NewVisit = () => {
         {contextHolder}
         <Modal
           width={700}
-          title={
-            <Title
-              level={4}
-              style={{
-                color: "brown",
-                fontWeight: 800,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              More Details
-            </Title>
-          }
+          title="More Details"
           open={isMoreModalVisible}
           // onOk={handleOk}
           // okButtonProps={{ disabled: IsVisitCreated }}
@@ -988,11 +1048,14 @@ const NewVisit = () => {
         >
           <div
             style={{
-              border: "2px solid #efdbff",
               padding: "16px",
               borderRadius: "4px",
-              margin: "4px",
-              backgroundColor: "#efdbff",
+              margin: "10px",
+              backgroundColor: "#f9f0ff",
+              // display: "flex",
+              // border: "1px solid #d9d9d9",
+              // justifyContent: "space-between",
+              boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
             }}
           >
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
@@ -1016,24 +1079,6 @@ const NewVisit = () => {
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col span={8}>
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  Visit Id :
-                </span>
-                <span
-                  style={
-                    encounterId
-                      ? {
-                          backgroundColor: "green",
-                          color: "white",
-                          padding: "2px 4px",
-                        }
-                      : {}
-                  }
-                >
-                  {encounterId}
-                </span>
-              </Col>
-              <Col span={8}>
-                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
                   Age :
                 </span>
                 <span>{selectedRecord && selectedRecord.Age}</span>
@@ -1051,37 +1096,47 @@ const NewVisit = () => {
           </div>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col span={12}>
-              <div>
-                <strong style={{ fontSize: "20px" }}>
+              <div
+                style={{
+                  padding: "5px 5px",
+                  margin: "10px 10px",
+                }}
+              >
+                <strong style={{ fontSize: "15px" }}>
                   <EnvironmentOutlined /> Present address
                 </strong>
                 <br></br>
                 <span>
-                  {selectedRecord && selectedRecord.PermanentAddress1},
+                  {selectedRecord && selectedRecord.PermanentAddress1
+                    ? selectedRecord.PermanentAddress1
+                    : "N/A"}
                 </span>
                 <br></br>
-                <span>{selectedRecord && selectedRecord.AreaName},</span>
+                <span>{selectedRecord && selectedRecord.AreaName}</span>
                 <br></br>
-                <span>{selectedRecord && selectedRecord.PlaceName},</span>
+                <span>{selectedRecord && selectedRecord.PlaceName}</span>
                 <br></br>
-                <span>{selectedRecord && selectedRecord.StateName},</span>
+                <span>{selectedRecord && selectedRecord.StateName}</span>
                 <br></br>
-                <span>{selectedRecord && selectedRecord.CountryName}.</span>
+                <span>{selectedRecord && selectedRecord.CountryName}</span>
               </div>
             </Col>
             <Col span={8}>
-              <div>
+              <div style={{ padding: "5px 5px", margin: "10px 10px" }}>
                 <strong>Marital Status : </strong>
                 <span>
-                  {selectedRecord && selectedRecord.MaritalStatusString}
+                  {selectedRecord && selectedRecord.MaritalStatusString
+                    ? selectedRecord.MaritalStatusString
+                    : "N/A"}
                 </span>
                 <br></br>
                 <strong>Father / Spouse name : </strong>
                 <span>
-                  {selectedRecord && selectedRecord.FatherHusbandName}
+                  {selectedRecord && selectedRecord.FatherHusbandName
+                    ? selectedRecord.FatherHusbandName
+                    : "N/A"}
                 </span>
                 <br></br>
-                {/* <strong>Resident Type : {selectedRecord && selectedRecord.PermanentAddress1}</strong> */}
               </div>
             </Col>
           </Row>

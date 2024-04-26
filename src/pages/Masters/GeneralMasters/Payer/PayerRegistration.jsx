@@ -34,6 +34,7 @@ function PayerRegistration() {
       label: "yiminghe",
     },
   ];
+
   return (
     <>
       <Layout>
@@ -240,14 +241,31 @@ function PayerRegistration() {
                       required: true,
                       message: "Please enter mobile number",
                     },
+                    {
+                      pattern: /^\d{10}$/,
+                      message: "Please enter a valid 10 digit number!",
+                    },
                   ]}
                 >
-                  <Input style={{ width: "100%" }} />
+                  <Input style={{ width: "100%" }} maxLength={10} />
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="Landline Number" label="Landline Number">
-                  <Input style={{ width: "100%" }} />
+                <Form.Item
+                  name="Landline Number"
+                  label="Landline Number"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter landline number",
+                    },
+                    {
+                      pattern: /^\d{10}$/,
+                      message: "Please enter a valid 10 digit number!",
+                    },
+                  ]}
+                >
+                  <Input style={{ width: "100%" }} maxLength={10}/>
                 </Form.Item>
               </Col>
               <Col span={8}>
@@ -257,7 +275,11 @@ function PayerRegistration() {
                   rules={[
                     {
                       type: "email",
-                      message: "Please enter valid email",
+                      message: "The input is not valid E-mail!",
+                    },
+                    {
+                      required: true,
+                      message: "Please enter contact E-mail!",
                     },
                   ]}
                 >
@@ -265,26 +287,36 @@ function PayerRegistration() {
                 </Form.Item>
               </Col>
             </Row>
-            <Divider orientation="left">Status Details</Divider>
+            <Divider orientation="left">Financial Attributes</Divider>
             <Row gutter={18}>
               <Col span={8}>
-                <Form.Item name="status" label="Status">
-                  <Select style={{ width: "100%" }} options={options} />
+                <Form.Item name="credit" label="Credit Days">
+                  <Input style={{ width: "100%" }} />
+                </Form.Item>
+              </Col>
+              <Col offset={1} span={6}>
+                <Form.Item name="Dunning" label="Is Dunning Applicable">
+                  <Checkbox style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
             </Row>
 
-            <Row gutter={32} style={{ height: "1.8rem" }}>
+            <Row
+              gutter={32}
+              style={{ height: "1.8rem", paddingBottom: "2rem" }}
+            >
               <Col offset={20} span={2}>
                 <Form.Item>
                   <Button type="primary" htmlType="submit">
-                    Save
+                    Submit
                   </Button>
                 </Form.Item>
               </Col>
               <Col span={2}>
                 <Form.Item>
-                  <Button type="default">Cancel</Button>
+                  <Button type="default" danger>
+                    Reset
+                  </Button>
                 </Form.Item>
               </Col>
             </Row>

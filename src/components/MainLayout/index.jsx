@@ -10,6 +10,7 @@ import {
   Avatar,
   Divider,
   List,
+  notification,
 } from "antd";
 import { jwtDecode } from "jwt-decode";
 import { IoCheckmarkDoneSharp } from "react-icons/io5";
@@ -42,6 +43,7 @@ const notificationData = [
 ];
 
 function MainLayout() {
+  const navigate = useNavigate();
   // const userContext = JSON.parse(localStorage.getItem("userContext"));
   //useSelector((state) => state.userContext.value);
   const [sessionTimeRemaining, setSessionTimeRemaining] = useState(
@@ -78,7 +80,11 @@ function MainLayout() {
         .toString()
         .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
     } else {
-      alert("Session Time Expired, Please LogIn");
+      notification.warning({
+        message: "Session Expired, Please LogIn",
+        duration: 20,
+        placement: "topRight",
+      });
       navigate("/login");
     }
   }
@@ -103,8 +109,6 @@ function MainLayout() {
   const onClose = () => {
     setVisible(false);
   };
-
-  const navigate = useNavigate();
 
   const {
     token: { colorBgContainer },
