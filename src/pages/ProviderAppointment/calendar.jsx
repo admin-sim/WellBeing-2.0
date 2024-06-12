@@ -23,6 +23,11 @@ import { AiOutlineFullscreen, AiOutlineFullscreenExit } from "react-icons/ai";
 import ScheduleAppointmentModal from "./ScheduleAppointmentModal";
 import Title from "antd/es/typography/Title";
 import { PlusCircleOutlined } from "@ant-design/icons";
+import {
+  urlGetScheduledProviderAppointments,
+  urlGetProviderCalenderBasedOnProviderId,
+} from "../../../endpoints";
+import customAxios from "../../components/customAxios/customAxios";
 
 const customEvents = [
   {
@@ -88,9 +93,52 @@ const MyCalendar = ({
   const [popoverVisible, setPopoverVisible] = useState(false);
   const [popoverContent, setPopoverContent] = useState(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+  const [providersData, setProvidersData] = useState([]);
+  const [departmentsData, setDepartmentsData] = useState([]);
   const [form] = Form.useForm();
   const handleSelect = (arg) => {
     // Handle slot selection if needed
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    debugger;
+    setLoading(true);
+    try {
+      const response = await customAxios.get(
+        `${urlGetScheduledProviderAppointments}`
+      );
+      if (response.data != null) {
+        setProvidersData(response.data.data.Provider);
+        setDepartmentsData(response.data.data.Department);
+      } else {
+        setProvidersData(null);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    setLoading(false);
+  };
+
+  const handleProviderChange = async (value) => {
+    debugger;
+    try {
+      const response = await customAxios.get(
+        `${urlGetProviderCalenderBasedOnProviderId}?ProviderId=${value}`
+      );
+      if (response.data != null) {
+        console.log("check the value for response",response.data);
+      } else {
+        console.log("check the value for response",response.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    setLoading(false);
   };
 
   const handleEventClick = (arg) => {
@@ -400,12 +448,61 @@ const MyCalendar = ({
           <Row style={{ margin: "0 0rem" }} gutter={32}>
             <Col span={6}>
               <Form.Item name="department" label="Department">
-                <Select style={{ width: "100%" }} />
+              <Select
+                    showSearch
+                    placeholder="Select the provider"
+                    style={{ width: "100%" }}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children
+                        .toLowerCase()
+                        .localeCompare(optionB.children.toLowerCase())
+                    }
+                  >
+                    {departmentsData.map((response) => (
+                      <Select.Option
+                        key={response.FacilityDepartmentId}
+                        value={response.FacilityDepartmentId}
+                      >
+                        {response.DepartmentName}
+                      </Select.Option>
+                    ))}
+                  </Select>
               </Form.Item>
             </Col>
             <Col span={6}>
               <Form.Item name="Provider" label="Provider">
-                <Select style={{ width: "100%" }} />
+              <Select
+                    showSearch
+                    placeholder="Select the provider"
+                    style={{ width: "100%" }}
+                    onChange={handleProviderChange}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children
+                        .toLowerCase()
+                        .localeCompare(optionB.children.toLowerCase())
+                    }
+                  >
+                    {providersData.map((response) => (
+                      <Select.Option
+                        key={response.ProviderId}
+                        value={response.ProviderId}
+                      >
+                        {response.ProviderName}
+                      </Select.Option>
+                    ))}
+                  </Select>
               </Form.Item>
             </Col>
             <Col

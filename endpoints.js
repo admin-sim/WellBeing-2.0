@@ -185,3 +185,5 @@ export const urlAddNewHoliday = `${baseURL}/api/Holiday/AddNewHoliday`;
 export const urlGetHolidayDetails = `${baseURL}/api/Holiday/GetHolidayDetails`;
 export const urlUpdateHoliday = `${baseURL}/api/Holiday/UpdateHoliday`;
 export const urlDeleteHoliday = `${baseURL}/api/Holiday/DeleteHoliday`;
+export const urlGetScheduledProviderAppointments = `${baseURL}/api/ScheduleProviderAppointment/GetScheduledProviderAppointments`;
+export const urlGetProviderCalenderBasedOnProviderId = `${baseURL}/api/ScheduleProviderAppointment/GetProviderCalenderBasedOnProviderId`;
