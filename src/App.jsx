@@ -31,6 +31,7 @@ import ProviderEdit from "./pages/Masters/GeneralMasters/Provider/ProviderEdit";
 import Referal from "./pages/Masters/GeneralMasters/Referral/Referal";
 import ReferralCreateEdit from "./pages/Masters/GeneralMasters/Referral/ReferralCreateEdit";
 import PayerRegistration from "./pages/Masters/GeneralMasters/Payer/PayerRegistration";
+import PayerSearch from "./pages/Masters/GeneralMasters/Payer/PayerSearch";
 import ServiceClassification from "./pages/Masters/GeneralMasters/AccountManagement/ServiceClassification";
 import Service from "./pages/Masters/GeneralMasters/AccountManagement/Service";
 import CreateService from "./pages/Masters/GeneralMasters/AccountManagement/CreateService";
@@ -67,6 +68,16 @@ import StockExpiry from "./pages/Inventory/StockExpiry";
 import UpdateIndentIssue from "./pages/Inventory/UpdateIndentIssue";
 import Queue from "./pages/Patient/QueueManagement/Queue";
 import PatientVitalSigns from "./pages/Patient/QueueManagement/PatientVitalSigns";
+import ScheduleIndex from "./pages/Masters/ResourceScheduling/ScheduleTemplate/scheduleIndex";
+import ScheduleCreate from "./pages/Masters/ResourceScheduling/ScheduleTemplate/ScheduleCreate";
+import ScheduleTemplateEdit from "./pages/Masters/ResourceScheduling/ScheduleTemplate/ScheduleTempEdit";
+import ProviderSchedule from "./pages/Masters/ResourceScheduling/ProviderSchedule/providerSchedule";
+import ProviderScheduleCreate from "./pages/Masters/ResourceScheduling/ProviderSchedule/providerScheduleCreate";
+import ProviderScheduleEdit from "./pages/Masters/ResourceScheduling/ProviderSchedule/providerScheduleEdit";
+import PublishCalender from "./pages/Masters/ResourceScheduling/PublishCalender/publishCalender";
+import ProviderAbsence from "./pages/Masters/ResourceScheduling/ProviderAbsence/providerAbsence";
+import SpecialEvent from "./pages/Masters/ResourceScheduling/SpecialEvent/specialEvent";
+import Holiday from "./pages/Masters/ResourceScheduling/Holiday/holiday";
 
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
@@ -519,6 +530,94 @@ function App() {
             element={
               <ProtectedRoute>
                 <PayerRegistration />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="Payer/Search"
+            element={
+              <ProtectedRoute>
+                <PayerSearch />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ScheduleTemplate"
+            element={
+              <ProtectedRoute>
+                <ScheduleIndex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ScheduleTemplate/ScheduleCreate"
+            element={
+              <ProtectedRoute>
+                <ScheduleCreate />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ScheduleTemplate/ScheduleEdit"
+            element={
+              <ProtectedRoute>
+                <ScheduleTemplateEdit />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ProviderSchedule"
+            element={
+              <ProtectedRoute>
+                <ProviderSchedule />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ProviderSchedule/ProviderScheduleCreate"
+            element={
+              <ProtectedRoute>
+                <ProviderScheduleCreate />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ProviderSchedule/ProviderScheduleEdit"
+            element={
+              <ProtectedRoute>
+                <ProviderScheduleEdit />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="PublishCalender"
+            element={
+              <ProtectedRoute>
+                <PublishCalender />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ProviderAbsence"
+            element={
+              <ProtectedRoute>
+                <ProviderAbsence />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="SpecialEvent"
+            element={
+              <ProtectedRoute>
+                <SpecialEvent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="Holiday"
+            element={
+              <ProtectedRoute>
+                <Holiday />
               </ProtectedRoute>
             }
           />

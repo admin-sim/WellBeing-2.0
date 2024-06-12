@@ -16,29 +16,34 @@ import {
   Spin,
   Layout,
   notification,
+  DatePicker,
 } from "antd";
-import { useForm } from "antd/es/form/Form";
+
 import Input from "antd/es/input/Input";
 import Title from "antd/es/typography/Title";
 import React, { useState, useEffect } from "react";
-import customAxios from "../../../components/customAxios/customAxios";
+import customAxios from "../../../../components/customAxios/customAxios";
 
 import {
-  urlGetAllStates,
-  urlGetSelectedStateDetails,
-  urlAddAndUpdateState,
-  urlDeleteSelectedState,
-} from "../../../../endpoints";
-import CustomTable from "../../../components/customTable";
+  urlGetAllCalenderPublished,
+  urlAddNewProviderCalender,
+  urlGetProviderCalenderDetails,
+  urlDeleteSelectedProviderCalender,
+} from "../../../../../endpoints";
+import CustomTable from "../../../../components/customTable/index";
+import dayjs from "dayjs";
 
-function States() {
+function PublishCalender() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [columnData, setColumnData] = useState();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [stateData, setStateData] = useState();
+  const [calenderData, setCalenderData] = useState();
+  const [DateFormat, setDateFormat] = useState("DD-MM-YYYY");
+  const [FromDate, setFromDate] = useState();
+  const [ToDate, setToDate] = useState();
   const [Dropdown, setDropdown] = useState({
-    Countries: [],
+    Providers: [],
   });
   const [isEditing, setIsEditing] = useState(false);
 
@@ -50,12 +55,16 @@ function States() {
     debugger;
     setLoading(true);
     try {
-      const response = await customAxios.get(`${urlGetAllStates}`);
-      const newColumnData = response.data.data.StateModel.map((obj, index) => {
-        return { ...obj, key: index + 1 };
-      });
+      const response = await customAxios.get(`${urlGetAllCalenderPublished}`);
+      const newColumnData =
+        response.data.data.ScheduleAvailabilityCalenderModels.map(
+          (obj, index) => {
+            return { ...obj, key: index + 1 };
+          }
+        );
       setColumnData(newColumnData);
       setDropdown(response.data.data);
+      //   setDateFormat(response.data.DateFormat);
       console.log("data", newColumnData);
     } catch (error) {
       console.error(error);
@@ -63,36 +72,53 @@ function States() {
     setLoading(false);
   };
 
-  const handleAddStateShowModal = () => {
+  const handleAddAreaShowModal = () => {
     setIsModalOpen(true);
     setIsEditing(false);
     form.resetFields();
   };
 
-  const handleStateEditModal = (record) => {
-    // edit the item in your data here
+  const handleFromDateChange = (date, dateString) => {
     debugger;
-    setStateData(record);
+
+    setFromDate(dateString);
+  };
+
+  const handleToDateChange = (date, dateString) => {
+    setToDate(dateString);
+  };
+
+  //   const disabledDate = (current) => {
+  //     // Disable dates that are in the future
+  //     return current && current > new Date();
+  //   };
+
+  const handleEditModal = (record) => {
+    debugger;
+    setCalenderData(record);
     setLoading(true);
     setIsEditing(true);
     customAxios
-      .get(`${urlGetSelectedStateDetails}?stateId=${record.StateID}`)
+      .get(`${urlGetProviderCalenderDetails}?Id=${record.ProviderId}`)
       .then((response) => {
         if (response.data !== null) {
-          const stateData = response.data.data.NewState;
-          setStateData(stateData);
+          const calenderData = response.data.data;
+          setCalenderData(calenderData);
           setIsModalOpen(true);
+          const parsedStartDate = dayjs(calenderData.StartDate, "DD-MM-YYYY");
+          const parsedEndDate = dayjs(calenderData.EndDate, "DD-MM-YYYY");
           form.setFieldsValue({
-            Country: stateData.CountryId,
-            StateCode: stateData.StateCode,
-            StateName: stateData.StateName,
+            Provider: calenderData.ProviderId,
+            FromDate: parsedStartDate,
+            ToDate: parsedEndDate,
           });
+          setFromDate(calenderData.StartDate);
           setLoading(false);
         }
       });
   };
 
-  const handleStateModalCancel = () => {
+  const handleAreaModalCancel = () => {
     setIsModalOpen(false);
     form.resetFields();
   };
@@ -100,16 +126,21 @@ function States() {
   const handleDelete = (record) => {
     debugger;
     //Deleting an State from the Table
-    setStateData(record);
+    setCalenderData(record);
     try {
       customAxios
-        .post(`${urlDeleteSelectedState}?StateId=${record.StateID}`)
+        .delete(`${urlDeleteSelectedProviderCalender}?Id=${record.ProviderId}`)
         .then((response) => {
           if (response.data.data !== null) {
-            const States = response.data.data.StateModel.map((obj, index) => {
-              return { ...obj, key: index + 1 };
-            });
-            setColumnData(States);
+           
+            const newColumnData =
+              response.data.data.ScheduleAvailabilityCalenderModels.map(
+                (obj, index) => {
+                  return { ...obj, key: index + 1 };
+                }
+              );
+            setColumnData(newColumnData);
+            setDropdown(response.data.data);
             notification.success({
               message: "Deleted Successfully",
             });
@@ -127,59 +158,43 @@ function States() {
     form.validateFields();
     const values = form.getFieldsValue();
     console.log("state Edit Modal Submit", values);
-    // UpdateState(int StateId, string Name, string StateCode, int CountryId)
-    // SaveNewState(int CountryId, string StateCode, string StateName)
-
-    const state = isEditing
-      ? {
-          StateId: stateData.StateID,
-          StateName: values.StateName,
-          StateCode: values.StateCode,
-          CountryId: stateData.CountryId,
-        }
-      : {
-          StateId: 0,
-          StateName: values.StateName,
-          StateCode: values.StateCode,
-          CountryId: values.Country,
-        };
 
     try {
       // Send a POST request to the server
-      const response = await customAxios.post(urlAddAndUpdateState, state, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await customAxios.post(
+        `${urlAddNewProviderCalender}?ProviderId=${values.Provider}&StartDate=${FromDate}&EndDate=${ToDate}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.data.data !== null) {
-        setIsModalOpen(false);
-        const stateDetails = response.data.data.StateModel.map((obj, index) => {
-          return { ...obj, key: index + 1 };
-        });
-        setColumnData(stateDetails);
-        {
-          isEditing
-            ? notification.success({
-                message: "State details updated Successfully",
-              })
-            : notification.success({
-                message: "State details added Successfully",
-              });
+        if (response.data.data.ScheduleAvailabilityCalenderModels !== null) {
+          setIsModalOpen(false);
+          const newColumnData =
+            response.data.data.ScheduleAvailabilityCalenderModels.map(
+              (obj, index) => {
+                return { ...obj, key: index + 1 };
+              }
+            );
+          setColumnData(newColumnData);
+          form.resetFields();
+          notification.success({
+            message: "Published Calender successfully",
+          });
+        } else {
+          notification.error({
+            message: "Publishing calender was unsuccessful",
+          });
         }
       }
     } catch (error) {
       console.error("Failed to send data to server: ", error);
-
-      {
-        isEditing
-          ? notification.error({
-              message: "Edited State  details UnSuccessful",
-            })
-          : notification.error({
-              message: "Adding State details UnSuccessful",
-            });
-      }
+      notification.warning({
+        message: "Create schedule Template for the provider",
+      });
     }
   };
 
@@ -190,19 +205,19 @@ function States() {
       key: "key",
     },
     {
-      title: "State Name",
-      dataIndex: "StateName",
-      key: "StateName",
+      title: "Provider Name",
+      dataIndex: "ProviderName",
+      key: "ProviderName",
     },
     {
-      title: "State Code",
-      dataIndex: "StateCode",
-      key: "StateCode",
+      title: "From Date",
+      dataIndex: "FromDate",
+      key: "FromDate",
     },
     {
-      title: "Country",
-      dataIndex: "CountryName",
-      key: "CountryName",
+      title: "To Date",
+      dataIndex: "ToDate",
+      key: "ToDate",
     },
   ];
 
@@ -234,15 +249,15 @@ function States() {
                   paddingTop: 0,
                 }}
               >
-                State Manager
+                Publish Calender
               </Title>
             </Col>
             <Col offset={5} span={3}>
               <Button
                 icon={<PlusCircleOutlined />}
-                onClick={handleAddStateShowModal}
+                onClick={handleAddAreaShowModal}
               >
-                Add New State
+                New Calender
               </Button>
             </Col>
           </Row>
@@ -253,16 +268,16 @@ function States() {
               dataSource={columnData}
               actionColumn={true}
               isFilter={true}
-              onEdit={handleStateEditModal}
+              onEdit={handleEditModal}
               onDelete={handleDelete}
             />
           </Spin>
           <Modal
-            title="Add New State"
+            title="Publish New Calender"
             open={isModalOpen}
             maskClosable={false}
             footer={null}
-            onCancel={handleStateModalCancel}
+            onCancel={handleAreaModalCancel}
           >
             <Form
               style={{ margin: "1rem 0" }}
@@ -271,58 +286,63 @@ function States() {
               onFinish={handleSubmit}
             >
               <Form.Item
-                name="Country"
-                label="Country"
+                name="Provider"
+                label="Provider"
                 rules={[
                   {
                     required: true,
-                    message: "Please select Country",
+                    message: "Please select provider",
                   },
                 ]}
               >
                 <Select
                   disabled={isEditing}
                   allowClear
-                  placeholder="Select a type"
+                  placeholder="Select a provider"
                 >
-                  {Dropdown.Countries.map((option) => (
+                  {Dropdown.Providers.map((option) => (
                     <Select.Option
-                      key={option.LookupID}
-                      value={option.LookupID}
+                      key={option.ProviderId}
+                      value={option.ProviderId}
                     >
-                      {option.LookupDescription}
+                      {option.ProviderName}
                     </Select.Option>
                   ))}
                 </Select>
               </Form.Item>
+
               <Form.Item
-                name="StateCode"
-                label="State Code"
+                name="FromDate"
+                label="From Date"
                 rules={[
                   {
                     required: true,
-
-                    message: "Please enter state code",
-                  },
-                  {
-                    pattern: new RegExp(/^[a-zA-Z]{1,5}$/),
-                    message: "Enter valid state code",
+                    message: "Please select From Date",
                   },
                 ]}
               >
-                <Input style={{ width: "100%" }} />
+                <DatePicker
+                  format={"DD-MM-YYYY"}
+                  onChange={handleFromDateChange}
+                  style={{ width: "100%" }}
+                  disabled={isEditing}
+                ></DatePicker>
               </Form.Item>
               <Form.Item
-                name="StateName"
-                label="State Name"
+                name="ToDate"
+                label="To Date"
                 rules={[
                   {
                     required: true,
-                    message: "Please enter state name",
+                    message: "Please enter From Date",
                   },
                 ]}
               >
-                <Input style={{ width: "100%" }} />
+                <DatePicker
+                  format={"DD-MM-YYYY"}
+                  onChange={handleToDateChange}
+                  style={{ width: "100%" }}
+                ></DatePicker>
               </Form.Item>
               <Row gutter={32} style={{ height: "1.8rem" }}>
                 <Col offset={12} span={6}>
@@ -334,7 +354,7 @@ function States() {
                 </Col>
                 <Col span={6}>
                   <Form.Item>
-                    <Button type="default" onClick={handleStateModalCancel}>
+                    <Button type="default" onClick={handleAreaModalCancel}>
                       Cancel
                     </Button>
                   </Form.Item>
@@ -348,4 +368,4 @@ function States() {
   );
 }
 
-export default States;
+export default PublishCalender;
