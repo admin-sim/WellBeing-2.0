@@ -78,6 +78,8 @@ import PublishCalender from "./pages/Masters/ResourceScheduling/PublishCalender/
 import ProviderAbsence from "./pages/Masters/ResourceScheduling/ProviderAbsence/providerAbsence";
 import SpecialEvent from "./pages/Masters/ResourceScheduling/SpecialEvent/specialEvent";
 import Holiday from "./pages/Masters/ResourceScheduling/Holiday/holiday";
+import Billing from "./pages/Billling/SearchPage";
+import CreateBilling from "./pages/Billling/CreateBilling";
 
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
@@ -661,6 +663,23 @@ function App() {
               </ProtectedRoute>
             }
           />
+           <Route
+            path="Billing"
+            element={
+              <ProtectedRoute>
+                <Billing />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="CreateBilling"
+            element={
+              <ProtectedRoute>
+                <CreateBilling />
+              </ProtectedRoute>
+            }
+          />
+          
           <Route path="*" element={<Error />} />
         </Route>
         <Route path="login" element={<Login />} />
