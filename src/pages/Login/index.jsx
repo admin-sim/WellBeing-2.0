@@ -28,7 +28,9 @@ import logo from "../../assets/smileslogo.png";
 // import { update } from "../../store/features/LeftMenuItemSlice.jsx";
 
 // import { updateUserContext } from "../../store/features/userContext.jsx";
-
+import desktop_Login from "../../assets/desktop_Login.jpg";
+import mobile_Login from "../../assets/mobile_Login.jpg";
+import { isMobile } from "react-device-detect";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -43,7 +45,7 @@ const Login = () => {
           "Content-Type": "application/json",
         },
       });
-      console.log(response);
+
       if (response.status === 200) {
         if (response) {
           let decodedJwt = jwtDecode(response.data.data);
@@ -69,7 +71,7 @@ const Login = () => {
       setLoading(false); // Set loading to false when login process finishes
     }
   };
-  return (
+  return !isMobile ? (
     <Card
       style={{
         height: "100vh",
@@ -77,6 +79,9 @@ const Login = () => {
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#EEF1FF",
+        backgroundImage: `url(${desktop_Login})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <Spin spinning={loading} size="large">
@@ -89,6 +94,8 @@ const Login = () => {
             backgroundColor: "#fff",
             // border: "1px solid purple",
             boxShadow: "rgb(38, 57, 77) 0px 20px 30px -10px",
+            width: "30vw",
+            height: "70vh",
           }}
           name="loginForm"
           initialValues={{
@@ -99,19 +106,21 @@ const Login = () => {
         >
           <h1
             style={{
-              textAlign: "center",
+              justifyContent: "center",
               color: "#673AB7",
               display: "flex",
               alignItems: "center",
             }}
           >
-            <img src={logo} width={40} height={30} />
+            {/* <img src={logo} width={40} height={30} /> */}
             <span
               style={{
                 padding: "0 0.5rem",
+                fontFamily: "DancingScript-Bold",
+                borderBottom: "1px solid #673AB7",
               }}
             >
-              WellBeing Lite
+              WellBeing 2.0
             </span>
           </h1>
           <p
@@ -120,6 +129,7 @@ const Login = () => {
               fontSize: "1.5rem",
               marginBottom: "0",
               fontWeight: "600",
+              color: "grey",
             }}
           >
             Hi, Welcome Back
@@ -190,6 +200,150 @@ const Login = () => {
                     size="large"
                     style={{
                       width: "100%",
+                      marginTop: "1rem",
+                    }}
+                  >
+                    Log In
+                  </Button>
+                </ConfigProvider>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Spin>
+    </Card>
+  ) : (
+    <Card
+      style={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#EEF1FF",
+        backgroundImage: `url(${mobile_Login})`,
+        backgroundSize: "cover",
+
+        backgroundPosition: "center",
+      }}
+    >
+      <Spin spinning={loading} size="large">
+        <Form
+          layout="vertical"
+          style={{
+            //   border: "1px solid black",
+            padding: "2rem 3rem",
+            borderRadius: "1rem",
+            backgroundColor: "#fff",
+            // border: "1px solid purple",
+            boxShadow: "rgb(38, 57, 77) 0px 20px 30px -10px",
+            width: "auto",
+            height: "auto",
+          }}
+          name="loginForm"
+          initialValues={{
+            UserId: "admin",
+            Password: "123456",
+          }}
+          onFinish={onFinish}
+        >
+          <h1
+            style={{
+              justifyContent: "center",
+              color: "#673AB7",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            {/* <img src={logo} width={40} height={30} /> */}
+            <span
+              style={{
+                padding: "0 0.5rem",
+                fontFamily: "DancingScript-Bold",
+                borderBottom: "1px solid #673AB7",
+                fontSize: "2.2rem",
+              }}
+            >
+              WellBeing 2.0
+            </span>
+          </h1>
+          <p
+            style={{
+              textAlign: "center",
+              fontSize: "1.5rem",
+              marginBottom: "0",
+              fontWeight: "600",
+              color: "grey",
+            }}
+          >
+            Hi, Welcome Back
+          </p>
+          <p
+            style={{
+              textAlign: "center",
+              fontSize: "1rem",
+              margin: "0 0 2rem 0",
+            }}
+          >
+            Enter your credentials to continue
+          </p>
+          <Form.Item
+            name="UserId"
+            label="User Id"
+            rules={[
+              {
+                required: true,
+                message: "Please input your User Id!",
+              },
+            ]}
+          >
+            <Input
+              prefix={<UserOutlined className="site-form-item-icon" />}
+              placeholder="User Id"
+              size="large"
+            />
+          </Form.Item>
+          <Form.Item
+            name="Password"
+            label="Enter Password"
+            rules={[
+              {
+                required: true,
+                message: "Please input your Password!",
+              },
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Password"
+              size="large"
+              iconRender={(visible) =>
+                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+              }
+            />
+          </Form.Item>
+
+          <Row>
+            <Col span={24}>
+              <Form.Item>
+                <ConfigProvider
+                  theme={{
+                    components: {
+                      Button: {
+                        defaultBg: "linear-gradient(90deg, #0062ff, #da61ff)",
+                        defaultColor: "#fff",
+                        fontWeight: "bold",
+                        defaultHoverBg: "#EEF1FF",
+                        defaultHoverColor: "#803AB7",
+                      },
+                    },
+                  }}
+                >
+                  <Button
+                    htmlType="submit"
+                    size="large"
+                    style={{
+                      width: "100%",
+                      marginTop: "1rem",
                     }}
                   >
                     Log In

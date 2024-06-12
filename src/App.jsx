@@ -65,6 +65,12 @@ import CreateAcknowledageReturn from "./pages/Inventory/CreateAcknowledageReturn
 import MedicalReturn from "./pages/Inventory/MedicalReturn";
 import StockExpiry from "./pages/Inventory/StockExpiry";
 import UpdateIndentIssue from "./pages/Inventory/UpdateIndentIssue";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import ManageAppointment from "./pages/ManageAppointment";
+import ProviderAppointment from "./pages/ProviderAppointment";
+import BedManager from "./pages/WardManagement/Inpatient.jsx/BedManager";
+import DischargeClearance from "./pages/WardManagement/Inpatient.jsx/DischargeClearance";
+import InPatientManagement from "./pages/WardManagement/Inpatient.jsx/InPatientManagement/InPatientManagement";
 
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
@@ -504,7 +510,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-           <Route
+          <Route
             path="ServiceClassification"
             element={
               <ProtectedRoute>
@@ -520,7 +526,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-           <Route
+          <Route
             path="CreateService"
             element={
               <ProtectedRoute>
@@ -536,11 +542,51 @@ function App() {
               </ProtectedRoute>
             }
           />
-            <Route
+          <Route
             path="EditPriceDefinition"
             element={
               <ProtectedRoute>
                 <EditPriceDefinition />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ScheduleProviderAppointment/ManageAppointment"
+            element={
+              <ProtectedRoute>
+                <ManageAppointment />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ScheduleProviderAppointment"
+            element={
+              <ProtectedRoute>
+                <ProviderAppointment />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="WardManagement/InPatientManagement"
+            element={
+              <ProtectedRoute>
+                <InPatientManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="WardManagement/BedManager"
+            element={
+              <ProtectedRoute>
+                <BedManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="WardManagement/DischargeClearance"
+            element={
+              <ProtectedRoute>
+                <DischargeClearance />
               </ProtectedRoute>
             }
           />

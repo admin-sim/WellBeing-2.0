@@ -16,6 +16,11 @@ import TextArea from "antd/es/input/TextArea";
 import Title from "antd/es/typography/Title";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+  ColWithThreeSpan,
+} from "../../../../components/customGridColumns";
 
 function PayerRegistration() {
   const navigate = useNavigate();
@@ -48,12 +53,15 @@ function PayerRegistration() {
         >
           <Row
             style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
+              padding: "0.5rem 1.5rem 0.5rem 1.5rem",
               backgroundColor: "#40A2E3",
               borderRadius: "10px 10px 0px 0px ",
             }}
           >
-            <Col span={16}>
+            <Col
+              span={24}
+              style={{ display: "flex", justifyContent: "space-between" }}
+            >
               <Title
                 level={4}
                 style={{
@@ -65,8 +73,7 @@ function PayerRegistration() {
               >
                 Payer Registration
               </Title>
-            </Col>
-            <Col offset={5} span={3}>
+
               <Button
                 className="dfja"
                 icon={<SearchOutlined style={{ fontSize: "1.1rem" }} />}
@@ -87,7 +94,7 @@ function PayerRegistration() {
             }}
           >
             <Row gutter={18}>
-              <Col span={6}>
+              <ColWithSixSpan>
                 <Form.Item
                   name="PayerType"
                   label="Payer Type"
@@ -100,8 +107,8 @@ function PayerRegistration() {
                 >
                   <Select style={{ width: "100%" }} options={options} />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="PayerName"
                   label="Payer Name"
@@ -114,8 +121,8 @@ function PayerRegistration() {
                 >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="EffectiveFrom"
                   label="Effective From"
@@ -128,8 +135,8 @@ function PayerRegistration() {
                 >
                   <DatePicker format={"DD-MM-YYYY"} style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="EffectiveTo"
                   label="Effective To"
@@ -142,31 +149,31 @@ function PayerRegistration() {
                 >
                   <DatePicker format={"DD-MM-YYYY"} style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
+              </ColWithSixSpan>
             </Row>
             <Row gutter={18}>
-              <Col span={6}>
+              <ColWithSixSpan>
                 <Form.Item name="ContactPerson" label="Contact Person">
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="Status" label="Status">
                   <Select options={options} style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-              <Col span={2}>
+              </ColWithSixSpan>
+              <ColWithThreeSpan offset={1}>
                 <Form.Item name="Tariff" label="Tariff">
                   <Checkbox
                     style={{ width: "100%" }}
                     // onChange={}
                   />
                 </Form.Item>
-              </Col>
+              </ColWithThreeSpan>
             </Row>
             <Divider orientation="left">Address Details</Divider>
             <Row gutter={18}>
-              <Col span={6}>
+              <ColWithSixSpan>
                 <Form.Item
                   name="Line"
                   label="Line"
@@ -177,10 +184,10 @@ function PayerRegistration() {
                     },
                   ]}
                 >
-                  <TextArea style={{ width: "100%" }} rows={1} autoSize />
+                  <TextArea style={{ width: "100%" }} autoSize />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="Country"
                   label="Country"
@@ -193,8 +200,8 @@ function PayerRegistration() {
                 >
                   <Select style={{ width: "100%" }} options={options} />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="State"
                   label="State"
@@ -207,8 +214,8 @@ function PayerRegistration() {
                 >
                   <Select style={{ width: "100%" }} options={options} />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="Place"
                   label="Place"
@@ -221,18 +228,18 @@ function PayerRegistration() {
                 >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
+              </ColWithSixSpan>
             </Row>
             <Row gutter={18}>
-              <Col span={6}>
+              <ColWithSixSpan>
                 <Form.Item name="Zip" label="Zip">
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
+              </ColWithSixSpan>
             </Row>
             <Divider orientation="left">Contact Details</Divider>
             <Row gutter={18}>
-              <Col span={8}>
+              <ColWithEightSpan>
                 <Form.Item
                   name="MobileNumber"
                   label="Mobile Number"
@@ -249,8 +256,8 @@ function PayerRegistration() {
                 >
                   <Input style={{ width: "100%" }} maxLength={10} />
                 </Form.Item>
-              </Col>
-              <Col span={8}>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
                 <Form.Item
                   name="Landline Number"
                   label="Landline Number"
@@ -265,10 +272,10 @@ function PayerRegistration() {
                     },
                   ]}
                 >
-                  <Input style={{ width: "100%" }} maxLength={10}/>
+                  <Input style={{ width: "100%" }} maxLength={10} />
                 </Form.Item>
-              </Col>
-              <Col span={8}>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
                 <Form.Item
                   name="email"
                   label="Contact Email"
@@ -285,40 +292,41 @@ function PayerRegistration() {
                 >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
+              </ColWithEightSpan>
             </Row>
             <Divider orientation="left">Financial Attributes</Divider>
             <Row gutter={18}>
-              <Col span={8}>
+              <ColWithEightSpan>
                 <Form.Item name="credit" label="Credit Days">
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-              <Col offset={1} span={6}>
+              </ColWithEightSpan>
+              <ColWithSixSpan offset={1}>
                 <Form.Item name="Dunning" label="Is Dunning Applicable">
                   <Checkbox style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
+              </ColWithSixSpan>
             </Row>
 
             <Row
               gutter={32}
+              justify={"end"}
               style={{ height: "1.8rem", paddingBottom: "2rem" }}
             >
-              <Col offset={20} span={2}>
+              <ColWithThreeSpan>
                 <Form.Item>
                   <Button type="primary" htmlType="submit">
                     Submit
                   </Button>
                 </Form.Item>
-              </Col>
-              <Col span={2}>
+              </ColWithThreeSpan>
+              <ColWithThreeSpan>
                 <Form.Item>
                   <Button type="default" danger>
                     Reset
                   </Button>
                 </Form.Item>
-              </Col>
+              </ColWithThreeSpan>
             </Row>
           </Form>
         </div>

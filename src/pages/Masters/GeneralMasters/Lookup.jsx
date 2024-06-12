@@ -120,7 +120,6 @@ function Lookup() {
               </Button>
             </Col>
           </Row>
-
           <Spin spinning={loading}>
             <CustomTable
               columns={columns}

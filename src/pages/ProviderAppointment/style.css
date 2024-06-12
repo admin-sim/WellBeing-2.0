@@ -1,0 +1,17 @@
+.booked-event {
+  background-color: #fea010 !important; /* Green color for booked events */
+}
+
+.available-event {
+  background-color: #4caf50 !important; /* Blue color for available slots */
+}
+
+.holiday-event {
+  background-color: #abaaa7 !important; /* Orange color for holidays */
+  font-weight: 600;
+  text-align: center;
+}
+
+.fc-daygrid-event .fc-daygrid-event .fc-event-start .fc-event-end {
+  background-color: #fea010 !important;
+}

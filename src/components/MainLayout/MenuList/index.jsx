@@ -93,9 +93,8 @@ const menuData = [
             title: "FacilityPriceDefinition",
             link: "/FacilityPriceDefinition",
           },
-        ]
-        },
-
+        ],
+      },
     ],
   },
   {
@@ -108,13 +107,14 @@ const menuData = [
         icon: "FaUserPlus",
         title: "Patient Registration",
         link: "/Patient",
-      },{
+      },
+      {
         key: "Queue-Mgmt",
         title: "Queue Management",
         icon: "FaPersonWalkingArrowRight",
         link: "/Queue",
       },
-      
+
       // {
       //   key: "sub-subtask",
       //   title: "SubTask",
@@ -126,6 +126,50 @@ const menuData = [
     ],
   },
 
+  {
+    key: "ResourceScheduling",
+    icon: "GrSchedule",
+    title: "Resource Scheduling",
+    children: [
+      {
+        key: "manageAppointment",
+        icons: "GoDotFill",
+        title: "Manage Appointment",
+        link: "/ScheduleProviderAppointment/ManageAppointment",
+      },
+      {
+        key: "providerAppointment",
+        icons: "GoDotFill",
+        title: "Provider Appointment",
+        link: "ScheduleProviderAppointment",
+      },
+    ],
+  },
+  {
+    key: "WardManagement",
+    icon: "bed",
+    title: "Ward Management",
+    children: [
+      {
+        key: "InPatientManagement",
+        icons: "GoDotFill",
+        title: "InPatient Management",
+        link: "/WardManagement/InPatientManagement",
+      },
+      {
+        key: "BedManager",
+        icons: "GoDotFill",
+        title: "BedManager",
+        link: "/WardManagement/BedManager",
+      },
+      {
+        key: "DischargeClearance",
+        icons: "GoDotFill",
+        title: "Discharge Clearance",
+        link: "/WardManagement/DischargeClearance",
+      },
+    ],
+  },
   {
     key: "Lab",
     icon: "ExperimentOutlined",

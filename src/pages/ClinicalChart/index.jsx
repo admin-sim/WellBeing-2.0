@@ -84,7 +84,7 @@ function ClinicalChart() {
     <div
       style={{
         backgroundColor: "white",
-        minHeight: "85vh",
+        minHeight: "87vh",
         borderRadius: "10px",
         overflow: "hidden",
         padding: "1rem",
@@ -187,12 +187,12 @@ function ClinicalChart() {
             danger
             size="large"
           >
-            End Consultation{" "}
+            End Consultation
             <RxExit style={{ marginLeft: "5px", fontSize: "1.3rem" }} />
           </Button>
         </Col>
       </Row>
-      <div style={{ display: "flex", marginTop: "2rem" }}>
+      <div style={{ display: "flex", marginTop: "1.5rem" }}>
         <Tabs
           defaultActiveKey="1"
           type="card"

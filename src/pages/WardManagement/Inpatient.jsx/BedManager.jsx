@@ -1,11 +1,11 @@
 import React from 'react';
 
-function Dashboard() {
+function BedManager() {
   return (
     <div>
-      Dashboard
+      BedManager
     </div>
   );
 }
 
-export default Dashboard;
+export default BedManager;
