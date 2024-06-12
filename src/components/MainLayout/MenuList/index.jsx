@@ -69,7 +69,6 @@ const menuData = [
           },
         ],
       },
-
       {
         key: "Accountmanagement",
         icon: "CiSettings",
@@ -138,8 +137,6 @@ const menuData = [
           },
         ],
       },
-        ],
-      },
     ],
   },
   {
@@ -153,14 +150,13 @@ const menuData = [
         title: "Patient Registration",
         link: "/Patient",
       },
-      
+
       {
         key: "Queue-Mgmt",
         title: "Queue Management",
         icon: "FaPersonWalkingArrowRight",
         link: "/Queue",
       },
-
 
       // {
       //   key: "sub-subtask",
@@ -183,6 +179,25 @@ const menuData = [
         icons: "FaUserFriends",
         title: "Billing",
         link: "Billing",
+      },
+    ],
+  },
+  {
+    key: "ResourceScheduling",
+    icon: "GrSchedule",
+    title: "Resource Scheduling",
+    children: [
+      {
+        key: "ManageAppointment",
+        icons: "FaUserFriends",
+        title: "Manage Appointment",
+        link: "ManageAppointment",
+      },
+      {
+        key: "ProviderAppointment",
+        icons: "FaUserFriends",
+        title: "Provider Appointment",
+        link: "ScheduleProviderAppointment",
       },
     ],
   },

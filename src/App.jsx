@@ -670,7 +670,7 @@ function App() {
             }
           />
           <Route
-            path="ScheduleProviderAppointment/ManageAppointment"
+            path="ManageAppointment"
             element={
               <ProtectedRoute>
                 <ManageAppointment />
@@ -709,7 +709,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-           <Route
+          <Route
             path="Billing"
             element={
               <ProtectedRoute>
@@ -725,7 +725,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
           <Route path="*" element={<Error />} />
         </Route>
         <Route path="login" element={<Login />} />

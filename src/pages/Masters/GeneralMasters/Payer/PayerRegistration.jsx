@@ -40,6 +40,11 @@ import {
   urlDeletePayerIdentification,
 } from "../../../../../endpoints";
 import dayjs from "dayjs";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+  ColWithThreeSpan,
+} from "../../../../components/customGridColumns";
 
 function PayerRegistration() {
   const navigate = useNavigate();
@@ -790,8 +795,8 @@ function PayerRegistration() {
                 <Form.Item name="Status" label="Status">
                   <Select options={options} style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-              <Col span={2}>
+              </ColWithSixSpan>
+              <ColWithThreeSpan>
                 <Form.Item name="Tariff" label="Tariff" valuePropName="checked">
                   <Checkbox
                     style={{ width: "100%" }}
@@ -920,7 +925,7 @@ function PayerRegistration() {
                   </Select>
                 </Form.Item>
               </Col>
-              <Col span={6}>
+              <ColWithSixSpan>
                 <Form.Item name="Zip" label="Zip">
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
@@ -981,8 +986,8 @@ function PayerRegistration() {
                 <Form.Item name="credit" label="Credit Days">
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-              <Col offset={1} span={6}>
+              </ColWithEightSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="IsDunning"
                   label="Is Dunning Applicable"
