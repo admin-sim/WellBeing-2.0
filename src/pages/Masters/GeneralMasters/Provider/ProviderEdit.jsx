@@ -24,7 +24,15 @@ import {
 import { useNavigate, useLocation } from "react-router";
 const { Option } = Select;
 
-import {} from "../../../../../endpoints.js";
+import {
+  urlAddNewAndUpdateProvider,
+  urlAddNewAndUpdateProviderIdentification,
+  urlGetProviderIdentificationDetails,
+  urlDeleteProviderIdentification,
+  urlAddNewAndUpdateProviderCredential,
+  urlGetProviderCredentialDetails,
+  urlDeleteProviderCredential,
+} from "../../../../../endpoints.js";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import Title from "antd/es/typography/Title";
 import TextArea from "antd/es/input/TextArea";

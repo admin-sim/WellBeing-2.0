@@ -45,9 +45,18 @@
   color: white;
   font-weight: "bold";
 }
+.vitals-table .ant-table-thead > tr > th {
+  background-color: #efdbff;
+ 
+  font-weight: "bold";
+}
 .ant-card-head {
   background-color: #1a9bf0 !important;
 }
 .hovered-row {
   background-color: #b5f5ec; /* Change to whatever color you want */
+}
+
+.custom-padding {
+  padding-left: 0px !important;
 }

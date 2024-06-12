@@ -65,7 +65,7 @@ const PurchaseOrder = () => {
     Draft: "geekblue",
     Pending: "volcano",
     "Partially Pending": "orange",
-    Completed: "green",
+    Finalize: "green",
   };
 
   const GetPobyId = (PoHeaderId) => {
@@ -215,7 +215,7 @@ const PurchaseOrder = () => {
     setLoading(true);
     try {
       const postData1 = {
-        DocumentType: values.DocumentType,
+        DocumentType: values.DocumentType ,
         Supplier: values.Supplier,
         ProcurementStore: values.ProcurementStore,
         POStatus: values.POStatus === "" ? null : values.POStatus,

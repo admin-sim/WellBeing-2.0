@@ -82,8 +82,6 @@ const Patient = () => {
     });
   }, []);
 
- 
-
   useEffect(() => {
     form.setFieldsValue({
       PatientType: selectedRecord.PatientTypeName,
@@ -135,7 +133,7 @@ const Patient = () => {
 
   const handleEditVisitModal = (record) => {
     // debugger;
-    setSelectedRecord(record); 
+    setSelectedRecord(record);
     setIsCancelEncounter(false);
     console.log("see the values of reocrd", record);
 
@@ -246,70 +244,6 @@ const Patient = () => {
   };
 
  
-  //   // debugger;
-  //   try {
-  //     await form1.validateFields(); // Trigger form validation
-  //     const values = form1.getFieldsValue();
-  //     console.log("Selected submitting values", values);
-
-  //     const Encounter = {
-  //       PatientId: selectedRecord.PatientId,
-  //       PatientType: selectedRecord.PatientType,
-  //       FacilityDepartmentId: selectedRecord.FacilityDepartmentId,
-  //       FacilityDepartmentServiceLocationId:
-  //         selectedRecord.FacilityDepartmentServiceLocationId,
-  //       ProviderId: selectedRecord.ProviderId,
-  //       EncounterId: selectedRecord.EncounterId,
-  //       Encounter: selectedRecord.GeneratedEncounterId
-  //         ? selectedRecord.GeneratedEncounterId
-  //         : 0,
-  //       EncounterTypeId: values.EncounterType,
-  //       EncounterReasonId: values.EncounterReason,
-  //       KinTitle: values.KinTitle,
-  //       KinName: values.KinName,
-  //       KinAddress: values.KinAddress,
-  //       KinContactNo: values.KinContactNo,
-  //       ReferredBy: values.referredBy,
-  //       AttendingProviderId: values.admittedUnder,
-  //       EncounterCancelReason: values.CancelEdit,
-  //       EncounterDate: selectedRecord.CreatedDateTime,
-  //     };
-
-  //     try {
-  //       // Send a POST request to the server
-  //       const response = await customAxios.post(urlCancelVisit, Encounter);
-
-  //       notification.success({
-  //         message: "Visit cancellation Successful",
-  //       });
-  //       // Check if the request was successful
-  //       if (response.status !== 200) {
-  //         throw new Error(
-  //           `Server responded with status code ${response.status}`
-  //         );
-  //       }
-
-  //       setPatientDetails((prevPatients) =>
-  //         prevPatients.filter(
-  //           (patient) =>
-  //             patient.GeneratedEncounterId !==
-  //             selectedRecord.GeneratedEncounterId
-  //         )
-  //       );
-  //     } catch (error) {
-  //       console.error("Failed to send data to server: ", error);
-  //       notification.error({
-  //         message: "Visit cancellation UnSuccessful",
-  //         description: "Failed to cancel visit. Please try again later.",
-  //       });
-  //     }
-
-  //     form1.resetFields();
-  //     setIsCancelVisitModalVisible(false);
-  //   } catch (error) {
-  //     // Handle errors if needed
-  //   }
-  // };
 
   const columns = [
     {
@@ -337,7 +271,7 @@ const Patient = () => {
       ),
     },
     {
-      title: "Encounter ID",
+      title: "Encounter",
       dataIndex: "VisitId",
       key: "VisitId",
 
@@ -362,7 +296,7 @@ const Patient = () => {
       },
     },
     {
-      title: "Gender",
+      title: "Image",
       dataIndex: "Gender",
       key: "Gender",
       render: (text, record) => (
@@ -382,6 +316,8 @@ const Patient = () => {
             <strong>Mob No:</strong> {record.MobileNumber}
             <br />
             <strong>Dob:</strong> {formatDatefortable(record.DateOfBirth)}
+            <br />
+            <strong>Gender:</strong> {record.Gender == 7 ? "Male" : "Female"}
           </p>
         </div>
       ),
@@ -634,7 +570,7 @@ const Patient = () => {
             </Row>
           </div>
           <div>
-            <Form  form={form} layout="vertical">
+            <Form form={form} layout="vertical">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col span={6}>
                   <Form.Item
@@ -871,11 +807,15 @@ const Patient = () => {
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
                   Name :
                 </span>
-                <span>{selectedRecord && selectedRecord.PatientName}</span>
+                <span>{selectedRecord && selectedRecord.PatientFirstName}</span>
               </Col>
               <Col span={8}>
                 <span style={{ fontWeight: "bold" }}>Patient Gender : </span>
-                <span>{selectedRecord && selectedRecord.PatientGender}</span>
+                <span>
+                  {selectedRecord && selectedRecord.PatientGender == 7
+                    ? "Male"
+                    : "Female"}
+                </span>
               </Col>
             </Row>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>

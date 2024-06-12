@@ -95,6 +95,51 @@ const menuData = [
           },
         ],
       },
+      {
+        key: "ResourceScheduling",
+        icon: "CiSettings",
+        title: "Resource Scheduling",
+        children: [
+          {
+            key: "ScheduleTemplate",
+            icon: "GoDotFill",
+            title: "Schedule Template",
+            link: "/ScheduleTemplate",
+          },
+          {
+            key: "ProviderSchedule",
+            icon: "GoDotFill",
+            title: "Provider Schedule",
+            link: "/ProviderSchedule",
+          },
+          {
+            key: "PublishCalender",
+            icon: "GoDotFill",
+            title: "Publish Calender",
+            link: "/PublishCalender",
+          },
+          {
+            key: "ProviderAbsence",
+            icon: "GoDotFill",
+            title: "Provider Absence",
+            link: "/ProviderAbsence",
+          },
+          {
+            key: "SpecialEvent",
+            icon: "GoDotFill",
+            title: "Special Event",
+            link: "/SpecialEvent",
+          },
+          {
+            key: "Holiday",
+            icon: "GoDotFill",
+            title: "Holiday",
+            link: "/Holiday",
+          },
+        ],
+      },
+        ],
+      },
     ],
   },
   {
@@ -108,12 +153,14 @@ const menuData = [
         title: "Patient Registration",
         link: "/Patient",
       },
+      
       {
         key: "Queue-Mgmt",
         title: "Queue Management",
         icon: "FaPersonWalkingArrowRight",
         link: "/Queue",
       },
+
 
       // {
       //   key: "sub-subtask",
@@ -127,49 +174,19 @@ const menuData = [
   },
 
   {
-    key: "ResourceScheduling",
-    icon: "GrSchedule",
-    title: "Resource Scheduling",
+    key: "Account",
+    icon: "ExperimentOutlined",
+    title: "AccountManagement",
     children: [
       {
-        key: "manageAppointment",
-        icons: "GoDotFill",
-        title: "Manage Appointment",
-        link: "/ScheduleProviderAppointment/ManageAppointment",
-      },
-      {
-        key: "providerAppointment",
-        icons: "GoDotFill",
-        title: "Provider Appointment",
-        link: "ScheduleProviderAppointment",
+        key: "Billing",
+        icons: "FaUserFriends",
+        title: "Billing",
+        link: "Billing",
       },
     ],
   },
-  {
-    key: "WardManagement",
-    icon: "bed",
-    title: "Ward Management",
-    children: [
-      {
-        key: "InPatientManagement",
-        icons: "GoDotFill",
-        title: "InPatient Management",
-        link: "/WardManagement/InPatientManagement",
-      },
-      {
-        key: "BedManager",
-        icons: "GoDotFill",
-        title: "BedManager",
-        link: "/WardManagement/BedManager",
-      },
-      {
-        key: "DischargeClearance",
-        icons: "GoDotFill",
-        title: "Discharge Clearance",
-        link: "/WardManagement/DischargeClearance",
-      },
-    ],
-  },
+
   {
     key: "Lab",
     icon: "ExperimentOutlined",

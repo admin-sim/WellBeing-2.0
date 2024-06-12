@@ -1,5 +1,5 @@
 import customAxios from '../../components/customAxios/customAxios.jsx';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Button from 'antd/es/button';
 import { urlCreatePurchaseOrder, urlAutocompleteProduct, urlGetProductDetailsById, urlAddNewPurchaseOrder, urlEditPurchaseOrder, urlUpdatePurchaseOrder } from '../../../endpoints';
 import Select from 'antd/es/select';
@@ -28,7 +28,8 @@ const CreatePurchaseOrder = () => {
     DateFormat: []
   });
 
-  let [idCounter, setCounter] = useState(0);
+  const idCounter = useRef(0)
+  // let [idCounter, setCounter] = useState(0);
   let [idCounterModel, setCounterModel] = useState(0);
 
   const [form1] = Form.useForm();
@@ -47,9 +48,6 @@ const CreatePurchaseOrder = () => {
   const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
   const [shouldValidateModel, setShouldValidateModel] = useState(false);
   const [dataModel, setDataModel] = useState([]);
-  const [selectedUomText, setSelectedUomText] = useState({});
-  const [selectedProductId, setSelectedProductId] = useState({});
-  const [selectedUomId, setSelectedUomId] = useState({});
   const [recordKeys, setRecordKeys] = useState();
   const fields = form1.getFieldsValue();
   const [isSearchLoading, setIsSearchLoading] = useState(false);
@@ -57,17 +55,17 @@ const CreatePurchaseOrder = () => {
   const location = useLocation();
   const [poHeaderId, setPoHeaderId] = useState(location.state.PoHeaderId);
   const [buttonTitle, setButtonTitle] = useState('Save');
-  const [schedule, setSchedule] = useState();
+  const [schedule, setSchedule] = useState([]);
   const [poQty, setPoQty] = useState();
 
   useEffect(() => {
+    debugger;
     customAxios.get(urlCreatePurchaseOrder).then((response) => {
       const apiData = response.data.data;
       setDropDown(apiData);
       setIsLoading(false);
     });
-    if (idCounter === 0) {
-      ModelAdd();
+    if (idCounter.current === 0) {
       handleAdd();
     }
     if (poHeaderId > 0) {
@@ -93,6 +91,7 @@ const CreatePurchaseOrder = () => {
         }
         if (apiData.PurchaseOrderDetails != null) {
           for (let i = 0; i < apiData.PurchaseOrderDetails.length; i++) {
+            handleAdd()
             form1.setFieldsValue({ [i]: { productId: apiData.PurchaseOrderDetails[i].ProductId } })
             form1.setFieldsValue({ [i]: { product: apiData.PurchaseOrderDetails[i].ProductName } })
             form1.setFieldsValue({ [i]: { uom: apiData.PurchaseOrderDetails[i].UomId } })
@@ -116,6 +115,7 @@ const CreatePurchaseOrder = () => {
         }
         if (apiData.DeliveryDetails != null) {
           for (let i = 0; i < apiData.DeliveryDetails.length; i++) {
+            ModelAdd();
             form2.setFieldsValue({ [i]: { datedelivery: DateBindtoDatepicker(apiData.DeliveryDetails[i].DeliveryDate) } })
             form2.setFieldsValue({ [i]: { deliveryloc: apiData.DeliveryDetails[i].DeliveryLocation } })
             form2.setFieldsValue({ [i]: { quantity: apiData.DeliveryDetails[i].DeliveryQuantity } })
@@ -130,29 +130,26 @@ const CreatePurchaseOrder = () => {
 
   const DateBindtoDatepicker = (value) => {
     const isoDateString = value;
-
     const dateValue = new Date(isoDateString);
-
     const formattedDate = dayjs(dateValue).format('DD-MM-YYYY');
-
     return dayjs(formattedDate, 'DD-MM-YYYY');
   }
 
   const getPanelValue = async (searchText, key) => {
     debugger;
     if (searchText === "") {
-      form1.setFieldsValue({ [key]: { uom: '' } });
-      form1.setFieldsValue({ [key]: { poQty: '' } });
-      form1.setFieldsValue({ [key]: { bounsQty: '' } });
-      form1.setFieldsValue({ [key]: { poRate: '' } });
+      form1.setFieldsValue({ [key]: { uom: undefined } });
+      form1.setFieldsValue({ [key]: { poQty: undefined } });
+      form1.setFieldsValue({ [key]: { bounsQty: undefined } });
+      form1.setFieldsValue({ [key]: { poRate: undefined } });
       form1.setFieldsValue({ [key]: { discountAmt: 0 } });
-      form1.setFieldsValue({ [key]: { discount: '' } });
+      form1.setFieldsValue({ [key]: { discount: undefined } });
       form1.setFieldsValue({ [key]: { cgstAmt: 0 } });
       form1.setFieldsValue({ [key]: { sgstAmt: 0 } });
       form1.setFieldsValue({ [key]: { amount: 0 } });
       form1.setFieldsValue({ [key]: { totalAmount: 0 } });
       form1.setFieldsValue({ [key]: { avlQty: 0 } });
-      form1.setFieldsValue({ [key]: { expectedMRP: '' } });
+      form1.setFieldsValue({ [key]: { expectedMRP: undefined } });
     }
 
     try {
@@ -177,12 +174,11 @@ const CreatePurchaseOrder = () => {
         console.log('Validation error:', error);
       });
   }
-
+  const deliveries = [];
   const onFinishModel = (values) => {
     debugger;
-    const deliveries = [];
     for (let i = 0; i < idCounterModel; i++) {
-      if (values[i] !== undefined) {
+      if (values[i] !== undefined && values.productId !== undefined) {
         const delivery = {
           DeliveryQuantity: values[i].quantity,
           UomId: values[i].uom,
@@ -191,6 +187,11 @@ const CreatePurchaseOrder = () => {
           ProductId: values.productId
         }
         deliveries.push(delivery);
+      }
+      else {
+        message.warning('Some think went Wroung')
+        onCancelModel()
+        return false
       }
     }
     let Poqty = 0;
@@ -201,10 +202,22 @@ const CreatePurchaseOrder = () => {
     }
 
     if (Poqty === poQty) {
-      setSchedule(deliveries);
+      debugger;
+      const newArray = schedule.filter(item => item.ProductId !== deliveries[0].ProductId);
+      setSchedule(newArray);
+      setSchedule(prevState => [...prevState, ...deliveries]);
+      // for (let i = 0; i < idCounterModel.length; i++) {
+      //   setSchedule((prevState) => {
+      //     const newState = { ...prevState, [i]: deliveries };
+      //     return newState;
+      //   });
+      // }
       setIsModalOpen(false);
     } else {
       message.warning('Quantity Must Equal to PO Quantity')
+      while (deliveries.length > 0) {
+        deliveries.pop();
+      }
       return false;
     }
     onCancelModel();
@@ -213,10 +226,10 @@ const CreatePurchaseOrder = () => {
   const onCancelModel = () => {
     debugger;
     form2.resetFields();
-    for (let i = idCounterModel; i > 0; i--) {
-      ModelDelete(i);
-    }
+    setDataModel([])
+    setShouldValidateModel(false);
     setIsModalOpen(false);
+    setCounterModel(0);
   }
   const handleCancel = () => {
     const url = '/purchaseOrder';
@@ -228,9 +241,36 @@ const CreatePurchaseOrder = () => {
     form1
       .validateFields()
       .then(() => {
-        setRecordKeys(record.key)
-        setIsModalOpen(true);
+        const pid = form1.getFieldValue([record.key, 'productId'])
         setPoQty(form1.getFieldValue([record.key, 'poQty']))
+        setIsModalOpen(true);
+        if (schedule.length > 0 && schedule[record.key] != undefined) {
+          form2.setFieldsValue({ Product: form1.getFieldValue([record.key, 'product']) })
+          let j = 0
+          for (let i = 0; i < schedule.length; i++) {
+            if (pid == schedule[i].ProductId) {
+              ModelAdd();
+              form2.setFieldsValue({ Product: form1.getFieldValue([0, 'product']) })
+              form2.setFieldsValue({ productId: pid })
+              form2.setFieldsValue({ [j]: { quantity: schedule[i].DeliveryQuantity } })
+              form2.setFieldsValue({ [j]: { deliveryloc: schedule[i].DeliveryLocation } })
+              form2.setFieldsValue({ [j]: { datedelivery: schedule[i].DeliveryDate } })
+              setSelectedUom(schedule[j].UomId)
+              j = j + 1
+            }
+          }
+          if (j === 0) {
+            ModelAdd();
+            form2.setFieldsValue({ Product: form1.getFieldValue([record.key, 'product']) })
+            form2.setFieldsValue({ productId: pid })
+            setSelectedUom(form1.getFieldValue([record.key, 'uom']))
+          }
+        } else {
+          ModelAdd();
+          form2.setFieldsValue({ Product: form1.getFieldValue([record.key, 'product']) })
+          form2.setFieldsValue({ productId: pid })
+          setSelectedUom(form1.getFieldValue([record.key, 'uom']))
+        }
       })
       .catch((error) => {
         console.log('Validation error:', error);
@@ -262,6 +302,10 @@ const CreatePurchaseOrder = () => {
     debugger;
     const newData = dataModel.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
     setDataModel(newData);
+    form2.setFieldsValue({ [record.key]: { quantity: '' } })
+    form2.setFieldsValue({ [record.key]: { deliveryloc: '' } })
+    form2.setFieldsValue({ [record.key]: { datedelivery: dayjs() } })
+    setCounterModel(idCounterModel - 1)
   };
 
   const handleInputChange = (value, option, key) => {
@@ -272,10 +316,10 @@ const CreatePurchaseOrder = () => {
     debugger;
     // setIsSearchLoading(true);
     const products = [];
-    for (let i = 0; i <= idCounter; i++) {
+    for (let i = 0; i <= idCounter.current; i++) {
       if (values[i] !== undefined) {
         const product = {
-          ProductId: productIds[i],
+          ProductId: values[i].productId,
           UomId: values[i].uom,
           PoQuantity: values[i].poQty,
           BonusQuantity: values[i].bounsQty === undefined ? 0 : values[i].bounsQty,
@@ -313,18 +357,18 @@ const CreatePurchaseOrder = () => {
     }
     try {
       if (values.PoHeaderId > 0) {
-        const response = await customAxios.post(urlUpdatePurchaseOrder, postData, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+        // const response = await customAxios.post(urlUpdatePurchaseOrder, postData, {
+        //   headers: {
+        //     'Content-Type': 'application/json'
+        //   }
+        // });
         form1.resetFields();
         handleCancel();
       } else {
         // const response = await customAxios.post(urlAddNewPurchaseOrder, postData, {
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     }
+        //   headers: {
+        //     'Content-Type': 'application/json'
+        //   }
         // });
         form1.resetFields();
         handleCancel();
@@ -341,7 +385,6 @@ const CreatePurchaseOrder = () => {
 
   const handleSelect = (value, option, key) => {
     debugger;
-
     try {
       customAxios.get(`${urlGetProductDetailsById}?ProductId=${option.key}`).then((response) => {
         debugger;
@@ -349,6 +392,8 @@ const CreatePurchaseOrder = () => {
         if (apiData.PORate != null) {
           form1.setFieldsValue({ [key]: { poRate: apiData.PORate.PoRate } });
           form1.setFieldsValue({ [key]: { expectedMRP: apiData.PORate.MrpExpected } });
+          form1.setFieldsValue({ [key]: { productId: option.key } });
+          form1.setFieldsValue({ [key]: { uom: option.UomId } });
         }
         let qty = 0;
         if (apiData.Stock.length > 0) {
@@ -365,102 +410,159 @@ const CreatePurchaseOrder = () => {
       //console.error("Error fetching purchase order details:", error);        
     }
     // Update the product value in the form
-    form1.setFieldsValue({ [key]: { product: value } });
-    setProductIds((prevState) => ({ ...prevState, [key]: option.key }));
-    setSelectedProductId((prevState) => {
-      const newState = { ...prevState, [key]: option.key };
-      return newState;
-    })
+    // form1.setFieldsValue({ [key]: { product: value } });
+    // setProductIds((prevState) => ({ ...prevState, [key]: option.key }));
+    // setSelectedProductId((prevState) => {
+    //   const newState = { ...prevState, [key]: option.key };
+    //   return newState;
+    // })
 
     // // form1.setFieldsValue({option});
     // // Set the selected UOM based on the selected product
-    const matchingUom = DropDown.UOM.find((uomOption) => uomOption.UomId === option.UomId);
-    setSelectedUomText((prevState) => {
-      const newState = { ...prevState, [key]: matchingUom.LongName };
-      return newState;
-    });
-    setSelectedUomId((prevState) => {
-      const newState = { ...prevState, [key]: matchingUom.UomId };
-      console.log(selectedUomId);
-      return newState;
-    });
+    // const matchingUom = DropDown.UOM.find((uomOption) => uomOption.UomId === option.UomId);
+    // setSelectedUomText((prevState) => {
+    //   const newState = { ...prevState, [key]: matchingUom.LongName };
+    //   return newState;
+    // });
+    // setSelectedUomId((prevState) => {
+    //   const newState = { ...prevState, [key]: matchingUom.UomId };
+    //   console.log(selectedUomId);
+    //   return newState;
+    // });
 
-    if (matchingUom) {
-      setSelectedUom((prevState) => {
-        const newState = { ...prevState, [key]: matchingUom.UomId };
-        console.log(newState);
-        return newState;
-      });
+    // if (matchingUom) {
+    //   setSelectedUom((prevState) => {
+    //     const newState = { ...prevState, [key]: matchingUom.UomId };
+    //     console.log(newState);
+    //     return newState;
+    //   });
 
-      form1.setFieldsValue({ [key]: { uom: matchingUom.UomId } });
+    //   form1.setFieldsValue({ [key]: { uom: matchingUom.UomId } });
+    // } else {
+    //   setSelectedUom((prevState) => {
+    //     const newState = { ...prevState, [key]: null };
+    //     console.log(newState);
+    //     return newState;
+    //   });
+
+    //   form1.setFieldsValue({ [key]: { uom: null } });
+    // }
+  };
+
+  const handleAdd = () => {
+    debugger;
+    // setCounter(idCounter + 1);    
+    if (shouldValidate) {
+      form1
+        .validateFields()
+        .then(() => {
+          const newRow = {
+            key: idCounter.current.toString(),
+            product: '',
+            uom: '',
+            poQty: '',
+            bounsQty: '',
+            poRate: '',
+            discount: '',
+            discountAmt: '',
+            expectedMRP: '',
+            cgst: '',
+            cgstAmt: '',
+            sgst: '',
+            sgstAmt: '',
+            amount: '',
+            totalAmount: '',
+            avlQty: '',
+            deliverySchedule: ''
+          };
+          setData([...data, newRow]);
+          idCounter.current = idCounter.current + 1
+        })
     } else {
-      setSelectedUom((prevState) => {
-        const newState = { ...prevState, [key]: null };
-        console.log(newState);
-        return newState;
-      });
-
-      form1.setFieldsValue({ [key]: { uom: null } });
+      const newRow = {
+        key: idCounter.current.toString(),
+        product: '',
+        uom: '',
+        poQty: '',
+        bounsQty: '',
+        poRate: '',
+        discount: '',
+        discountAmt: '',
+        expectedMRP: '',
+        cgst: '',
+        cgstAmt: '',
+        sgst: '',
+        sgstAmt: '',
+        amount: '',
+        totalAmount: '',
+        avlQty: '',
+        deliverySchedule: ''
+      };
+      setData([...data, newRow]);
+      setShouldValidate(true);
+      idCounter.current = idCounter.current + 1
     }
   };
 
-  useEffect(() => {
-    console.log(selectedUom);
-    console.log(selectedUomText);// log the current state
-  }, [selectedUom], [selectedUomText]); // run this effect whenever selectedUom changes
-
-  const handleAdd = () => {
-    setCounter(idCounter + 1);
-    // if (shouldValidate) { //first time going to add row without validation, call from use useEffect
-    //   // If shouldValidate is true, then perform form validation
-    //   form1
-    //     .validateFields()
-    //     .then(() => {
-    //       const newRow = {
-    //         key: idCounter.toString(),
-    //         product: '',
-    //         uom: '',
-    //         poQty: '',
-    //         bounsQty: '',
-    //         poRate: '',
-    //         discount: '',
-    //         discountAmt: '',
-    //         expectedMRP: '',
-    //         cgst: '',
-    //         cgstAmt: '',
-    //         sgst: '',
-    //         sgstAmt: '',
-    //         amount: '',
-    //         totalAmount: '',
-    //         avlQty: '',
-    //         deliverySchedule: ''
-    //       }; // Define your new row data here
-    //       setData([...data, newRow]);
-    //     })
-    // } else {
-    const newRow = {
-      key: idCounter.toString(),
-      product: '',
-      uom: '',
-      poQty: '',
-      bounsQty: '',
-      poRate: '',
-      discount: '',
-      discountAmt: '',
-      expectedMRP: '',
-      cgst: '',
-      cgstAmt: '',
-      sgst: '',
-      sgstAmt: '',
-      amount: '',
-      totalAmount: '',
-      avlQty: '',
-      deliverySchedule: ''
-    };
-    setData([...data, newRow]);
-    setShouldValidate(true);
-    // }
-  };
+  // const handleAdd = () => {
+  //   // setCounter(idCounter + 1);
+  //   debugger;
+  //   setCounter(prevCounter => prevCounter + 1);
+  //   idCounter
+  //   shouldValidate
+  //   if (shouldValidate) {
+  //     form1
+  //       .validateFields()
+  //       .then(() => {
+  //         setData(prevData => {
+  //           const newRow = {
+  //             key: prevData.length.toString(),
+  //             product: '',
+  //             uom: '',
+  //             poQty: '',
+  //             bounsQty: '',
+  //             poRate: '',
+  //             discount: '',
+  //             discountAmt: '',
+  //             expectedMRP: '',
+  //             cgst: '',
+  //             cgstAmt: '',
+  //             sgst: '',
+  //             sgstAmt: '',
+  //             amount: '',
+  //             totalAmount: '',
+  //             avlQty: '',
+  //             deliverySchedule: ''
+  //           };
+  //           return ([...prevData, newRow]);
+  //         })
+  //       })
+  //   } else {
+  //     setData(prevData => {
+  //       const newRow = {
+  //         key: prevData.length.toString(),
+  //         product: '',
+  //         uom: '',
+  //         poQty: '',
+  //         bounsQty: '',
+  //         poRate: '',
+  //         discount: '',
+  //         discountAmt: '',
+  //         expectedMRP: '',
+  //         cgst: '',
+  //         cgstAmt: '',
+  //         sgst: '',
+  //         sgstAmt: '',
+  //         amount: '',
+  //         totalAmount: '',
+  //         avlQty: '',
+  //         deliverySchedule: ''
+  //       };
+  //       return ([...prevData, newRow]);
+  //     })
+  //     setShouldValidate(prevState => !prevState);
+  //   }
+  // };
 
   const columns = [
     {
@@ -487,7 +589,7 @@ const CreatePurchaseOrder = () => {
               allowClear
             />
           </Form.Item>
-          <FormItem name='productId' hidden><Input></Input></FormItem>
+          <FormItem name={[record.key, 'productId']} hidden><Input></Input></FormItem>
         </>
       )
     },
@@ -498,7 +600,7 @@ const CreatePurchaseOrder = () => {
       key: 'uom',
       render: (text, record) => (
         <Form.Item name={[record.key, 'uom']} style={{ width: '100%' }}>
-          <Select value={selectedUom[record.key]} placeholder='Select Value' style={{ width: '100%' }}>
+          <Select value={selectedUom[record.key]} placeholder='Select Value' style={{ width: '100%' }} disabled>
             {DropDown.UOM.map((option) => (
               <Select.Option key={option.UomId} value={option.UomId}>
                 {option.ShortName}
@@ -696,35 +798,68 @@ const CreatePurchaseOrder = () => {
     }
   ];
 
+  // const ModelAdd = () => {
+  //   debugger;
+  //   setCounterModel(prevCounter => prevCounter + 1);
+  //   if (shouldValidateModel) {
+  //     form2
+  //       .validateFields()
+  //       .then(() => {
+  //         const newRow = {
+  //           key: dataModel.length.toString(),
+  //           quantity: '',
+  //           uom: '',
+  //           datedelivery: '',
+  //           deliveryloc: '',
+  //         };
+  //         setDataModel([...dataModel, newRow]);
+  //       })
+  //   } else {
+  //     const newRow = {
+  //       key: dataModel.length.toString(),
+  //       quantity: '',
+  //       uom: '',
+  //       datedelivery: '',
+  //       deliveryloc: '',
+  //     };
+  //     setDataModel([...dataModel, newRow]);
+  //     setShouldValidateModel(true);
+  //   }
+  // };
+
   const ModelAdd = () => {
     debugger;
-    setCounterModel(idCounterModel + 1);
-    if (shouldValidateModel) { //first time going to add row without validation, call from use useEffect      
+    setCounterModel(prevCounter => prevCounter + 1);
+    if (shouldValidateModel) {
       form2
         .validateFields()
         .then(() => {
-          const newRow = {
-            key: idCounterModel.toString(),
-            quantity: '',
-            uom: '',
-            datedelivery: '',
-            deliveryloc: '',
-          }; // Define your new row data here
-          setDataModel([...dataModel, newRow]);
+          setDataModel(prevDataModel => {
+            const newRow = {
+              key: prevDataModel.length.toString(),
+              quantity: '',
+              uom: '',
+              datedelivery: '',
+              deliveryloc: '',
+            };
+            return [...prevDataModel, newRow];
+          });
         })
     } else {
-      const newRow = {
-        key: idCounterModel.toString(),
-        quantity: '',
-        uom: '',
-        datedelivery: '',
-        deliveryloc: '',
-      };
-      setDataModel([...dataModel, newRow]);
+      setDataModel(prevDataModel => {
+        const newRow = {
+          key: prevDataModel.length.toString(),
+          quantity: '',
+          uom: '',
+          datedelivery: '',
+          deliveryloc: '',
+        };
+        return [...prevDataModel, newRow];
+      });
       setShouldValidateModel(true);
     }
-    //setIsTableReady(false);
   };
+
 
   const columnsModel = [
     {
@@ -738,17 +873,6 @@ const CreatePurchaseOrder = () => {
               required: true,
               message: 'Please input!'
             },
-            // ({ getFieldValue }) => ({
-            //   validator(_, value) {
-            //     if (!value) {
-            //       return Promise.resolve();
-            //     }
-            //     if (value === form1.getFieldValue([recordKeys, 'poQty'])) {
-            //       return Promise.resolve();
-            //     }
-            //     return Promise.reject(new Error(`Quantity must be equal to PO Qty is ${form1.getFieldValue([recordKeys, 'poQty'])}!`));
-            //   },
-            // }),
           ]}
         >
           <InputNumber min={0} style={{ width: '150%' }} allowClear />
@@ -757,19 +881,12 @@ const CreatePurchaseOrder = () => {
     },
     {
       title: 'UOM',
-      // width: 150,
       dataIndex: 'uom',
       key: 'uom',
       render: (text, record) => {
         return (
           <>
-            <Form.Item style={{ width: 100 }} name={[record.key, 'uom']}
-              rules={[
-                {
-                  required: false,
-                }
-              ]}
-            >
+            <Form.Item style={{ width: 100 }} name={[record.key, 'uom']} initialValue={selectedUom}>
               <Select disabled>
                 {DropDown.UOM.map((option) => (
                   <Select.Option value={option.UomId} key={option.UomId}>{option.LongName}</Select.Option>
@@ -787,7 +904,7 @@ const CreatePurchaseOrder = () => {
       dataIndex: 'datedelivery',
       key: 'datedelivery',
       render: (text, record) => (
-        <Form.Item style={{ width: 200 }} name={[record.key, 'datedelivery']}
+        <Form.Item style={{ width: 200 }} name={[record.key, 'datedelivery']} initialValue={dayjs()}
           rules={[
             {
               required: true,
@@ -801,10 +918,9 @@ const CreatePurchaseOrder = () => {
     {
       title: 'Delivery Location',
       dataIndex: 'deliveryloc',
-      // width: 150,
       key: 'deliveryloc',
       render: (text, record) => (
-        <Form.Item name={[record.key, 'deliveryloc']} initialValue={text} style={{ width: 200 }}>
+        <Form.Item name={[record.key, 'deliveryloc']} style={{ width: 200 }}>
           <Input style={{ width: '150%' }} allowClear />
         </Form.Item>
       )
@@ -815,18 +931,8 @@ const CreatePurchaseOrder = () => {
       key: 'add',
       width: 50,
       render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => ModelDelete(record)}><DeleteOutlined /></Popconfirm>
-      //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>      
     }
   ]
-
-  useEffect(() => {
-    form2.setFieldsValue({
-      [idCounterModel - 1]: {
-        datedelivery: dayjs(),
-        uom: form1.getFieldValue([idCounter - 1, 'uom']),
-      },
-    });
-  }, [idCounterModel]);
 
   return (
     <Layout style={{ zIndex: '999999999' }}>
@@ -854,7 +960,7 @@ const CreatePurchaseOrder = () => {
           form={form1}
           initialValues={{
             PODate: dayjs(),
-            [idCounter]: {
+            [idCounter.current]: {
               discountAmt: 0,
               totalAmount: 0,
               amount: 0,
@@ -877,7 +983,6 @@ const CreatePurchaseOrder = () => {
 
                 if (poQty !== "" && poRate !== "") {
                   const total = poQty * poRate;
-                  // Update the total value in the form fields
                   if (allValues[i]['discount'] !== undefined) {
                     form1.setFieldsValue({ [i]: { discountAmt: (total * (allValues[i]['discount'] / 100)).toFixed(2) } });
                     form1.setFieldsValue({ [i]: { amount: (total - (total * (allValues[i]['discount'] / 100))) } });
@@ -894,7 +999,7 @@ const CreatePurchaseOrder = () => {
               }
             }
             let totalAmount = 0;
-            for (let j = 0; j < idCounter; j++) {
+            for (let j = 0; j < idCounter.current; j++) {
               if (allValues[j] !== undefined) {
                 const Amount = form1.getFieldValue([j, 'amount']);
                 totalAmount += Amount;
@@ -1061,21 +1166,10 @@ const CreatePurchaseOrder = () => {
               style={{
                 width: '100%',
               }}
-              initialValues={{
-                remember: true,
-              }}
               onFinish={onFinishModel}
               onFinishFailed={onFinishFailed}
               autoComplete="off"
               form={form2}
-              // initialValues={{
-              //   [idCounterModel - 1]: {
-              //     datedelivery: dayjs(),
-              //   },
-              // }}
-              onValuesChange={(changedValues, allValues) => {
-                debugger;
-              }}
             >
               <Col className="gutter-row" span={6}>
                 <div>
@@ -1084,7 +1178,7 @@ const CreatePurchaseOrder = () => {
                     name="Product"
                     style={{ marginLeft: '10px' }}
                   >
-                    <Tag color="blue"></Tag>
+                    <Tag color="blue">{form2.getFieldValue('Product')}</Tag>
                   </Form.Item>
                   <FormItem hidden name='productId'><Input></Input></FormItem>
                 </div>

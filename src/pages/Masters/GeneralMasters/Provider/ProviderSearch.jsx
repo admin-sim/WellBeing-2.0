@@ -15,90 +15,164 @@ import {
   Select,
   Table,
 } from "antd";
+import {
+  urlGetProviderDetails,
+  urlSearchProviderRecords,
+} from "../../../../../endpoints.js";
 import Title from "antd/es/typography/Title";
+import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import { useNavigate } from "react-router-dom";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-const options = [
-  {
-    value: "jack",
-    label: "Jack",
-  },
-  {
-    value: "lucy",
-    label: "Lucy",
-  },
-  {
-    value: "Yiminghe",
-    label: "yiminghe",
-  },
+
+
+
+const containsDropdown = [
+  { id: "1", name: "Starts With" },
+  { id: "2", name: "Ends With" },
+  { id: "3", name: "Sounds Like" },
+  { id: "4", name: "Anywhere" },
 ];
 
 function ProviderSearch() {
+  const [providerDropdown, setProviderDropdown] = useState({
+    Titles: [],
+    Genders: [],
+    StructuralRoles: [],
+    ConsultantType: [],
+    ProviderCredentialType: [],
+    ProviderIdentificationType: [],
+  });
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const handleOnFinish = async (values) => {
-    console.log("Received values from form: ", values);
-  };
+  const [providerSearchDetails, setProviderSearchDetails] = useState([]);
+
   const handleReset = () => {
     form.resetFields();
   };
-  const handleNameClick = (record) => {
-    navigate("/Provider/Edit", { state: { record } });
+ 
+
+  const handleEditRegistrationsDetails = (record) => {
+    debugger;
+
+    const url = `/ProviderRegistration`;
+
+    // Navigate to the new URL
+    navigate(url, {
+      state: {
+        selectedRow: record,
+        isEditProviderRegistration: true,
+      },
+    });
   };
 
-  const data = [
-    {
-      key: 1,
-      SlNo: 1,
-      DOB: "27/09/1980",
-      Name: { Name: "Admin" },
-      Gender: "Male",
-      ContactDetails: {
-        Mobile: "9834567890",
-        Landline: "080123456",
-        Email: "example@email.com",
-      },
-      IdentifierType: "Pan Card",
-    },
-    {
-      key: 2,
-      SlNo: 2,
-      DOB: "28/09/2023",
-      Gender: "Female",
-      Name: { Name: "Kiran" },
-      ContactDetails: {
-        Mobile: "9834567890",
-        Landline: "080123456",
-        Email: "example@email.com",
-      },
-      IdentifierType: "Aadhar Card",
-    },
-  ];
+  useEffect(() => {
+    debugger;
+    setIsLoading(true);
+    customAxios.get(urlGetProviderDetails).then((response) => {
+      const apiData = response.data.data;
+      setProviderDropdown(apiData);
+      setIsLoading(false);
+    });
+  }, []);
+
+
+  const processProviderData = (providers) => {
+    debugger;
+    return providers.map(provider => {
+      const combinedIdentifiers = provider.ProviderIdentifications.map((identification, index) => {
+        return `Identifier ${index + 1}: ${identification.IdentificationTypeName}`;
+      }).join(', ');
+  
+      return {
+        ...provider,
+        combinedIdentifiers,
+      };
+    });
+  };
+
+  const handleOnSearch = async (values) => {
+    debugger;
+
+    console.log("Search by these values", values);
+
+    // ... Repeat for other parameters
+    try {
+      setIsLoading(true);
+
+      // Assuming postData1 is an object with your input values
+      const postData1 = {
+        NameFilterType:
+          values.NameFilterType === undefined ? 0 : values.NameFilterType,
+        ProviderName:
+          values.ProviderName === undefined ? '""' : values.ProviderName,
+        Dob: values.date === undefined ? '""' : values.date,
+        Gender: values.Gender === undefined ? 0 : values.Gender,
+        IdentifierType:
+          values.identifierTypeId === undefined ? 0 : values.identifierTypeId,
+        IdentifierTypeValue:
+          values.identifierValue === undefined ? '""' : values.identifierValue,
+        MobileNumber:
+          values.MobileNumber === undefined ? '""' : values.MobileNumber,
+        StructuralRole:
+          values.StructuralRole === undefined ? 0 : values.StructuralRole,
+        ConsultantType:
+          values.ConsultantType === undefined ? 0 : values.ConsultantType,
+      };
+      const response = await customAxios.get(
+        `${urlSearchProviderRecords}?NameFilterType=${postData1.NameFilterType}&ProviderName=${postData1.ProviderName}&Dob=${postData1.Dob}&Gender=${postData1.Gender}&IdentifierType=${postData1.IdentifierType}&IdentifierTypeValue=${postData1.IdentifierTypeValue}&MobileNumber=${postData1.MobileNumber}&StructuralRole=${postData1.StructuralRole}&ConsultantType=${postData1.ConsultantType}`
+      );
+      if (response.data !== null) {
+        console.log("Response:", response.data);
+        //resetForm();
+        const providerDetails = response.data.data.Providers.map(
+          (obj, index) => {
+            return {
+              ...obj,
+              key: index + 1,
+              // IdentifierType:
+              //   response.data.data.Providers.ProviderIdentifications.map(
+              //     (id) => id.IdentifierType
+              //   ).join(", "),
+            };
+          }
+        );
+        const finalProviderDetails = processProviderData(providerDetails)
+        setProviderSearchDetails(finalProviderDetails);
+        setIsLoading(false);
+        form.resetFields();
+      }
+    } catch (error) {
+      // Handle any errors here
+      console.error("Error:", error);
+    }
+    // Reset the form fields
+  };
 
   const columns = [
     {
       title: "Sl. No.",
-      dataIndex: "SlNo",
-      key: "SlNo",
+      dataIndex: "key",
+      key: "key",
       width: 70,
     },
 
     {
       title: "Name",
-      dataIndex: "Name",
-      key: "Name",
+      dataIndex: "ProviderName",
+      key: "ProviderName",
       width: 300,
-      render: (Name, record) => (
+      render: (Text, record) => (
         <>
           <a
             href=""
             onClick={(e) => {
               e.preventDefault();
-              handleNameClick(record);
+              handleEditRegistrationsDetails(record);
             }}
           >
-            {Name?.Name}
+            {record?.ProviderName}
           </a>
         </>
       ),
@@ -106,38 +180,45 @@ function ProviderSearch() {
 
     {
       title: "Gender",
-      dataIndex: "Gender",
-      key: "Gender",
+      dataIndex: "GenderType",
+      key: "GenderType",
       width: 150,
     },
 
     {
       title: "DOB",
-      dataIndex: "DOB",
-      key: "DOB",
+      dataIndex: "DateOfBirth",
+      key: "DateOfBirth",
       width: 150,
     },
     {
       title: "Identifier Type",
-      dataIndex: "IdentifierType",
-      key: "IdType",
+      dataIndex: "combinedIdentifiers",
+      key: "combinedIdentifiers",
       width: 250,
+      // render: (record) => (
+      //   <ul>
+      //     {providerSearchDetails.ProviderIdentifications.map((id, index) => (
+      //       <li key={index}>{id.IdentifierType}</li>
+      //     ))}
+      //   </ul>
+      // ),
     },
     {
       title: "Contact Details",
       dataIndex: "ContactDetails",
       key: "ContactDetails",
       width: 300,
-      render: (contact) => (
+      render: (text, record) => (
         <div>
           <p>
-            <strong>Mobile : </strong> {contact?.Mobile}
+            <strong>Mobile : </strong> {record?.MobileNumber}
             <br />
             <strong>Landline : </strong>
-            {contact?.Landline}
+            {record?.LandlineNumber}
             <br />
             <strong>Email : </strong>
-            {contact?.Email}
+            {record?.EmailId}
           </p>
         </div>
       ),
@@ -189,18 +270,20 @@ function ProviderSearch() {
             layout="vertical"
             form={form}
             name="register"
-            onFinish={handleOnFinish}
+            onFinish={handleOnSearch}
             scrollToFirstError={true}
             style={{ padding: "0rem 2rem", marginTop: "1rem" }}
           >
             <Row gutter={32}>
               <Col span={6}>
-                <Form.Item name="Name" label="Name">
-                  <Select
-                    placeholder="Select Value"
-                    options={options}
-                    allowClear
-                  />
+                <Form.Item name="NameFilterType" label="Name">
+                  <Select placeholder="Select Value" allowClear>
+                    {containsDropdown.map((option) => (
+                      <Select.Option key={option.id} value={option.id}>
+                        {option.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </Col>
               <Col span={6}>
@@ -219,30 +302,42 @@ function ProviderSearch() {
               </Col>
               <Col span={6}>
                 <Form.Item name="Gender" label="Gender">
-                  <Select
-                    placeholder="Select Gender"
-                    options={options}
-                    allowClear
-                  />
+                  <Select placeholder="Select Gender" allowClear>
+                    {providerDropdown.Genders.map((option) => (
+                      <Select.Option
+                        key={option.LookupID}
+                        value={option.LookupID}
+                      >
+                        {option.LookupDescription}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </Col>
             </Row>
             <Row gutter={32}>
               <Col span={6}>
-                <Form.Item name="id" label="Identifier Type">
-                  <Select
-                    placeholder="Select Value"
-                    options={options}
-                    allowClear
-                  />
+                <Form.Item name="identifierTypeId" label="Identifier Type">
+                  <Select placeholder="Select Value" allowClear>
+                    {providerDropdown.ProviderIdentificationType.map(
+                      (option) => (
+                        <Select.Option
+                          key={option.LookupID}
+                          value={option.LookupID}
+                        >
+                          {option.LookupDescription}
+                        </Select.Option>
+                      )
+                    )}
+                  </Select>
                 </Form.Item>
               </Col>
               <Col span={6}>
-                <Form.Item name="idValue" label="ID Value">
+                <Form.Item name="identifierValue" label="ID Value">
                   <Input placeholder="Enter Provider Name" allowClear />
                 </Form.Item>
               </Col>
-              <Col span={6}>
+              <Col span={3}>
                 <Form.Item
                   name="MobileNumber"
                   label="Mobile Number"
@@ -256,22 +351,33 @@ function ProviderSearch() {
                   <Input maxLength={10} />
                 </Form.Item>
               </Col>
-              <Col span={3}>
+              <Col span={6}>
                 <Form.Item name="StructuralRole" label="Structural&nbsp;Role">
-                  <Select
-                    placeholder="Select Value"
-                    options={options}
-                    allowClear
-                  />
+                  <Select placeholder="Select Value" allowClear>
+                    {providerDropdown.StructuralRoles.map((option) => (
+                      <Select.Option
+                        key={option.LookupID}
+                        value={option.LookupID}
+                      >
+                        {option.LookupDescription}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </Col>
               <Col span={3}>
                 <Form.Item name="ConsultantType" label="Consultant&nbsp;Type">
-                  <Select
-                    placeholder="Select Value"
-                    options={options}
-                    allowClear
-                  />
+                  <Select placeholder="Select Value" allowClear>
+                    {providerDropdown.ConsultantType.map((option) => (
+                      <Select.Option
+                        key={option.LookupID}
+                        value={option.LookupID}
+                        option={option}
+                      >
+                        {option.LookupDescription}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </Col>
             </Row>
@@ -293,7 +399,11 @@ function ProviderSearch() {
             </Row>
           </Form>
           <div style={{ margin: "0 2rem" }}>
-            <Table size="small" columns={columns} dataSource={data} />
+            <Table
+              size="small"
+              columns={columns}
+              dataSource={providerSearchDetails}
+            />
           </div>
         </div>
       </Layout>

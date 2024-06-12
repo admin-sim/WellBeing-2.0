@@ -13,6 +13,7 @@ const EditPriceDefinition = () => {
   const [serviceGroups, setServiceGroups] = useState([]);
   const [serviceClassifications, setServiceClassifications] = useState([]);
   const [services, setServices] = useState([]);
+  const [modifiedServices, setModifiedServices] = useState([]);
   const [serviceclassificationid, setServiceClassificationId] = useState(null);
   const [pagination, setPagination] = useState({
     current: 1,
@@ -29,6 +30,7 @@ const EditPriceDefinition = () => {
   const effectiveTo = dayjs(value.EffectiveToDatestring, 'DD-MM-YYYY');
   // Set initial form values
   React.useEffect(() => {
+
     form.setFieldsValue({
         effectiveFrom,
         effectiveTo
@@ -251,11 +253,8 @@ const EditPriceDefinition = () => {
         </Form.Item>
       ),
     },
-
   ];
   const handleTableInputChange = (ServiceId, dataIndex, value) => {
-    debugger;
-
     setServices((prevDataSource) =>
       prevDataSource.map((item) =>
         item.ServiceId === ServiceId
@@ -263,21 +262,39 @@ const EditPriceDefinition = () => {
           : item
       )
     );
-  };
+
+    setModifiedServices((prevModifiedServices) => {
+      const existingService = prevModifiedServices.find(
+        (service) => service.ServiceId === ServiceId
+      );
+
+      if (existingService) {
+        return prevModifiedServices.map((service) =>
+          service.ServiceId === ServiceId
+            ? { ...service, [dataIndex]: value }
+            : service
+        );
+      } else {
+        const newService = services.find(
+          (service) => service.ServiceId === ServiceId
+        );
+        return [...prevModifiedServices, { ...newService, [dataIndex]: value }];
+      }
+    });
+};
+
 
 
   const handleOnFinish =async (values) => {
     const { ServiceGroups, ServiceClassifications, effectiveFrom, effectiveTo } = values;
+   const  EffectiveFrom=value.EffectiveFromDatestring;
+   const EffectiveTo=value.EffectiveToDatestring;
 
-    console.log('ServiceGroups:', ServiceGroups);
-    console.log('ServiceClassifications:', ServiceClassifications);
-    console.log('Effective From Date:', effectiveFrom);
-    console.log('Effective To Date:', effectiveTo);
     console.log(services);
     await form.validateFields();
 
     try {
-      const response = await customAxios.post(urlRevisionServicePrices, services, {
+      const response = await customAxios.post(urlRevisionServicePrices, modifiedServices, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -287,9 +304,9 @@ const EditPriceDefinition = () => {
           message: "Success",
           description: "ServiceAdded Succeessfully.....",
         });
-        form.resetFields();
-        const url = "/Service";
-        navigate(url);
+        //form.resetFields();
+       // const url = "/Service";
+       // navigate(url);
       } else {
         notification.error({
           message: "Error",
@@ -376,23 +393,28 @@ const EditPriceDefinition = () => {
                 </Form.Item>
               </div>
             </Col>
-            <Col className="gutter-row" span={6}>
+            <Col className="gutter-row" span={4}>
               <div>
-                <Form.Item label="Effective From Date" name="effectiveFrom"
-
+                <Form.Item label="EffectiveFromDate" name="effectiveFrom"
                 >
                   <DatePicker format='DD-MM-YYYY' />
                 </Form.Item>
               </div>
             </Col>
-            <Col className="gutter-row" span={6}>
+            <Col className="gutter-row" span={4}>
               <div>
-                <Form.Item label="Effective To Date" name="effectiveTo"
-
+                <Form.Item  label="EffectiveToDate"name="effectiveTo"
                 >
                   <DatePicker format='DD-MM-YYYY' />
                 </Form.Item>
               </div>
+            </Col>
+            <Col className="gutter-row" span={2}>
+              <Form.Item label="&nbsp;">
+                <Button type="primary"  htmlType="submit">
+                  Save
+                </Button>
+              </Form.Item>
             </Col>
           </Row>
 
@@ -408,15 +430,7 @@ const EditPriceDefinition = () => {
             pagination={pagination}
             onChange={(pagination) => setPagination(pagination)}
           />
-          <Row justify="end" style={{ marginTop: '1rem' }}>
-            <Col>
-              <Form.Item>
-                <Button type="primary"  htmlType="submit">
-                  Save
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
+    
         </Form>
       </div>
     </Layout>
