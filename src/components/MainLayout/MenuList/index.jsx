@@ -93,6 +93,48 @@ const menuData = [
             title: "FacilityPriceDefinition",
             link: "/FacilityPriceDefinition",
           },
+          {
+            key: "PriceTariff",
+            icon: "GoDotFill",
+            title: "PriceTariff",
+            link: "/PriceTariff",
+          },
+          {
+            key: "BillAggrement",
+            icon: "GoDotFill",
+            title: "BillAggrement",
+            link: "/BillAggrement",
+          },
+          {
+            key: "AutoCharge",
+            icon: "GoDotFill",
+            title: "AutoCharge",
+            link: "/AutoCharge",
+          },
+          {
+            key: "ChargeException",
+            icon: "GoDotFill",
+            title: "ChargeException",
+            link: "/ChargeException",
+          },
+          {
+            key: "AdditionalCharge",
+            icon: "GoDotFill",
+            title: "AdditionalCharge",
+            link: "/AdditionalCharge",
+          },
+          {
+            key: "AccomodationCharge",
+            icon: "GoDotFill",
+            title: "AccomodationCharge",
+            link: "/AccomodationCharge",
+          },
+          {
+            key: "ReccuringCharge",
+            icon: "GoDotFill",
+            title: "ReccuringCharge",
+            link: "/ReccuringCharge",
+          },
         ]
         },
 

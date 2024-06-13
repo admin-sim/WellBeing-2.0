@@ -17,6 +17,7 @@ import {
   urlGetServiceLocationBasedonId,
   urlSearchUHID,
   urlAddNewVisit,
+  urlAddNewVisit1
 } from "../../../../endpoints.js";
 
 import { EnvironmentOutlined } from "@ant-design/icons";
@@ -288,7 +289,7 @@ const NewVisit = () => {
 
       try {
         // Send a POST request to the server
-        const response = await customAxios.post(urlAddNewVisit, postData, {
+        const response = await customAxios.post(urlAddNewVisit1, postData, {
           headers: {
             "Content-Type": "application/json", // Replace with the appropriate content type if needed
             // Add any other required headers here
@@ -297,7 +298,7 @@ const NewVisit = () => {
 
         if (response.data != null) {
           const genVisitId =
-            response.data.data.EncounterModel.GeneratedEncounterId;
+            response.data.GeneratedEncounterId;
           setEncounterId(genVisitId);
           setIsVisitCreated(true);
         } else {

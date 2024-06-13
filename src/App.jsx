@@ -69,7 +69,10 @@ import Queue from "./pages/Patient/QueueManagement/Queue";
 import PatientVitalSigns from "./pages/Patient/QueueManagement/PatientVitalSigns";
 import Billing from "./pages/Billling/SearchPage";
 import CreateBilling from "./pages/Billling/CreateBilling";
-
+import PriceTariff from "./pages/Masters/GeneralMasters/AccountManagement/PriceTariff";
+import CreatePriceTariff from "./pages/Masters/GeneralMasters/AccountManagement/CreatePriceTariff";
+import AutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/AutoCharge";
+import CreateAutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAutoCharge";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -564,7 +567,39 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="PriceTariff"
+            element={
+              <ProtectedRoute>
+                <PriceTariff />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="CreatePriceTariff"
+            element={
+              <ProtectedRoute>
+                <CreatePriceTariff />
+              </ProtectedRoute>
+            }
+          />
            <Route
+            path="AutoCharge"
+            element={
+              <ProtectedRoute>
+                <AutoCharge />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="CreateAutoCharge"
+            element={
+              <ProtectedRoute>
+                <CreateAutoCharge />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="Billing"
             element={
               <ProtectedRoute>
@@ -580,7 +615,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
           <Route path="*" element={<Error />} />
         </Route>
         <Route path="login" element={<Login />} />
