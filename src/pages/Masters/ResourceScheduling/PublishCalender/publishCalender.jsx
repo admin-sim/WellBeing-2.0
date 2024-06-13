@@ -132,7 +132,6 @@ function PublishCalender() {
         .delete(`${urlDeleteSelectedProviderCalender}?Id=${record.ProviderId}`)
         .then((response) => {
           if (response.data.data !== null) {
-           
             const newColumnData =
               response.data.data.ScheduleAvailabilityCalenderModels.map(
                 (obj, index) => {
@@ -296,6 +295,12 @@ function PublishCalender() {
                 ]}
               >
                 <Select
+                  showSearch
+                  filterOption={(input, option) =>
+                    option.children
+                      .toLowerCase()
+                      .indexOf(input.toLowerCase()) >= 0
+                  }
                   disabled={isEditing}
                   allowClear
                   placeholder="Select a provider"

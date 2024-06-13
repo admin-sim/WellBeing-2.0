@@ -95,7 +95,7 @@ const menuData = [
         ],
       },
       {
-        key: "ResourceScheduling",
+        key: "MastersResourceScheduling",
         icon: "CiSettings",
         title: "Resource Scheduling",
         children: [

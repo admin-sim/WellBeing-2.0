@@ -288,7 +288,6 @@ function ProviderScheduleCreate() {
             message: "Schedule Template details added Successfully",
           });
           // handleBack();
-          
         } else if (response.data === "AlreadyExists") {
           notification.warning({
             message: "Schedule Template already exists",
@@ -530,7 +529,7 @@ function ProviderScheduleCreate() {
                   >
                     <WeeklyView
                       days={weeks}
-                      providerSchedule={providerSchedule} 
+                      providerSchedule={providerSchedule}
                       sessionsData={templateSessions}
                       handleSelectChange={handleSelectChange}
                     />
