@@ -28,7 +28,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import {
   urlGetScheduleTypesBasedOnTypeId,
-  urlGetAllProviders,
+  urlGetAllQueueProviders,
   urlAddNewProviderScheduleOfTypeWeek,
   urlAddNewProviderScheduleOfTypeDay,
   urlAddNewProviderScheduleOfTypeWeekDay,
@@ -72,7 +72,7 @@ function ProviderScheduleCreate() {
     debugger;
     setLoading(true);
     try {
-      const response = await customAxios.get(`${urlGetAllProviders}`);
+      const response = await customAxios.get(`${urlGetAllQueueProviders}`);
       if (response.data != null) {
         setProvidersData(response.data.data.Providers);
       } else {
@@ -288,7 +288,6 @@ function ProviderScheduleCreate() {
             message: "Schedule Template details added Successfully",
           });
           // handleBack();
-          
         } else if (response.data === "AlreadyExists") {
           notification.warning({
             message: "Schedule Template already exists",
@@ -530,7 +529,7 @@ function ProviderScheduleCreate() {
                   >
                     <WeeklyView
                       days={weeks}
-                      providerSchedule={providerSchedule} 
+                      providerSchedule={providerSchedule}
                       sessionsData={templateSessions}
                       handleSelectChange={handleSelectChange}
                     />

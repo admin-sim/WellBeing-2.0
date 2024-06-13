@@ -15,3 +15,7 @@
 .fc-daygrid-event .fc-daygrid-event .fc-event-start .fc-event-end {
   background-color: #fea010 !important;
 }
+.fc-event-content {
+  width: 100% !important;
+  height: auto !important;
+}

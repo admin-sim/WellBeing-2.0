@@ -5,7 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import moment from "moment";
-import "./style.css";
+import "../ProviderAppointment/style.css";
 import * as bootstrap from "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {
@@ -18,9 +18,10 @@ import {
   Select,
   Tooltip,
   Form,
+  Spin,
 } from "antd";
 import { AiOutlineFullscreen, AiOutlineFullscreenExit } from "react-icons/ai";
-import ScheduleAppointmentModal from "./ScheduleAppointmentModal";
+import ScheduleAppointmentModal from "../ProviderAppointment/ScheduleAppointmentModal";
 import Title from "antd/es/typography/Title";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import {
@@ -78,14 +79,7 @@ customEvents.map((event) => {
   }
 });
 
-const MyCalendar = ({
-  businessHours,
-  slotDuration,
-  patientPerSlot,
-  overBookingSlotsBegin,
-  overBookingSlotsEnd,
-  Holidays,
-}) => {
+const MyCalendar = ({}) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [events, setEvents] = useState(customEvents);
@@ -93,10 +87,11 @@ const MyCalendar = ({
   const [popoverVisible, setPopoverVisible] = useState(false);
   const [popoverContent, setPopoverContent] = useState(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [isLoading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [providersData, setProvidersData] = useState([]);
   const [departmentsData, setDepartmentsData] = useState([]);
   const [calendarData, setCalendarData] = useState(null);
+  const [slotDuration, setSlotDuration] = useState("00:30:00");
   const [form] = Form.useForm();
   const handleSelect = (arg) => {
     // Handle slot selection if needed
@@ -107,7 +102,6 @@ const MyCalendar = ({
   }, []);
 
   const fetchData = async () => {
-    // debugger;
     setLoading(true);
     try {
       const response = await customAxios.get(
@@ -127,7 +121,6 @@ const MyCalendar = ({
   };
 
   const handleProviderChange = async (value) => {
-    // debugger;
     try {
       const response = await customAxios.get(
         `${urlGetProviderCalenderBasedOnProviderId}?ProviderId=${value}`
@@ -161,174 +154,86 @@ const MyCalendar = ({
     }
   };
 
-  const generateHolidayEvents = (Holidays) => {
-    const { HolidayFrom, HolidayTo } = Holidays;
-    const holidays = [];
-
-    const startDate = moment(HolidayFrom, "DD-MM-YYYY");
-    const endDate = moment(HolidayTo, "DD-MM-YYYY");
-
-    for (let date = startDate; date <= endDate; date.add(1, "days")) {
-      holidays.push({
-        title: "Holiday",
-        start: date.format(`YYYY-MM-DDT10:00:00`),
-        end: date.format("YYYY-MM-DDT18:00:00"),
-        type: "Holiday",
-        backgroundColor: "#abaaa7",
-      });
-    }
-
-    return holidays;
-  };
-
-  const isHoliday = (date, holidays) => {
-    return holidays?.some((holiday) => {
-      const holidayStart = new Date(holiday.start);
-      const holidayEnd = new Date(holiday.end); 
-      return date >= holidayStart && date <= holidayEnd;
-    });
-  };
-
-  const generateAvailableSlots = (holidays) => {
+  const generateAvailableSlots = (calendarData) => {
+    setLoading(true);
     const availableSlots = [];
-    const currentDate = new Date();
+    let minSlotDuration = 30;
 
-    const [startHour, startMinute, startSecond] = businessHours.startTime
-      .split(":")
-      .map(Number);
-    const [endHour, endMinute, endSecond] = businessHours.endTime
-      .split(":")
-      .map(Number);
-    const [SlotHours, SlotMinutes, SlotSeconds] = slotDuration
-      .split(":")
-      .map(Number);
+    const now = moment(); // Current date and time
 
-    console.log(calendarData?.ScheduleProviderAvailability);
+    calendarData?.ScheduleProviderAvailability.forEach((item) => {
+      const date = moment(item.CalendarDate).format("YYYY-MM-DD");
 
-    // Convert slot duration to milliseconds
-    const slotDurationMillis =
-      (SlotHours * 60 * 60 + SlotMinutes * 60 + SlotSeconds) * 1000;
+      item.Sessions.forEach((session) => {
+        const slotDuration = session.SlotDuration * 60 * 1000; // Convert minutes to milliseconds
+        minSlotDuration = Math.min(minSlotDuration, session.SlotDuration);
 
-    for (let i = 0; i < 30; i++) {
-      const date = new Date(currentDate);
-      date.setDate(date.getDate() + i);
-      const start = new Date(date);
-      start.setHours(startHour, startMinute, 0);
-      const end = new Date(date);
-      end.setHours(endHour, endMinute, 0);
+        const startTime = moment(`${date}T${session.StartTime}`);
+        const endTime = moment(`${date}T${session.EndTime}`);
 
-      // Skip holidays
-      if (isHoliday(date, holidays)) {
-        continue;
-      }
+        if (endTime.isBefore(now)) {
+          return; // Skip past sessions
+        }
 
-      // Generate overbooking slots before business hours
-      for (let j = 1; j <= overBookingSlotsBegin; j++) {
-        const overBookingStart = new Date(
-          start.getTime() - j * slotDurationMillis
-        );
-        const overBookingEnd = new Date(
-          overBookingStart.getTime() + slotDurationMillis
-        );
+        const overbookingSlots = session.OverbookingSlots;
+        const overbookingEndSlots = session.OverbookingEndSlots;
 
-        // Check if an event already exists in this overbooking slot
-        const existingEvent = customEvents?.some(
-          (event) =>
-            new Date(event.start) <= overBookingStart &&
-            new Date(event.end) > overBookingStart
-        );
-
-        if (
-          !existingEvent &&
-          overBookingStart >= currentDate &&
-          overBookingStart.getDay() !== 0 &&
-          overBookingStart.getDay() !== 6
-        ) {
+        for (let i = 0; i < overbookingSlots; i++) {
+          const overbookedTime = startTime
+            .clone()
+            .subtract((i + 1) * slotDuration, "milliseconds");
+          if (
+            overbookedTime.isBefore(startTime, "day") ||
+            overbookedTime.isBefore(now)
+          )
+            break; // Prevent overbooking to previous day or past time
           availableSlots.push({
-            start: overBookingStart,
-            end: overBookingEnd,
-            title: "Over Booking Slot",
-            type: "OverBookingSlot",
-            backgroundColor: "violet",
+            title: "Overbooking",
+            start: overbookedTime.toISOString(),
+            end: overbookedTime.add(slotDuration, "milliseconds").toISOString(),
+            type: "Overbooking",
+            backgroundColor: "#ff9800",
           });
+          overbookedTime.subtract(slotDuration, "milliseconds"); // Revert time back to correct starting point
         }
-      }
 
-      // Generate available slots within business hours
-      for (
-        let time = start.getTime();
-        time < end.getTime();
-        time += slotDurationMillis
-      ) {
-        const slotStart = new Date(time);
-        const slotEnd = new Date(time + slotDurationMillis);
-
-        if (
-          slotStart >= currentDate &&
-          slotStart.getHours() >= startHour &&
-          slotStart.getHours() < endHour &&
-          slotStart.getDay() !== 0 &&
-          slotStart.getDay() !== 6
+        for (
+          let time = startTime.clone();
+          time.isBefore(endTime);
+          time.add(slotDuration, "milliseconds")
         ) {
-          const isBookedSlot = customEvents.some(
-            (event) =>
-              new Date(event.start) <= slotStart &&
-              new Date(event.end) > slotStart
-          );
-          if (!isBookedSlot) {
-            for (
-              let i = 0;
-              i < Number(patientPerSlot > 0 ? patientPerSlot : 1);
-              i++
-            ) {
-              const slot = {
-                start: slotStart,
-                end: slotEnd,
-                title: "Book Appointment",
-                type: "Available",
-                backgroundColor: "#4caf50",
-              };
-              availableSlots.push(slot);
-            }
-          }
-        }
-      }
+          if (time.isBefore(now)) continue; // Skip past slots
 
-      // Generate overbooking slots after business hours
-      for (let j = 1; j <= overBookingSlotsEnd; j++) {
-        const overBookingStart = new Date(
-          end.getTime() + (j - 1) * slotDurationMillis
-        );
-        const overBookingEnd = new Date(
-          overBookingStart.getTime() + slotDurationMillis
-        );
-
-        // Check if an event already exists in this overbooking slot
-        const existingEvent = customEvents?.some(
-          (event) =>
-            new Date(event.start) <= overBookingStart &&
-            new Date(event.end) > overBookingStart
-        );
-
-        if (
-          !existingEvent &&
-          overBookingStart >= currentDate &&
-          overBookingStart.getDay() !== 0 &&
-          overBookingStart.getDay() !== 6
-        ) {
           availableSlots.push({
-            start: overBookingStart,
-            end: overBookingEnd,
-            title: "OverBookingSlot",
-            type: "OverBookingSlot",
-            backgroundColor: "violet",
+            title: "Available",
+            start: time.toISOString(),
+            end: time.add(slotDuration, "milliseconds").toISOString(),
+            type: "Available",
+            backgroundColor: "#4caf50",
           });
+          time.subtract(slotDuration, "milliseconds"); // Revert time back to correct starting point
         }
-      }
-    }
-    return availableSlots;
+
+        for (let i = 0; i < overbookingEndSlots; i++) {
+          const overbookedTime = endTime
+            .clone()
+            .add(i * slotDuration, "milliseconds");
+          if (overbookedTime.isBefore(now)) continue; // Skip past overbooking slots
+
+          availableSlots.push({
+            title: "Overbooking",
+            start: overbookedTime.toISOString(),
+            end: overbookedTime.add(slotDuration, "milliseconds").toISOString(),
+            type: "Overbooking",
+            backgroundColor: "#ff9800",
+          });
+          overbookedTime.subtract(slotDuration, "milliseconds"); // Revert time back to correct starting point
+        }
+      });
+    });
+    setLoading(false);
+    return { availableSlots, minSlotDuration };
   };
-
   const handleModalSubmit = (eventData) => {
     const eventDataStart = moment(eventData.start).toLocaleString();
     const eventDataEnd = moment(eventData.end).toLocaleString();
@@ -351,12 +256,12 @@ const MyCalendar = ({
   };
 
   useEffect(() => {
-    const holidayEvents = generateHolidayEvents(Holidays);
-    setEvents([...customEvents, ...holidayEvents]);
-
-    const availableSlots = generateAvailableSlots(calendarData);
+    const { availableSlots, minSlotDuration } =
+      generateAvailableSlots(calendarData);
     setAvailableSlots(availableSlots);
-  }, [Holidays]);
+    console.log(minSlotDuration);
+    setSlotDuration(`00:${String(minSlotDuration).padStart(2, "0")}:00`);
+  }, [calendarData]);
 
   const calendarRef = useRef(null);
   const jumpToSpecificDate = (dateString) => {
@@ -437,7 +342,7 @@ const MyCalendar = ({
                 paddingTop: 0,
               }}
             >
-              Provider Schedule Appointment
+              Manage Appointment
             </Title>
           </Col>
         </Row>
@@ -559,101 +464,107 @@ const MyCalendar = ({
           </Row>
         </Form>
       </div>
-      <div
-        style={{ backgroundColor: "white", padding: "0 0.5rem" }}
-        ref={tableRef}
-      >
-        <Row
-          style={{
-            display: "flex",
-            justifyContent: "end",
-            padding: "0rem 0rem 0.5rem 1rem",
-          }}
-        >
-          <Col>
-            <span>Book by Date : </span>
-            <DatePicker
-              format={"DD/MM/YYYY"}
-              onChange={(date, dateString) => jumpToSpecificDate(dateString)}
-            />
-          </Col>
-          <Col style={{ margin: "0 0 0 1rem" }}>
-            {/* <Tooltip
+      {calendarData && (
+        <Spin spinning={loading}>
+          <div
+            style={{ backgroundColor: "white", padding: "0 0.5rem" }}
+            ref={tableRef}
+          >
+            <Row
+              style={{
+                display: "flex",
+                justifyContent: "end",
+                padding: "0rem 0rem 0.5rem 1rem",
+              }}
+            >
+              <Col>
+                <span>Book by Date : </span>
+                <DatePicker
+                  format={"DD/MM/YYYY"}
+                  onChange={(date, dateString) =>
+                    jumpToSpecificDate(dateString)
+                  }
+                />
+              </Col>
+              <Col style={{ margin: "0 0 0 1rem" }}>
+                {/* <Tooltip
             title={isFullScreen ? "Exit Full Screen" : "Enter Full Screen"}
           > */}
-            <Button onClick={handleFullscreen}>
-              {isFullScreen ? (
-                <AiOutlineFullscreenExit style={{ fontSize: "1.5rem" }} />
-              ) : (
-                <AiOutlineFullscreen style={{ fontSize: "1.5rem" }} />
-              )}
-            </Button>
-            {/* </Tooltip> */}
-          </Col>
-        </Row>
-        <FullCalendar
-          ref={calendarRef}
-          plugins={[
-            dayGridPlugin,
-            timeGridPlugin,
-            listPlugin,
-            interactionPlugin,
-          ]}
-          initialView="timeGridWeek"
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-          }}
-          buttonText={{
-            today: "Today",
-            month: "Month",
-            week: "Week",
-            day: "Day",
-            list: "Appointment List",
-          }}
-          events={[...events, ...availableSlots]}
-          slotDuration={slotDuration}
-          selectable={false}
-          select={handleSelect}
-          eventClick={handleEventClick}
-          selectConstraint={businessHours}
-          dayMaxEventRows={false}
-          height="auto"
-          slotEventOverlap={false}
-          eventDidMount={(info) => {
-            if (info.event.extendedProps.type === "Available") {
-              return;
-            } else if (info.event.title === "OverBookingSlot") {
-              return;
-            } else {
-              return new bootstrap.Popover(info.el, {
-                title: info.event.title,
-                placement: "auto",
-                trigger: "hover",
-                customClass: "popoverStyle",
-                content: `<strong>Content</strong>`,
-                html: true,
-              });
-            }
-          }}
-          titleFormat={{ year: "numeric", month: "long", day: "numeric" }}
-          allDayText=""
-          slotMinTime="07:00:00"
-          navLinks={true}
-          nowIndicator={true}
-          themeSystem="bootstrap"
-        />
+                <Button onClick={handleFullscreen}>
+                  {isFullScreen ? (
+                    <AiOutlineFullscreenExit style={{ fontSize: "1.5rem" }} />
+                  ) : (
+                    <AiOutlineFullscreen style={{ fontSize: "1.5rem" }} />
+                  )}
+                </Button>
+                {/* </Tooltip> */}
+              </Col>
+            </Row>
+            <FullCalendar
+              ref={calendarRef}
+              plugins={[
+                dayGridPlugin,
+                timeGridPlugin,
+                listPlugin,
+                interactionPlugin,
+              ]}
+              initialView="timeGridWeek"
+              headerToolbar={{
+                left: "prev,next today",
+                center: "title",
+                right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+              }}
+              buttonText={{
+                today: "Today",
+                month: "Month",
+                week: "Week",
+                day: "Day",
+                list: "Appointment List",
+              }}
+              events={[...events, ...availableSlots]}
+              slotDuration={slotDuration}
+              selectable={false}
+              select={handleSelect}
+              eventClick={handleEventClick}
+              //   selectConstraint={businessHours}
+              dayMaxEventRows={true}
+              height="auto"
+              slotEventOverlap={false}
+              eventDidMount={(info) => {
+                if (info.event.extendedProps.type === "Available") {
+                  return;
+                } else if (info.event.title === "OverBookingSlot") {
+                  return;
+                } else {
+                  return new bootstrap.Popover(info.el, {
+                    title: info.event.title,
+                    placement: "auto",
+                    trigger: "hover",
+                    customClass: "popoverStyle",
+                    content: `<strong>Content</strong>`,
+                    html: true,
+                  });
+                }
+              }}
+              titleFormat={{ year: "numeric", month: "long", day: "numeric" }}
+              allDayText=""
+              slotMinTime="04:00:00"
+              navLinks={true}
+              nowIndicator={true}
+              themeSystem="bootstrap"
+            />
 
-        {popoverVisible && popoverContent}
+            {popoverVisible && popoverContent}
 
-        <ScheduleAppointmentModal
-          open={modalVisible}
-          onSubmit={handleModalSubmit}
-          onCancel={() => setModalVisible(false)}
-          selectedSlot={selectedSlot}
-        />
-      </div>
+            <ScheduleAppointmentModal
+              open={modalVisible}
+              onSubmit={handleModalSubmit}
+              onCancel={() => setModalVisible(false)}
+              selectedSlot={selectedSlot}
+            />
+          </div>
+        </Spin>
+      )}
     </Layout>
   );
 };

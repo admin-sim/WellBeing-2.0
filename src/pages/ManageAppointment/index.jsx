@@ -1,5 +1,14 @@
 import React from "react";
+import MyCalendar from "./calendar";
 
-export default function ManageAppointment() {
-  return <div>Manage Appointment</div>;
+function ManageAppointment() {
+  return (
+    <>
+      <div>
+        <MyCalendar />
+      </div>
+    </>
+  );
 }
+
+export default ManageAppointment;
