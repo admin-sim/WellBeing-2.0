@@ -19,6 +19,8 @@ const CustomTable = ({
   size,
   actionColumn = true,
   style,
+  scroll,
+  title,
 }) => {
   const [searchText, setSearchText] = useState("");
 
@@ -146,6 +148,8 @@ const CustomTable = ({
               `Showing ${range[0]} to ${range[1]} of ${total} entries`,
           }}
           dataSource={searchedData}
+          scroll={scroll}
+          title={title}
         />
       </ConfigProvider>
     </div>

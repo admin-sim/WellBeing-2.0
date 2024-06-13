@@ -47,7 +47,7 @@ const CreatePurchaseOrder = () => {
     SupplierList: [],
     UOM: [],
     TaxType: [],
-    DateFormat: [],
+    DateFormat: []
   });
   const location = useLocation();
   const PoHeaderId = location.state.PoHeaderId;
@@ -164,12 +164,12 @@ const CreatePurchaseOrder = () => {
   }, []); // Add PoHeaderId to the dependency array if it's needed for fetching data
 
   const handleCancel = () => {
-    const url = "/purchaseOrder";
+    const url = '/purchaseOrder';
     navigate(url);
   };
 
   const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
+    console.log('Failed:', errorInfo);
   };
   const handleOnFinish = async (values) => {
     debugger;
@@ -714,7 +714,7 @@ const handleUomChange = (option, column, index, record) => {
             ))}
           </Select>
         </Form.Item>
-      ),
+      )
     },
 
     {
@@ -753,7 +753,7 @@ const handleUomChange = (option, column, index, record) => {
             }}
           />
         </Form.Item>
-      ),
+      )
     },
     {
       title: "BonusQty",
@@ -779,7 +779,7 @@ const handleUomChange = (option, column, index, record) => {
             }
           />
         </Form.Item>
-      ),
+      )
     },
     {
       title: "PoRate",
@@ -812,7 +812,7 @@ const handleUomChange = (option, column, index, record) => {
             }}
           />
         </Form.Item>
-      ),
+      )
     },
     {
       title: "Discount %",
@@ -839,7 +839,7 @@ const handleUomChange = (option, column, index, record) => {
             }}
           />
         </Form.Item>
-      ),
+      )
     },
     {
       title: "DiscountAmount",
@@ -854,7 +854,7 @@ const handleUomChange = (option, column, index, record) => {
         >
           <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
-      ),
+      )
     },
 
     {
@@ -881,7 +881,7 @@ const handleUomChange = (option, column, index, record) => {
             }
           />
         </Form.Item>
-      ),
+      )
     },
     {
       title: "CGST",
@@ -910,7 +910,7 @@ const handleUomChange = (option, column, index, record) => {
             ))}
           </Select>
         </Form.Item>
-      ),
+      )
     },
     {
       title: "CGSTAmount",
@@ -921,7 +921,7 @@ const handleUomChange = (option, column, index, record) => {
         <Form.Item name={["TaxAmount1", record.key]} style={{ width: "100%" }}>
           <InputNumber min={0} disabled defaultValue={text} />
         </Form.Item>
-      ),
+      )
     },
     {
       title: "SGST",
@@ -950,7 +950,7 @@ const handleUomChange = (option, column, index, record) => {
             ))}
           </Select>
         </Form.Item>
-      ),
+      )
     },
     {
       title: "sGSTAmount",
@@ -961,7 +961,7 @@ const handleUomChange = (option, column, index, record) => {
         <Form.Item name={["TaxAmount2", record.key]} style={{ width: "100%" }}>
           <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
-      ),
+      )
     },
     {
       title: "amount",
@@ -988,7 +988,7 @@ const handleUomChange = (option, column, index, record) => {
             }
           />
         </Form.Item>
-      ),
+      )
     },
     {
       title: "totalAmount",
@@ -1003,7 +1003,7 @@ const handleUomChange = (option, column, index, record) => {
         >
           <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
-      ),
+      )
     },
     {
       title: "avlQty",
@@ -1017,7 +1017,7 @@ const handleUomChange = (option, column, index, record) => {
         >
           <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
-      ),
+      )
     },
     {
       title: "Delivery Schedule",
@@ -1049,41 +1049,16 @@ const handleUomChange = (option, column, index, record) => {
   ];
 
   return (
-    <Layout style={{ zIndex: "999999999" }}>
-      <div
-        style={{
-          width: "100%",
-          backgroundColor: "white",
-          minHeight: "max-content",
-          borderRadius: "10px",
-        }}
-      >
-        <Row
-          style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
-          }}
-        >
+    <Layout style={{ zIndex: '999999999' }}>
+      <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
+        <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
           <Col span={16}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
+            <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
               Create Purchase Order
             </Title>
           </Col>
           <Col offset={6} span={2}>
-            <Button
-              icon={<LeftOutlined />}
-              style={{ marginBottom: 0 }}
-              onClick={handleToPurchaseOrder}
-            >
+            <Button icon={<LeftOutlined />} style={{ marginBottom: 0 }} onClick={handleToPurchaseOrder}>
               Back
             </Button>
           </Col>
@@ -1100,29 +1075,20 @@ const handleUomChange = (option, column, index, record) => {
           }}
           form={form1}
         >
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-            style={{ padding: "1rem 2rem", marginBottom: "0" }}
-            align="Bottom"
-          >
+          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
             <Col className="gutter-row" span={6}>
               <div>
-                <Form.Item
-                  label="Supplier"
-                  name="SupplierList"
+                <Form.Item label="Supplier" name="SupplierList"
                   rules={[
                     {
                       required: true,
-                      message: "Please input!",
-                    },
+                      message: 'Please input!'
+                    }
                   ]}
                 >
-                  <Select allowClear placeholder="Select Value">
+                  <Select allowClear placeholder='Select Value'>
                     {DropDown.SupplierList.map((option) => (
-                      <Select.Option
-                        key={option.VendorId}
-                        value={option.VendorId}
-                      >
+                      <Select.Option key={option.VendorId} value={option.VendorId}>
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -1132,23 +1098,18 @@ const handleUomChange = (option, column, index, record) => {
             </Col>
             <Col className="gutter-row" span={6}>
               <div>
-                <Form.Item
-                  label="Procurement Store"
-                  name="StoreDetails"
+                <Form.Item label="Procurement Store" name="StoreDetails"
                   rules={[
                     {
                       required: true,
-                      message: "Please input!",
-                    },
+                      message: 'Please input!'
+                    }
                   ]}
                 >
-                  <Select allowClear placeholder="Select Value">
+                  <Select allowClear placeholder='Select Value'>
                     {/* <Option value="">Select Value</Option> */}
                     {DropDown.StoreDetails.map((option) => (
-                      <Select.Option
-                        key={option.StoreId}
-                        value={option.StoreId}
-                      >
+                      <Select.Option key={option.StoreId} value={option.StoreId}>
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -1158,22 +1119,17 @@ const handleUomChange = (option, column, index, record) => {
             </Col>
             <Col className="gutter-row" span={6}>
               <div>
-                <Form.Item
-                  label="Document Type"
-                  name="DocumentType"
+                <Form.Item label="Document Type" name="DocumentType"
                   rules={[
                     {
                       required: true,
-                      message: "Please input!",
-                    },
+                      message: 'Please input!'
+                    }
                   ]}
                 >
-                  <Select allowClear placeholder="Select Value">
+                  <Select allowClear placeholder='Select Value'>
                     {DropDown.DocumentType.map((option) => (
-                      <Select.Option
-                        key={option.LookupID}
-                        value={option.LookupID}
-                      >
+                      <Select.Option key={option.LookupID} value={option.LookupID}>
                         {option.LookupDescription}
                       </Select.Option>
                     ))}
@@ -1187,10 +1143,7 @@ const handleUomChange = (option, column, index, record) => {
               </Form.Item>
             </Col>
           </Row>
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-            style={{ padding: "0rem 2rem", marginTop: "0" }}
-          >
+          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '0rem 2rem', marginTop: '0' }}>
             <Col className="gutter-row" span={6}>
               <div>
                 <Form.Item label="PO Date" name="PODate">
@@ -1205,17 +1158,15 @@ const handleUomChange = (option, column, index, record) => {
             </Col>
             <Col className="gutter-row" span={6}>
               <div>
-                <Form.Item
-                  label="PO Status"
-                  name="POStatus"
-                  // rules={[
-                  //   {
-                  //     required: true,
-                  //     message: 'Please input!'
-                  //   }
-                  // ]}
+                <Form.Item label="PO Status" name="POStatus"
+                // rules={[
+                //   {
+                //     required: true,
+                //     message: 'Please input!'
+                //   }
+                // ]}
                 >
-                  <Select allowClear placeholder="Select Value">
+                  <Select allowClear placeholder='Select Value'>
                     <Option value="Draft">Draft</Option>
                     <Option value="Finalize">Finalize</Option>
                   </Select>
@@ -1223,13 +1174,13 @@ const handleUomChange = (option, column, index, record) => {
               </div>
             </Col>
             <Col>
-              <Form.Item name="SubmitCheck" style={{ marginTop: "30px" }}>
+              <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }}>
                 <Checkbox>Submit</Checkbox>
               </Form.Item>
             </Col>
           </Row>
-          <Row justify="end" style={{ padding: "0rem 1rem" }}>
-            <Col style={{ marginRight: "10px" }}>
+          <Row justify="end" style={{ padding: '0rem 1rem' }}>
+            <Col style={{ marginRight: '10px' }}>
               <Form.Item>
                 <Button
                   type="primary"
@@ -1280,18 +1231,10 @@ const handleUomChange = (option, column, index, record) => {
             >
               <InputNumber min={0} disabled />
             </Form.Item>
-            <Form.Item
-              label="GST Tax"
-              name="gstTax"
-              style={{ marginRight: "16px", width: 100 }}
-            >
+            <Form.Item label="GST Tax" name='gstTax' style={{ marginRight: '16px', width: 100 }}>
               <InputNumber min={0} disabled />
             </Form.Item>
-            <Form.Item
-              label="Total PO Amount"
-              name="totalpoAmount"
-              style={{ width: 150 }}
-            >
+            <Form.Item label="Total PO Amount" name='totalpoAmount' style={{ width: 150 }}>
               <InputNumber min={0} disabled />
             </Form.Item>
           </div>
@@ -1343,8 +1286,8 @@ const handleUomChange = (option, column, index, record) => {
           </Form>
         </Modal>
       </div>
-    </Layout>
+    </Layout >
   );
-};
+}
 
 export default CreatePurchaseOrder;

@@ -243,70 +243,7 @@ const Patient = () => {
     }
   };
 
-  //   // debugger;
-  //   try {
-  //     await form1.validateFields(); // Trigger form validation
-  //     const values = form1.getFieldsValue();
-  //     console.log("Selected submitting values", values);
-
-  //     const Encounter = {
-  //       PatientId: selectedRecord.PatientId,
-  //       PatientType: selectedRecord.PatientType,
-  //       FacilityDepartmentId: selectedRecord.FacilityDepartmentId,
-  //       FacilityDepartmentServiceLocationId:
-  //         selectedRecord.FacilityDepartmentServiceLocationId,
-  //       ProviderId: selectedRecord.ProviderId,
-  //       EncounterId: selectedRecord.EncounterId,
-  //       Encounter: selectedRecord.GeneratedEncounterId
-  //         ? selectedRecord.GeneratedEncounterId
-  //         : 0,
-  //       EncounterTypeId: values.EncounterType,
-  //       EncounterReasonId: values.EncounterReason,
-  //       KinTitle: values.KinTitle,
-  //       KinName: values.KinName,
-  //       KinAddress: values.KinAddress,
-  //       KinContactNo: values.KinContactNo,
-  //       ReferredBy: values.referredBy,
-  //       AttendingProviderId: values.admittedUnder,
-  //       EncounterCancelReason: values.CancelEdit,
-  //       EncounterDate: selectedRecord.CreatedDateTime,
-  //     };
-
-  //     try {
-  //       // Send a POST request to the server
-  //       const response = await customAxios.post(urlCancelVisit, Encounter);
-
-  //       notification.success({
-  //         message: "Visit cancellation Successful",
-  //       });
-  //       // Check if the request was successful
-  //       if (response.status !== 200) {
-  //         throw new Error(
-  //           `Server responded with status code ${response.status}`
-  //         );
-  //       }
-
-  //       setPatientDetails((prevPatients) =>
-  //         prevPatients.filter(
-  //           (patient) =>
-  //             patient.GeneratedEncounterId !==
-  //             selectedRecord.GeneratedEncounterId
-  //         )
-  //       );
-  //     } catch (error) {
-  //       console.error("Failed to send data to server: ", error);
-  //       notification.error({
-  //         message: "Visit cancellation UnSuccessful",
-  //         description: "Failed to cancel visit. Please try again later.",
-  //       });
-  //     }
-
-  //     form1.resetFields();
-  //     setIsCancelVisitModalVisible(false);
-  //   } catch (error) {
-  //     // Handle errors if needed
-  //   }
-  // };
+ 
 
   const columns = [
     {

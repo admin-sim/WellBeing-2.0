@@ -10,9 +10,18 @@ import {
   DatePicker,
   Divider,
   notification,
+  Table,
+  Modal,
+  Space,
+  Popconfirm,
 } from "antd";
 import Layout from "antd/es/layout/layout";
-import { SearchOutlined } from "@ant-design/icons";
+import {
+  SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router";
 const { Option } = Select;
 
@@ -28,11 +37,12 @@ import Title from "antd/es/typography/Title";
 import TextArea from "antd/es/input/TextArea";
 import WebcamImage from "../../../components/WebCam/index.jsx";
 import dayjs from "dayjs";
+import { truncate } from "lodash";
 
 const NewPatient = () => {
   const [patientDropdown, setPatientDropdown] = useState({
     Title: [],
-    Gender: [],
+    Genders: [],
     BloodGroup: [],
     MaritalStatus: [],
     Countries: [],
@@ -68,11 +78,20 @@ const NewPatient = () => {
   const [selectedServiceLocation, setSelectedServiceLocation] = useState("");
   const [loadings, setLoadings] = useState(false);
   const [isloading, setLoading] = useState(true);
-  //   const [uploadedImage, setUploadedImage] = useState(null);
+  const [uploadedImage, setUploadedImage] = useState(null);
   /*  const location = useLocation();
   const patientData = location.state ? location.state.patient : null; */
+  const [form] = Form.useForm();
+  const [form2] = Form.useForm();
+  const navigate = useNavigate();
+  const [identifierDetails, setIdentifierDetails] = useState([]);
+  const [IsEditingIdentifiersModal, setIsEditingIdentifiersModal] =
+    useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [identificationData, setIdentificationData] = useState();
 
   const handleImageUpload = (base64data) => {
+    debugger;
     setUploadedImage(base64data);
   };
   //Default Patient data
@@ -312,8 +331,6 @@ const NewPatient = () => {
     fetchData();
   }, [selectedDepartment, selectedPatientType]);
 
-  const [form] = Form.useForm();
-  const navigate = useNavigate();
   const handleBackToList = () => {
     debugger;
     const url = `/patient`;
@@ -338,7 +355,7 @@ const NewPatient = () => {
     console.log("Received values from form: ", values);
 
     values.dob = selecteddob;
-    const postData = {
+    const patientDetails = {
       PatientId: 0,
       PatientTitle: values.title,
       PatientFirstName: values.PatientFirstName,
@@ -401,8 +418,11 @@ const NewPatient = () => {
         values.BirthIdentification === undefined
           ? null
           : values.BirthIdentification,
-      IdentificationId: values.idCardType,
-      IdNo: values.IdCardNumber,
+    };
+
+    const postData = {
+      Patient: patientDetails,
+      Identifiers: identifierDetails,
     };
 
     try {
@@ -424,7 +444,7 @@ const NewPatient = () => {
         message: "Patient Registration Successful",
         description: `The patient details have been successfully registered. The UHID is${data}.`,
       });
-      handleBackToList();
+      handleSearchToVisit();
       setLoadings(false);
     } catch (error) {
       console.error("Failed to send data to server: ", error);
@@ -437,6 +457,137 @@ const NewPatient = () => {
       setLoadings(false);
     }
   };
+
+  const onEdit = (record) => {
+    debugger;
+    console.log("identifier record", record);
+    setIsModalOpen(true);
+    setIdentificationData(record);
+    setIsEditingIdentifiersModal(true);
+    form2.setFieldsValue({
+      CardType: record.CardTypeID,
+      IdNumber: record.IdNumber,
+      Key: record.key,
+    });
+  };
+  const onDelete = (record) => {
+    console.log("identifier record", record);
+    // Filter out the entry to be deleted
+    let identifiersArray = identifierDetails.filter(
+      (obj) => obj.key !== record.key
+    );
+
+    // Reorder the key values of the remaining entries
+    identifiersArray = identifiersArray.map((obj, index) => ({
+      ...obj,
+      key: index + 1,
+    }));
+
+    setIdentifierDetails(identifiersArray);
+  };
+
+  const handleAddIdentification = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleIdentificationModalCancel = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleSaveIdentification = () => {
+    debugger;
+    const values = form2.getFieldsValue();
+    console.log("To save Identification", values);
+
+    // Get a copy of the current identifierDetails
+    let identifiersArray = [...identifierDetails];
+    if (IsEditingIdentifiersModal) {
+      const existingIndex = identifiersArray.findIndex(
+        (obj) => obj.key === values.Key
+      );
+
+      // If the record exists, update it
+      if (existingIndex !== -1) {
+        identifiersArray[existingIndex] = {
+          key: identificationData.key,
+          CardType: patientDropdown.CardType.find(
+            (option) => option.LookupID === values.CardType
+          ).LookupDescription,
+          IdentificationId: values.CardType,
+          IdNumber: values.IdNumber,
+        };
+        form2.resetFields();
+      }
+    } else {
+      Object.entries(values).forEach(([key, value]) => {
+        const existingIndex = identifiersArray.findIndex(
+          (obj) =>
+            obj.IdentificationId === values.CardType &&
+            obj.IdNumber === values.IdNumber
+        );
+        if (existingIndex === -1) {
+          identifiersArray.push({
+            key: identifiersArray.length + 1, // incrementing the key value for each new entry
+            IdentificationId: values.CardType,
+            CardType: patientDropdown.CardType.find(
+              (option) => option.LookupID === values.CardType
+            ).LookupDescription,
+            IdNumber: values.IdNumber,
+          });
+        }
+      });
+      form2.resetFields();
+    }
+
+    setIdentifierDetails(identifiersArray);
+    setIsModalOpen(false);
+  };
+
+  const columns = [
+    {
+      title: "Sl. No.",
+      dataIndex: "key",
+      key: "key",
+    },
+    {
+      title: "Card Type",
+      dataIndex: "CardType",
+      key: "CardType",
+    },
+    {
+      title: "Value",
+      dataIndex: "IdNumber",
+      key: "IdNumber",
+    },
+    {
+      title: "Action",
+      key: "action",
+      fixed: "right",
+      width: "4rem",
+      render: (text, record) => (
+        <Space size="small">
+          <Button
+            size="small"
+            onClick={() => onEdit(record)}
+            icon={<EditOutlined style={{ fontSize: "0.9rem" }} />}
+          ></Button>
+
+          <Popconfirm
+            title="Are you sure to delete this item?"
+            onConfirm={() => onDelete(record)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button
+              size="small"
+              danger
+              icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
+            ></Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -576,7 +727,7 @@ const NewPatient = () => {
                         ]}
                       >
                         <Select placeholder="select" allowClear>
-                          {patientDropdown.Gender.map((option) => (
+                          {patientDropdown.Genders.map((option) => (
                             <Select.Option
                               key={option.LookupID}
                               value={option.LookupID}
@@ -618,6 +769,7 @@ const NewPatient = () => {
                           onChange={handleDateChange}
                           disabledDate={disabledDate}
                           format={"DD-MM-YYYY"}
+                          placeholder="DD-MM-YYYY"
                         />
                       </Form.Item>
                     </Col>
@@ -703,12 +855,30 @@ const NewPatient = () => {
                     <Col span={7}>
                       <Row gutter={16}>
                         <Col span={12}>
-                          <Form.Item name="Height" label="Height">
+                          <Form.Item
+                            name="Height"
+                            label="Height"
+                            rules={[
+                              {
+                                pattern: /^\d{2,3}$/,
+                                message: "Please enter valid input for height",
+                              },
+                            ]}
+                          >
                             <Input suffix="Cms" type="number" />
                           </Form.Item>
                         </Col>
                         <Col span={12}>
-                          <Form.Item name="Weight" label="Weight">
+                          <Form.Item
+                            name="Weight"
+                            label="Weight"
+                            rules={[
+                              {
+                                pattern: /^\d{2,3}$/,
+                                message: "Please enter valid input for height",
+                              },
+                            ]}
+                          >
                             <Input suffix="Kgs" type="number" />
                           </Form.Item>
                         </Col>
@@ -941,29 +1111,60 @@ const NewPatient = () => {
                   </Form.Item>
                 </Col>
               </Row>
-              <Divider orientation="left">Identification Details</Divider>
-              <Row gutter={14}>
-                <Col span={6}>
-                  <Form.Item name="idCardType" label="Id Card Type">
-                    <Select allowClear>
-                      {patientDropdown.CardType.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="IdCardNumber" label="Id Card Number">
-                    <Input />
-                  </Form.Item>
-                </Col>
-              </Row>
 
+              <Layout>
+                <div
+                  style={{
+                    width: "100%",
+                    backgroundColor: "white",
+                    minHeight: "max-content",
+                    borderRadius: "10px",
+                  }}
+                >
+                  <Row
+                    style={{
+                      padding: "0.5rem 2rem 0.5rem 2rem",
+                      backgroundColor: "#40A2E3",
+                      borderRadius: "10px 10px 10px 10px ",
+                    }}
+                  >
+                    <Col span={16}>
+                      <Title
+                        level={4}
+                        style={{
+                          color: "white",
+                          fontWeight: 500,
+                          margin: 0,
+                          paddingTop: 0,
+                        }}
+                      >
+                        Identification Details
+                      </Title>
+                    </Col>
+                    <Col offset={7} span={1} style={{ alignItems: "right" }}>
+                      <Button
+                        icon={<PlusCircleOutlined />}
+                        onClick={handleAddIdentification}
+                      ></Button>
+                    </Col>
+                  </Row>
+                </div>
+              </Layout>
+              <Space size="large">{""}</Space>
+              <Table
+                dataSource={identifierDetails}
+                columns={columns}
+                // rowKey={(row) => row.EncounterId}
+                size="small"
+                className="vitals-table"
+                scroll={{ x: 1000 }}
+                // onChange={(pagination) => {
+                //   setCurrentPage(pagination.current);
+                //   setItemsPerPage(pagination.pageSize);
+                // }}
+                bordered
+              ></Table>
+              <Space size="large">{""}</Space>
               <Row justify="end">
                 <Col style={{ marginRight: "10px" }}>
                   <Form.Item>
@@ -984,6 +1185,71 @@ const NewPatient = () => {
           </div>
         </Layout>
       )}
+      <Modal
+        title="Add New Place"
+        open={isModalOpen}
+        maskClosable={false}
+        footer={null}
+        onCancel={handleIdentificationModalCancel}
+      >
+        <Form
+          style={{ margin: "1rem 0" }}
+          layout="vertical"
+          form={form2}
+          onFinish={handleSaveIdentification}
+        >
+          <Form.Item
+            name="CardType"
+            label="Card Type"
+            rules={[
+              {
+                required: true,
+                message: "Please select place name",
+              },
+            ]}
+          >
+            <Select allowClear>
+              {patientDropdown.CardType.map((option) => (
+                <Select.Option key={option.LookupID} value={option.LookupID}>
+                  {option.LookupDescription}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="IdNumber"
+            label="Card Number"
+            rules={[
+              {
+                required: true,
+                message: "Please enter area name",
+              },
+            ]}
+          >
+            <Input style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item name="Key"></Form.Item>
+          <Row gutter={32} style={{ height: "1.8rem" }}>
+            <Col offset={12} span={6}>
+              <Form.Item>
+                <Button type="primary" htmlType="submit">
+                  Submit
+                </Button>
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item>
+                <Button
+                  type="default"
+                  onClick={handleIdentificationModalCancel}
+                >
+                  Cancel
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
     </>
   );
 };

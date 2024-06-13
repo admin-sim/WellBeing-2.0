@@ -69,7 +69,6 @@ const menuData = [
           },
         ],
       },
-
       {
         key: "Accountmanagement",
         icon: "CiSettings",
@@ -135,9 +134,51 @@ const menuData = [
             title: "ReccuringCharge",
             link: "/ReccuringCharge",
           },
-        ]
-        },
-
+        ],
+      },
+      {
+        key: "ResourceScheduling",
+        icon: "CiSettings",
+        title: "Resource Scheduling",
+        children: [
+          {
+            key: "ScheduleTemplate",
+            icon: "GoDotFill",
+            title: "Schedule Template",
+            link: "/ScheduleTemplate",
+          },
+          {
+            key: "ProviderSchedule",
+            icon: "GoDotFill",
+            title: "Provider Schedule",
+            link: "/ProviderSchedule",
+          },
+          {
+            key: "PublishCalender",
+            icon: "GoDotFill",
+            title: "Publish Calender",
+            link: "/PublishCalender",
+          },
+          {
+            key: "ProviderAbsence",
+            icon: "GoDotFill",
+            title: "Provider Absence",
+            link: "/ProviderAbsence",
+          },
+          {
+            key: "SpecialEvent",
+            icon: "GoDotFill",
+            title: "Special Event",
+            link: "/SpecialEvent",
+          },
+          {
+            key: "Holiday",
+            icon: "GoDotFill",
+            title: "Holiday",
+            link: "/Holiday",
+          },
+        ],
+      },
     ],
   },
   {
@@ -150,13 +191,15 @@ const menuData = [
         icon: "FaUserPlus",
         title: "Patient Registration",
         link: "/Patient",
-      },{
+      },
+
+      {
         key: "Queue-Mgmt",
         title: "Queue Management",
         icon: "FaPersonWalkingArrowRight",
         link: "/Queue",
       },
-      
+
       // {
       //   key: "sub-subtask",
       //   title: "SubTask",
@@ -178,6 +221,25 @@ const menuData = [
         icons: "FaUserFriends",
         title: "Billing",
         link: "Billing",
+      },
+    ],
+  },
+  {
+    key: "ResourceScheduling",
+    icon: "GrSchedule",
+    title: "Resource Scheduling",
+    children: [
+      {
+        key: "ManageAppointment",
+        icons: "FaUserFriends",
+        title: "Manage Appointment",
+        link: "ManageAppointment",
+      },
+      {
+        key: "ProviderAppointment",
+        icons: "FaUserFriends",
+        title: "Provider Appointment",
+        link: "ScheduleProviderAppointment",
       },
     ],
   },

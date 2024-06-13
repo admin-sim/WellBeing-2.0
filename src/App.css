@@ -7,16 +7,22 @@ body,
 div,
 p,
 span {
-  font-family: "poppins", sans-serif !important;
+  /* font-family: "poppins", sans-serif !important; */
 }
-@font-face {
+/* @font-face {
   font-family: "poppins-bold";
   src: url(./assets/font/Poppins/Poppins-Bold.ttf);
 }
 
+
 @font-face {
   font-family: "poppins";
   src: url(./assets/font/Poppins/Poppins-Regular.ttf) format("truetype");
+} */
+
+@font-face {
+  font-family: "DancingScript-Bold";
+  src: url(./assets/font/dancing_script/DancingScript-Bold.ttf);
 }
 
 .sidebar {
@@ -133,4 +139,13 @@ li .ant-menu-item {
   border-radius: 10px;
   box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   background-color: #635985;
+}
+
+.full-width-event .fc-event-title {
+  white-space: nowrap; /* Prevents the text from wrapping */
+  overflow: hidden; /* Hides the text that overflows the event slot */
+  text-overflow: ellipsis; /* Adds an ellipsis (...) when the text overflows */
+}
+*:not(.fc a) {
+  text-decoration: none !important;
 }

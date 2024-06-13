@@ -40,13 +40,13 @@ function PatientHeader({ patient }) {
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
                   UHID&nbsp;:
                 </span>
-                <span>{patient?.UhId}</span>
+                <span>{patient.uhId}</span>
               </Col>
               <Col span={24}>
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
                   Name&nbsp;:
                 </span>
-                <span>{patient?.PatientName}</span>
+                <span>{patient.patientName}</span>
               </Col>
             </Row>
           </Col>
@@ -54,13 +54,13 @@ function PatientHeader({ patient }) {
             <Row>
               <Col span={24}>
                 <span style={{ fontWeight: "bold" }}>Gender&nbsp;:&nbsp;</span>
-                <span>{patient?.PatientGender}</span>
+                <span>{patient.gender}</span>
               </Col>
               <Col span={24}>
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
                   VisitId&nbsp;:
                 </span>
-                <span>{""}</span>
+                <span>{patient.id}</span>
               </Col>
             </Row>
           </Col>
@@ -70,7 +70,7 @@ function PatientHeader({ patient }) {
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
                   Age&nbsp;:
                 </span>
-                <span>{""}</span>
+                <span>{patient.age}</span>
               </Col>
               <Col span={24}>
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
@@ -134,4 +134,3 @@ function PatientHeader({ patient }) {
 }
 
 export default PatientHeader;
-

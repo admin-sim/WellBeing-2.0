@@ -15,6 +15,8 @@ import { GoDotFill } from "react-icons/go";
 import { FaUserFriends, FaUserPlus } from "react-icons/fa";
 import { CiSettings } from "react-icons/ci";
 import { MdInventory } from "react-icons/md";
+import { GrSchedule } from "react-icons/gr";
+import Bed from "../../../assets/bed.png";
 const { SubMenu } = Menu;
 
 export default function MenuList({ menuData, onClose }) {
@@ -28,6 +30,10 @@ export default function MenuList({ menuData, onClose }) {
         return <FaUserFriends style={{ fontSize: "1.2rem" }} />;
       case "CodepenOutlined":
         return <CodepenOutlined />;
+      case "GrSchedule":
+        return <GrSchedule />;
+      case "bed":
+        return <img src={Bed} alt="Ward Management" height="20rem" />;
       case "DollarOutlined":
         return <DollarOutlined />;
       case "RedEnvelopeOutlined":
