@@ -19,6 +19,7 @@ function Billing() {
 
   // Define your state variables
   const [selectedUhId, setSelectedUhId] = useState(null);
+  const [generatedEncounter, setGeneratedEncounter] = useState(null);
   const [options, setOptions] = useState([]);
   const [visits, setVisits] = useState([]);
   const [initialFormState, setInitialFormState] = useState({
@@ -81,6 +82,7 @@ function Billing() {
         form.setFieldsValue({
           Encounter: firstEncounter ? firstEncounter.EncounterId : ''
         });
+        setGeneratedEncounter(firstEncounter?.GeneratedEncounterId);
       } else {
         setVisits([]);
       }
@@ -104,7 +106,8 @@ function Billing() {
     navigate(url, {
       state: {
         patientId: patientId,
-        encounterId: encounterId
+        encounterId: encounterId,
+        encounter:generatedEncounter
       }
     });
   };

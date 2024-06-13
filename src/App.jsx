@@ -86,7 +86,10 @@ import SpecialEvent from "./pages/Masters/ResourceScheduling/SpecialEvent/specia
 import Holiday from "./pages/Masters/ResourceScheduling/Holiday/holiday";
 import Billing from "./pages/Billling/SearchPage";
 import CreateBilling from "./pages/Billling/CreateBilling";
-
+import PriceTariff from "./pages/Masters/GeneralMasters/AccountManagement/PriceTariff";
+import CreatePriceTariff from "./pages/Masters/GeneralMasters/AccountManagement/CreatePriceTariff";
+import AutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/AutoCharge";
+import CreateAutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAutoCharge";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -666,6 +669,38 @@ function App() {
             element={
               <ProtectedRoute>
                 <EditPriceDefinition />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="PriceTariff"
+            element={
+              <ProtectedRoute>
+                <PriceTariff />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="CreatePriceTariff"
+            element={
+              <ProtectedRoute>
+                <CreatePriceTariff />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="AutoCharge"
+            element={
+              <ProtectedRoute>
+                <AutoCharge />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="CreateAutoCharge"
+            element={
+              <ProtectedRoute>
+                <CreateAutoCharge />
               </ProtectedRoute>
             }
           />
