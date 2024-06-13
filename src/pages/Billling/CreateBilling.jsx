@@ -36,6 +36,7 @@ const CreateBilling = () => {
 
 
   useEffect(() => {
+    debugger;
     const fetchDataHeader = async () => {
 
       try {
@@ -45,6 +46,7 @@ const CreateBilling = () => {
         if (response.status === 200 && response.data.data != null) {
           const detailsheader = response.data.data;
           setPatientData(detailsheader.PatientDetail);
+          console.log('headerdata',detailsheader.PatientDetail);
 
         } else {
           console.error("Failed to fetch patient details");
