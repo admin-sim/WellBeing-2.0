@@ -673,6 +673,38 @@ function App() {
             }
           />
           <Route
+            path="PriceTariff"
+            element={
+              <ProtectedRoute>
+                <PriceTariff />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="CreatePriceTariff"
+            element={
+              <ProtectedRoute>
+                <CreatePriceTariff />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="AutoCharge"
+            element={
+              <ProtectedRoute>
+                <AutoCharge />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="CreateAutoCharge"
+            element={
+              <ProtectedRoute>
+                <CreateAutoCharge />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="ManageAppointment"
             element={
               <ProtectedRoute>
