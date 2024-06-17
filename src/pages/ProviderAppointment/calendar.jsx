@@ -281,7 +281,7 @@ const MyCalendar = ({}) => {
               title: "Overbooking",
               start: overbookedTimeStart.toISOString(),
               end: overbookedTimeEnd.toISOString(),
-              type: "Overbooking",
+              type: "Available",
               backgroundColor: "#EE82EE",
             });
           }
