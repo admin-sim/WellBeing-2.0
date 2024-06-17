@@ -5,27 +5,27 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import moment from "moment";
-import "./style.css";
+import "../ProviderAppointment/style.css";
 import * as bootstrap from "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {
   Button,
   Col,
   DatePicker,
-  Input,
   Layout,
   Row,
   Select,
-  Tooltip,
   Form,
+  Spin,
+  Popover,
 } from "antd";
 import { AiOutlineFullscreen, AiOutlineFullscreenExit } from "react-icons/ai";
 import ScheduleAppointmentModal from "./ScheduleAppointmentModal";
 import Title from "antd/es/typography/Title";
-import { PlusCircleOutlined } from "@ant-design/icons";
 import {
   urlGetScheduledProviderAppointments,
   urlGetProviderCalenderBasedOnProviderId,
+  urlGetProviderBasedOnDept,
 } from "../../../endpoints";
 import customAxios from "../../components/customAxios/customAxios";
 
@@ -68,34 +68,23 @@ const customEvents = [
   },
 ];
 
-customEvents.map((event) => {
-  if (event.type === "Booked") {
-    event.backgroundColor = "#fea010";
-  } else if (event.type === "Holiday") {
-    event.backgroundColor = "#abaaa7";
-  } else if (event.type === "OverBookingSlot") {
-    event.backgroundColor = "violet";
-  }
-});
-
-const MyCalendar = ({
-  businessHours,
-  slotDuration,
-  patientPerSlot,
-  overBookingSlotsBegin,
-  overBookingSlotsEnd,
-  Holidays,
-}) => {
+const MyCalendar = ({}) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [events, setEvents] = useState(customEvents);
+  const [events, setEvents] = useState([]);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [popoverVisible, setPopoverVisible] = useState(false);
   const [popoverContent, setPopoverContent] = useState(null);
-  const [isFullScreen, setIsFullScreen] = useState(false);
-  const [isLoading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [departmentLoading, setDepartmentLoading] = useState(true);
+  const [providerLoading, setProviderLoading] = useState(false);
   const [providersData, setProvidersData] = useState([]);
+  const [providerDetails, setproviderDetails] = useState([]);
+  const [departmentDetails, setDepartmentDetails] = useState(0);
   const [departmentsData, setDepartmentsData] = useState([]);
+  const [calendarData, setCalendarData] = useState(null);
+  const [slotDuration, setSlotDuration] = useState("00:30:00");
+
   const [form] = Form.useForm();
   const handleSelect = (arg) => {
     // Handle slot selection if needed
@@ -106,39 +95,87 @@ const MyCalendar = ({
   }, []);
 
   const fetchData = async () => {
-    debugger;
-    setLoading(true);
     try {
       const response = await customAxios.get(
         `${urlGetScheduledProviderAppointments}`
       );
+
       if (response.data != null) {
         setProvidersData(response.data.data.Provider);
         setDepartmentsData(response.data.data.Department);
       } else {
         setProvidersData(null);
       }
+      setDepartmentLoading(false);
     } catch (error) {
+      setDepartmentLoading(false);
       console.error(error);
     }
-    setLoading(false);
   };
 
   const handleProviderChange = async (value) => {
-    debugger;
     try {
       const response = await customAxios.get(
         `${urlGetProviderCalenderBasedOnProviderId}?ProviderId=${value}`
       );
       if (response.data != null) {
-        console.log("check the value for response",response.data);
+        const bookedEvents =
+          response.data.data?.ScheduleProviderAppointments.map(
+            (appointment) => ({
+              title: appointment.PatientName,
+              start: `${appointment.AppointmentDate.split("T")[0]}T${
+                appointment.FromTime
+              }`,
+              end: `${appointment.AppointmentDate.split("T")[0]}T${
+                appointment.ToTime
+              }`,
+              type: "Booked",
+              backgroundColor: "#fea010",
+              extendedProps: {
+                UHID: appointment.PatientUHID,
+                PatientName: appointment.PatientName,
+              },
+            })
+          );
+        console.log("bookedEvents", bookedEvents);
+        setEvents(bookedEvents);
+        // setEvents(response.data.data?.ScheduleProviderAppointments);
+        setCalendarData(response.data.data);
+        setproviderDetails(
+          providersData?.filter((provider) => {
+            return provider.ProviderId === value;
+          })
+        );
       } else {
-        console.log("check the value for response",response.data);
+        console.log("check the value for response", response.data);
       }
     } catch (error) {
       console.error(error);
     }
-    setLoading(false);
+  };
+  const handleDepartmentChange = async (value) => {
+    setProviderLoading(true);
+    form.resetFields(["Provider"]);
+    setDepartmentDetails(value);
+
+    try {
+      const response = await customAxios.get(
+        `${urlGetProviderBasedOnDept}?Id=${value}`
+      );
+
+      setProvidersData(response.data.data);
+
+      console.log("Deaprtment", response?.data.data);
+      if (response.data != null) {
+        console.log("check the value for response", response.data);
+      } else {
+        console.log("check the value for response", response.data);
+      }
+      setProviderLoading(false);
+    } catch (error) {
+      console.error(error);
+      setProviderLoading(false);
+    }
   };
 
   const handleEventClick = (arg) => {
@@ -157,170 +194,103 @@ const MyCalendar = ({
     }
   };
 
-  const generateHolidayEvents = (Holidays) => {
-    const { HolidayFrom, HolidayTo } = Holidays;
-    const holidays = [];
-
-    const startDate = moment(HolidayFrom, "DD-MM-YYYY");
-    const endDate = moment(HolidayTo, "DD-MM-YYYY");
-
-    for (let date = startDate; date <= endDate; date.add(1, "days")) {
-      holidays.push({
-        title: "Holiday",
-        start: date.format(`YYYY-MM-DDT10:00:00`),
-        end: date.format("YYYY-MM-DDT18:00:00"),
-        type: "Holiday",
-        backgroundColor: "#abaaa7",
-      });
-    }
-
-    return holidays;
-  };
-
-  const isHoliday = (date, holidays) => {
-    return holidays.some((holiday) => {
-      const holidayStart = new Date(holiday.start);
-      const holidayEnd = new Date(holiday.end);
-      return date >= holidayStart && date <= holidayEnd;
-    });
-  };
-
-  const generateAvailableSlots = (holidays) => {
+  const generateAvailableSlots = (calendarData) => {
+    setLoading(true);
     const availableSlots = [];
-    const currentDate = new Date();
+    let minSlotDuration = 30;
+    const now = moment(); // Current date and time
 
-    const [startHour, startMinute, startSecond] = businessHours.startTime
-      .split(":")
-      .map(Number);
-    const [endHour, endMinute, endSecond] = businessHours.endTime
-      .split(":")
-      .map(Number);
-    const [SlotHours, SlotMinutes, SlotSeconds] = slotDuration
-      .split(":")
-      .map(Number);
+    const isSlotBooked = (start, end) => {
+      return events.some(
+        (event) =>
+          moment(event.start).isBefore(end) && moment(event.end).isAfter(start)
+      );
+    };
 
-    // Convert slot duration to milliseconds
-    const slotDurationMillis =
-      (SlotHours * 60 * 60 + SlotMinutes * 60 + SlotSeconds) * 1000;
+    calendarData?.ScheduleProviderAvailability?.forEach((item) => {
+      const date = moment(item.CalendarDate).format("YYYY-MM-DD");
 
-    for (let i = 0; i < 30; i++) {
-      const date = new Date(currentDate);
-      date.setDate(date.getDate() + i);
-      const start = new Date(date);
-      start.setHours(startHour, startMinute, 0);
-      const end = new Date(date);
-      end.setHours(endHour, endMinute, 0);
+      item?.Sessions?.forEach((session) => {
+        const slotDuration = session.SlotDuration * 60 * 1000; // Convert minutes to milliseconds
+        minSlotDuration = Math.min(minSlotDuration, session.SlotDuration);
 
-      // Skip holidays
-      if (isHoliday(date, holidays)) {
-        continue;
-      }
+        const startTime = moment(`${date}T${session.StartTime}`);
+        const endTime = moment(`${date}T${session.EndTime}`);
 
-      // Generate overbooking slots before business hours
-      for (let j = 1; j <= overBookingSlotsBegin; j++) {
-        const overBookingStart = new Date(
-          start.getTime() - j * slotDurationMillis
-        );
-        const overBookingEnd = new Date(
-          overBookingStart.getTime() + slotDurationMillis
-        );
-
-        // Check if an event already exists in this overbooking slot
-        const existingEvent = customEvents?.some(
-          (event) =>
-            new Date(event.start) <= overBookingStart &&
-            new Date(event.end) > overBookingStart
-        );
-
-        if (
-          !existingEvent &&
-          overBookingStart >= currentDate &&
-          overBookingStart.getDay() !== 0 &&
-          overBookingStart.getDay() !== 6
-        ) {
-          availableSlots.push({
-            start: overBookingStart,
-            end: overBookingEnd,
-            title: "Over Booking Slot",
-            type: "OverBookingSlot",
-            backgroundColor: "violet",
-          });
+        if (endTime.isBefore(now)) {
+          return; // Skip past sessions
         }
-      }
 
-      // Generate available slots within business hours
-      for (
-        let time = start.getTime();
-        time < end.getTime();
-        time += slotDurationMillis
-      ) {
-        const slotStart = new Date(time);
-        const slotEnd = new Date(time + slotDurationMillis);
-
-        if (
-          slotStart >= currentDate &&
-          slotStart.getHours() >= startHour &&
-          slotStart.getHours() < endHour &&
-          slotStart.getDay() !== 0 &&
-          slotStart.getDay() !== 6
-        ) {
-          const isBookedSlot = customEvents.some(
-            (event) =>
-              new Date(event.start) <= slotStart &&
-              new Date(event.end) > slotStart
-          );
-          if (!isBookedSlot) {
-            for (
-              let i = 0;
-              i < Number(patientPerSlot > 0 ? patientPerSlot : 1);
-              i++
-            ) {
-              const slot = {
-                start: slotStart,
-                end: slotEnd,
-                title: "Book Appointment",
-                type: "Available",
-                backgroundColor: "#4caf50",
-              };
-              availableSlots.push(slot);
-            }
+        // Overbooking slots before the session
+        for (let i = 0; i < session.OverbookingSlots; i++) {
+          const overbookedTimeStart = startTime
+            .clone()
+            .subtract((i + 1) * slotDuration, "milliseconds");
+          const overbookedTimeEnd = overbookedTimeStart
+            .clone()
+            .add(slotDuration, "milliseconds");
+          if (
+            overbookedTimeStart.isBefore(startTime, "day") ||
+            overbookedTimeStart.isBefore(now)
+          ) {
+            break; // Prevent overbooking to previous day or past time
+          }
+          if (!isSlotBooked(overbookedTimeStart, overbookedTimeEnd)) {
+            availableSlots.push({
+              title: "Overbooking",
+              start: overbookedTimeStart.toISOString(),
+              end: overbookedTimeEnd.toISOString(),
+              type: "Available",
+              backgroundColor: "#EE82EE",
+            });
           }
         }
-      }
 
-      // Generate overbooking slots after business hours
-      for (let j = 1; j <= overBookingSlotsEnd; j++) {
-        const overBookingStart = new Date(
-          end.getTime() + (j - 1) * slotDurationMillis
-        );
-        const overBookingEnd = new Date(
-          overBookingStart.getTime() + slotDurationMillis
-        );
-
-        // Check if an event already exists in this overbooking slot
-        const existingEvent = customEvents?.some(
-          (event) =>
-            new Date(event.start) <= overBookingStart &&
-            new Date(event.end) > overBookingStart
-        );
-
-        if (
-          !existingEvent &&
-          overBookingStart >= currentDate &&
-          overBookingStart.getDay() !== 0 &&
-          overBookingStart.getDay() !== 6
+        // Available slots within the session
+        for (
+          let time = startTime.clone();
+          time.isBefore(endTime);
+          time.add(slotDuration, "milliseconds")
         ) {
-          availableSlots.push({
-            start: overBookingStart,
-            end: overBookingEnd,
-            title: "OverBookingSlot",
-            type: "OverBookingSlot",
-            backgroundColor: "violet",
-          });
+          if (time.isBefore(now)) continue; // Skip past slots
+          const slotEnd = time.clone().add(slotDuration, "milliseconds");
+          if (!isSlotBooked(time, slotEnd)) {
+            availableSlots.push({
+              title: "Available",
+              start: time.toISOString(),
+              end: slotEnd.toISOString(),
+              type: "Available",
+              backgroundColor: "#4caf50",
+            });
+          }
         }
-      }
-    }
-    return availableSlots;
+
+        // Overbooking slots after the session
+        for (let i = 0; i < session.OverbookingEndSlots; i++) {
+          const overbookedTimeStart = endTime
+            .clone()
+            .add(i * slotDuration, "milliseconds");
+          const overbookedTimeEnd = overbookedTimeStart
+            .clone()
+            .add(slotDuration, "milliseconds");
+          if (
+            !isSlotBooked(overbookedTimeStart, overbookedTimeEnd) &&
+            !overbookedTimeStart.isBefore(now)
+          ) {
+            availableSlots.push({
+              title: "Overbooking",
+              start: overbookedTimeStart.toISOString(),
+              end: overbookedTimeEnd.toISOString(),
+              type: "Overbooking",
+              backgroundColor: "#EE82EE",
+            });
+          }
+        }
+      });
+    });
+    setLoading(false);
+
+    return { availableSlots, minSlotDuration };
   };
 
   const handleModalSubmit = (eventData) => {
@@ -345,12 +315,11 @@ const MyCalendar = ({
   };
 
   useEffect(() => {
-    const holidayEvents = generateHolidayEvents(Holidays);
-    setEvents([...customEvents, ...holidayEvents]);
-
-    const availableSlots = generateAvailableSlots(holidayEvents);
+    const { availableSlots, minSlotDuration } =
+      generateAvailableSlots(calendarData);
     setAvailableSlots(availableSlots);
-  }, [Holidays]);
+    setSlotDuration(`00:${String(minSlotDuration).padStart(2, "0")}:00`);
+  }, [calendarData]);
 
   const calendarRef = useRef(null);
   const jumpToSpecificDate = (dateString) => {
@@ -366,47 +335,48 @@ const MyCalendar = ({
       }
     }
   };
-  const tableRef = useRef(null);
+  // const tableRef = useRef(null);
 
-  const enterFullscreen = () => {
-    const elem = tableRef.current;
+  // const enterFullscreen = () => {
+  //   const elem = tableRef.current;
 
-    if (elem.requestFullscreen) {
-      elem.requestFullscreen();
-    } else if (elem.mozRequestFullScreen) {
-      // Firefox
-      elem.mozRequestFullScreen();
-    } else if (elem.webkitRequestFullscreen) {
-      // Chrome, Safari, and Opera
-      elem.webkitRequestFullscreen();
-    }
-  };
+  //   if (elem.requestFullscreen) {
+  //     elem.requestFullscreen();
+  //   } else if (elem.mozRequestFullScreen) {
+  //     // Firefox
+  //     elem.mozRequestFullScreen();
+  //   } else if (elem.webkitRequestFullscreen) {
+  //     // Chrome, Safari, and Opera
+  //     elem.webkitRequestFullscreen();
+  //   }
+  // };
 
-  const exitFullscreen = () => {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (document.mozCancelFullScreen) {
-      // Firefox
-      document.mozCancelFullScreen();
-    } else if (document.webkitExitFullscreen) {
-      // Chrome, Safari, and Opera
-      document.webkitExitFullscreen();
-    }
-  };
+  // const exitFullscreen = () => {
+  //   if (document.exitFullscreen) {
+  //     document.exitFullscreen();
+  //   } else if (document.mozCancelFullScreen) {
+  //     // Firefox
+  //     document.mozCancelFullScreen();
+  //   } else if (document.webkitExitFullscreen) {
+  //     // Chrome, Safari, and Opera
+  //     document.webkitExitFullscreen();
+  //   }
+  // };
 
-  const handleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      setIsFullScreen(true);
-      enterFullscreen();
-    } else {
-      setIsFullScreen(false);
-      exitFullscreen();
-    }
-  };
+  // const handleFullscreen = () => {
+  //   if (!document.fullscreenElement) {
+  //     setIsFullScreen(true);
+  //     enterFullscreen();
+  //   } else {
+  //     setIsFullScreen(false);
+  //     exitFullscreen();
+  //   }
+  // };
 
   return (
     <Layout>
       <div
+        // ref={tableRef}
         style={{
           width: "100%",
           backgroundColor: "white",
@@ -421,7 +391,7 @@ const MyCalendar = ({
             borderRadius: "10px 10px 0px 0px ",
           }}
         >
-          <Col span={16}>
+          <Col span={23}>
             <Title
               level={4}
               style={{
@@ -431,9 +401,22 @@ const MyCalendar = ({
                 paddingTop: 0,
               }}
             >
-              Provider Schedule Appointment
+              Manage Appointment
             </Title>
           </Col>
+          {/* <Col span={1}> */}
+          {/* <Tooltip
+            title={isFullScreen ? "Exit Full Screen" : "Enter Full Screen"}
+          > */}
+          {/* <Button onClick={handleFullscreen}>
+              {isFullScreen ? (
+                <AiOutlineFullscreenExit style={{ fontSize: "1.5rem" }} />
+              ) : (
+                <AiOutlineFullscreen style={{ fontSize: "1.5rem" }} />
+              )}
+            </Button> */}
+          {/* </Tooltip> */}
+          {/* </Col> */}
         </Row>
 
         <Form
@@ -448,61 +431,60 @@ const MyCalendar = ({
           <Row style={{ margin: "0 0rem" }} gutter={32}>
             <Col span={6}>
               <Form.Item name="department" label="Department">
-              <Select
-                    showSearch
-                    placeholder="Select the provider"
-                    style={{ width: "100%" }}
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                    filterSort={(optionA, optionB) =>
-                      optionA.children
-                        .toLowerCase()
-                        .localeCompare(optionB.children.toLowerCase())
-                    }
-                  >
-                    {departmentsData.map((response) => (
-                      <Select.Option
-                        key={response.FacilityDepartmentId}
-                        value={response.FacilityDepartmentId}
-                      >
-                        {response.DepartmentName}
-                      </Select.Option>
-                    ))}
-                  </Select>
+                <Select
+                  loading={departmentLoading}
+                  onChange={handleDepartmentChange}
+                  showSearch
+                  placeholder="Select the provider"
+                  style={{ width: "100%" }}
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().includes(input.toLowerCase())
+                  }
+                  filterSort={(optionA, optionB) =>
+                    optionA.children
+                      .toLowerCase()
+                      .localeCompare(optionB.children.toLowerCase())
+                  }
+                >
+                  {departmentsData?.map((response) => (
+                    <Select.Option
+                      key={response.DepartmentId}
+                      value={response.DepartmentId}
+                    >
+                      {response.DepartmentName}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
             <Col span={6}>
               <Form.Item name="Provider" label="Provider">
-              <Select
-                    showSearch
-                    placeholder="Select the provider"
-                    style={{ width: "100%" }}
-                    onChange={handleProviderChange}
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                    filterSort={(optionA, optionB) =>
-                      optionA.children
-                        .toLowerCase()
-                        .localeCompare(optionB.children.toLowerCase())
-                    }
-                  >
-                    {providersData.map((response) => (
-                      <Select.Option
-                        key={response.ProviderId}
-                        value={response.ProviderId}
-                      >
-                        {response.ProviderName}
-                      </Select.Option>
-                    ))}
-                  </Select>
+                <Select
+                  loading={providerLoading}
+                  showSearch
+                  placeholder="Select the provider"
+                  style={{ width: "100%" }}
+                  onChange={handleProviderChange}
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().includes(input.toLowerCase())
+                  }
+                  filterSort={(optionA, optionB) =>
+                    optionA.children
+                      .toLowerCase()
+                      .localeCompare(optionB.children.toLowerCase())
+                  }
+                >
+                  {providersData?.map((response) => (
+                    <Select.Option
+                      key={response.ProviderId}
+                      value={response.ProviderId}
+                    >
+                      {response.ProviderName}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
             <Col
@@ -510,148 +492,136 @@ const MyCalendar = ({
               style={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
+                justifyContent: "space-between",
               }}
             >
-              <Row gutter={32}>
-                <Col
-                  span={7}
-                  style={{
-                    backgroundColor: "#4caf50",
-                    // margin: "1.5rem 1rem",
-                    color: "#fff",
-                  }}
-                >
-                  <span>Available Slot</span>
-                </Col>
-                <Col
-                  offset={1}
-                  span={7}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    backgroundColor: "#4caf50",
-                    // margin: "1.5rem 0",
-                    justifyContent: "center",
-                    color: "#fff",
-                  }}
-                >
-                  <span>Available Slot</span>
-                </Col>
-                <Col
-                  offset={1}
-                  span={7}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    backgroundColor: "#4caf50",
-                    // margin: "1.5rem 0",
-                    justifyContent: "center",
-                    color: "#fff",
-                  }}
-                >
-                  <span>Available Slot</span>
-                </Col>
-              </Row>
+              <Col
+                span={7}
+                style={{
+                  backgroundColor: "#4caf50",
+                  // margin: "1.5rem 1rem",
+                  color: "#fff",
+                }}
+              >
+                <span>Available Slot</span>
+              </Col>
+              <Col
+                span={7}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  backgroundColor: "#fea010",
+                  // margin: "1.5rem 0",
+                  justifyContent: "center",
+                  color: "#fff",
+                }}
+              >
+                <span>Booked Slot</span>
+              </Col>
+              <Col
+                span={7}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  backgroundColor: "#EE82EE",
+                  // margin: "1.5rem 0",
+                  justifyContent: "center",
+                  color: "#fff",
+                }}
+              >
+                <span>OverBooking Slot</span>
+              </Col>
             </Col>
           </Row>
         </Form>
       </div>
-      <div
-        style={{ backgroundColor: "white", padding: "0 0.5rem" }}
-        ref={tableRef}
-      >
-        <Row
-          style={{
-            display: "flex",
-            justifyContent: "end",
-            padding: "0rem 0rem 0.5rem 1rem",
-          }}
-        >
-          <Col>
-            <span>Book by Date : </span>
-            <DatePicker
-              format={"DD/MM/YYYY"}
-              onChange={(date, dateString) => jumpToSpecificDate(dateString)}
+      {calendarData && (
+        <Spin spinning={loading}>
+          <div style={{ backgroundColor: "white", padding: "0 0.5rem" }}>
+            <Row
+              style={{
+                display: "flex",
+                justifyContent: "end",
+                padding: "0rem 0rem 0.5rem 1rem",
+              }}
+            >
+              <Col>
+                <span>Book by Date : </span>
+                <DatePicker
+                  placeholder="DD/MM/YYYY"
+                  format={"DD/MM/YYYY"}
+                  onChange={(date, dateString) =>
+                    jumpToSpecificDate(dateString)
+                  }
+                />
+              </Col>
+            </Row>
+            <FullCalendar
+              ref={calendarRef}
+              plugins={[
+                dayGridPlugin,
+                timeGridPlugin,
+                listPlugin,
+                interactionPlugin,
+              ]}
+              initialView="timeGridWeek"
+              headerToolbar={{
+                left: "prev,next today",
+                center: "title",
+                right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+              }}
+              buttonText={{
+                today: "Today",
+                month: "Month",
+                week: "Week",
+                day: "Day",
+                list: "Appointment List",
+              }}
+              events={[...events, ...availableSlots]}
+              slotDuration={slotDuration}
+              selectable={false}
+              select={handleSelect}
+              eventClick={handleEventClick}
+              //   selectConstraint={businessHours}
+              dayMaxEventRows={true}
+              height="auto"
+              slotEventOverlap={false}
+              eventDidMount={(info) => {
+                if (info.event.extendedProps.type === "Available") {
+                  return;
+                } else {
+                  return new bootstrap.Popover(info.el, {
+                    title: "Appointment Booked",
+                    placement: "auto",
+                    trigger: "hover",
+                    customClass: "popoverStyle",
+                    html: true,
+                    content: `Appointment Booked for UHID = ${info.event.extendedProps.UHID} & Patient Name = ${info.event.extendedProps.PatientName}`,
+                  });
+                }
+              }}
+              titleFormat={{ year: "numeric", month: "long", day: "numeric" }}
+              allDayText=""
+              slotMinTime="04:00:00"
+              navLinks={true}
+              nowIndicator={true}
+              themeSystem="bootstrap"
             />
-          </Col>
-          <Col style={{ margin: "0 0 0 1rem" }}>
-            {/* <Tooltip
-            title={isFullScreen ? "Exit Full Screen" : "Enter Full Screen"}
-          > */}
-            <Button onClick={handleFullscreen}>
-              {isFullScreen ? (
-                <AiOutlineFullscreenExit style={{ fontSize: "1.5rem" }} />
-              ) : (
-                <AiOutlineFullscreen style={{ fontSize: "1.5rem" }} />
-              )}
-            </Button>
-            {/* </Tooltip> */}
-          </Col>
-        </Row>
-        <FullCalendar
-          ref={calendarRef}
-          plugins={[
-            dayGridPlugin,
-            timeGridPlugin,
-            listPlugin,
-            interactionPlugin,
-          ]}
-          initialView="timeGridWeek"
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-          }}
-          buttonText={{
-            today: "Today",
-            month: "Month",
-            week: "Week",
-            day: "Day",
-            list: "Appointment List",
-          }}
-          events={[...events, ...availableSlots]}
-          slotDuration={slotDuration}
-          selectable={false}
-          select={handleSelect}
-          eventClick={handleEventClick}
-          selectConstraint={businessHours}
-          dayMaxEventRows={false}
-          height="auto"
-          slotEventOverlap={false}
-          eventDidMount={(info) => {
-            if (info.event.extendedProps.type === "Available") {
-              return;
-            } else if (info.event.title === "OverBookingSlot") {
-              return;
-            } else {
-              return new bootstrap.Popover(info.el, {
-                title: info.event.title,
-                placement: "auto",
-                trigger: "hover",
-                customClass: "popoverStyle",
-                content: `<strong>Content</strong>`,
-                html: true,
-              });
-            }
-          }}
-          titleFormat={{ year: "numeric", month: "long", day: "numeric" }}
-          allDayText=""
-          slotMinTime="07:00:00"
-          navLinks={true}
-          nowIndicator={true}
-          themeSystem="bootstrap"
-        />
 
-        {popoverVisible && popoverContent}
+            {popoverVisible && popoverContent}
 
-        <ScheduleAppointmentModal
-          open={modalVisible}
-          onSubmit={handleModalSubmit}
-          onCancel={() => setModalVisible(false)}
-          selectedSlot={selectedSlot}
-        />
-      </div>
+            <ScheduleAppointmentModal
+              open={modalVisible}
+              onSubmit={handleModalSubmit}
+              onCancel={() => setModalVisible(false)}
+              selectedSlot={selectedSlot}
+              calendarData={calendarData}
+              providerDetails={providerDetails[0]}
+              departmentDetails={departmentDetails}
+            />
+          </div>
+        </Spin>
+      )}
     </Layout>
   );
 };
