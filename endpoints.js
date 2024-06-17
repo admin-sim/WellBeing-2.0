@@ -135,7 +135,6 @@ export const urlGetChargeProviders = `${baseURL}/api/AutoCharge/GetChargeProvide
 export const urlGetAllFacilityDepartmentProvider = `${baseURL}/api/AutoCharge/GetAllFacilityDepartmentProvider`;
 export const urlGetAllServicesBasedOnFacilityIdAsync = `${baseURL}/api/AutoCharge/GetAllServicesBasedOnFacilityIdAsync`;
 export const urlAddNewAutoCharge = `${baseURL}/api/AutoCharge/SaveNewAutoCharge`;
-
 export const urlGetLookupDetails = `${baseURL}/api/Master/GetLookupDetails`;
 export const urlAddandUpdateLookup = `${baseURL}/api/Master/AddAndUpdateLookup`;
 export const urlGetAllStates = `${baseURL}/api/State/GetAllStates`;
@@ -210,3 +209,5 @@ export const urlUpdateHoliday = `${baseURL}/api/Holiday/UpdateHoliday`;
 export const urlDeleteHoliday = `${baseURL}/api/Holiday/DeleteHoliday`;
 export const urlGetScheduledProviderAppointments = `${baseURL}/api/ScheduleProviderAppointment/GetScheduledProviderAppointments`;
 export const urlGetProviderCalenderBasedOnProviderId = `${baseURL}/api/ScheduleProviderAppointment/GetProviderCalenderBasedOnProviderId`;
+export const urlEditAutoCharge = `${baseURL}/api/AutoCharge/EditAutoCharge`;
+export const urlUpdateAutoCharge = `${baseURL}/api/AutoCharge/UpdateAutoCharge`;

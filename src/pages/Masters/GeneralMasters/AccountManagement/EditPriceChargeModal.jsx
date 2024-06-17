@@ -97,7 +97,7 @@ function EditPriceChargeModal({
     <div>
       <Spin spinning={loading}>
         <Modal
-          title="Add New General Lookup"
+          title="Update New General Lookup"
           open={open}
           maskClosable={false}
           footer={null}
