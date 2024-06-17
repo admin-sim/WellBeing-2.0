@@ -17,7 +17,7 @@ import {
   urlGetServiceLocationBasedonId,
   urlSearchUHID,
   urlAddNewVisit,
-  urlAddNewVisit1
+  urlAddNewVisit1,
 } from "../../../../endpoints.js";
 
 import { EnvironmentOutlined } from "@ant-design/icons";
@@ -296,8 +296,7 @@ const NewVisit = () => {
         });
 
         if (response.data != null) {
-          const genVisitId =
-            response.data.GeneratedEncounterId;
+          const genVisitId = response.data.GeneratedEncounterId;
           setEncounterId(genVisitId);
           setIsVisitCreated(true);
         } else {

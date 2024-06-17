@@ -210,3 +210,6 @@ export const urlUpdateHoliday = `${baseURL}/api/Holiday/UpdateHoliday`;
 export const urlDeleteHoliday = `${baseURL}/api/Holiday/DeleteHoliday`;
 export const urlGetScheduledProviderAppointments = `${baseURL}/api/ScheduleProviderAppointment/GetScheduledProviderAppointments`;
 export const urlGetProviderCalenderBasedOnProviderId = `${baseURL}/api/ScheduleProviderAppointment/GetProviderCalenderBasedOnProviderId`;
+export const urlGetProviderBasedOnDept = `${baseURL}/api/ScheduleProviderAppointment/GetProviderBasedOnDept`;
+export const urlAddNewScheduleProviderExisitingAppointment = `${baseURL}/api/ScheduleProviderAppointment/AddNewScheduleProviderExisitingAppointment`;
+export const urlPatientAppointmentExist = `${baseURL}/api/ScheduleProviderAppointment/PatientAppointmentExist`;
