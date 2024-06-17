@@ -243,6 +243,31 @@ const menuData = [
       },
     ],
   },
+  {
+    key: "WardManagement",
+    icon: "bed",
+    title: "Ward Management",
+    children: [
+      {
+        key: "InPatient",
+        icons: "FaUserFriends",
+        title: "InPatient Management",
+        link: "WardManagement",
+      },
+      {
+        key: "Bed",
+        icons: "FaUserFriends",
+        title: "Bed Manager",
+        link: "BedManager",
+      },
+      {
+        key: "Discharge",
+        icons: "FaUserFriends",
+        title: "Discharge Clearance",
+        link: "DischargeClearance",
+      },
+    ],
+  },
 
   {
     key: "Lab",

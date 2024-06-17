@@ -29,6 +29,7 @@ import { useNavigate } from "react-router-dom";
 import {
   urlGetScheduleTypesBasedOnTypeId,
   urlGetAllQueueProviders,
+  urlGetScheduleCreateDetails,
   urlAddNewProviderScheduleOfTypeWeek,
   urlAddNewProviderScheduleOfTypeDay,
   urlAddNewProviderScheduleOfTypeWeekDay,
@@ -72,7 +73,7 @@ function ProviderScheduleCreate() {
     debugger;
     setLoading(true);
     try {
-      const response = await customAxios.get(`${urlGetAllQueueProviders}`);
+      const response = await customAxios.get(`${urlGetScheduleCreateDetails}`);
       if (response.data != null) {
         setProvidersData(response.data.data.Providers);
       } else {
@@ -150,14 +151,12 @@ function ProviderScheduleCreate() {
     }
   };
 
-  //   const handleBack = () => {
-  //     setNumOfForms(0);
-  //     setAddSessions(false);
-  //     form.resetFields();
-  //     const url = `/ScheduleTemplate`;
-  //     // Navigate to the new URL
-  //     navigate(url);
-  //   };
+  const handleBack = () => {
+    form.resetFields();
+    const url = `/ProviderSchedule`;
+    // Navigate to the new URL
+    navigate(url);
+  };
 
   const onEditTemplate = (record) => {
     console.log("edit values ", record);
@@ -212,7 +211,7 @@ function ProviderScheduleCreate() {
             notification.success({
               message: "Schedule Template details added Successfully",
             });
-            // handleBack();
+            handleBack();
             form.resetFields();
           } else if (response.data === "AlreadyExists") {
             notification.warning({
@@ -550,14 +549,14 @@ function ProviderScheduleCreate() {
                         htmlType="submit"
                         onClick={handleSubmit}
                       >
-                        Submit
+                        Save
                       </Button>
                     </Form.Item>
                   </Col>
                   <Col span={2} style={{ paddingLeft: "0px" }}>
                     <Form.Item>
-                      <Button type="default" danger>
-                        Reset
+                      <Button type="default" onClick={handleBack}>
+                        Cancel
                       </Button>
                     </Form.Item>
                   </Col>
@@ -566,124 +565,146 @@ function ProviderScheduleCreate() {
             )}
 
             {dailyView && (
-              <Row style={{ paddingLeft: "30px", paddingRight: "30px" }}>
-                <Col span={24}>
-                  <Table
-                    pagination={false}
-                    title={() => (
-                      <>
-                        <Row
-                          style={{
-                            backgroundColor: "#40A2E3",
-                            padding: "0.3rem 0rem 0.3rem 1.5rem",
-                            color: "white",
-                            borderRadius: "5px",
-                          }}
-                        >
-                          <Col
-                            span={5}
+              <>
+                <Row style={{ paddingLeft: "30px", paddingRight: "30px" }}>
+                  <Col span={24}>
+                    <Table
+                      pagination={false}
+                      title={() => (
+                        <>
+                          <Row
                             style={{
-                              fontWeight: 500,
-                              letterSpacing: "0.5px",
-                              fontSize: "1.2rem",
+                              backgroundColor: "#40A2E3",
+                              padding: "0.3rem 0rem 0.3rem 1.5rem",
+                              color: "white",
+                              borderRadius: "5px",
                             }}
                           >
-                            Day Schedule
-                          </Col>
-                          <Col
-                            offset={15}
-                            span={4}
-                            style={{
-                              fontWeight: 500,
-                              letterSpacing: "0.5px",
-                              fontSize: "1.2rem",
-                              // marginLeft:"0px"
-                            }}
-                          >
-                            <Button onClick={handleAddTemplate}>
-                              <PlusCircleOutlined />
-                              Add Template
-                            </Button>
-                          </Col>
-                        </Row>
-                      </>
-                    )}
-                    columns={DailyTemplateColumns}
-                    bordered
-                    dataSource={templateDayDetails}
-                    // rowKey={(row) => row.ProviderIdentityId}
-                    size="small"
-                    className="vitals-table"
-                    style={{
-                      margin: "0 0 1.5rem 0",
-                      boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
-                    }}
-                    locale={{
-                      emptyText: "There is no Provider credentials  to show",
-                    }}
-                  />
-                </Col>
-              </Row>
+                            <Col
+                              span={5}
+                              style={{
+                                fontWeight: 500,
+                                letterSpacing: "0.5px",
+                                fontSize: "1.2rem",
+                              }}
+                            >
+                              Day Schedule
+                            </Col>
+                            <Col
+                              offset={15}
+                              span={4}
+                              style={{
+                                fontWeight: 500,
+                                letterSpacing: "0.5px",
+                                fontSize: "1.2rem",
+                                // marginLeft:"0px"
+                              }}
+                            >
+                              <Button onClick={handleAddTemplate}>
+                                <PlusCircleOutlined />
+                                Add Template
+                              </Button>
+                            </Col>
+                          </Row>
+                        </>
+                      )}
+                      columns={DailyTemplateColumns}
+                      bordered
+                      dataSource={templateDayDetails}
+                      // rowKey={(row) => row.ProviderIdentityId}
+                      size="small"
+                      className="vitals-table"
+                      style={{
+                        margin: "0 0 1.5rem 0",
+                        boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
+                      }}
+                      locale={{
+                        emptyText: "There is no Provider credentials  to show",
+                      }}
+                    />
+                  </Col>
+                </Row>
+                <Row justify="end">
+                  <Col span={2} style={{ paddingLeft: "0px" }}>
+                    <Form.Item>
+                      <Button type="primary" onClick={handleBack}>
+                        Cancel
+                      </Button>
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </>
             )}
             {weekDayView && (
-              <Row style={{ paddingLeft: "30px", paddingRight: "30px" }}>
-                <Col span={24}>
-                  <Table
-                    pagination={false}
-                    title={() => (
-                      <>
-                        <Row
-                          style={{
-                            backgroundColor: "#40A2E3",
-                            padding: "0.3rem 0rem 0.3rem 1.5rem",
-                            color: "white",
-                            borderRadius: "5px",
-                          }}
-                        >
-                          <Col
-                            span={5}
+              <>
+                <Row style={{ paddingLeft: "30px", paddingRight: "30px" }}>
+                  <Col span={24}>
+                    <Table
+                      pagination={false}
+                      title={() => (
+                        <>
+                          <Row
                             style={{
-                              fontWeight: 500,
-                              letterSpacing: "0.5px",
-                              fontSize: "1.2rem",
+                              backgroundColor: "#40A2E3",
+                              padding: "0.3rem 0rem 0.3rem 1.5rem",
+                              color: "white",
+                              borderRadius: "5px",
                             }}
                           >
-                            Week Day Schedule
-                          </Col>
-                          <Col
-                            offset={15}
-                            span={4}
-                            style={{
-                              fontWeight: 500,
-                              letterSpacing: "0.5px",
-                              fontSize: "1.2rem",
-                              // marginLeft:"0px"
-                            }}
-                          >
-                            <Button onClick={handleAddTemplate}>
-                              <PlusCircleOutlined />
-                              Add Template
-                            </Button>
-                          </Col>
-                        </Row>
-                      </>
-                    )}
-                    columns={WeekDayTemplateColumns}
-                    bordered
-                    dataSource={templatesWeekDayDetails}
-                    // rowKey={(row) => row.ProviderIdentityId}
-                    size="small"
-                    className="vitals-table"
-                    style={{
-                      margin: "0 0 1.5rem 0",
-                      boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
-                    }}
-                    locale={{
-                      emptyText: "There is no Provider credentials  to show",
-                    }}
-                  />
-                </Col>
-              </Row>
+                            <Col
+                              span={5}
+                              style={{
+                                fontWeight: 500,
+                                letterSpacing: "0.5px",
+                                fontSize: "1.2rem",
+                              }}
+                            >
+                              Week Day Schedule
+                            </Col>
+                            <Col
+                              offset={15}
+                              span={4}
+                              style={{
+                                fontWeight: 500,
+                                letterSpacing: "0.5px",
+                                fontSize: "1.2rem",
+                                // marginLeft:"0px"
+                              }}
+                            >
+                              <Button onClick={handleAddTemplate}>
+                                <PlusCircleOutlined />
+                                Add Template
+                              </Button>
+                            </Col>
+                          </Row>
+                        </>
+                      )}
+                      columns={WeekDayTemplateColumns}
+                      bordered
+                      dataSource={templatesWeekDayDetails}
+                      // rowKey={(row) => row.ProviderIdentityId}
+                      size="small"
+                      className="vitals-table"
+                      style={{
+                        margin: "0 0 1.5rem 0",
+                        boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
+                      }}
+                      locale={{
+                        emptyText: "There is no Schedules to show",
+                      }}
+                    />
+                  </Col>
+                </Row>
+                <Row justify="end">
+                  <Col span={2} style={{ paddingLeft: "0px" }}>
+                    <Form.Item>
+                      <Button type="primary" onClick={handleBack}>
+                        Cancel
+                      </Button>
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </>
             )}
           </Form>
         </div>

@@ -82,6 +82,25 @@ const ScheduleTemplateEdit = () => {
     }
   };
 
+  // useEffect(() => {
+  //   const formData = {
+  //     sessions: response.data.data.ScheduleTemplateSessionList.map(
+  //       (session, index) => ({
+  //         StartTime: moment(session.StartTime, "HH:mm:ss"),
+  //         EndTime: moment(session.EndTime, "HH:mm:ss"),
+  //         SlotDuration: session.SlotDuration,
+  //         PatientsInSlot: session.PatientsInslot,
+  //         OverbookingSlots: session.OverbookingSlots,
+  //         OverbookingEndSlots: session.OverbookingEndSlots,
+  //         PatientsMaxSlot: session.PatientsMaxSlot,
+  //         TemplateSessionId: session.TemplateSessionId,
+  //         SessionNo: session.SessionNo,
+  //       })
+  //     ),
+  //   };
+  //   form.setFieldsValue(formData);
+  // }, [response, form]);
+
   const handleSubmit = async () => {
     debugger;
     try {

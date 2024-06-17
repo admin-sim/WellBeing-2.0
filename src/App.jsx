@@ -721,7 +721,7 @@ function App() {
             }
           />
           <Route
-            path="WardManagement/InPatientManagement"
+            path="WardManagement"
             element={
               <ProtectedRoute>
                 <InPatientManagement />
@@ -729,7 +729,7 @@ function App() {
             }
           />
           <Route
-            path="WardManagement/BedManager"
+            path="BedManager"
             element={
               <ProtectedRoute>
                 <BedManager />
@@ -737,7 +737,7 @@ function App() {
             }
           />
           <Route
-            path="WardManagement/DischargeClearance"
+            path="DischargeClearance"
             element={
               <ProtectedRoute>
                 <DischargeClearance />

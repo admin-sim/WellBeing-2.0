@@ -21,6 +21,8 @@ const CustomTable = ({
   style,
   scroll,
   title,
+  rowSelection,
+  rowkey,
 }) => {
   const [searchText, setSearchText] = useState("");
 
@@ -39,7 +41,6 @@ const CustomTable = ({
         )
       )
     : dataSource;
-
   const tableColumns = [
     ...columns.map((col) => ({
       ...col,
@@ -50,10 +51,14 @@ const CustomTable = ({
         ) {
           return a[col.dataIndex] - b[col.dataIndex];
         }
-        return a[col.dataIndex].localeCompare(b[col.dataIndex]);
+        return a[col.dataIndex]?.localeCompare(b[col.dataIndex]);
       },
-      render: (text) =>
-        typeof text === "string" || typeof text === "number" ? (
+      render: (text, record) => {
+        // Apply existing render function if it exists
+        const renderedText = col.render ? col.render(text, record) : text;
+
+        return typeof renderedText === "string" ||
+          typeof renderedText === "number" ? (
           <Highlighter
             highlightStyle={{
               color: "blue",
@@ -63,11 +68,12 @@ const CustomTable = ({
             }}
             searchWords={[searchText]}
             autoEscape
-            textToHighlight={text?.toString()}
+            textToHighlight={renderedText?.toString()}
           />
         ) : (
-          text
-        ),
+          renderedText
+        );
+      },
     })),
   ];
 
@@ -147,9 +153,11 @@ const CustomTable = ({
             showTotal: (total, range) =>
               `Showing ${range[0]} to ${range[1]} of ${total} entries`,
           }}
+          rowKey={rowkey}
           dataSource={searchedData}
           scroll={scroll}
           title={title}
+          rowSelection={rowSelection}
         />
       </ConfigProvider>
     </div>

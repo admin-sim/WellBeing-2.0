@@ -28,7 +28,8 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   urlGetScheduleTypesBasedOnTypeId,
-  urlGetAllProviders,
+  // urlGetAllProviders,
+  urlGetAllQueueProviders,
   urlUpdateProviderWeeklySchedule,
   urlGetEditDayProviderSchedule,
   urlUpdateProviderScheduleOfType,
@@ -100,7 +101,7 @@ function ProviderScheduleEdit() {
 
     setLoading(true);
     try {
-      const response = await customAxios.get(`${urlGetAllProviders}`);
+      const response = await customAxios.get(`${urlGetAllQueueProviders}`);
       if (response.data != null) {
         setProvidersData(response.data.data.Providers);
       } else {
