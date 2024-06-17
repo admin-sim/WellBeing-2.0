@@ -623,7 +623,7 @@ const MyCalendar = ({}) => {
           </div>
         </Spin>
       ) : (
-        loading && <Skeleton active={loading} />
+        loading && <Spin spinning={loading} fullscreen />
       )}
     </Layout>
   );
