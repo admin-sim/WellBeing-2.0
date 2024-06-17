@@ -162,13 +162,15 @@ function ScheduleCreateOrUpdate() {
                 </Button>
               </Form.Item>
             </Col>
-            <Col span={2} style={{ margin: "30px 0px" }}>
-              <Form.Item>
-                <Button type="default" onClick={handleBack}>
-                  Back
-                </Button>
-              </Form.Item>
-            </Col>
+            {!addSession && (
+              <Col span={2} style={{ margin: "30px 0px" }}>
+                <Form.Item>
+                  <Button type="default" onClick={handleBack}>
+                    Back
+                  </Button>
+                </Form.Item>
+              </Col>
+            )}
           </Row>
           {addSession && (
             <>
@@ -198,14 +200,14 @@ function ScheduleCreateOrUpdate() {
                       htmlType="submit"
                       onClick={handleSubmit}
                     >
-                      Submit
+                      Save
                     </Button>
                   </Form.Item>
                 </Col>
                 <Col span={2} style={{ paddingLeft: "0px" }}>
                   <Form.Item>
-                    <Button type="default" danger>
-                      Reset
+                    <Button type="default" onClick={handleBack}>
+                      Cancel
                     </Button>
                   </Form.Item>
                 </Col>

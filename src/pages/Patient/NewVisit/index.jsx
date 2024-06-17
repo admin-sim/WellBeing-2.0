@@ -17,7 +17,7 @@ import {
   urlGetServiceLocationBasedonId,
   urlSearchUHID,
   urlAddNewVisit,
-  urlAddNewVisit1
+  urlAddNewVisit1,
 } from "../../../../endpoints.js";
 
 import { EnvironmentOutlined } from "@ant-design/icons";
@@ -241,6 +241,7 @@ const NewVisit = () => {
     debugger;
     setSelectedRecord(record); // Set the selected record when the modal is opened
     setIsVisitModalVisible(true);
+    setIsVisitCreated(false);
     // form1.resetFields();
   };
 
@@ -261,14 +262,16 @@ const NewVisit = () => {
     debugger;
     setSelectedRecord(record); // Set the selected record when the modal is opened
     setIsMoreModalVisible(true);
+
     // form1.resetFields();
   };
 
   const handleOk = async () => {
-    // debugger;
+    debugger;
     try {
       await form1.validateFields(); // Trigger form validation
       const values = form1.getFieldsValue();
+      setIsVisitCreated(true);
       console.log("Selected Record:", selectedRecord);
       const postData = {
         PatientId: selectedRecord.PatientId,
@@ -296,10 +299,8 @@ const NewVisit = () => {
         });
 
         if (response.data != null) {
-          const genVisitId =
-            response.data.GeneratedEncounterId;
+          const genVisitId = response.data.GeneratedEncounterId;
           setEncounterId(genVisitId);
-          setIsVisitCreated(true);
         } else {
           alert("Invalid Login");
         }

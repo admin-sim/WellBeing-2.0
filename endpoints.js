@@ -181,6 +181,7 @@ export const urlGetScheduleTemplateDetailsBasedOnId = `${baseURL}/api/ScheduleTe
 export const urlDeleteScheduleTemplate = `${baseURL}/api/ScheduleTemplate/DeleteScheduleTemplate`;
 export const urlGetAllProviderSchedules = `${baseURL}/api/ScheduleProvider/GetAllProviderSchedules`;
 export const urlGetScheduleTypesBasedOnTypeId = `${baseURL}/api/ScheduleProvider/GetScheduleTypesBasedOnTypeId`;
+export const urlGetScheduleCreateDetails = `${baseURL}/api/ScheduleProvider/GetScheduleCreateDetails`;
 export const urlAddNewProviderScheduleOfTypeWeek = `${baseURL}/api/ScheduleProvider/AddNewProviderScheduleOfTypeWeek`;
 export const urlAddNewProviderScheduleOfTypeDay = `${baseURL}/api/ScheduleProvider/AddNewProviderScheduleOfTypeDay`;
 export const urlAddNewProviderScheduleOfTypeWeekDay = `${baseURL}/api/ScheduleProvider/AddNewProviderScheduleOfTypeWeekDay`;
