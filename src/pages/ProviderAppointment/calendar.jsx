@@ -18,6 +18,7 @@ import {
   Form,
   Spin,
   Popover,
+  Skeleton,
 } from "antd";
 import { AiOutlineFullscreen, AiOutlineFullscreenExit } from "react-icons/ai";
 import ScheduleAppointmentModal from "./ScheduleAppointmentModal";
@@ -535,7 +536,7 @@ const MyCalendar = ({}) => {
           </Row>
         </Form>
       </div>
-      {calendarData && (
+      {calendarData ? (
         <Spin spinning={loading}>
           <div style={{ backgroundColor: "white", padding: "0 0.5rem" }}>
             <Row
@@ -621,6 +622,8 @@ const MyCalendar = ({}) => {
             />
           </div>
         </Spin>
+      ) : (
+        loading && <Skeleton active={loading} />
       )}
     </Layout>
   );
