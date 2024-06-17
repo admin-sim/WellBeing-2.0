@@ -38,13 +38,14 @@ const WeeklyView = ({
               <label>{day.LookupDescription}</label>
             </Col>
             <Col span={12} style={{ margin: "20px 0px 0px 0px" }}>
-              <Form.Item name={`schedule-${day.LookupID}`}>
+              <Form.Item name={`schedule-${day.LookupID}`} >
                 <Select
                   placeholder="Select a session"
                   onChange={(value) => handleSelectChange(day.LookupID, value)}
                   size="default"
                   // Set the default value to the TemplateId of the corresponding session
                   defaultValue={defaultValue}
+                  allowClear
                 >
                   {sessionsData.map((session) => (
                     <Option key={session.TemplateId} value={session.TemplateId}>

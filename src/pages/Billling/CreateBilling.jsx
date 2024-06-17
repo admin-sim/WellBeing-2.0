@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Col, Form, Popconfirm, Input, InputNumber, ConfigProvider, Row, Select, message, DatePicker, Divider, notification, Table, Modal, Tooltip, AutoComplete, Typography, Empty } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusCircleOutlined, PlusOutlined, CloseSquareFilled } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, LeftOutlined, PlusOutlined, CloseSquareFilled } from '@ant-design/icons';
 import Layout from 'antd/es/layout/layout';
 const { Text } = Typography;
 import { useNavigate } from 'react-router';
@@ -682,7 +682,7 @@ const CreateBilling = () => {
             </Title>
           </Col>
           <Col offset={5} span={3}>
-            <Button icon={<PlusCircleOutlined />} onClick={handleCreateService}>
+            <Button icon={<LeftOutlined /> } onClick={handleCreateService}>
               Back
             </Button>
           </Col>

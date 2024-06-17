@@ -1,9 +1,20 @@
 import React from "react";
-import { Layout, Row, Col, Form, Button, Input, Select ,TimePicker} from "antd";
+import {
+  Layout,
+  Row,
+  Col,
+  Form,
+  Button,
+  Input,
+  Select,
+  TimePicker,
+} from "antd";
 import Title from "antd/es/typography/Title";
 //import { useForm } from "antd/es/form/Form";
 
 const SessionsForms = ({ numForms, form }) => {
+
+  const numberPattern = /^\d*$/;
   //const [form] = useForm();
 
   let forms = [];
@@ -37,7 +48,10 @@ const SessionsForms = ({ numForms, form }) => {
             <Form.Item
               name={["sessions", i, "SlotDuration"]}
               label="Slot Duration"
-              rules={[{ required: true, message: "Enter Slot Duration" }]}
+              rules={[
+                { required: true, message: "Enter Slot Duration" },
+                { pattern: numberPattern, message: "Enter a valid number" },
+              ]}
             >
               <Input style={{ width: "100%" }} />
             </Form.Item>
@@ -46,7 +60,10 @@ const SessionsForms = ({ numForms, form }) => {
             <Form.Item
               name={["sessions", i, "PatientsInSlot"]}
               label="No. of patient/slot"
-              rules={[{ required: true, message: "Enter No. of patient" }]}
+              rules={[
+                { required: true, message: "Enter No. of patient" },
+                { pattern: numberPattern, message: "Enter a valid number" },
+              ]}
             >
               <Input style={{ width: "100%" }} />
             </Form.Item>
@@ -60,7 +77,9 @@ const SessionsForms = ({ numForms, form }) => {
             <Form.Item
               name={["sessions", i, "OverbookingSlots"]}
               label="Overbooking slots(begin)"
-              // rules={[{ required: true, message: "Enter the value" }]}
+              rules={[
+                { pattern: numberPattern, message: "Enter a valid number" },
+              ]}
             >
               <Input style={{ width: "100%" }} />
             </Form.Item>
@@ -69,7 +88,9 @@ const SessionsForms = ({ numForms, form }) => {
             <Form.Item
               name={["sessions", i, "OverbookingEndSlots"]}
               label="Overbooking slots(end)"
-              // rules={[{ required: true, message: "Enter the value" }]}
+              rules={[
+                { pattern: numberPattern, message: "Enter a valid number" },
+              ]}
             >
               <Input style={{ width: "100%" }} />
             </Form.Item>
@@ -78,7 +99,10 @@ const SessionsForms = ({ numForms, form }) => {
             <Form.Item
               name={["sessions", i, "PatientsMaxSlot"]}
               label="Maximum No. of slot"
-              rules={[{ required: true, message: "Enter the value" }]}
+              rules={[
+                { required: true, message: "Enter the value" },
+                { pattern: numberPattern, message: "Enter a valid number" },
+              ]}
             >
               <Input style={{ width: "100%" }} />
             </Form.Item>
