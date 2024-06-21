@@ -236,7 +236,7 @@ const PatientIndent = () => {
         try {
             const postData1 = {
                 IndentType: values.IndentType === 0 ? null : values.IndentType,
-                IndentStatus: values.IndentStatus,
+                // IndentStatus: values.IndentStatus,
                 IssuingStoreId: values.IssuingStore === undefined ? 0 : values.IssuingStore,
                 IndentStatus: values.POStatus === undefined ? null : values.POStatus,
                 FromDate: values.FromDate,

@@ -647,7 +647,7 @@ const ProviderEdit = () => {
                   <Row
                     style={{
                       backgroundColor: "#40A2E3",
-                      padding: "0.3rem 1rem",
+
                       color: "white",
                       borderRadius: "5px",
                       padding: "0.3rem 0rem 0.3rem 1.5rem",

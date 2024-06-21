@@ -1390,9 +1390,9 @@ const CreateDirectGRN = () => {
               style={{
                 width: "100%",
               }}
-              initialValues={{
-                remember: true,
-              }}
+              // initialValues={{
+              //   remember: true,
+              // }}
               onFinish={onFinishModel}
               onFinishFailed={onFinishFailed}
               autoComplete="off"
