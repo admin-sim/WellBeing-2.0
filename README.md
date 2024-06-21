@@ -4,6 +4,6 @@ Frontend : React.js
 Backend : Dotnet core                   
 DB : Sql Server           
 
-# Please push your code to your individual branches
+# Please push your code to your development branches
 
 
