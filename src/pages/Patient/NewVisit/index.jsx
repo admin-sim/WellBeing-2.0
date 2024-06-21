@@ -17,6 +17,7 @@ import {
   urlGetServiceLocationBasedonId,
   urlSearchUHID,
   urlAddNewVisit,
+  urlAddNewVisit1,
 } from "../../../../endpoints.js";
 
 import { EnvironmentOutlined } from "@ant-design/icons";
@@ -32,7 +33,7 @@ const containsDropdown = [
 
 const NewVisit = () => {
   const [patientDropdown, setPatientDropdown] = useState({
-    Gender: [],
+    Genders: [],
     PatientType: [],
     Title: [],
     EncounterType: [],
@@ -41,7 +42,6 @@ const NewVisit = () => {
     CardType: [],
   });
   const [loading, setLoading] = useState(false);
-  
 
   const [options, setOptions] = useState([]);
 
@@ -241,6 +241,7 @@ const NewVisit = () => {
     debugger;
     setSelectedRecord(record); // Set the selected record when the modal is opened
     setIsVisitModalVisible(true);
+    setIsVisitCreated(false);
     // form1.resetFields();
   };
 
@@ -261,14 +262,16 @@ const NewVisit = () => {
     debugger;
     setSelectedRecord(record); // Set the selected record when the modal is opened
     setIsMoreModalVisible(true);
+
     // form1.resetFields();
   };
 
   const handleOk = async () => {
-    // debugger;
+    debugger;
     try {
       await form1.validateFields(); // Trigger form validation
       const values = form1.getFieldsValue();
+      setIsVisitCreated(true);
       console.log("Selected Record:", selectedRecord);
       const postData = {
         PatientId: selectedRecord.PatientId,
@@ -288,7 +291,7 @@ const NewVisit = () => {
 
       try {
         // Send a POST request to the server
-        const response = await customAxios.post(urlAddNewVisit, postData, {
+        const response = await customAxios.post(urlAddNewVisit1, postData, {
           headers: {
             "Content-Type": "application/json", // Replace with the appropriate content type if needed
             // Add any other required headers here
@@ -296,10 +299,8 @@ const NewVisit = () => {
         });
 
         if (response.data != null) {
-          const genVisitId =
-            response.data.data.EncounterModel.GeneratedEncounterId;
+          const genVisitId = response.data.GeneratedEncounterId;
           setEncounterId(genVisitId);
-          setIsVisitCreated(true);
         } else {
           alert("Invalid Login");
         }
@@ -424,7 +425,7 @@ const NewVisit = () => {
       },
     },
     {
-      title: "UhId",
+      title: "UHID",
       dataIndex: "UhId",
       key: "UhId",
       sorter: (a, b) => a.UhId - b.UhId,
@@ -558,13 +559,14 @@ const NewVisit = () => {
                         .toUpperCase()
                         .includes(inputValue.toUpperCase())
                     }
+                    allowClear
                   />
                 </Form.Item>
               </div>
             </Col>
             <Col className="gutter-row" span={6}>
               <div>
-                <Form.Item label="NameFilter" name="NameFilter">
+                <Form.Item label="Name Filter" name="NameFilter">
                   <Select allowClear>
                     {containsDropdown.map((option) => (
                       <Select.Option key={option.id} value={option.id}>
@@ -578,7 +580,7 @@ const NewVisit = () => {
             <Col className="gutter-row" span={6}>
               <div>
                 <Form.Item label=" Patient Name" name="PatientName">
-                  <Input />
+                  <Input allowClear />
                 </Form.Item>
               </div>
             </Col>
@@ -589,6 +591,8 @@ const NewVisit = () => {
                     style={{ width: "100%" }}
                     onChange={handleDateChange}
                     disabledDate={disabledDate}
+                    placeholder="DD-MM-YYYY"
+                    allowClear
                   />
                 </Form.Item>
               </div>
@@ -614,7 +618,7 @@ const NewVisit = () => {
             <Col className="gutter-row" span={6}>
               <div>
                 <Form.Item label="Identifier Value" name="IdentifierValue">
-                  <Input />
+                  <Input allowClear />
                 </Form.Item>
               </div>
             </Col>
@@ -625,6 +629,8 @@ const NewVisit = () => {
                     style={{ width: "100%" }}
                     onChange={handleRegFromDateChange}
                     disabledDate={disabledDate}
+                    placeholder="DD-MM-YYYY"
+                    allowClear
                   />
                 </Form.Item>
               </div>
@@ -636,6 +642,8 @@ const NewVisit = () => {
                     style={{ width: "100%" }}
                     onChange={handleRegToDateChange}
                     disabledDate={disabledDate}
+                    placeholder="DD-MM-YYYY"
+                    allowClear
                   />
                 </Form.Item>
               </div>
@@ -654,14 +662,14 @@ const NewVisit = () => {
                     },
                   ]}
                 >
-                  <Input />
+                  <Input allowClear />
                 </Form.Item>
               </div>
             </Col>
             <Col className="gutter-row" span={6}>
               <div>
                 <Form.Item label="City" name="City">
-                  <Input />
+                  <Input allowClear />
                 </Form.Item>
               </div>
             </Col>
@@ -677,7 +685,7 @@ const NewVisit = () => {
                     },
                   ]}
                 >
-                  <Input />
+                  <Input allowClear />
                 </Form.Item>
               </div>
             </Col>
@@ -689,7 +697,7 @@ const NewVisit = () => {
                   name="PatientGender"
                 >
                   <Select allowClear>
-                    {patientDropdown.Gender.map((option) => (
+                    {patientDropdown.Genders.map((option) => (
                       <Select.Option
                         key={option.LookupID}
                         value={option.LookupID}
@@ -706,7 +714,7 @@ const NewVisit = () => {
             <Col style={{ marginRight: "10px" }}>
               <Form.Item>
                 <Button type="primary" htmlType="submit">
-                  Submit
+                  Search
                 </Button>
               </Form.Item>
             </Col>
@@ -775,19 +783,33 @@ const NewVisit = () => {
           title="Create Visit"
           open={isVisitModalVisible}
           onOk={handleOk}
-          okButtonProps={{ disabled: IsVisitCreated }}
+          // okButtonProps={{ disabled: IsVisitCreated }}
           onCancel={handleVisitModalCancel}
           okText="Submit"
           maskClosable={false}
+          footer={[
+            <Button
+              key="submit"
+              type="primary"
+              loading={loading}
+              onClick={handleOk}
+              disabled={IsVisitCreated}
+            >
+              Submit
+            </Button>,
+            <Button key="back" onClick={handleVisitModalCancel}>
+              Cancel
+            </Button>,
+          ]}
         >
           <div
-           style={{
-            padding: "16px",
-            borderRadius: "4px",
-            margin: "10px",
-            backgroundColor: "#f9f0ff",
-            boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
-          }}
+            style={{
+              padding: "16px",
+              borderRadius: "4px",
+              margin: "10px",
+              backgroundColor: "#f9f0ff",
+              boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
+            }}
           >
             <Row gutter={[16, 16]}>
               <Col span={8}>

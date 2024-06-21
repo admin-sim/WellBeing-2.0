@@ -15,7 +15,7 @@ import {
 import { jwtDecode } from "jwt-decode";
 import { IoCheckmarkDoneSharp } from "react-icons/io5";
 import MenuList from "./MenuList/index.jsx";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
@@ -34,6 +34,7 @@ import { isBrowser } from "react-device-detect";
 import LogoMobile from "./LogoMobile.jsx";
 import LogoDrawer from "./LogoDrawer.jsx";
 import Cookies from "js-cookie";
+import { AiOutlineFullscreen, AiOutlineFullscreenExit } from "react-icons/ai";
 // import { useSelector } from "react-redux";
 const { Header, Sider, Content } = Layout;
 const notificationData = [
@@ -44,6 +45,7 @@ const notificationData = [
 
 function MainLayout() {
   const navigate = useNavigate();
+  const [isFullScreen, setIsFullScreen] = useState(false);
   // const userContext = JSON.parse(localStorage.getItem("userContext"));
   //useSelector((state) => state.userContext.value);
   const [sessionTimeRemaining, setSessionTimeRemaining] = useState(
@@ -82,7 +84,7 @@ function MainLayout() {
     } else {
       notification.warning({
         message: "Session Expired, Please LogIn",
-        duration: 20,
+        duration: 0,
         placement: "topRight",
       });
       navigate("/login");
@@ -118,8 +120,58 @@ function MainLayout() {
     Cookies.remove("authToken");
     navigate("/login");
   }
+  const FullScreenRef = useRef(null);
+
+  const enterFullscreen = () => {
+    const elem = FullScreenRef.current;
+
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+      // Firefox
+      elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) {
+      // Chrome, Safari, and Opera
+      elem.webkitRequestFullscreen();
+    }
+  };
+
+  const exitFullscreen = () => {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      // Firefox
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) {
+      // Chrome, Safari, and Opera
+      document.webkitExitFullscreen();
+    }
+  };
+
+  const handleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      setIsFullScreen(true);
+      enterFullscreen();
+    } else {
+      setIsFullScreen(false);
+      exitFullscreen();
+    }
+  };
 
   const headerItems = [
+    {
+      key: 4,
+      label: (
+        <Button onClick={handleFullscreen}>
+          {isFullScreen ? (
+            <AiOutlineFullscreenExit style={{ fontSize: "1.5rem" }} />
+          ) : (
+            <AiOutlineFullscreen style={{ fontSize: "1.5rem" }} />
+          )}
+        </Button>
+      ),
+      selectable: "false",
+    },
     {
       key: 3, // Ensure this key is different from other keys
       label: (
@@ -373,7 +425,7 @@ function MainLayout() {
   ];
 
   return isBrowser ? (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout style={{ minHeight: "100vh" }} ref={FullScreenRef}>
       <Sider
         collapsed={collapsed}
         collapsible

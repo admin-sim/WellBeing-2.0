@@ -17,7 +17,12 @@ import {
 } from "antd";
 import Title from "antd/es/typography/Title";
 import { useNavigate } from "react-router-dom";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import customAxios from "../../../../components/customAxios/customAxios";
+import {
+  urlSearchPayerRecord,
+  urlGetPayerViewModel,
+} from "../../../../../endpoints";
 
 const options = [
   {
@@ -37,110 +42,186 @@ const options = [
 function PayerSearch() {
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const handleOnFinish = async (values) => {
-    console.log("Received values from form: ", values);
+  const [isloading, setLoading] = useState(true);
+  const [payerDropdown, setPayerDropdown] = useState({
+    PayerIdentificationType: [],
+    PayerTypes: [],
+  });
+  const [payerSearchDetails, setPayerSearchDetails] = useState([]);
+
+  const processPayerData = (payers) => {
+    debugger;
+    return payers.map((payer) => {
+      const combinedIdentifiers = payer.PayerIdentifications.map(
+        (identification, index) => {
+          return `Identifier ${index + 1}: ${
+            identification.IdentificationTypeName
+          }`;
+        }
+      ).join(", ");
+
+      return {
+        ...payer,
+        combinedIdentifiers,
+      };
+    });
   };
+
+  useEffect(() => {
+    debugger;
+    setLoading(true);
+    customAxios.get(urlGetPayerViewModel).then((response) => {
+      const apiData = response.data.data;
+      setPayerDropdown(apiData);
+      setLoading(false);
+    });
+  }, []);
+
+  const handleOnFinish = async (values) => {
+    debugger;
+    console.log("Received values from form: ", values);
+
+    // ... Repeat for other parameters
+    try {
+      setLoading(true);
+
+      // Assuming postData1 is an object with your input values
+      const postData1 = {
+        PayerType: values.PayerType === undefined ? 0 : values.PayerType,
+        PayerName: values.PayerName === undefined ? '""' : values.PayerName,
+        EffectiveFrom:
+          values.EffectiveFrom === undefined ? '""' : values.EffectiveFrom,
+        EffectiveTo:
+          values.EffectiveTo === undefined ? '""' : values.EffectiveTo,
+        IdentifierType:
+          values.IdentifierType === undefined ? 0 : values.IdentifierType,
+        IdentifierValue:
+          values.identifierValue === undefined ? '""' : values.identifierValue,
+        MobileNumber:
+          values.MobileNumber === undefined ? '""' : values.MobileNumber,
+        City: values.City === undefined ? '""' : values.City,
+      };
+      const response = await customAxios.get(
+        `${urlSearchPayerRecord}?PayerTypeId=${postData1.PayerType}&PayerName=${postData1.PayerName}&EffectiveFrom=${postData1.EffectiveFrom}&EffectiveTo=${postData1.EffectiveTo}&IdentifierType=${postData1.IdentifierType}&IdentifierValue=${postData1.IdentifierValue}&MobileNo=${postData1.MobileNumber}&city=${postData1.City}`
+      );
+      if (response.data !== null) {
+        console.log("Response:", response.data);
+        //resetForm();
+        const payerDetails = response.data.data.Payers.map((obj, index) => {
+          return {
+            ...obj,
+            key: index + 1,
+          };
+        });
+        const finalPayerDetails = processPayerData(payerDetails);
+        setPayerSearchDetails(finalPayerDetails);
+        setLoading(false);
+        form.resetFields();
+      }
+    } catch (error) {
+      // Handle any errors here
+      console.error("Error:", error);
+    }
+    // Reset the form fields
+  };
+
   const handleReset = () => {
     form.resetFields();
   };
-  const handleNameClick = (record) => {
-    navigate("/Payer/Edit", { state: { record } });
-  };
+ 
 
-  const data = [
-    {
-      key: 1,
-      SlNo: 1,
-      DOB: "27/09/1980",
-      Name: { Name: "Admin" },
-      Gender: "Male",
-      ContactDetails: {
-        Mobile: "9834567890",
-        Landline: "080123456",
-        Email: "example@email.com",
+  const handleEditPayerDetails = (record) => {
+    debugger;
+
+    const url = `/PayerRegistration`;
+
+    // Navigate to the new URL
+    navigate(url, {
+      state: {
+        selectedRow: record,
+        isEditPayerRegistration: true,
       },
-      IdentifierType: "Pan Card",
-    },
-    {
-      key: 2,
-      SlNo: 2,
-      DOB: "28/09/2023",
-      Gender: "Female",
-      Name: { Name: "Kiran" },
-      ContactDetails: {
-        Mobile: "9834567890",
-        Landline: "080123456",
-        Email: "example@email.com",
-      },
-      IdentifierType: "Aadhar Card",
-    },
-  ];
+    });
+  };
 
   const columns = [
     {
       title: "Sl. No.",
-      dataIndex: "SlNo",
-      key: "SlNo",
+      dataIndex: "key",
+      key: "key",
       width: 70,
     },
 
     {
-      title: "Name",
-      dataIndex: "Name",
-      key: "Name",
-      width: 300,
-      render: (Name, record) => (
+      title: "Payer Type",
+      dataIndex: "PayerTypeName",
+      key: "PayerTypeName",
+      width: 200,
+      render: (text, record) => (
         <>
           <a
             href=""
             onClick={(e) => {
               e.preventDefault();
-              handleNameClick(record);
+              handleEditPayerDetails(record);
             }}
           >
-            {Name?.Name}
+            {record?.PayerTypeName}
           </a>
         </>
       ),
     },
-
     {
-      title: "Gender",
-      dataIndex: "Gender",
-      key: "Gender",
-      width: 150,
+      title: "Payer Name",
+      dataIndex: "PayerName",
+      key: "PayerName",
+      width: 300,
+    },
+    {
+      title: "Effective From",
+      dataIndex: "EffectiveFromDate",
+      key: "EffectiveFromDate",
+      width: 170,
     },
 
     {
-      title: "DOB",
-      dataIndex: "DOB",
-      key: "DOB",
+      title: "Effective To",
+      dataIndex: "EffectiveToDate",
+      key: "EffectiveToDate",
       width: 150,
     },
+
     {
       title: "Identifier Type",
-      dataIndex: "IdentifierType",
-      key: "IdType",
+      dataIndex: "combinedIdentifiers",
+      key: "combinedIdentifiers",
       width: 250,
     },
+
     {
       title: "Contact Details",
       dataIndex: "ContactDetails",
       key: "ContactDetails",
       width: 300,
-      render: (contact) => (
+      render: (text, record) => (
         <div>
           <p>
-            <strong>Mobile : </strong> {contact?.Mobile}
+            <strong>Mobile : </strong> {record?.MobileNo}
             <br />
             <strong>Landline : </strong>
-            {contact?.Landline}
+            {record?.LandlineNo}
             <br />
             <strong>Email : </strong>
-            {contact?.Email}
+            {record?.EmailId}
           </p>
         </div>
       ),
+    },
+    {
+      title: "City",
+      dataIndex: "City",
+      key: "City",
+      width: 150,
     },
   ];
 
@@ -195,21 +276,26 @@ function PayerSearch() {
           >
             <Row gutter={32}>
               <Col span={6}>
-                <Form.Item name="Name" label="Payer Type">
-                  <Select
-                    placeholder="Select Value"
-                    options={options}
-                    allowClear
-                  />
+                <Form.Item name="PayerType" label="Payer Type">
+                  <Select placeholder="Select Value" allowClear>
+                    {payerDropdown.PayerTypes.map((response) => (
+                      <Select.Option
+                        key={response.LookupID}
+                        value={response.LookupID}
+                      >
+                        {response.LookupDescription}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </Col>
               <Col span={6}>
-                <Form.Item name="ProviderName" label="Payer Name">
+                <Form.Item name="PayerName" label="Payer Name">
                   <Input placeholder="Enter Provider Name" allowClear />
                 </Form.Item>
               </Col>
               <Col span={6}>
-                <Form.Item name="date" label="Effective From">
+                <Form.Item name="EffectiveFrom" label="Effective From">
                   <DatePicker
                     style={{ width: "100%" }}
                     format={"DD-MM-YYYY"}
@@ -218,7 +304,7 @@ function PayerSearch() {
                 </Form.Item>
               </Col>
               <Col span={6}>
-                <Form.Item name="date" label="Effective To">
+                <Form.Item name="EffectiveTo" label="Effective To">
                   <DatePicker
                     style={{ width: "100%" }}
                     format={"DD-MM-YYYY"}
@@ -229,16 +315,21 @@ function PayerSearch() {
             </Row>
             <Row gutter={32}>
               <Col span={6}>
-                <Form.Item name="id" label="Identifier Type">
-                  <Select
-                    placeholder="Select Value"
-                    options={options}
-                    allowClear
-                  />
+                <Form.Item name="IdentifierType" label="Identifier Type">
+                  <Select placeholder="Select Value" allowClear>
+                    {payerDropdown.PayerIdentificationType.map((response) => (
+                      <Select.Option
+                        key={response.LookupID}
+                        value={response.LookupID}
+                      >
+                        {response.LookupDescription}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </Col>
               <Col span={6}>
-                <Form.Item name="idValue" label="Identifier Value">
+                <Form.Item name="identifierValue" label="Identifier Value">
                   <Input placeholder="Enter Provider Name" allowClear />
                 </Form.Item>
               </Col>
@@ -257,12 +348,8 @@ function PayerSearch() {
                 </Form.Item>
               </Col>
               <Col span={6}>
-                <Form.Item name="StructuralRole" label="City">
-                  <Select
-                    placeholder="Select Value"
-                    options={options}
-                    allowClear
-                  />
+                <Form.Item name="City" label="City">
+                  <Input placeholder="Enter City Name" allowClear />
                 </Form.Item>
               </Col>
             </Row>
@@ -284,7 +371,11 @@ function PayerSearch() {
             </Row>
           </Form>
           <div style={{ margin: "0 2rem" }}>
-            <Table size="small" columns={columns} dataSource={data} />
+            <Table
+              size="small"
+              columns={columns}
+              dataSource={payerSearchDetails}
+            />
           </div>
         </div>
       </Layout>

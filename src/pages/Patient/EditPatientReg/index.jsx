@@ -12,9 +12,18 @@ import {
   DatePicker,
   Divider,
   notification,
+  Space,
+  Table,
+  Modal,
+  Popconfirm,
 } from "antd";
 import Layout from "antd/es/layout/layout";
-import { SearchOutlined } from "@ant-design/icons";
+import {
+  SearchOutlined,
+  PlusCircleOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 const { Option } = Select;
@@ -23,9 +32,9 @@ import { IoIosPerson } from "react-icons/io";
 import {
   urlGetPatientDetail,
   urlAddNewPatient,
-  urlGetDepartmentBasedOnPatitentType,
-  urlGetProviderBasedOnDepartment,
-  urlGetServiceLocationBasedonId,
+  urlAddNewAndUpdatePatientIdentity,
+  urlGetPatientIdentificationDetails,
+  urlDeletePatientIdentification,
 } from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import Title from "antd/es/typography/Title";
@@ -42,7 +51,7 @@ const PatientEdit = () => {
 
   const [patientDropdown, setPatientDropdown] = useState({
     Title: [],
-    Gender: [],
+    Genders: [],
     BloodGroup: [],
     MaritalStatus: [],
     Countries: [],
@@ -70,10 +79,16 @@ const PatientEdit = () => {
   const [isloading, setLoading] = useState(true);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [form] = Form.useForm();
+  const [form2] = Form.useForm();
   const navigate = useNavigate();
   const [patientDetails, setPatientDetails] = useState([]);
   const [dob, setDob] = useState(null);
-
+  const [patientIdentificationDetails, setPatientIdentificationDetails] =
+    useState([]);
+  const [IsEditingIdentifiersModal, setIsEditingIdentifiersModal] =
+    useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [identificationData, setIdentificationData] = useState();
   useEffect(() => {
     debugger;
     customAxios
@@ -81,8 +96,14 @@ const PatientEdit = () => {
       .then((response) => {
         const apiData = response.data.data;
         const patientData = response.data.data.AddNewPatient;
+        const patientIdentificationData = response.data.data.Identifiers.map(
+          (obj, index) => {
+            return { ...obj, key: index + 1 };
+          }
+        );
         setPatientDropdown(apiData);
         setPatientDetails(patientData);
+        setPatientIdentificationDetails(patientIdentificationData);
         setFilteredStates(response.data.data.States);
         setFilteredCities(response.data.data.Places);
         setFilteredAreas(response.data.data.Areas);
@@ -238,7 +259,7 @@ const PatientEdit = () => {
     console.log("Received values from form: ", values);
 
     values.DateOfBirthstring = dob;
-    const postData = {
+    const patient = {
       FacilityId: 1,
       PatientId: selectedRow.PatientId,
       PatientTitle: values.PatientTitle,
@@ -277,6 +298,10 @@ const PatientEdit = () => {
       BirthIdentification1: values.BirthIdentification,
       IdentificationId: values.idCardType,
       IdNo: values.IdCardNumber,
+    };
+
+    const postData = {
+      Patient: patient,
     };
 
     try {
@@ -322,6 +347,185 @@ const PatientEdit = () => {
       setLoadings(false);
     }
   };
+
+  const onEdit = async (record) => {
+    debugger;
+    console.log("identifier record", record);
+
+    setIdentificationData(record);
+    setIsEditingIdentifiersModal(true);
+    const response = await customAxios.get(
+      `${urlGetPatientIdentificationDetails}?PatientIdentificationId=${record.PatientIdentificationId}`
+    );
+    if (response !== null && response !== false) {
+      const identificationData = response.data.data.IdentifierModel;
+      setIdentificationData(identificationData);
+      setIsModalOpen(true);
+      form2.setFieldsValue({
+        CardType: identificationData.IdentificationId,
+        IdNumber: identificationData.IdNumber,
+      });
+    }
+  };
+
+  const onDelete = (record) => {
+    debugger;
+    //Deleting an State from the Table
+    setIdentificationData(record);
+    try {
+      customAxios
+        .delete(
+          `${urlDeletePatientIdentification}?PatientIdentificationId=${record.PatientIdentificationId}&PatientId=${record.PatientId}`
+        )
+        .then((response) => {
+          if (response.data.data !== null) {
+            const identifiers = response.data.data.Identifiers.map(
+              (obj, index) => {
+                return { ...obj, key: index + 1 };
+              }
+            );
+            setPatientIdentificationDetails(identifiers);
+            // setDropdown(response.data.data);
+            notification.success({
+              message: "Deleted Successfully",
+            });
+          }
+        });
+    } catch (error) {
+      notification.error({
+        message: "Deleting UnSuccessful",
+      });
+    }
+  };
+
+  const handleAddIdentification = () => {
+    setIsModalOpen(true);
+    setIsEditingIdentifiersModal(false);
+  };
+
+  const handleIdentificationModalCancel = () => {
+    setIsModalOpen(false);
+    form2.resetFields();
+    setIsEditingIdentifiersModal(false);
+  };
+
+  const handleSaveIdentification = async () => {
+    debugger;
+    form2.validateFields();
+    const values = form2.getFieldsValue();
+    console.log("Look up  Edit Modal Submit", values);
+
+    const identification = IsEditingIdentifiersModal
+      ? {
+          PatientIdentificationId: identificationData.PatientIdentificationId,
+          PatientId: patientDetails.PatientId,
+          IdentificationId: values.CardType,
+          IdNumber: values.IdNumber,
+        }
+      : {
+          PatientIdentificationId: 0,
+          PatientId: patientDetails.PatientId,
+          IdentificationId: values.CardType,
+          IdNumber: values.IdNumber,
+        };
+
+    try {
+      // Send a POST request to the server
+      const response = await customAxios.post(
+        urlAddNewAndUpdatePatientIdentity,
+        identification,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.data !== null) {
+        if (response.data === "AlreadyExists") {
+          notification.warning({
+            message: "Patient identifier already exists",
+          });
+        } else {
+          setIsModalOpen(false);
+          const identificationDetails = response.data.data.Identifiers.map(
+            (obj, index) => {
+              return { ...obj, key: index + 1 };
+            }
+          );
+          setPatientIdentificationDetails(identificationDetails);
+          {
+            IsEditingIdentifiersModal
+              ? notification.success({
+                  message:
+                    "Patient Identification details updated Successfully",
+                })
+              : notification.success({
+                  message: "Patient Identification details added Successfully",
+                });
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Failed to send data to server: ", error);
+
+      {
+        IsEditingIdentifiersModal
+          ? notification.error({
+              message: "Editing Patient Identification details UnSuccessful",
+            })
+          : notification.error({
+              message: "Adding Patient Identification details UnSuccessful",
+            });
+      }
+    }
+  };
+
+  const columns = [
+    {
+      title: "Sl. No.",
+      dataIndex: "key",
+      key: "key",
+    },
+    {
+      title: "Card Type",
+      dataIndex: "IdentificationName",
+      key: "IdentificationName",
+    },
+    {
+      title: "Value",
+      dataIndex: "IdNumber",
+      key: "IdNumber",
+    },
+    {
+      title: "Action",
+      key: "action",
+      fixed: "right",
+      width: "4rem",
+      render: (text, record) => (
+        <Space size="small">
+          <Button
+            size="small"
+            onClick={() => onEdit(record)}
+            icon={<EditOutlined style={{ fontSize: "0.9rem" }} />}
+          ></Button>
+
+          <Popconfirm
+            title="Are you sure to delete this item?"
+            onConfirm={() => onDelete(record)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button
+              size="small"
+              danger
+              icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
+            ></Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -544,7 +748,7 @@ const PatientEdit = () => {
                         ]}
                       >
                         <Select placeholder="select" allowClear>
-                          {patientDropdown.Gender.map((option) => (
+                          {patientDropdown.Genders.map((option) => (
                             <Select.Option
                               key={option.LookupID}
                               value={option.LookupID}
@@ -582,7 +786,7 @@ const PatientEdit = () => {
                       >
                         <DatePicker
                           style={{ width: "100%" }}
-                          // value={dob}
+                          placeholder="DD-MM-YYYY"
                           onChange={handleDateChange}
                           disabledDate={disabledDate}
                           format={"DD-MM-YYYY"}
@@ -899,50 +1103,59 @@ const PatientEdit = () => {
                   </Form.Item>
                 </Col>
               </Row>
-              <Divider orientation="left">Identification Details</Divider>
-              <Row gutter={14}>
-                <Col span={6}>
-                  <Form.Item
-                    name="idCardType"
-                    label="Id Card Type"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please select Id card Type",
-                      },
-                    ]}
+
+              <Layout>
+                <div
+                  style={{
+                    width: "100%",
+                    backgroundColor: "white",
+                    minHeight: "max-content",
+                    borderRadius: "10px",
+                  }}
+                >
+                  <Row
+                    style={{
+                      padding: "0.5rem 2rem 0.5rem 2rem",
+                      backgroundColor: "#40A2E3",
+                      borderRadius: "10px 10px 10px 10px ",
+                    }}
                   >
-                    <Select allowClear>
-                      {patientDropdown.CardType.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="IdCardNumber"
-                    label="Id Card Number"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please enter patient card number",
-                      },
-                      {
-                        pattern: new RegExp(/^\d{1,15}$/),
-                        message: "Invalid mobile number!",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-              </Row>
+                    <Col span={16}>
+                      <Title
+                        level={4}
+                        style={{
+                          color: "white",
+                          fontWeight: 500,
+                          margin: 0,
+                          paddingTop: 0,
+                        }}
+                      >
+                        Identification Details
+                      </Title>
+                    </Col>
+                    <Col offset={7} span={1} style={{ alignItems: "right" }}>
+                      <Button
+                        icon={<PlusCircleOutlined />}
+                        onClick={handleAddIdentification}
+                      ></Button>
+                    </Col>
+                  </Row>
+                </div>
+              </Layout>
+              <Space size="large">{""}</Space>
+              <Table
+                dataSource={patientIdentificationDetails}
+                columns={columns}
+                // rowKey={(row) => row.EncounterId}
+                size="small"
+                className="vitals-table"
+                scroll={{ x: 1000 }}
+                // onChange={(pagination) => {
+                //   setCurrentPage(pagination.current);
+                //   setItemsPerPage(pagination.pageSize);
+                // }}
+                bordered
+              ></Table>
 
               <Row justify="end">
                 <Col style={{ marginRight: "10px" }}>
@@ -964,6 +1177,71 @@ const PatientEdit = () => {
           </div>
         </Layout>
       )}
+      <Modal
+        title="Add New Identifier"
+        open={isModalOpen}
+        maskClosable={false}
+        footer={null}
+        onCancel={handleIdentificationModalCancel}
+      >
+        <Form
+          style={{ margin: "1rem 0" }}
+          layout="vertical"
+          form={form2}
+          onFinish={handleSaveIdentification}
+        >
+          <Form.Item
+            name="CardType"
+            label="Card Type"
+            rules={[
+              {
+                required: true,
+                message: "Please select place name",
+              },
+            ]}
+          >
+            <Select allowClear>
+              {patientDropdown.CardType.map((option) => (
+                <Select.Option key={option.LookupID} value={option.LookupID}>
+                  {option.LookupDescription}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="IdNumber"
+            label="Card Number"
+            rules={[
+              {
+                required: true,
+                message: "Please enter area name",
+              },
+            ]}
+          >
+            <Input style={{ width: "100%" }} />
+          </Form.Item>
+
+          <Row gutter={32} style={{ height: "1.8rem" }}>
+            <Col offset={12} span={6}>
+              <Form.Item>
+                <Button type="primary" htmlType="submit">
+                  Submit
+                </Button>
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item>
+                <Button
+                  type="default"
+                  onClick={handleIdentificationModalCancel}
+                >
+                  Cancel
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
     </>
   );
 };

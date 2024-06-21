@@ -15,6 +15,7 @@ import {
   Table,
   Spin,
   Layout,
+  notification,
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import Input from "antd/es/input/Input";
@@ -22,7 +23,13 @@ import Title from "antd/es/typography/Title";
 import React, { useState, useEffect } from "react";
 import customAxios from "../../../components/customAxios/customAxios";
 
-import { urlGetAllGeneralLookUp } from "../../../../endpoints";
+import {
+  urlGetAllPlaces,
+  urlGetStatesBasedOnCountryId,
+  urlGetSelectedPlaceDetails,
+  urlAddAndUpdatePlace,
+  urlDeleteSelectedPlace,
+} from "../../../../endpoints";
 import CustomTable from "../../../components/customTable";
 
 function Places() {
@@ -30,55 +37,189 @@ function Places() {
   const [columnData, setColumnData] = useState();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [placeData, setPlaceData] = useState();
+  const [Dropdown, setDropdown] = useState({
+    Countries: [],
+    States: [],
+  });
+  const [States, setStates] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedCountryValue, setSelectedCountryValue] = useState(false);
 
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-  const handleClose = () => {
-    form.resetFields();
-    setIsModalOpen(false);
-  };
-
-  const handleEdit = (record) => {
-    // edit the item in your data here
-    alert(`Editing item with key ${record.key}`);
-  };
-  const handleDelete = (record) => {
-    // edit the item in your data here
-    alert(`Deleting item with key ${record.key}`);
-  };
-
-  const options = [
-    {
-      value: "jack",
-      label: "Jack",
-    },
-    {
-      value: "lucy",
-      label: "Lucy",
-    },
-    {
-      value: "Yiminghe",
-      label: "yiminghe",
-    },
-  ];
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
+    debugger;
     setLoading(true);
     try {
-      const response = await customAxios.get(`${urlGetAllGeneralLookUp}`);
-      const newColumnData = response.data.data.masters.map((obj, index) => {
+      const response = await customAxios.get(`${urlGetAllPlaces}`);
+      const newColumnData = response.data.data.PlaceModels.map((obj, index) => {
         return { ...obj, key: index + 1 };
       });
       setColumnData(newColumnData);
+      setDropdown(response.data.data);
       console.log("data", newColumnData);
     } catch (error) {
       console.error(error);
     }
     setLoading(false);
+  };
+
+  const handleAddPlaceShowModal = () => {
+    setIsModalOpen(true);
+    setIsEditing(false);
+    form.resetFields();
+  };
+
+  const handlePlaceEditModal = (record) => {
+    debugger;
+    setPlaceData(record);
+    setLoading(true);
+    setIsEditing(true);
+    customAxios
+      .get(`${urlGetSelectedPlaceDetails}?placeId=${record.PlaceId}`)
+      .then((response) => {
+        if (response.data !== null) {
+          const placeData = response.data.data.NewPlaceModel;
+          setPlaceData(placeData);
+          setIsModalOpen(true);
+          form.setFieldsValue({
+            // Country: placeData.CountryId,
+            State: placeData.StateId,
+            PlaceName: placeData.PlaceName,
+          });
+          setLoading(false);
+        }
+      });
+  };
+
+  const handlePlaceModalCancel = () => {
+    setIsModalOpen(false);
+    form.resetFields();
+  };
+
+  const handleDelete = (record) => {
+    debugger;
+    //Deleting an State from the Table
+    setPlaceData(record);
+    try {
+      customAxios
+        .post(`${urlDeleteSelectedPlace}?PlaceId=${record.PlaceId}`)
+        .then((response) => {
+          if (response.data.data !== null) {
+            const Places = response.data.data.PlaceModels.map((obj, index) => {
+              return { ...obj, key: index + 1 };
+            });
+            setColumnData(Places);
+            setDropdown(response.data.data);
+            notification.success({
+              message: "Deleted Successfully",
+            });
+          }
+        });
+    } catch (error) {
+      notification.error({
+        message: "Deleting UnSuccessful",
+      });
+    }
+  };
+
+  const handleSubmit = async () => {
+    debugger;
+    form.validateFields();
+    const values = form.getFieldsValue();
+    console.log("state Edit Modal Submit", values);
+    // UpdateState(int StateId, string Name, string StateCode, int CountryId)
+    // SaveNewState(int CountryId, string StateCode, string StateName)
+
+    const place = isEditing
+      ? {
+          PlaceId: placeData.PlaceId,
+          StateId: placeData.StateID,
+          PlaceName: values.PlaceName,
+        }
+      : {
+          PlaceId: 0,
+          StateId: values.State,
+          CountryId: values.Country,
+          PlaceName: values.PlaceName,
+        };
+
+    try {
+      // Send a POST request to the server
+      const response = await customAxios.post(urlAddAndUpdatePlace, place, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.data.data !== null) {
+        setIsModalOpen(false);
+        const placeDetails = response.data.data.PlaceModels.map(
+          (obj, index) => {
+            return { ...obj, key: index + 1 };
+          }
+        );
+        setColumnData(placeDetails);
+        form.resetFields();
+        {
+          isEditing
+            ? notification.success({
+                message: "Place details updated Successfully",
+              })
+            : notification.success({
+                message: "Place details added Successfully",
+              });
+        }
+      }
+    } catch (error) {
+      console.error("Failed to send data to server: ", error);
+
+      {
+        isEditing
+          ? notification.error({
+              message: "Edited Place  details UnSuccessful",
+            })
+          : notification.error({
+              message: "Adding Place details UnSuccessful",
+            });
+      }
+    }
+  };
+
+  const handleCountryChange = async (value) => {
+    setSelectedCountryValue(value);
+    debugger;
+    try {
+      // Update the options for the second select based on the value of the first select
+      if (value != null) {
+        const response = await customAxios.get(
+          `${urlGetStatesBasedOnCountryId}?CountryId=${value}`
+        );
+
+        if (response.status === 200) {
+          const states = response.data.data.States;
+          // const states = response.data.data.States.map((option) => (
+          //   <Select.Option key={option.StateID} value={option.StateID}>
+          //     {option.StateName}
+          //   </Select.Option>
+          // ));
+          setStates(states);
+        } else {
+          // Handle other response statuses if needed
+        }
+      } else {
+        // setStates([]);
+        // setProviders([]);
+        // setServiceLocations([]);
+        // form1.resetFields();
+      }
+    } catch (error) {
+      // Handle errors (e.g., network issues)
+      console.error("Error fetching data:", error);
+    }
   };
 
   const columns = [
@@ -88,14 +229,19 @@ function Places() {
       key: "key",
     },
     {
-      title: "Type",
-      dataIndex: "LookupType",
-      key: "key",
+      title: "Place",
+      dataIndex: "PlaceName",
+      key: "PlaceName",
     },
     {
-      title: "Description",
-      dataIndex: "LookupDescription",
-      key: "key",
+      title: "State",
+      dataIndex: "StateName",
+      key: "StateName",
+    },
+    {
+      title: "Country",
+      dataIndex: "CountryName",
+      key: "CountryName",
     },
   ];
 
@@ -131,7 +277,10 @@ function Places() {
               </Title>
             </Col>
             <Col offset={5} span={3}>
-              <Button icon={<PlusCircleOutlined />} onClick={showModal}>
+              <Button
+                icon={<PlusCircleOutlined />}
+                onClick={handleAddPlaceShowModal}
+              >
                 Add New Place
               </Button>
             </Col>
@@ -143,7 +292,7 @@ function Places() {
               dataSource={columnData}
               actionColumn={true}
               isFilter={true}
-              onEdit={handleEdit}
+              onEdit={handlePlaceEditModal}
               onDelete={handleDelete}
             />
           </Spin>
@@ -152,29 +301,43 @@ function Places() {
             open={isModalOpen}
             maskClosable={false}
             footer={null}
-            onCancel={handleClose}
+            onCancel={handlePlaceModalCancel}
           >
             <Form
               style={{ margin: "1rem 0" }}
               layout="vertical"
               form={form}
-              onFinish={(values) => {
-                console.log(values);
-                handleClose(); // Log the form values
-              }}
+              onFinish={handleSubmit}
             >
-              <Form.Item
-                name="Country"
-                label="Country"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select Country",
-                  },
-                ]}
-              >
-                <Select style={{ width: "100%" }} options={options} />
-              </Form.Item>
+              {isEditing ? null : (
+                <Form.Item
+                  name="Country"
+                  label="Country"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please select Country",
+                    },
+                  ]}
+                >
+                  <Select
+                    // disabled={isEditing}
+                    allowClear
+                    placeholder="Select a type"
+                    onChange={handleCountryChange}
+                  >
+                    {Dropdown.Countries.map((option) => (
+                      <Select.Option
+                        key={option.LookupID}
+                        value={option.LookupID}
+                      >
+                        {option.LookupDescription}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              )}
+
               <Form.Item
                 name="State"
                 label="State"
@@ -185,7 +348,29 @@ function Places() {
                   },
                 ]}
               >
-                <Select style={{ width: "100%" }} options={options} />
+                {isEditing ? (
+                  <Select disabled allowClear>
+                    {Dropdown.States.map((option) => (
+                      <Select.Option
+                        key={option.StateID}
+                        value={option.StateID}
+                      >
+                        {option.StateName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                ) : (
+                  <Select allowClear>
+                    {States.map((option) => (
+                      <Select.Option
+                        key={option.StateID}
+                        value={option.StateID}
+                      >
+                        {option.StateName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                )}
               </Form.Item>
               <Form.Item
                 name="PlaceName"
@@ -197,7 +382,7 @@ function Places() {
                   },
                 ]}
               >
-                <Input style={{ width: "100%" }} options={options} />
+                <Input style={{ width: "100%" }} />
               </Form.Item>
               <Row gutter={32} style={{ height: "1.8rem" }}>
                 <Col offset={12} span={6}>
@@ -209,7 +394,7 @@ function Places() {
                 </Col>
                 <Col span={6}>
                   <Form.Item>
-                    <Button type="default" onClick={handleClose}>
+                    <Button type="default" onClick={handlePlaceModalCancel}>
                       Cancel
                     </Button>
                   </Form.Item>

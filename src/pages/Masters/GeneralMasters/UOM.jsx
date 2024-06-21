@@ -1,12 +1,26 @@
 import { PlusCircleOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Modal, Row, Spin, Layout } from "antd";
+import {
+  Button,
+  Col,
+  Form,
+  Modal,
+  Row,
+  Spin,
+  Layout,
+  notification,
+} from "antd";
 
 import Input from "antd/es/input/Input";
 import Title from "antd/es/typography/Title";
 import React, { useState, useEffect } from "react";
 import customAxios from "../../../components/customAxios/customAxios";
 
-import { urlGetAllGeneralLookUp } from "../../../../endpoints";
+import {
+  urlGetAllUOMs,
+  urlGetSelectedUOMDetails,
+  urlAddAndUpdateUOM,
+  urlDeleteSelectedUOM,
+} from "../../../../endpoints";
 import CustomTable from "../../../components/customTable";
 
 function UOM() {
@@ -14,22 +28,11 @@ function UOM() {
   const [columnData, setColumnData] = useState();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [UOMData, setUOMData] = useState();
+  const [isEditing, setIsEditing] = useState();
 
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-  const handleClose = () => {
-    form.resetFields();
-    setIsModalOpen(false);
-  };
-  const handleEdit = (record) => {
-    // edit the item in your data here
-    alert(`Editing item with key ${record.key}`);
-  };
-  const handleDelete = (record) => {
-    // edit the item in your data here
-    alert(`Deleting item with key ${record.key}`);
-  };
+ 
+ 
 
   const options = [
     {
@@ -53,8 +56,8 @@ function UOM() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await customAxios.get(`${urlGetAllGeneralLookUp}`);
-      const newColumnData = response.data.data.masters.map((obj, index) => {
+      const response = await customAxios.get(`${urlGetAllUOMs}`);
+      const newColumnData = response.data.data.UOMModel.map((obj, index) => {
         return { ...obj, key: index + 1 };
       });
       setColumnData(newColumnData);
@@ -65,6 +68,122 @@ function UOM() {
     setLoading(false);
   };
 
+  const handleDelete = (record) => {
+    debugger;
+    //Deleting an State from the Table
+    setUOMData(record);
+    try {
+      customAxios
+        .post(`${urlDeleteSelectedUOM}?UomId=${record.UomId}`)
+        .then((response) => {
+          if (response.data.data !== null) {
+            const uom = response.data.data.UOMModel.map((obj, index) => {
+              return { ...obj, key: index + 1 };
+            });
+            setColumnData(uom);
+            notification.success({
+              message: "Deleted Successfully",
+            });
+          }
+        });
+    } catch (error) {
+      notification.error({
+        message: "Deleting UnSuccessful",
+      });
+    }
+  };
+
+  const handleAddUOMShowModal = () => {
+    setIsModalOpen(true);
+    setIsEditing(false);
+    form.resetFields();
+  };
+
+  const handleUOMEditModal = (record) => {
+    // edit the item in your data here
+    debugger;
+    setUOMData(record);
+    setLoading(true);
+    setIsEditing(true);
+    customAxios
+      .get(`${urlGetSelectedUOMDetails}?UOMId=${record.UomId}`)
+      .then((response) => {
+        if (response.data !== null) {
+          const uomData = response.data.data;
+          setUOMData(uomData);
+          setIsModalOpen(true);
+          form.setFieldsValue({
+            ShortName: uomData.ShortName,
+            LongName: uomData.LongName,
+          });
+          setLoading(false);
+        }
+      });
+  };
+
+  const handleUOMModalCancel = () => {
+    setIsModalOpen(false);
+    form.resetFields();
+  };
+
+  const handleSubmit = async () => {
+    debugger;
+    form.validateFields();
+    const values = form.getFieldsValue();
+    console.log("Look up  Edit Modal Submit", values);
+
+    const uom = isEditing
+      ? {
+          UOMID: UOMData.UomId,
+          ShortName: values.ShortName,
+          LongName: values.LongName,
+        }
+      : {
+          UOMID: 0,
+          ShortName: values.ShortName,
+          LongName: values.LongName,
+        };
+
+    try {
+      // Send a POST request to the server
+      const response = await customAxios.post(urlAddAndUpdateUOM, uom, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.data.data !== null) {
+        setIsModalOpen(false);
+        const uomDetails = response.data.data.UOMModel.map((obj, index) => {
+          return { ...obj, key: index + 1 };
+        });
+        setColumnData(uomDetails);
+        {
+          isEditing
+            ? notification.success({
+                message: "UOM details updated Successfully",
+              })
+            : notification.success({
+                message: "UOM details added Successfully",
+              });
+        }
+      }
+    } catch (error) {
+      console.error("Failed to send data to server: ", error);
+
+      {
+        isEditing
+          ? notification.error({
+              message: "Editing UOM details UnSuccessful",
+            })
+          : notification.error({
+              message: "Adding UOM details UnSuccessful",
+            });
+      }
+    }
+  };
+
+
   const columns = [
     {
       title: "Sl. No.",
@@ -72,14 +191,14 @@ function UOM() {
       key: "key",
     },
     {
-      title: "Type",
-      dataIndex: "LookupType",
-      key: "key",
+      title: "Short Name",
+      dataIndex: "ShortName",
+      key: "ShortName",
     },
     {
-      title: "Description",
-      dataIndex: "LookupDescription",
-      key: "key",
+      title: "Long Name",
+      dataIndex: "LongName",
+      key: "LongName",
     },
   ];
 
@@ -115,7 +234,7 @@ function UOM() {
               </Title>
             </Col>
             <Col offset={5} span={3}>
-              <Button icon={<PlusCircleOutlined />} onClick={showModal}>
+              <Button icon={<PlusCircleOutlined />} onClick={handleAddUOMShowModal}>
                 Add New UOM
               </Button>
             </Col>
@@ -127,7 +246,7 @@ function UOM() {
               dataSource={columnData}
               actionColumn={true}
               isFilter={true}
-              onEdit={handleEdit}
+              onEdit={handleUOMEditModal}
               onDelete={handleDelete}
             />
           </Spin>
@@ -136,16 +255,13 @@ function UOM() {
             open={isModalOpen}
             maskClosable={false}
             footer={null}
-            onCancel={handleClose}
+            onCancel={handleUOMModalCancel}
           >
             <Form
               style={{ margin: "1rem 0" }}
               layout="vertical"
               form={form}
-              onFinish={(values) => {
-                console.log(values);
-                handleClose(); // Log the form values
-              }}
+              onFinish={handleSubmit}
             >
               <Form.Item
                 name="ShortName"
@@ -157,7 +273,7 @@ function UOM() {
                   },
                 ]}
               >
-                <Input style={{ width: "100%" }} options={options} />
+                <Input style={{ width: "100%" }} />
               </Form.Item>
               <Form.Item
                 name="LongName"
@@ -169,7 +285,7 @@ function UOM() {
                   },
                 ]}
               >
-                <Input style={{ width: "100%" }} options={options} />
+                <Input style={{ width: "100%" }}  />
               </Form.Item>
               <Row gutter={32} style={{ height: "1.8rem" }}>
                 <Col offset={12} span={6}>
@@ -181,7 +297,7 @@ function UOM() {
                 </Col>
                 <Col span={6}>
                   <Form.Item>
-                    <Button type="default" onClick={handleClose}>
+                    <Button type="default" onClick={handleUOMModalCancel}>
                       Cancel
                     </Button>
                   </Form.Item>

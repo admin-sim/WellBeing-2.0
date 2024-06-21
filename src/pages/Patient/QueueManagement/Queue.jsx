@@ -68,15 +68,14 @@ const Queue = () => {
   const [form1] = Form.useForm();
   const [form3] = Form.useForm();
   const [selectedPatientRecord, setSelectedPatientRecord] = useState([]); // New state variable to store selected record
-  const [selectedVitals, setSelectedVitals] = useState([]);
+ 
   const [isShowSearchModalVisible, setIsShowSearchModalVisible] =
     useState(false);
   const [isMarkArrivalModalVisible, setIsMarkArrivalModalVisible] =
     useState(false);
   const [isPatientVitalSignsModalVisible, setIsPatientVitalSignsModalVisible] =
     useState(false);
-  const [isCaptureVitalsModalVisible, setIsCaptureVitalsModalVisible] =
-    useState(false);
+  
   const [isRevertToCheckInModalVisible, setIsRevertToCheckInModalVisible] =
     useState(false);
   const [isPushPatientModalVisible, setIsPushPatientModalVisible] =
@@ -92,7 +91,6 @@ const Queue = () => {
   const [isAntenatalVitalsModalVisible, setIsAntenatalVitalsModalVisible] =
     useState(false);
 
-  const [isEditCaptureVitals, setIsEditCaptureVitals] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [messageApi] = message.useMessage();
@@ -977,7 +975,7 @@ const Queue = () => {
                       marginLeft: "5px", // Added margin to create space between icon and text
                     }}
                   >
-                    {patientDetails.length}
+                    {patientQueueDetails.length}
                   </div>
                 </span>
                 <span style={{ fontWeight: 500, fontSize: "12px" }}>
