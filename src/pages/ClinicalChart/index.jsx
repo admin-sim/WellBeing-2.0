@@ -10,7 +10,7 @@ import FamilyHistory from "./Components/FamilyHistory.jsx";
 import SocialHistory from "./Components/SocialHistory.jsx";
 import Allergy from "./Components/Allergy.jsx";
 import PatientHeader from "../../components/PatientHeader/index.jsx";
-import VitalSigns from "./Components/VitalSigns.jsx";
+// import VitalSigns from "./Components/VitalSigns.jsx";
 
 function ClinicalChart() {
   const clinicalHeaders = [
@@ -66,7 +66,7 @@ function ClinicalChart() {
             {
               label: `Vital Signs`,
               key: 11,
-              children: <VitalSigns />,
+              children: <Allergy />,
             },
             {
               label: `Physical Examination`,
