@@ -8,18 +8,7 @@ import moment from "moment";
 import "../ProviderAppointment/style.css";
 import * as bootstrap from "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import {
-  Button,
-  Col,
-  DatePicker,
-  Layout,
-  Row,
-  Select,
-  Form,
-  Spin,
-  Popover,
-} from "antd";
-import { AiOutlineFullscreen, AiOutlineFullscreenExit } from "react-icons/ai";
+import { Col, DatePicker, Layout, Row, Select, Form, Spin } from "antd";
 import ScheduleAppointmentModal from "./ScheduleAppointmentModal";
 import Title from "antd/es/typography/Title";
 import {
@@ -28,45 +17,7 @@ import {
   urlGetProviderBasedOnDept,
 } from "../../../endpoints";
 import customAxios from "../../components/customAxios/customAxios";
-
-const customEvents = [
-  {
-    title: "Custom Event 1",
-    start: "2024-06-06T10:30:00",
-    end: "2024-06-06T11:00:00",
-    type: "Booked",
-  },
-  {
-    title: "Custom Event 2",
-    start: "2024-06-10T12:00:00",
-    end: "2024-06-10T12:30:00",
-    type: "Booked",
-  },
-  {
-    title: "Custom Event 3",
-    start: "2024-05-29T14:00:00",
-    end: "2024-05-29T14:30:00",
-    type: "Booked",
-  },
-  {
-    title: "Custom Event 4",
-    start: "2024-05-30T14:00:00",
-    end: "2024-05-30T14:30:00",
-    type: "Booked",
-  },
-  {
-    title: "Over Booking Event1",
-    start: "2024-05-30T09:00:00",
-    end: "2024-05-30T09:30:00",
-    type: "Booked",
-  },
-  {
-    title: "Over Booking Event2",
-    start: "2024-05-30T18:00:00",
-    end: "2024-05-30T18:30:00",
-    type: "Booked",
-  },
-];
+import ViewScheduledAppointment from "./ViewScheduledAppointment";
 
 const MyCalendar = ({}) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -84,6 +35,7 @@ const MyCalendar = ({}) => {
   const [departmentsData, setDepartmentsData] = useState([]);
   const [calendarData, setCalendarData] = useState(null);
   const [slotDuration, setSlotDuration] = useState("00:30:00");
+  const [viewScheduledModal, setViewScheduledModal] = useState(false);
 
   const [form] = Form.useForm();
   const handleSelect = (arg) => {
@@ -114,6 +66,7 @@ const MyCalendar = ({}) => {
   };
 
   const handleProviderChange = async (value) => {
+    setLoading(true);
     try {
       const response = await customAxios.get(
         `${urlGetProviderCalenderBasedOnProviderId}?ProviderId=${value}`
@@ -141,6 +94,7 @@ const MyCalendar = ({}) => {
         setEvents(bookedEvents);
         // setEvents(response.data.data?.ScheduleProviderAppointments);
         setCalendarData(response.data.data);
+        console.log("hi", response.data.data);
         setproviderDetails(
           providersData?.filter((provider) => {
             return provider.ProviderId === value;
@@ -151,10 +105,13 @@ const MyCalendar = ({}) => {
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
   const handleDepartmentChange = async (value) => {
     setProviderLoading(true);
+    setCalendarData(null);
     form.resetFields(["Provider"]);
     setDepartmentDetails(value);
 
@@ -179,10 +136,16 @@ const MyCalendar = ({}) => {
   };
 
   const handleEventClick = (arg) => {
-    const { start, end } = arg.event;
-
+    const { start, end, extendedProps } = arg.event;
     if (arg.event.extendedProps.type === "Booked") {
-      alert("Already Booked");
+      setSelectedSlot({
+        start,
+        end,
+        title: `Booked`,
+        type: "Booked",
+        ...extendedProps,
+      });
+      setViewScheduledModal(true);
     } else if (arg.event.extendedProps.type === "Available") {
       setSelectedSlot({
         start,
@@ -195,7 +158,6 @@ const MyCalendar = ({}) => {
   };
 
   const generateAvailableSlots = (calendarData) => {
-    setLoading(true);
     const availableSlots = [];
     let minSlotDuration = 30;
     const now = moment(); // Current date and time
@@ -281,14 +243,13 @@ const MyCalendar = ({}) => {
               title: "Overbooking",
               start: overbookedTimeStart.toISOString(),
               end: overbookedTimeEnd.toISOString(),
-              type: "Overbooking",
+              type: "Available",
               backgroundColor: "#EE82EE",
             });
           }
         }
       });
     });
-    setLoading(false);
 
     return { availableSlots, minSlotDuration };
   };
@@ -315,10 +276,12 @@ const MyCalendar = ({}) => {
   };
 
   useEffect(() => {
+  
     const { availableSlots, minSlotDuration } =
       generateAvailableSlots(calendarData);
     setAvailableSlots(availableSlots);
     setSlotDuration(`00:${String(minSlotDuration).padStart(2, "0")}:00`);
+   
   }, [calendarData]);
 
   const calendarRef = useRef(null);
@@ -335,208 +298,175 @@ const MyCalendar = ({}) => {
       }
     }
   };
-  // const tableRef = useRef(null);
-
-  // const enterFullscreen = () => {
-  //   const elem = tableRef.current;
-
-  //   if (elem.requestFullscreen) {
-  //     elem.requestFullscreen();
-  //   } else if (elem.mozRequestFullScreen) {
-  //     // Firefox
-  //     elem.mozRequestFullScreen();
-  //   } else if (elem.webkitRequestFullscreen) {
-  //     // Chrome, Safari, and Opera
-  //     elem.webkitRequestFullscreen();
-  //   }
-  // };
-
-  // const exitFullscreen = () => {
-  //   if (document.exitFullscreen) {
-  //     document.exitFullscreen();
-  //   } else if (document.mozCancelFullScreen) {
-  //     // Firefox
-  //     document.mozCancelFullScreen();
-  //   } else if (document.webkitExitFullscreen) {
-  //     // Chrome, Safari, and Opera
-  //     document.webkitExitFullscreen();
-  //   }
-  // };
-
-  // const handleFullscreen = () => {
-  //   if (!document.fullscreenElement) {
-  //     setIsFullScreen(true);
-  //     enterFullscreen();
-  //   } else {
-  //     setIsFullScreen(false);
-  //     exitFullscreen();
-  //   }
-  // };
 
   return (
     <Layout>
-      <div
-        // ref={tableRef}
-        style={{
-          width: "100%",
-          backgroundColor: "white",
-          minHeight: "max-content",
-          borderRadius: "10px",
-        }}
-      >
-        <Row
+      <Spin spinning={loading}>
+        <div
+          // ref={tableRef}
           style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
+            width: "100%",
+            backgroundColor: "white",
+            minHeight: "max-content",
+            borderRadius: "10px",
           }}
         >
-          <Col span={23}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              Manage Appointment
-            </Title>
-          </Col>
-          {/* <Col span={1}> */}
-          {/* <Tooltip
+          <Row
+            style={{
+              padding: "0.5rem 2rem 0.5rem 2rem",
+              backgroundColor: "#40A2E3",
+              borderRadius: "10px 10px 0px 0px ",
+            }}
+          >
+            <Col span={23}>
+              <Title
+                level={4}
+                style={{
+                  color: "white",
+                  fontWeight: 500,
+                  margin: 0,
+                  paddingTop: 0,
+                }}
+              >
+                Provider Appointment
+              </Title>
+            </Col>
+            {/* <Col span={1}> */}
+            {/* <Tooltip
             title={isFullScreen ? "Exit Full Screen" : "Enter Full Screen"}
           > */}
-          {/* <Button onClick={handleFullscreen}>
+            {/* <Button onClick={handleFullscreen}>
               {isFullScreen ? (
                 <AiOutlineFullscreenExit style={{ fontSize: "1.5rem" }} />
               ) : (
                 <AiOutlineFullscreen style={{ fontSize: "1.5rem" }} />
               )}
             </Button> */}
-          {/* </Tooltip> */}
-          {/* </Col> */}
-        </Row>
-
-        <Form
-          style={{ margin: "0.5rem 0 0 0" }}
-          form={form}
-          layout="vertical"
-          size="small"
-          onFinish={(values) => {
-            console.log(values);
-          }}
-        >
-          <Row style={{ margin: "0 0rem" }} gutter={32}>
-            <Col span={6}>
-              <Form.Item name="department" label="Department">
-                <Select
-                  loading={departmentLoading}
-                  onChange={handleDepartmentChange}
-                  showSearch
-                  placeholder="Select the provider"
-                  style={{ width: "100%" }}
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().includes(input.toLowerCase())
-                  }
-                  filterSort={(optionA, optionB) =>
-                    optionA.children
-                      .toLowerCase()
-                      .localeCompare(optionB.children.toLowerCase())
-                  }
-                >
-                  {departmentsData?.map((response) => (
-                    <Select.Option
-                      key={response.DepartmentId}
-                      value={response.DepartmentId}
-                    >
-                      {response.DepartmentName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={6}>
-              <Form.Item name="Provider" label="Provider">
-                <Select
-                  loading={providerLoading}
-                  showSearch
-                  placeholder="Select the provider"
-                  style={{ width: "100%" }}
-                  onChange={handleProviderChange}
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().includes(input.toLowerCase())
-                  }
-                  filterSort={(optionA, optionB) =>
-                    optionA.children
-                      .toLowerCase()
-                      .localeCompare(optionB.children.toLowerCase())
-                  }
-                >
-                  {providersData?.map((response) => (
-                    <Select.Option
-                      key={response.ProviderId}
-                      value={response.ProviderId}
-                    >
-                      {response.ProviderName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col
-              span={12}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Col
-                span={7}
-                style={{
-                  backgroundColor: "#4caf50",
-                  // margin: "1.5rem 1rem",
-                  color: "#fff",
-                }}
-              >
-                <span>Available Slot</span>
-              </Col>
-              <Col
-                span={7}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  backgroundColor: "#fea010",
-                  // margin: "1.5rem 0",
-                  justifyContent: "center",
-                  color: "#fff",
-                }}
-              >
-                <span>Booked Slot</span>
-              </Col>
-              <Col
-                span={7}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  backgroundColor: "#EE82EE",
-                  // margin: "1.5rem 0",
-                  justifyContent: "center",
-                  color: "#fff",
-                }}
-              >
-                <span>OverBooking Slot</span>
-              </Col>
-            </Col>
+            {/* </Tooltip> */}
+            {/* </Col> */}
           </Row>
-        </Form>
-      </div>
-      {calendarData && (
-        <Spin spinning={loading}>
+
+          <Form
+            style={{ margin: "0.5rem 0 0 0" }}
+            form={form}
+            layout="vertical"
+            size="small"
+            onFinish={(values) => {
+              console.log(values);
+            }}
+          >
+            <Row style={{ margin: "0 0rem" }} gutter={32}>
+              <Col span={6}>
+                <Form.Item name="department" label="Department">
+                  <Select
+                    loading={departmentLoading}
+                    onChange={handleDepartmentChange}
+                    showSearch
+                    placeholder="Select the provider"
+                    style={{ width: "100%" }}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children
+                        .toLowerCase()
+                        .localeCompare(optionB.children.toLowerCase())
+                    }
+                  >
+                    {departmentsData?.map((response) => (
+                      <Select.Option
+                        key={response.DepartmentId}
+                        value={response.DepartmentId}
+                      >
+                        {response.DepartmentName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name="Provider" label="Provider">
+                  <Select
+                    loading={providerLoading}
+                    showSearch
+                    placeholder="Select the provider"
+                    style={{ width: "100%" }}
+                    onChange={handleProviderChange}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children
+                        .toLowerCase()
+                        .localeCompare(optionB.children.toLowerCase())
+                    }
+                  >
+                    {providersData?.map((response) => (
+                      <Select.Option
+                        key={response.ProviderId}
+                        value={response.ProviderId}
+                      >
+                        {response.ProviderName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col
+                span={12}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Col
+                  span={7}
+                  style={{
+                    backgroundColor: "#4caf50",
+                    // margin: "1.5rem 1rem",
+                    color: "#fff",
+                  }}
+                >
+                  <span>Available Slot</span>
+                </Col>
+                <Col
+                  span={7}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    backgroundColor: "#fea010",
+                    // margin: "1.5rem 0",
+                    justifyContent: "center",
+                    color: "#fff",
+                  }}
+                >
+                  <span>Booked Slot</span>
+                </Col>
+                <Col
+                  span={7}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    backgroundColor: "#EE82EE",
+                    // margin: "1.5rem 0",
+                    justifyContent: "center",
+                    color: "#fff",
+                  }}
+                >
+                  <span>OverBooking Slot</span>
+                </Col>
+              </Col>
+            </Row>
+          </Form>
+        </div>
+        {calendarData && (
           <div style={{ backgroundColor: "white", padding: "0 0.5rem" }}>
             <Row
               style={{
@@ -619,9 +549,31 @@ const MyCalendar = ({}) => {
               providerDetails={providerDetails[0]}
               departmentDetails={departmentDetails}
             />
+            <ViewScheduledAppointment
+              open={viewScheduledModal}
+              onCancel={() => setViewScheduledModal(false)}
+              selectedSlot={selectedSlot}
+              calendarData={calendarData?.ScheduleProviderAppointments?.filter(
+                (appointment) => {
+                  // Extract time parts from selectedSlot's start and end
+                  const selectedSlotStart = moment(selectedSlot?.start).format(
+                    "HH:mm:ss"
+                  );
+                  const selectedSlotEnd = moment(selectedSlot?.end).format(
+                    "HH:mm:ss"
+                  );
+
+                  // Compare the times
+                  return (
+                    appointment?.FromTime === selectedSlotStart &&
+                    appointment?.ToTime === selectedSlotEnd
+                  );
+                }
+              )}
+            />
           </div>
-        </Spin>
-      )}
+        )}
+      </Spin>
     </Layout>
   );
 };
