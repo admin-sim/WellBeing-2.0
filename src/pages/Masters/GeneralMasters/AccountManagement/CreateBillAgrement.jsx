@@ -11,6 +11,8 @@ import {
   Card,
   DatePicker,
   message,
+  Space,
+  Checkbox,
 } from "antd";
 import Title from "antd/es/typography/Title";
 
@@ -24,7 +26,7 @@ import {
   urlGetDropDownsForPricetariif,
   urlSaveNewPriceTariffChargeParameter,
   urlEditPriceTariff,
-  urlUpdatePriceTariff
+  urlUpdatePriceTariff,
 } from "../../../../../endpoints";
 import PriceChargeModal from "./PriceChargeModal";
 import EditPriceChargeModal from "./EditPriceChargeModal";
@@ -35,18 +37,14 @@ import CustomTable from "../../../../components/customTable";
 
 const { TextArea } = Input;
 
-function CreatePriceTariff() {
+function CreateBillAgrement() {
   const [form] = Form.useForm();
   const [form1] = Form.useForm();
   const [facilities, setFacilities] = useState([]);
   const location = useLocation();
   const EditedPricetariffId = location.state?.PriceTariffId;
-  console.log("EditedPricetariffId", EditedPricetariffId);
+  //   console.log("EditedPricetariffId", EditedPricetariffId);
   const navigate = useNavigate();
-  const [effectiveFromDate, setEffectiveFromDate] = useState(null);
-  const [effectiveToDate, setEffectiveToDate] = useState(null);
-  const [effectiveFromDatemodal, setEffectiveFromDateModal] = useState(null);
-  const [effectiveToDatemodal, setEffectiveToDateModal] = useState(null);
   const [loading, setLoading] = useState(false);
   const [transferData, setTransferData] = useState([]);
   const [targetKeys, setTargetKeys] = useState([]);
@@ -66,14 +64,12 @@ function CreatePriceTariff() {
     Indicators: [],
     WardType: [],
     Provider: [],
-    PatientTypeFlag:(false),
-    NationalityFlag:(false),
-    GenderFlag:(false),
-    WardTypeFlag:(false),
-    FamilyIncomeFlag:(false),
-    ProviderFlag:(false),
-
-
+    PatientTypeFlag: false,
+    NationalityFlag: false,
+    GenderFlag: false,
+    WardTypeFlag: false,
+    FamilyIncomeFlag: false,
+    ProviderFlag: false,
   });
   const [editpricetariffDropdown, setEditPriceariffDropdown] = useState({
     PatientType: [],
@@ -82,18 +78,16 @@ function CreatePriceTariff() {
     Indicators: [],
     WardType: [],
     Provider: [],
-    PatientTypeFlag:(false),
-    NationalityFlag:(false),
-    GenderFlag:(false),
-    WardTypeFlag:(false),
-    FamilyIncomeFlag:(false),
-    ProviderFlag:(false),
-
+    PatientTypeFlag: false,
+    NationalityFlag: false,
+    GenderFlag: false,
+    WardTypeFlag: false,
+    FamilyIncomeFlag: false,
+    ProviderFlag: false,
   });
 
-
   const handleCancel = () => {
-    navigate("/PriceTariff");
+    navigate("/BillAggrement");
   };
 
   const handleEdit = async (record) => {
@@ -121,53 +115,51 @@ function CreatePriceTariff() {
     setEffectiveToDate(dateString);
   };
 
-
-
   useEffect(() => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    debugger;
-    if (EditedPricetariffId) {
-      // Check if EditedPricetariffId exists
-      const fetchData1 = async () => {
-        const Revision = 0;
-        try {
-          const response = await customAxios.get(
-            `${urlEditPriceTariff}?PriceTariff=${EditedPricetariffId}&Revision=${Revision}`
-          );
-          if (response.status === 200 && response.data.data != null) {
-            const editpricetariffdetail = response.data.data;
-            form.setFieldsValue({
-              ShortPriceDescription:
-                editpricetariffdetail.AddNewBillTariff.LongPriceDescription,
-              LongPriceDescription:
-                editpricetariffdetail.AddNewBillTariff.LongPriceDescription,
-              Remarks: editpricetariffdetail.AddNewBillTariff.Remarks,
-              FacilityId: editpricetariffdetail.AddNewBillTariff.FacilityId,
-              Status: editpricetariffdetail.AddNewBillTariff.Status,
-            });
-            const filteredtransData =
-              editpricetariffdetail.SelectedChargeParameters.map((item) => ({
-                key: item.LookupID,
-                title: item.LookupDescription,
-                // Add more fields as needed
-              }));
-            // Set the pre-selected items in Transfer
-            setTargetKeys(filteredtransData.map((item) => item.key));
-            setColumnData(editpricetariffdetail.BillTariffLineModels);
-          } else {
-            console.error("Failed to fetch patient details");
-          }
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      };
+  //   useEffect(() => {
+  //     debugger;
+  //     if (EditedPricetariffId) {
+  //       // Check if EditedPricetariffId exists
+  //       const fetchData1 = async () => {
+  //         const Revision = 0;
+  //         try {
+  //           const response = await customAxios.get(
+  //             `${urlEditPriceTariff}?PriceTariff=${EditedPricetariffId}&Revision=${Revision}`
+  //           );
+  //           if (response.status === 200 && response.data.data != null) {
+  //             const editpricetariffdetail = response.data.data;
+  //             form.setFieldsValue({
+  //               ShortPriceDescription:
+  //                 editpricetariffdetail.AddNewBillTariff.LongPriceDescription,
+  //               LongPriceDescription:
+  //                 editpricetariffdetail.AddNewBillTariff.LongPriceDescription,
+  //               Remarks: editpricetariffdetail.AddNewBillTariff.Remarks,
+  //               FacilityId: editpricetariffdetail.AddNewBillTariff.FacilityId,
+  //               Status: editpricetariffdetail.AddNewBillTariff.Status,
+  //             });
+  //             const filteredtransData =
+  //               editpricetariffdetail.SelectedChargeParameters.map((item) => ({
+  //                 key: item.LookupID,
+  //                 title: item.LookupDescription,
+  //                 // Add more fields as needed
+  //               }));
+  //             // Set the pre-selected items in Transfer
+  //             setTargetKeys(filteredtransData.map((item) => item.key));
+  //             setColumnData(editpricetariffdetail.BillTariffLineModels);
+  //           } else {
+  //             console.error("Failed to fetch patient details");
+  //           }
+  //         } catch (error) {
+  //           console.error("Error fetching data:", error);
+  //         }
+  //       };
 
-      fetchData1(); // Call the fetchData function
-    }
-  }, []);
+  //       fetchData1(); // Call the fetchData function
+  //     }
+  //   }, []);
 
   const handleChange = (nextTargetKeys) => {
     if (nextTargetKeys.length > 0) {
@@ -200,8 +192,8 @@ function CreatePriceTariff() {
     setLoading(true);
     values.EffectiveFromDate = effectiveFromDate;
     values.EffectiveToDate = effectiveToDate;
-    if(EditedPricetariffId>0){
-      values.PriceTariffId=EditedPricetariffId;
+    if (EditedPricetariffId > 0) {
+      values.PriceTariffId = EditedPricetariffId;
 
       try {
         const response = await customAxios.post(urlUpdatePriceTariff, values, {
@@ -223,8 +215,7 @@ function CreatePriceTariff() {
         console.error(error);
         setLoading(false);
       }
-    }
-    else{
+    } else {
       try {
         const response = await customAxios.post(urlSaveNewPriceTariff, values, {
           headers: {
@@ -246,8 +237,6 @@ function CreatePriceTariff() {
       }
     }
 
-
-   
     setLoading(false);
   };
 
@@ -260,7 +249,6 @@ function CreatePriceTariff() {
 
     setTransferError(false); // Reset the error state
 
- 
     try {
       if (targetKeys.length > 0) {
         // Check if targetKeys has elements
@@ -298,8 +286,6 @@ function CreatePriceTariff() {
       console.error(error);
     }
   };
-
-
 
   const columns = [
     {
@@ -375,7 +361,6 @@ function CreatePriceTariff() {
                 PriceTariff
               </Title>
             </Col>
-           
           </Row>
           <Card>
             <Form
@@ -391,13 +376,70 @@ function CreatePriceTariff() {
             >
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col className="gutter-row" span={6}>
-                  <Form.Item name="ShortPriceDescription" label="ShortName">
+                  <Form.Item
+                    name="AgreementReferenceNumber"
+                    label="AgreementReferenceNumber"
+                  >
                     <Input style={{ width: "100%" }} />
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={6}>
-                  <Form.Item name="LongPriceDescription" label="LongName">
+                  <Form.Item name="Description" label="AgreementDescription">
                     <Input style={{ width: "100%" }} />
+                  </Form.Item>
+                </Col>
+                <Col className="gutter-row" span={6}>
+                  <Form.Item name="PayerId" label="Payer">
+                    <Select>
+                      {facilities.map((option) => (
+                        <Select.Option
+                          key={option.PayerId}
+                          value={option.PayerId}
+                        >
+                          {option.PayerName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col className="gutter-row" span={6}>
+                  <Form.Item name="EmployerId" label="Employer">
+                    <Select>
+                      {facilities.map((option) => (
+                        <Select.Option
+                          key={option.PayerId}
+                          value={option.PayerId}
+                        >
+                          {option.PayerName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col className="gutter-row" span={6}>
+                  <Form.Item label="ValidFromDate" name="ValidFromDate">
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      onChange={handleEfeectiveTo}
+                      format="DD-MM-YYYY"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col className="gutter-row" span={6}>
+                  <Form.Item label="ValidToDate" name="ValidToDate">
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      onChange={handleEfeectiveTo}
+                      format="DD-MM-YYYY"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col className="gutter-row" span={6}>
+                  <Form.Item label={<Checkbox />} name="ValidToDate">
+                    <Space.Compact>
+                      <Select defaultValue="Zhejiang" />
+                      <Input defaultValue="Xihu District, Hangzhou" />
+                    </Space.Compact>
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={6}>
@@ -409,20 +451,6 @@ function CreatePriceTariff() {
                         maxRows: 3,
                       }}
                     />
-                  </Form.Item>
-                </Col>
-                <Col className="gutter-row" span={6}>
-                  <Form.Item name="FacilityId" label="Facility">
-                    <Select>
-                      {facilities.map((option) => (
-                        <Select.Option
-                          key={option.FacilityId}
-                          value={option.FacilityId}
-                        >
-                          {option.FacilityName}
-                        </Select.Option>
-                      ))}
-                    </Select>
                   </Form.Item>
                 </Col>
               </Row>
@@ -439,24 +467,6 @@ function CreatePriceTariff() {
                         value="Hidden"
                       ></Select.Option>
                     </Select>
-                  </Form.Item>
-                </Col>
-                <Col className="gutter-row" span={6}>
-                  <Form.Item label="EffectiveFrom" name="EffectiveFrom">
-                    <DatePicker
-                      style={{ width: "100%" }}
-                      onChange={handleEfeectiveFrom}
-                      format="DD-MM-YYYY"
-                    />
-                  </Form.Item>
-                </Col>
-                <Col className="gutter-row" span={6}>
-                  <Form.Item label="EffectiveTo" name="EffectiveTo">
-                    <DatePicker
-                      style={{ width: "100%" }}
-                      onChange={handleEfeectiveTo}
-                      format="DD-MM-YYYY"
-                    />
                   </Form.Item>
                 </Col>
               </Row>
@@ -490,7 +500,7 @@ function CreatePriceTariff() {
                   <Form.Item
                     style={{
                       display:
-                      EditedPricetariffId > 0 ? "inline-block" : "none",
+                        EditedPricetariffId > 0 ? "inline-block" : "none",
                     }}
                   >
                     <Button
@@ -498,7 +508,7 @@ function CreatePriceTariff() {
                       htmlType="submit"
                       style={{
                         display:
-                        EditedPricetariffId > 0 ? "inline-block" : "none",
+                          EditedPricetariffId > 0 ? "inline-block" : "none",
                       }}
                     >
                       Update
@@ -616,4 +626,4 @@ function CreatePriceTariff() {
   );
 }
 
-export default CreatePriceTariff;
+export default CreateBillAgrement;
