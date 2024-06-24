@@ -12,12 +12,14 @@ import {
   Row,
   Select,
   Space,
+  Spin,
   Typography,
   message,
 } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import React, { useEffect, useState } from "react";
 import {
+  urlAddNewPatientAppointment,
   urlAddNewScheduleProviderExisitingAppointment,
   urlPatientAppointmentExist,
   urlSearchPatientRecord,
@@ -40,9 +42,12 @@ function ScheduleAppointmentModal({
 }) {
   const [form1] = Form.useForm();
   const [form2] = Form.useForm();
+  const [form3] = Form.useForm();
   const handleCancel = () => {
+    setValue(null);
     form1.resetFields();
     form2.resetFields();
+    form3.resetFields();
     setPatients([]);
     onCancel();
   };
@@ -52,16 +57,43 @@ function ScheduleAppointmentModal({
   const [selectedUhId, setSelectedUhId] = useState(null);
   const [patients, setPatients] = useState([]);
   const [selecetedPatient, setSelecetedPatient] = useState({});
+  const [CountryId, setCountryId] = useState(0);
+  const [StateId, setStateId] = useState(0);
+  const [PlaceId, setPlaceId] = useState(0);
+  const [AreaId, setAreaId] = useState(0);
+  const [patientSearchLoading, setPatientSearchLoading] = useState(false);
+
+  const handleCountryChange = (value) => {
+    debugger;
+    setCountryId(value);
+  };
+
+  const handleStateChange = (value) => {
+    debugger;
+    setStateId(value);
+  };
+
+  const handlePlaceChange = (value) => {
+    setPlaceId(value);
+  };
+
+  const filteredStates = calendarData?.States?.filter(
+    (state) => state.CountryId === CountryId
+  );
+
+  const filteredPlaces = calendarData?.Places?.filter(
+    (place) => place.StateId === StateId
+  );
+
+  const filteredAreas = calendarData?.Areas?.filter(
+    (area) => area.PlaceId === PlaceId
+  );
 
   useEffect(() => {
     setPatients([]);
     form1.resetFields();
     form2.resetFields();
   }, [value]);
-
-  const handleInputChange = (e) => {
-    setTitle(e.target.value);
-  };
 
   const onChange = (e) => {
     setValue(e.target.value);
@@ -114,10 +146,13 @@ function ScheduleAppointmentModal({
 
     // Call the onSubmit function with the combined eventData
     onSubmit(eventData);
+    setValue(null);
+    setPatients([]);
+    form1.resetFields();
+    form2.resetFields();
 
     // Clear the title input after submission
     // setTitle("");
-    console.log("handleSubmitBootstrapModalData", values);
   };
 
   const handleAutoCompleteChange = async (value) => {
@@ -158,8 +193,6 @@ function ScheduleAppointmentModal({
   };
 
   const handleOnSearch = (values) => {
-    console.log("Form Values:", values);
-
     try {
       // setLoading(true);
       const postData1 = {
@@ -190,7 +223,6 @@ function ScheduleAppointmentModal({
     } catch (error) {
       console.error("Error:", error);
     } finally {
-      // setLoading(false);
     }
   };
 
@@ -238,7 +270,8 @@ function ScheduleAppointmentModal({
   return (
     <div>
       <Modal
-        width={"60%"}
+        centered
+        width={"50%"}
         title={
           <span style={{ fontSize: "1.2rem", fontWeight: "600" }}>
             Schedule Appointment
@@ -290,7 +323,9 @@ function ScheduleAppointmentModal({
                 // handleSubmit();
                 // form1.resetFields();
                 // handleClose();
+                setPatientSearchLoading(true);
                 handleOnSearch(values);
+                setPatientSearchLoading(false);
               }}
             >
               <Row gutter={16}>
@@ -313,11 +348,7 @@ function ScheduleAppointmentModal({
                 </Col>
                 <Col span={8}>
                   <Form.Item name="PatientName" label="Patient Name">
-                    <Input
-                      allowClear
-                      style={{ width: "100%" }}
-                      onChange={handleInputChange}
-                    />
+                    <Input allowClear style={{ width: "100%" }} />
                   </Form.Item>
                 </Col>
                 <Col span={4}>
@@ -354,6 +385,12 @@ function ScheduleAppointmentModal({
               style={{ margin: "1rem 0 0 0", width: "100%" }}
               layout="vertical"
               form={form2}
+              initialValues={{
+                reason: calendarData?.AppointmentReason.find(
+                  (reason) => reason.LookupID === 7067
+                ).LookupID,
+                remarks: "",
+              }}
               onFinish={(values) => {
                 try {
                   const postData = {
@@ -403,73 +440,316 @@ function ScheduleAppointmentModal({
                 }
               }}
             >
-              {patients.length > 0 && (
-                <>
-                  <Divider style={{ margin: 0 }} />
-                  <Row gutter={32}>
-                    <Col span={24}>
-                      <CustomTable
-                        columns={columns}
-                        dataSource={patients}
-                        actionColumn={false}
-                        isFilter={true}
-                        rowkey={"PatientId"}
-                        rowSelection={{
-                          type: "radio",
-                          ...rowSelection,
-                        }}
-                      />
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="reason" label="Reason">
-                        <Select
-                          style={{ width: "100%" }}
-                          options={calendarData?.AppointmentReason.map(
-                            (reason) => ({
-                              value: reason.LookupID,
-                              label: reason.LookupDescription,
-                              key: reason.LookupID,
-                            })
-                          )}
+              <Spin spinning={patientSearchLoading}>
+                {patients.length > 0 && (
+                  <>
+                    <Divider style={{ margin: 0 }} />
+                    <Row gutter={32}>
+                      <Col span={24}>
+                        <CustomTable
+                          columns={columns}
+                          dataSource={patients}
+                          actionColumn={false}
+                          isFilter={true}
+                          rowkey={"PatientId"}
+                          rowSelection={{
+                            type: "radio",
+                            ...rowSelection,
+                          }}
                         />
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="remarks" label="Remarks">
-                        <TextArea rows={2} style={{ width: "100%" }} />
-                      </Form.Item>
-                    </Col>
-                    {/* <Divider style={{ marginTop: "0" }} /> */}
-                    <Col offset={16} span={4}>
-                      <Form.Item>
-                        <Button
-                          style={{ width: "100%" }}
-                          type="primary"
-                          htmlType="submit"
-                        >
-                          Save
-                        </Button>
-                      </Form.Item>
-                    </Col>
-                    <Col span={4}>
-                      <Form.Item>
-                        <Button
-                          style={{ width: "100%" }}
-                          danger
-                          type="default"
-                          onClick={handleCancel}
-                        >
-                          Cancel
-                        </Button>
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </>
-              )}
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item name="reason" label="Reason">
+                          <Select
+                            style={{ width: "100%" }}
+                            options={calendarData?.AppointmentReason.map(
+                              (reason) => ({
+                                value: reason.LookupID,
+                                label: reason.LookupDescription,
+                                key: reason.LookupID,
+                              })
+                            )}
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item name="remarks" label="Remarks">
+                          <TextArea rows={2} style={{ width: "100%" }} />
+                        </Form.Item>
+                      </Col>
+                      {/* <Divider style={{ marginTop: "0" }} /> */}
+                      <Col offset={16} span={4}>
+                        <Form.Item>
+                          <Button
+                            style={{ width: "100%" }}
+                            type="primary"
+                            htmlType="submit"
+                          >
+                            Save
+                          </Button>
+                        </Form.Item>
+                      </Col>
+                      <Col span={4}>
+                        <Form.Item>
+                          <Button
+                            style={{ width: "100%" }}
+                            danger
+                            type="default"
+                            onClick={handleCancel}
+                          >
+                            Cancel
+                          </Button>
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </>
+                )}
+              </Spin>
             </Form>
           </>
         ) : (
-          <></>
+          value === "NewPatient" && (
+            <>
+              <Form
+                style={{ margin: "1rem 0 0 0", width: "100%" }}
+                layout="vertical"
+                form={form3}
+                onFinish={(values) => {
+                  values = {
+                    ...values,
+                    Dob: moment(values.Dob).format("DD-MM-YYYY"),
+                    ProviderId: providerDetails?.ProviderId,
+                    StartTime: moment(selectedSlot?.start).format("HH:mm:ss"),
+                    EndTime: moment(selectedSlot?.end).format("HH:mm:ss"),
+                    ScheduleEventDate: moment(selectedSlot?.start).format(
+                      "DD-MM-YYYY"
+                    ),
+                    FacilityId: 1,
+                    DepartmentId: departmentDetails,
+                    AppointmentSlotNumber: 1,
+                    PresentAreaId: values.PresentAreaId
+                      ? values.PresentAreaId
+                      : "",
+                  };
+                  console.log("Submit Values", values);
+                  try {
+                    customAxios
+                      .post(
+                        `${urlAddNewPatientAppointment}?PatientTitle=${values.PatientTitle}&PatientFirstName=${values.PatientFirstName}&PatientLastName=${values.PatientLastName}&PresentAddress=${values.PresentAddress}&PresentAreaId=${values.PresentAreaId}&ProviderId=${values.ProviderId}&StartTime=${values.StartTime}&EndTime=${values.EndTime}&Remarks=${values.Remarks}&Reason=${values.Reason}&ScheduleEventDate=${values.ScheduleEventDate}&FacilityId=${values.FacilityId}&AppointmentSlotNumber=${values.AppointmentSlotNumber}&DepartmentId=${values.DepartmentId}&Dob=${values.Dob}&MobileNumber=${values.MobileNumber}}`,
+                        null,
+                        { params: values }
+                      )
+                      .then((response) => {
+                        console.log(response.data);
+                        handleSubmit(response.data);
+                      });
+                  } catch (error) {
+                    console.log(error);
+                  }
+                }}
+                initialValues={{
+                  Reason: calendarData?.AppointmentReason?.find(
+                    (reason) => reason.LookupID === 7067
+                  )?.LookupID,
+                  Remarks: "",
+                }}
+              >
+                <Row gutter={32}>
+                  <Col span={4}>
+                    <Form.Item
+                      name="PatientTitle"
+                      label="Title"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Title is Required.",
+                        },
+                      ]}
+                    >
+                      <Select
+                        style={{ width: "100%" }}
+                        options={calendarData?.Title?.map((title) => ({
+                          label: title.LookupDescription,
+                          value: title.LookupID,
+                        }))}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={7}>
+                    <Form.Item
+                      name="PatientFirstName"
+                      label="First Name"
+                      rules={[
+                        {
+                          required: true,
+                          message: "First Name is Required.",
+                        },
+                      ]}
+                    >
+                      <Input style={{ width: "100%" }} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={7}>
+                    <Form.Item
+                      name="PatientLastName"
+                      label="Last Name"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Last Name is Required.",
+                        },
+                      ]}
+                    >
+                      <Input style={{ width: "100%" }} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={6}>
+                    <Form.Item
+                      name="MobileNumber"
+                      label="Mobile Number"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Mobile Number is Required.",
+                        },
+                      ]}
+                    >
+                      <Input style={{ width: "100%" }} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={6}>
+                    <Form.Item
+                      name="Dob"
+                      label="Date of Birth"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Date of Birth is Required.",
+                        },
+                      ]}
+                    >
+                      <DatePicker
+                        placeholder="DD-MM-YYYY"
+                        format={"DD-MM-YYYY"}
+                        style={{ width: "100%" }}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={18}>
+                    <Form.Item name="PresentAddress" label="Address">
+                      <TextArea style={{ width: "100%" }} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="CountryName" label="Country">
+                      <Select
+                        placeholder="Select State"
+                        onChange={handleCountryChange}
+                      >
+                        {calendarData?.Countries?.map((country) => (
+                          <Select.Option
+                            key={country.LookupID}
+                            value={country.LookupID}
+                          >
+                            {country.LookupDescription}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="StateName" label="State">
+                      <Select
+                        placeholder="Select State"
+                        onChange={handleStateChange}
+                      >
+                        {filteredStates?.map((state) => (
+                          <Select.Option
+                            key={state.StateID}
+                            value={state.StateID}
+                          >
+                            {state.StateName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="PlaceName" label="City">
+                      <Select
+                        placeholder="Select Place"
+                        onChange={handlePlaceChange}
+                      >
+                        {filteredPlaces?.map((place) => (
+                          <Select.Option
+                            key={place.PlaceId}
+                            value={place.PlaceId}
+                          >
+                            {place.PlaceName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="PresentAreaId" label="Area">
+                      <Select placeholder="Select Area">
+                        {filteredAreas?.map((area) => (
+                          <Select.Option key={area.AreaId} value={area.AreaId}>
+                            {area.AreaName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="Reason" label="Reason">
+                      <Select
+                        style={{ width: "100%" }}
+                        options={calendarData?.AppointmentReason.map(
+                          (reason) => ({
+                            value: reason.LookupID,
+                            label: reason.LookupDescription,
+                            key: reason.LookupID,
+                          })
+                        )}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="Remarks" label="Remarks">
+                      <TextArea rows={2} style={{ width: "100%" }} />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={32}>
+                  <Col offset={16} span={4}>
+                    <Form.Item>
+                      <Button
+                        style={{ width: "100%" }}
+                        type="primary"
+                        htmlType="submit"
+                      >
+                        Save
+                      </Button>
+                    </Form.Item>
+                  </Col>
+                  <Col span={4}>
+                    <Form.Item>
+                      <Button
+                        style={{ width: "100%" }}
+                        danger
+                        type="default"
+                        onClick={handleCancel}
+                      >
+                        Cancel
+                      </Button>
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Form>
+            </>
+          )
         )}
       </Modal>
     </div>

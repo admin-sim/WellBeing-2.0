@@ -90,6 +90,8 @@ import PriceTariff from "./pages/Masters/GeneralMasters/AccountManagement/PriceT
 import CreatePriceTariff from "./pages/Masters/GeneralMasters/AccountManagement/CreatePriceTariff";
 import AutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/AutoCharge";
 import CreateAutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAutoCharge";
+import BillAggrement from "./pages/Masters/GeneralMasters/AccountManagement/BillAggrement";
+import CreateBillAgrement from "./pages/Masters/GeneralMasters/AccountManagement/CreateBillAgrement";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -688,7 +690,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-           <Route
+          <Route
             path="AutoCharge"
             element={
               <ProtectedRoute>
@@ -696,7 +698,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-           <Route
+          <Route
             path="CreateAutoCharge"
             element={
               <ProtectedRoute>
@@ -757,6 +759,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <CreateBilling />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="BillAggrement"
+            element={
+              <ProtectedRoute>
+                <BillAggrement />
+              </ProtectedRoute>
+            }
+          />
+              <Route
+            path="CreateBillAgrement"
+            element={
+              <ProtectedRoute>
+                <CreateBillAgrement />
               </ProtectedRoute>
             }
           />

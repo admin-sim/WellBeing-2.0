@@ -1,11 +1,12 @@
 import { PlusCircleOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Modal, Row, Select, Spin, Layout, Table } from "antd";
+import { Button, Col, Form, Modal, Row, Select, Spin, Layout, Table,Tooltip } from "antd";
 import Title from "antd/es/typography/Title";
 import customAxios from "../../../../components/customAxios/customAxios";
 import React, { useEffect, useState } from "react";
 import { urlGetAllAutoChargeAsync } from "../../../../../endpoints";
 import CustomTable from "../../../../components/customTable";
 import { useNavigate } from "react-router";
+import { EditOutlined,DeleteOutlined } from "@ant-design/icons";
 
 function AutoCharge() {
   const [columnData, setColumnData] = useState();
@@ -75,7 +76,7 @@ function AutoCharge() {
       dataIndex: "ProviderName",
       key: "ProviderName",
       render: (text) => {
-        return text ? text : "All";
+        return text && text.trim() ? text : "All";
       },
     },
     {
@@ -110,6 +111,21 @@ function AutoCharge() {
       dataIndex: "ChargeProviderName",
       key: "ChargeProviderName",
     },
+    {
+      title: '',
+      dataIndex: 'actions',
+      key: 'actions',
+      render: (_, row) => (
+        <span style={{ display: 'flex' }}>
+          <Tooltip title="Edit">
+            <EditOutlined style={{ fontSize: '0.8rem', cursor: 'pointer', marginRight: '10px' }} onClick={() => handleEdit(row)} />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <DeleteOutlined style={{ fontSize: '0.8rem', cursor: 'pointer' }} onClick={() => handledelete(row)} />
+          </Tooltip>
+        </span>
+      ),
+    },
   ];
 
   const handleAddAutoCharge = () => {
@@ -117,6 +133,10 @@ function AutoCharge() {
   };
 
   const handleEdit = (record) => {
+    debugger;
+      navigate("/CreateAutoCharge", { state: { AutoChargeId: record.AutoChargeId } });
+  };
+  const handledelete = (record) => {
     debugger;
     //  navigate("/CreatePriceTariff", { state: { PriceTariffId: record.PriceTariffId } });
   };
@@ -166,9 +186,6 @@ function AutoCharge() {
             <Table
               columns={columns}
               dataSource={columnData}
-            //   actionColumn={true}
-            //   isFilter={true}
-            //   onEdit={handleEdit}
             />
           </Spin>
         </div>

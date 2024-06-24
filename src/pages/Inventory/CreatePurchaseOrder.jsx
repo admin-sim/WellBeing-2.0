@@ -60,7 +60,7 @@ const CreatePurchaseOrder = () => {
 
   const [counter, setCounter] = useState(2); // initialize counter to 1
   const [counterDelivery, setCounterDelivery] = useState(2); // initialize counter to 1
-  const [savedData, setSavedData] = useState([]);
+  //const [savedData, setSavedData] = useState([]);
   const [productOptions, setProductOptions] = useState([]); // initialize product options to empty
   const [modalVisible, setModalVisible] = useState(false); // state for modal visibility
 
@@ -309,18 +309,18 @@ const CreatePurchaseOrder = () => {
     setPoDate(dateString);
   };
 
-  const handleDeliveryInputChange = (e, column, index, record) => {
-    debugger;
-    const newData = schedule.map((item) => {
-      if (item.key === record.key) {
-        const updatedItem = { ...item, [column]: e.target.value };
-        return updatedItem;
-      }
-      return item;
-    });
-    // Update the state with the new data
-    setSavedData(newData);
-  };
+  // const handleDeliveryInputChange = (e, column, index, record) => {
+  //   debugger;
+  //   const newData = schedule.map((item) => {
+  //     if (item.key === record.key) {
+  //       const updatedItem = { ...item, [column]: e.target.value };
+  //       return updatedItem;
+  //     }
+  //     return item;
+  //   });
+  //   // Update the state with the new data
+  //   setSchedule(newData);
+  // };
 
   const handleSearch = async (searchText) => {
     // Call your API here. This is just a placeholder.
@@ -488,57 +488,38 @@ const handleUomChange = (option, column, index, record) => {
     await form1.validateFields();
     setDeliveryRecord(record);
     setModalVisible(true);
-    
-    // Check if there is saved data for the given ProductId
-    const existingData = savedData.filter(data => data.ProductId === record.ProductId);
-    
-    if (existingData.length > 0) {
-      // Bind existing data to the form and schedule state
-     // setSchedule(existingData);
-      form2.setFieldsValue(
-        existingData.reduce((acc, curr) => {
-          acc[`DeliveryQuantity.${curr.key}`] = curr.DeliveryQuantity;
-          acc[`UomId.${curr.key}`] = curr.UomId;
-          acc[`DelDate.${curr.key}`] = dayjs(curr.DelDate, "DD-MM-YYYY");
-          acc[`DeliveryLocation.${curr.key}`] = curr.DeliveryLocation;
-          return acc;
-        }, {})
-      );
-    } else {
-      // Reset to initial values for a new entry
-     // setSchedule(initialDeliveryDataSource);
-      //form2.resetFields();
-    }
   };
 
+ 
+
   const handleCloseModal = () => {
-    // handle closing of modal here
-    //setSchedule(initialDeliveryDataSource);
-    console.log('saveddata',savedData);
-    //setSavedData(null);
-     // form2.resetFields();
     setModalVisible(false);
+    form2.resetFields();
   };
-  const handleSaveModal =async () => {
-    // handle closing of modal here
+
+  const handleSaveModal = async () => {
     debugger;
-    try {
-      const values = await form2.validateFields();
-      const updatedValues = schedule.map(item => ({
-        ...item,
-        DeliveryQuantity: values.DeliveryQuantity[item.key],
-        UomId: values.UomId[item.key],
-        DelDate: values.DelDate[item.key],
-        ProductId: deliveryRecord.ProductId,
-        DeliveryLocation:values.DeliveryLocation[item.key]
-      }));
-      console.log("Saved values with ProductId:", updatedValues);
-      const newSavedData = [...updatedValues];
-      setSavedData(newSavedData);
-      setModalVisible(false);
-    } catch (error) {
-      console.log('Validate Failed:', error);
-    }
+    await form2.validateFields();
+    const values = form2.getFieldsValue();
+    
+    const updatedSchedule = schedule.map(item => {
+      const key = item.key;
+
+      if (values.DeliveryQuantity[key] || values.DelDate[key] || values.DeliveryLocation[key]) {
+        return {
+          ...item,
+          ProductId: deliveryRecord.ProductId, // Ensure ProductId is set correctly
+          DeliveryQuantity: values.DeliveryQuantity[key],
+          DelDate: values.DelDate[key],
+          DeliveryLocation: values.DeliveryLocation[key],
+        };
+      }
+      return item;
+    });
+
+    setSchedule(updatedSchedule);
+    console.log('modalsavedvalues', updatedSchedule);
+    setModalVisible(false);
   };
 
   const columnsModel = [
@@ -556,14 +537,14 @@ const handleUomChange = (option, column, index, record) => {
           <InputNumber
             min={0}
             defaultValue={text}
-            onChange={(value) =>
-              handleDeliveryInputChange(
-                { target: { value } },
-                "DeliveryQuantity",
-                index,
-                record
-              )
-            }
+            // onChange={(value) =>
+            //   handleDeliveryInputChange(
+            //     { target: { value } },
+            //     "DeliveryQuantity",
+            //     index,
+            //     record
+            //   )
+            // }
           />
         </Form.Item>
       ),
@@ -598,11 +579,11 @@ const handleUomChange = (option, column, index, record) => {
         >
           <DatePicker
             value={record.DelDate && dayjs(record.DelDate, "DD-MM-YYYY")}
-            onChange={(date, dateString) => {
-              // Handle the change here
-              console.log("Selected date: ", dateString);
-              handleDeliveryInputChange(dateString, "DelDate", index, record);
-            }}
+            // onChange={(date, dateString) => {
+            //   // Handle the change here
+            //   console.log("Selected date: ", dateString);
+            //   handleDeliveryInputChange(dateString, "DelDate", index, record);
+            // }}
             style={{ width: "150%" }}
             format="DD-MM-YYYY"
           />
@@ -617,18 +598,18 @@ const handleUomChange = (option, column, index, record) => {
       render: (text, record, index) => (
         <Form.Item
           name={["DeliveryLocation", record.key]}
-          initialValue={text}
+          initialValue={record.DeliveryLocation}
           style={{ width: 200 }}
         >
           <Input
-            onChange={(value) =>
-              handleDeliveryInputChange(
-                { target: { value } },
-                "DeliveryLocation",
-                index,
-                record
-              )
-            }
+            // onChange={(value) =>
+            //   handleDeliveryInputChange(
+            //     { target: { value } },
+            //     "DeliveryLocation",
+            //     index,
+            //     record
+            //   )
+            // }
             style={{ width: "150%" }}
             allowClear
           />
@@ -1281,7 +1262,11 @@ const handleUomChange = (option, column, index, record) => {
               columns={columnsModel}
               size="small"
               locale={{ emptyText: "Nodata " }}
-              dataSource={schedule}
+              dataSource={
+                deliveryRecord.ProductId
+                  ? schedule.filter(item => item.ProductId === deliveryRecord.ProductId || item.ProductId === "")
+                  : initialDeliveryDataSource
+              }
             />
           </Form>
         </Modal>

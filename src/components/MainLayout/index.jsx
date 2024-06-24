@@ -84,7 +84,7 @@ function MainLayout() {
     } else {
       notification.warning({
         message: "Session Expired, Please LogIn",
-        duration: 0,
+        duration: 10,
         placement: "topRight",
       });
       navigate("/login");
