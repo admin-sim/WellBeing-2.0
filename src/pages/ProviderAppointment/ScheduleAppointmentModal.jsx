@@ -12,6 +12,7 @@ import {
   Row,
   Select,
   Space,
+  Spin,
   Typography,
   message,
 } from "antd";
@@ -60,8 +61,7 @@ function ScheduleAppointmentModal({
   const [StateId, setStateId] = useState(0);
   const [PlaceId, setPlaceId] = useState(0);
   const [AreaId, setAreaId] = useState(0);
-
-  console.log("slot ", departmentDetails);
+  const [patientSearchLoading, setPatientSearchLoading] = useState(false);
 
   const handleCountryChange = (value) => {
     debugger;
@@ -88,10 +88,6 @@ function ScheduleAppointmentModal({
   const filteredAreas = calendarData?.Areas?.filter(
     (area) => area.PlaceId === PlaceId
   );
-
-  console.log("filteredStates", filteredStates);
-  console.log("filteredPlaces", filteredPlaces);
-  console.log("filteredAreas", filteredAreas);
 
   useEffect(() => {
     setPatients([]);
@@ -157,7 +153,6 @@ function ScheduleAppointmentModal({
 
     // Clear the title input after submission
     // setTitle("");
-    console.log("handleSubmitBootstrapModalData", values);
   };
 
   const handleAutoCompleteChange = async (value) => {
@@ -198,8 +193,6 @@ function ScheduleAppointmentModal({
   };
 
   const handleOnSearch = (values) => {
-    console.log("Form Values:", values);
-
     try {
       // setLoading(true);
       const postData1 = {
@@ -230,7 +223,6 @@ function ScheduleAppointmentModal({
     } catch (error) {
       console.error("Error:", error);
     } finally {
-      // setLoading(false);
     }
   };
 
@@ -331,7 +323,9 @@ function ScheduleAppointmentModal({
                 // handleSubmit();
                 // form1.resetFields();
                 // handleClose();
+                setPatientSearchLoading(true);
                 handleOnSearch(values);
+                setPatientSearchLoading(false);
               }}
             >
               <Row gutter={16}>
@@ -391,6 +385,12 @@ function ScheduleAppointmentModal({
               style={{ margin: "1rem 0 0 0", width: "100%" }}
               layout="vertical"
               form={form2}
+              initialValues={{
+                reason: calendarData?.AppointmentReason.find(
+                  (reason) => reason.LookupID === 7067
+                ).LookupID,
+                remarks: "",
+              }}
               onFinish={(values) => {
                 try {
                   const postData = {
@@ -440,69 +440,71 @@ function ScheduleAppointmentModal({
                 }
               }}
             >
-              {patients.length > 0 && (
-                <>
-                  <Divider style={{ margin: 0 }} />
-                  <Row gutter={32}>
-                    <Col span={24}>
-                      <CustomTable
-                        columns={columns}
-                        dataSource={patients}
-                        actionColumn={false}
-                        isFilter={true}
-                        rowkey={"PatientId"}
-                        rowSelection={{
-                          type: "radio",
-                          ...rowSelection,
-                        }}
-                      />
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="reason" label="Reason">
-                        <Select
-                          style={{ width: "100%" }}
-                          options={calendarData?.AppointmentReason.map(
-                            (reason) => ({
-                              value: reason.LookupID,
-                              label: reason.LookupDescription,
-                              key: reason.LookupID,
-                            })
-                          )}
+              <Spin spinning={patientSearchLoading}>
+                {patients.length > 0 && (
+                  <>
+                    <Divider style={{ margin: 0 }} />
+                    <Row gutter={32}>
+                      <Col span={24}>
+                        <CustomTable
+                          columns={columns}
+                          dataSource={patients}
+                          actionColumn={false}
+                          isFilter={true}
+                          rowkey={"PatientId"}
+                          rowSelection={{
+                            type: "radio",
+                            ...rowSelection,
+                          }}
                         />
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="remarks" label="Remarks">
-                        <TextArea rows={2} style={{ width: "100%" }} />
-                      </Form.Item>
-                    </Col>
-                    {/* <Divider style={{ marginTop: "0" }} /> */}
-                    <Col offset={16} span={4}>
-                      <Form.Item>
-                        <Button
-                          style={{ width: "100%" }}
-                          type="primary"
-                          htmlType="submit"
-                        >
-                          Save
-                        </Button>
-                      </Form.Item>
-                    </Col>
-                    <Col span={4}>
-                      <Form.Item>
-                        <Button
-                          style={{ width: "100%" }}
-                          danger
-                          type="default"
-                          onClick={handleCancel}
-                        >
-                          Cancel
-                        </Button>
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </>
-              )}
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item name="reason" label="Reason">
+                          <Select
+                            style={{ width: "100%" }}
+                            options={calendarData?.AppointmentReason.map(
+                              (reason) => ({
+                                value: reason.LookupID,
+                                label: reason.LookupDescription,
+                                key: reason.LookupID,
+                              })
+                            )}
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item name="remarks" label="Remarks">
+                          <TextArea rows={2} style={{ width: "100%" }} />
+                        </Form.Item>
+                      </Col>
+                      {/* <Divider style={{ marginTop: "0" }} /> */}
+                      <Col offset={16} span={4}>
+                        <Form.Item>
+                          <Button
+                            style={{ width: "100%" }}
+                            type="primary"
+                            htmlType="submit"
+                          >
+                            Save
+                          </Button>
+                        </Form.Item>
+                      </Col>
+                      <Col span={4}>
+                        <Form.Item>
+                          <Button
+                            style={{ width: "100%" }}
+                            danger
+                            type="default"
+                            onClick={handleCancel}
+                          >
+                            Cancel
+                          </Button>
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </>
+                )}
+              </Spin>
             </Form>
           </>
         ) : (
