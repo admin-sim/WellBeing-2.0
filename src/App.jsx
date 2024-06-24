@@ -92,6 +92,7 @@ import AutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/AutoCha
 import CreateAutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAutoCharge";
 import BillAggrement from "./pages/Masters/GeneralMasters/AccountManagement/BillAggrement";
 import CreateBillAgrement from "./pages/Masters/GeneralMasters/AccountManagement/CreateBillAgrement";
+
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -770,7 +771,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-              <Route
+          <Route
             path="CreateBillAgrement"
             element={
               <ProtectedRoute>

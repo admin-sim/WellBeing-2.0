@@ -122,56 +122,56 @@ function MainLayout() {
   }
   const FullScreenRef = useRef(null);
 
-  const enterFullscreen = () => {
-    const elem = FullScreenRef.current;
+  // const enterFullscreen = () => {
+  //   const elem = FullScreenRef.current;
 
-    if (elem.requestFullscreen) {
-      elem.requestFullscreen();
-    } else if (elem.mozRequestFullScreen) {
-      // Firefox
-      elem.mozRequestFullScreen();
-    } else if (elem.webkitRequestFullscreen) {
-      // Chrome, Safari, and Opera
-      elem.webkitRequestFullscreen();
-    }
-  };
+  //   if (elem.requestFullscreen) {
+  //     elem.requestFullscreen();
+  //   } else if (elem.mozRequestFullScreen) {
+  //     // Firefox
+  //     elem.mozRequestFullScreen();
+  //   } else if (elem.webkitRequestFullscreen) {
+  //     // Chrome, Safari, and Opera
+  //     elem.webkitRequestFullscreen();
+  //   }
+  // };
 
-  const exitFullscreen = () => {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (document.mozCancelFullScreen) {
-      // Firefox
-      document.mozCancelFullScreen();
-    } else if (document.webkitExitFullscreen) {
-      // Chrome, Safari, and Opera
-      document.webkitExitFullscreen();
-    }
-  };
+  // const exitFullscreen = () => {
+  //   if (document.exitFullscreen) {
+  //     document.exitFullscreen();
+  //   } else if (document.mozCancelFullScreen) {
+  //     // Firefox
+  //     document.mozCancelFullScreen();
+  //   } else if (document.webkitExitFullscreen) {
+  //     // Chrome, Safari, and Opera
+  //     document.webkitExitFullscreen();
+  //   }
+  // };
 
-  const handleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      setIsFullScreen(true);
-      enterFullscreen();
-    } else {
-      setIsFullScreen(false);
-      exitFullscreen();
-    }
-  };
+  // const handleFullscreen = () => {
+  //   if (!document.fullscreenElement) {
+  //     setIsFullScreen(true);
+  //     enterFullscreen();
+  //   } else {
+  //     setIsFullScreen(false);
+  //     exitFullscreen();
+  //   }
+  // };
 
   const headerItems = [
-    {
-      key: 4,
-      label: (
-        <Button onClick={handleFullscreen}>
-          {isFullScreen ? (
-            <AiOutlineFullscreenExit style={{ fontSize: "1.5rem" }} />
-          ) : (
-            <AiOutlineFullscreen style={{ fontSize: "1.5rem" }} />
-          )}
-        </Button>
-      ),
-      selectable: "false",
-    },
+    // {
+    //   key: 4,
+    //   label: (
+    //     <Button onClick={handleFullscreen}>
+    //       {isFullScreen ? (
+    //         <AiOutlineFullscreenExit style={{ fontSize: "1.5rem" }} />
+    //       ) : (
+    //         <AiOutlineFullscreen style={{ fontSize: "1.5rem" }} />
+    //       )}
+    //     </Button>
+    //   ),
+    //   selectable: "false",
+    // },
     {
       key: 3, // Ensure this key is different from other keys
       label: (
@@ -181,10 +181,10 @@ function MainLayout() {
             borderRadius: "15px",
             width: "auto",
             boxShadow: "0 1px 2px 0 rgba(1, 1, 1, 0.4)",
-            height: "50px",
+            // height: "50px",
             textAlign: "center",
             background: "#f1f1f1",
-            marginTop: "-65px",
+            marginTop: "-3.12rem",
           }}
         >
           <div
@@ -267,10 +267,7 @@ function MainLayout() {
         <Popover
           content={
             <>
-              <Space.Compact
-                direction="vertical"
-                style={{ display: "flex", alignItems: "flex-start" }}
-              >
+              <Space.Compact direction="vertical">
                 <Button
                   type="text"
                   style={{ width: "100%", textAlign: "left" }}
@@ -461,6 +458,8 @@ function MainLayout() {
             padding: 0,
             background: colorBgContainer,
             display: "flex",
+            alignItems: "center", // Ensures content is centered vertically
+            height: "3rem", // Adjust height as needed
           }}
         >
           <Button
@@ -468,11 +467,11 @@ function MainLayout() {
             onClick={() => setCollapsed(!collapsed)}
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            style={{ height: "3rem", lineHeight: "3rem", width: "3rem" }} // Match button height to header
           />
           <Menu
             theme="light"
             mode="horizontal"
-            // defaultSelectedKeys={["0"]}
             items={headerItems}
             style={{
               flex: 1,
@@ -481,12 +480,15 @@ function MainLayout() {
               justifyContent: "flex-end",
               padding: "0 3rem",
               fontSize: "1rem",
+              height: "3rem", // Match menu height to header
+              lineHeight: "3rem", // Center menu items vertically
             }}
           />
         </Header>
+
         <Content
           style={{
-            margin: "1rem 1rem",
+            margin: "0.5rem 0.5rem",
             padding: "0rem",
             // minHeight: 280,
           }}
