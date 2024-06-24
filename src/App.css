@@ -62,7 +62,7 @@ li .ant-menu-item {
 }
 
 .menu-bar {
-  margin-top: 2rem;
+  margin-top: 1rem;
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -148,4 +148,17 @@ li .ant-menu-item {
 }
 *:not(.fc a) {
   text-decoration: none !important;
+}
+
+.ant-layout-header {
+  height: 3rem; /* Match header height */
+}
+
+.ant-menu-horizontal {
+  line-height: 3rem; /* Center menu items vertically */
+}
+
+.toggle {
+  height: 48px; /* Match button height to header */
+  line-height: 3rem; /* Center button icon vertically */
 }

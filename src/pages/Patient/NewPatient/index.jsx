@@ -906,7 +906,7 @@ const NewPatient = () => {
                         message: "Please enter your mobile number.",
                       },
                       {
-                        pattern: new RegExp(/^(\+\d{1,3})?\d{10,12}$/),
+                        pattern: new RegExp(/^\d{10}$/),
                         message: "Invalid mobile number!",
                       },
                     ]}
