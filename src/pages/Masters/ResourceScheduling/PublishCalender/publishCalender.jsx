@@ -210,13 +210,13 @@ function PublishCalender() {
     },
     {
       title: "From Date",
-      dataIndex: "FromDate",
-      key: "FromDate",
+      dataIndex: "StartDate",
+      key: "StartDate",
     },
     {
       title: "To Date",
-      dataIndex: "ToDate",
-      key: "ToDate",
+      dataIndex: "EndDate",
+      key: "EndDate",
     },
   ];
 

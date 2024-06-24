@@ -18,6 +18,8 @@ import {
   urlSearchUHID,
   urlAddNewVisit,
   urlAddNewVisit1,
+  urlGetWardsBasedOnWardCategory,
+  urlGetBedsForWard,
 } from "../../../../endpoints.js";
 
 import { EnvironmentOutlined } from "@ant-design/icons";
@@ -40,6 +42,7 @@ const NewVisit = () => {
     EncounterReason: [],
     ReferredBy: [],
     CardType: [],
+    WardCategory: [],
   });
   const [loading, setLoading] = useState(false);
 
@@ -70,6 +73,12 @@ const NewVisit = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [showWard, setShowWard] = useState(false);
+
+  const [serviceLocationId, setServiceLocationId] = useState();
+  const [wardComponentsDisabled, setWardComponentsDisabled] = useState(true);
+  const [wards, setWards] = useState([]);
+  const [beds, setBeds] = useState([]);
 
   useEffect(() => {
     debugger;
@@ -287,6 +296,9 @@ const NewVisit = () => {
         KinContactNo: values.KinContactNo,
         ReferredBy: values.referredBy,
         AttendingProviderId: values.admittedUnder,
+        WardCategoryId: values.WardCategory,
+        WardId: values.Ward,
+        BedId: values.Bed,
       };
 
       try {
@@ -354,6 +366,11 @@ const NewVisit = () => {
     debugger;
     try {
       // Update the options for the second select based on the value of the first select
+      if (value === 23 || value === 24 || value === 25) {
+        setShowWard(true);
+      } else {
+        setShowWard(false);
+      }
       if (value != null) {
         const response = await customAxios.get(
           `${urlGetDepartmentBasedOnPatitentType}?PatientType=${value}`
@@ -407,6 +424,63 @@ const NewVisit = () => {
         // form1.setFieldsValue({ ProviderId: null });
         // form1.setFieldsValue({ ServiceLocationName: null });
         form1.resetFields(["Provider", "ServiceLocation"]);
+      }
+    } catch (error) {
+      // Handle errors (e.g., network issues)
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  const handleServiceLocationChange = (value) => {
+    if (value !== undefined) {
+      setServiceLocationId(value);
+      setWardComponentsDisabled(false);
+    } else {
+      setServiceLocationId(null);
+      setWardComponentsDisabled(true);
+    }
+  };
+
+  const handleWardCategoryChange = async (value) => {
+    debugger;
+    try {
+      if (value !== undefined) {
+        const response = await customAxios.get(
+          `${urlGetWardsBasedOnWardCategory}?WardCategory=${value}&ServiceLocationId=${serviceLocationId}`
+        );
+
+        if (response.status === 200) {
+          const wardsOptions = response.data.data.Wards;
+          setWards(wardsOptions);
+        } else {
+          // Handle other response statuses if needed
+        }
+      } else {
+        setWards([]);
+        setBeds([]);
+      }
+    } catch (error) {
+      // Handle errors (e.g., network issues)
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  const handleWardChange = async (value) => {
+    debugger;
+    try {
+      if (value != null) {
+        const response = await customAxios.get(
+          `${urlGetBedsForWard}?id=${value}`
+        );
+
+        if (response.status === 200) {
+          const bedsOptions = response.data.data.Beds;
+          setBeds(bedsOptions);
+        } else {
+          // Handle other response statuses if needed
+        }
+      } else {
+        setBeds([]);
       }
     } catch (error) {
       // Handle errors (e.g., network issues)
@@ -731,6 +805,7 @@ const NewVisit = () => {
       <Card>
         <Spin spinning={loading}>
           <Table
+            rowHoverable
             dataSource={patientsearchDetails}
             columns={columns}
             className="custom-table"
@@ -868,182 +943,260 @@ const NewVisit = () => {
           <div>
             <Form form={form1} layout="vertical">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col span={6}>
-                  <Form.Item
-                    name="PatientType"
-                    label="Patient Type"
-                    rules={[
-                      { required: true, message: "Please select PatientType" },
-                    ]}
+                <Col span={12}>
+                  <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                    <Col span={12}>
+                      <Form.Item
+                        name="PatientType"
+                        label="Patient Type"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please select PatientType",
+                          },
+                        ]}
+                      >
+                        <Select onChange={handlePatientTypeChange} allowClear>
+                          {patientDropdown.PatientType.map((option) => (
+                            <Select.Option
+                              key={option.LookupID}
+                              value={option.LookupID}
+                            >
+                              {option.LookupDescription}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="EncounterType" label="Encounter Type">
+                        <Select allowClear>
+                          {patientDropdown.EncounterType.map((option) => (
+                            <Select.Option
+                              key={option.LookupID}
+                              value={option.LookupID}
+                            >
+                              {option.LookupDescription}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item
+                        name="Department"
+                        label="Department"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please select Department",
+                          },
+                        ]}
+                      >
+                        <Select onChange={handleDepartmentChange} allowClear>
+                          {departments.map((option) => (
+                            <Select.Option
+                              key={option.DepartmentId}
+                              value={option.DepartmentId}
+                            >
+                              {option.DepartmentName}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item
+                        name="EncounterReason"
+                        label="Encounter Reason"
+                      >
+                        <Select allowClear>
+                          {patientDropdown.EncounterReason.map((option) => (
+                            <Select.Option
+                              key={option.LookupID}
+                              value={option.LookupID}
+                            >
+                              {option.LookupDescription}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item
+                        name="Provider"
+                        label="Provider"
+                        rules={[
+                          { required: true, message: "Please select Provider" },
+                        ]}
+                      >
+                        <Select allowClear>
+                          {providers.map((option) => (
+                            <Select.Option
+                              key={option.ProviderId}
+                              value={option.ProviderId}
+                            >
+                              {option.ProviderName}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="admittedUnder" label="Admitted Under">
+                        <Input allowClear />
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item
+                        name="ServiceLocation"
+                        label="Service Location"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please select Service Location",
+                          },
+                        ]}
+                      >
+                        <Select
+                          allowClear
+                          onChange={handleServiceLocationChange}
+                        >
+                          {serviceLocations.map((option) => (
+                            <Select.Option
+                              key={option.FacilityDepartmentServiceLocationId}
+                              value={option.FacilityDepartmentServiceLocationId}
+                            >
+                              {option.ServiceLocationName}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="referredBy" label="Referred By">
+                        <Select allowClear>
+                          {patientDropdown.ReferredBy.map((option) => (
+                            <Select.Option
+                              key={option.ReferrerId}
+                              value={option.ReferrerId}
+                            >
+                              {option.ReferrerType}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                    {showWard && (
+                      <>
+                        <Col span={12}>
+                          <Form.Item name="WardCategory" label="Ward Category">
+                            <Select
+                              allowClear
+                              disabled={wardComponentsDisabled}
+                              onChange={handleWardCategoryChange}
+                            >
+                              {patientDropdown.WardCategory.map((option) => (
+                                <Select.Option
+                                  key={option.LookupID}
+                                  value={option.LookupID}
+                                >
+                                  {option.LookupDescription}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                          <Form.Item name="Ward" label="Ward">
+                            <Select
+                              allowClear
+                              disabled={wardComponentsDisabled}
+                              onChange={handleWardChange}
+                            >
+                              {wards.map((option) => (
+                                <Select.Option
+                                  key={option.WardID}
+                                  value={option.WardID}
+                                >
+                                  {option.WardName}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                          <Form.Item name="Bed" label="Bed">
+                            <Select
+                              allowClear
+                              disabled={wardComponentsDisabled}
+                            >
+                              {beds.map((option) => (
+                                <Select.Option
+                                  key={option.BedID}
+                                  value={option.BedID}
+                                >
+                                  {option.BedNo}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                      </>
+                    )}
+                  </Row>
+                </Col>
+                <Col span={12}>
+                  <Card
+                    title="Next of Kin Details"
+                    bordered={true}
+                    style={{ marginBottom: "24px" }}
+                    // className="Visit"
                   >
-                    <Select onChange={handlePatientTypeChange} allowClear>
-                      {patientDropdown.PatientType.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
+                    <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                      <Col span={12}>
+                        <Form.Item name="KinTitle" label="Title">
+                          <Select allowClear>
+                            {patientDropdown.Title.map((option) => (
+                              <Select.Option
+                                key={option.LookupID}
+                                value={option.LookupID}
+                              >
+                                {option.LookupDescription}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item name="KinName" label="Next of Kin Name">
+                          <Input allowClear />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item
+                          name="KinAddress"
+                          label="Next of Kin Address"
                         >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="EncounterType" label="Encounter Type">
-                    <Select allowClear>
-                      {patientDropdown.EncounterType.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
+                          <Input allowClear />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item
+                          name="KinContactNo"
+                          label="Next of Kin Contact No"
+                          rules={[
+                            {
+                              pattern: new RegExp(/^\d{6,10}$/),
+                              message: "Invalid Contact Number",
+                            },
+                          ]}
                         >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={4}>
-                  <Form.Item name="KinTitle" label="Title">
-                    <Select allowClear>
-                      {patientDropdown.Title.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item name="KinName" label="Next of Kin Name">
-                    <Input allowClear />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col span={6}>
-                  <Form.Item
-                    name="Department"
-                    label="Department"
-                    rules={[
-                      { required: true, message: "Please select Department" },
-                    ]}
-                  >
-                    <Select onChange={handleDepartmentChange} allowClear>
-                      {departments.map((option) => (
-                        <Select.Option
-                          key={option.DepartmentId}
-                          value={option.DepartmentId}
-                        >
-                          {option.DepartmentName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="EncounterReason" label="Encounter Reason">
-                    <Select allowClear>
-                      {patientDropdown.EncounterReason.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="KinAddress" label="Next of Kin Address">
-                    <Input allowClear />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col span={6}>
-                  <Form.Item
-                    name="Provider"
-                    label="Provider"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please select Provider",
-                      },
-                    ]}
-                  >
-                    <Select allowClear>
-                      {providers.map((option) => (
-                        <Select.Option
-                          key={option.ProviderId}
-                          value={option.ProviderId}
-                        >
-                          {option.ProviderName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="admittedUnder" label="Admitted Under">
-                    <Input allowClear />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="KinContactNo"
-                    label="Next of Kin Contact No"
-                    rules={[
-                      {
-                        pattern: new RegExp(/^\d{6,10}$/),
-                        message: "Invalid Contact Number",
-                      },
-                    ]}
-                  >
-                    <Input allowClear />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col span={6}>
-                  <Form.Item
-                    name="ServiceLocation"
-                    label="Service Location"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please select Service Location",
-                      },
-                    ]}
-                  >
-                    <Select allowClear>
-                      {serviceLocations.map((option) => (
-                        <Select.Option
-                          key={option.FacilityDepartmentServiceLocationId}
-                          value={option.FacilityDepartmentServiceLocationId}
-                        >
-                          {option.ServiceLocationName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="referredBy" label="Referred By">
-                    <Select allowClear>
-                      {patientDropdown.ReferredBy.map((option) => (
-                        <Select.Option
-                          key={option.ReferrerId}
-                          value={option.ReferrerId}
-                        >
-                          {option.ReferrerType}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
+                          <Input allowClear />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </Card>
                 </Col>
               </Row>
             </Form>
