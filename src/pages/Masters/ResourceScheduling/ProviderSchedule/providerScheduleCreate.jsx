@@ -29,10 +29,13 @@ import { useNavigate } from "react-router-dom";
 import {
   urlGetScheduleTypesBasedOnTypeId,
   urlGetAllQueueProviders,
+  urlGetEditDayProviderSchedule,
+  urlDeleteProviderScheduleBasedOnTypeID,
   urlGetScheduleCreateDetails,
   urlAddNewProviderScheduleOfTypeWeek,
   urlAddNewProviderScheduleOfTypeDay,
   urlAddNewProviderScheduleOfTypeWeekDay,
+  urlUpdateProviderScheduleOfType,
 } from "../../../../../endpoints";
 import customAxios from "../../../../components/customAxios/customAxios";
 import WeeklyView from "./WeeklyView";
@@ -59,6 +62,11 @@ function ProviderScheduleCreate() {
   const [templateDayDetails, setTemplateDayDetails] = useState([]);
   const [templatesWeekDayDetails, setTemplateWeekDayDetails] = useState([]);
   const [providerSchedule, setProviderSchedule] = useState([]);
+  const [templateDayData, setTemplateDayData] = useState([]);
+  const [templateWeekDayData, setTemplateWeekDayData] = useState([]);
+  const [isEditingDayModal, setIsEditingDayModal] = useState(false);
+  const [isEditingWeekDayModal, setIsEditingWeekDayModal] = useState(false);
+  const [ScheduleTypeId, setScheduleTypeId] = useState();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -95,8 +103,9 @@ function ProviderScheduleCreate() {
 
   const handleRadioChange = async (e) => {
     debugger;
+    form.resetFields(["FrequencyDay", "Day", "TemplateSession"]);
     const value = Number(e.target.value);
-    const providerValue = await form.validateFields();
+    const providerValue = await form.getFieldsValue();
     if (value != null) {
       try {
         if (providerValue != null) {
@@ -111,7 +120,9 @@ function ProviderScheduleCreate() {
               setDailyView(false);
               setWeekDayView(false);
               setSelectedScheduleType("Week");
-            } else if (value === 2) {
+              setScheduleTypeId(value);
+            }
+            if (value === 2) {
               const dayOptions = response.data.data.Days.map((day) => ({
                 label: `Day ${day}`,
                 value: day,
@@ -128,7 +139,9 @@ function ProviderScheduleCreate() {
               setWeeklyView(false);
               setWeekDayView(false);
               setSelectedScheduleType("Days");
-            } else {
+              setScheduleTypeId(value);
+            }
+            if (value === 3) {
               const templateData = response.data.data.ProviderSchedules.map(
                 (record, index) => {
                   return { ...record, key: index + 1 };
@@ -142,6 +155,7 @@ function ProviderScheduleCreate() {
               setDailyView(false);
               setWeeklyView(false);
               setSelectedScheduleType("WeekDays");
+              setScheduleTypeId(value);
             }
           }
         }
@@ -162,28 +176,106 @@ function ProviderScheduleCreate() {
     console.log("edit values ", record);
     if (selectedScheduleType === "Days") {
       setIsDailyTemplateModalOpen(true);
+      setIsEditingDayModal(true);
     } else {
       setIsWeekDayTemplateModalOpen(true);
+      setIsEditingWeekDayModal(true);
     }
+
+    customAxios
+      .get(
+        `${urlGetEditDayProviderSchedule}?providerScheduleId=${record.ProviderScheduleId}`
+      )
+      .then((response) => {
+        if (response.data !== null) {
+          if (selectedScheduleType === "Days") {
+            const scheduleData = response.data.data.ProviderSchedule;
+            setTemplateDayData(scheduleData);
+            setIsDailyTemplateModalOpen(true);
+            form.setFieldsValue({
+              Day: scheduleData.DayNo,
+              TemplateSession: scheduleData.TemplateId,
+            });
+            setLoading(false);
+          } else {
+            const scheduleData = response.data.data.ProviderSchedule;
+            setTemplateWeekDayData(scheduleData);
+            setIsWeekDayTemplateModalOpen(true);
+            form.setFieldsValue({
+              FrequencyDay: scheduleData.WeekDayFrequency,
+              Day: scheduleData.WeekDay,
+              TemplateSession: scheduleData.TemplateId,
+            });
+            setLoading(false);
+          }
+        }
+      });
   };
 
   const onDeleteTemplate = (record) => {
     console.log("delate values of day template", record);
+
+    try {
+      customAxios
+        .delete(
+          `${urlDeleteProviderScheduleBasedOnTypeID}?ProviderScheduleId=${record.ProviderScheduleId}&TypeId=${ScheduleTypeId}&ProviderId=${record.ProviderId}`
+        )
+        .then((response) => {
+          if (response.data.data !== null) {
+            if (selectedScheduleType === "Days") {
+              const dayOptions = response.data.data.Days.map((day) => ({
+                label: `Day ${day}`,
+                value: day,
+              }));
+              const templateData = response.data.data.ProviderSchedules.map(
+                (record, index) => {
+                  return { ...record, key: index + 1 };
+                }
+              );
+              setDays(dayOptions);
+              setTemplateDayDetails(templateData);
+              setTemplateSessions(response.data.data.Templates);
+            } else {
+              const templateData = response.data.data.ProviderSchedules.map(
+                (record, index) => {
+                  return { ...record, key: index + 1 };
+                }
+              );
+              setTemplateWeekDayDetails(templateData);
+              setTemplateSessions(response.data.data.Templates);
+              setWeeks(response.data.data.Weeks);
+              setWeekDays(response.data.data.WeekDays);
+            }
+
+            notification.success({
+              message: "Deleted Successfully",
+            });
+          }
+        });
+    } catch (error) {
+      notification.error({
+        message: "Deleting UnSuccessful",
+      });
+    }
   };
 
   const handleAddTemplate = () => {
     if (selectedScheduleType === "Days") {
       setIsDailyTemplateModalOpen(true);
+      form.resetFields(["Day", "TemplateSession"]);
     } else {
       setIsWeekDayTemplateModalOpen(true);
+      form.resetFields(["FrequencyDay", "Day", "TemplateSession"]);
     }
   };
 
   const handleCloseDayTemplateModal = () => {
     setIsDailyTemplateModalOpen(false);
+    form.resetFields(["Day", "TemplateSession"]);
   };
   const handleCloseWeekDayTemplateModal = () => {
     setIsWeekDayTemplateModalOpen(false);
+    form.resetFields(["FrequencyDay", "Day", "TemplateSession"]);
   };
 
   const handleSubmit = async () => {
@@ -221,78 +313,153 @@ function ProviderScheduleCreate() {
             form.resetFields();
           }
         }
-      } else if (dailyView) {
-        const response = await customAxios.post(
-          `${urlAddNewProviderScheduleOfTypeDay}?DayId=${
-            values.Day
-          }&FacilityId=${1}&TemplateId=${values.TemplateSession}&ProviderId=${
-            values.Provider
-          }&ScheduleType=${selectedScheduleType}&TypeId=${values.Schedule}`
-        );
+      }
+      if (dailyView) {
+        if (isEditingDayModal) {
+          const response = await customAxios.post(
+            `${urlUpdateProviderScheduleOfType}?ProviderScheduleId=${templateDayData.ProviderScheduleId}&TemplateId=${values.TemplateSession}&TypeId=${ScheduleTypeId}&ProviderId=${values.Provider}`
+          );
+          if (response.data !== null) {
+            if (response.data.data !== undefined) {
+              const templateData = response.data.data.ProviderSchedules.map(
+                (record, index) => {
+                  return { ...record, key: index + 1 };
+                }
+              );
+              form.setFieldsValue({
+                Provider: templateData[0].ProviderId,
+                // Schedule: templateData[0].ScheduleType === "Days" ? 2 : 3,
+              });
+              setTemplateDayDetails(templateData);
+              setIsDailyTemplateModalOpen(false);
+              setIsEditingWeekDayModal(false);
+              notification.success({
+                message: "Schedule Template details updated Successfully",
+              });
+              form.resetFields(["Day", "TemplateSession"]);
 
-        if (response.data !== null) {
-          if (response.data.data !== undefined) {
-            // Display success notification
-            setShowRadioButtons(true);
-            const templateData = response.data.data.ProviderSchedules.map(
-              (record, index) => {
-                return { ...record, key: index + 1 };
-              }
-            );
-            form.setFieldsValue({
-              Provider: templateData[0].ProviderId,
-              Schedule: templateData[0].ScheduleType === "Days" ? 2 : 3,
-            });
-            setTemplateDayDetails(templateData);
-            setIsDailyTemplateModalOpen(false);
-            notification.success({
-              message: "Schedule Template details added Successfully",
-            });
+              // handleBack();
+            } else if (response.data === "AlreadyExists") {
+              notification.warning({
+                message: "Schedule Template already exists",
+              });
+              // handleBack();
+              form.resetFields(["Day", "TemplateSession"]);
+            }
+          }
+        } else {
+          const response = await customAxios.post(
+            `${urlAddNewProviderScheduleOfTypeDay}?DayId=${
+              values.Day
+            }&FacilityId=${1}&TemplateId=${values.TemplateSession}&ProviderId=${
+              values.Provider
+            }&ScheduleType=${selectedScheduleType}&TypeId=${values.Schedule}`
+          );
 
-            // handleBack();
-          } else if (response.data === "AlreadyExists") {
-            notification.warning({
-              message: "Schedule Template already exists",
-            });
-            // handleBack();
+          if (response.data !== null) {
+            if (response.data.data !== undefined) {
+              // Display success notification
+              setShowRadioButtons(true);
+              const templateData = response.data.data.ProviderSchedules.map(
+                (record, index) => {
+                  return { ...record, key: index + 1 };
+                }
+              );
+              form.setFieldsValue({
+                Provider: templateData[0].ProviderId,
+                Schedule: templateData[0].ScheduleType === "Days" ? 2 : 3,
+              });
+              setTemplateDayDetails(templateData);
+              setIsDailyTemplateModalOpen(false);
+              form.resetFields(["Day", "TemplateSession"]);
+              notification.success({
+                message: "Schedule Template details added Successfully",
+              });
+
+              // handleBack();
+            } else if (response.data === "AlreadyExists") {
+              notification.warning({
+                message: "Schedule Template already exists",
+              });
+              // handleBack();
+            }
           }
         }
       }
-      const response = await customAxios.post(
-        `${urlAddNewProviderScheduleOfTypeWeekDay}?WeekDayFrequency=${
-          values.FrequencyDay
-        }&WeeksId=${values.Day}&FacilityId=${1}&TemplateId=${
-          values.TemplateSession
-        }&ProviderId=${
-          values.Provider
-        }&ScheduleType=${selectedScheduleType}&TypeId=${values.Schedule}`
-      );
-
-      if (response.data !== null) {
-        if (response.data.data !== undefined) {
-          setShowRadioButtons(true);
-          const templateData = response.data.data.ProviderSchedules.map(
-            (record, index) => {
-              return { ...record, key: index + 1 };
-            }
+      if (weekDayView) {
+        if (isEditingWeekDayModal) {
+          const response = await customAxios.post(
+            `${urlUpdateProviderScheduleOfType}?ProviderScheduleId=${templateWeekDayData.ProviderScheduleId}&TemplateId=${values.TemplateSession}&TypeId=${ScheduleTypeId}&ProviderId=${values.Provider}`
           );
-          setTemplateWeekDayDetails(templateData);
-          setIsWeekDayTemplateModalOpen(false);
-          form.setFieldsValue({
-            Provider: templateData[0].ProviderId,
-            Schedule: templateData[0].ScheduleType === "WeekDays" ? 3 : null,
-          });
-          // Display success notification
-          notification.success({
-            message: "Schedule Template details added Successfully",
-          });
-          // handleBack();
-        } else if (response.data === "AlreadyExists") {
-          notification.warning({
-            message: "Schedule Template already exists",
-          });
-          // handleBack();
-          form.resetFields();
+          if (response.data !== null) {
+            if (response.data.data !== undefined) {
+              const templateData = response.data.data.ProviderSchedules.map(
+                (record, index) => {
+                  return { ...record, key: index + 1 };
+                }
+              );
+              form.setFieldsValue({
+                Provider: templateData[0].ProviderId,
+                // Schedule: templateData[0].ScheduleType === "Days" ? 2 : 3,
+              });
+              setTemplateWeekDayDetails(templateData);
+              setIsWeekDayTemplateModalOpen(false);
+              setIsEditingWeekDayModal(false);
+              notification.success({
+                message: "Schedule Template details updated Successfully",
+              });
+              form.resetFields(["FrequencyDay", "Day", "TemplateSession"]);
+
+              // handleBack();
+            } else if (response.data === "AlreadyExists") {
+              notification.warning({
+                message: "Schedule Template already exists",
+              });
+              // handleBack();
+              form.resetFields(["FrequencyDay", "Day", "TemplateSession"]);
+            }
+          }
+        } else {
+          const response = await customAxios.post(
+            `${urlAddNewProviderScheduleOfTypeWeekDay}?WeekDayFrequency=${
+              values.FrequencyDay
+            }&WeeksId=${values.Day}&FacilityId=${1}&TemplateId=${
+              values.TemplateSession
+            }&ProviderId=${
+              values.Provider
+            }&ScheduleType=${selectedScheduleType}&TypeId=${values.Schedule}`
+          );
+
+          if (response.data !== null) {
+            if (response.data.data !== undefined) {
+              setShowRadioButtons(true);
+              const templateData = response.data.data.ProviderSchedules.map(
+                (record, index) => {
+                  return { ...record, key: index + 1 };
+                }
+              );
+              setTemplateWeekDayDetails(templateData);
+              setIsWeekDayTemplateModalOpen(false);
+              form.setFieldsValue({
+                Provider: templateData[0].ProviderId,
+                Schedule:
+                  templateData[0].ScheduleType === "WeekDays" ? 3 : null,
+              });
+              form.resetFields(["FrequencyDay", "Day", "TemplateSession"]);
+              // Display success notification
+              notification.success({
+                message: "Schedule Template details added Successfully",
+              });
+              // handleBack();
+            } else if (response.data === "AlreadyExists") {
+              notification.warning({
+                message: "Schedule Template already exists",
+              });
+              // handleBack();
+
+              form.resetFields(["FrequencyDay", "Day", "TemplateSession"]);
+            }
+          }
         }
       }
 
@@ -736,6 +903,7 @@ function ProviderScheduleCreate() {
               allowClear
               placeholder="Select a type"
               options={days}
+              disabled={isEditingDayModal}
             ></Select>
           </Form.Item>
 
@@ -803,7 +971,7 @@ function ProviderScheduleCreate() {
               },
             ]}
           >
-            <Select allowClear placeholder="Select a type">
+            <Select allowClear placeholder="Select a type" disabled={isEditingWeekDayModal}>
               {weekDays.map((option) => (
                 <Select.Option key={option.LookupID} value={option.LookupID}>
                   {option.LookupDescription}
@@ -821,7 +989,7 @@ function ProviderScheduleCreate() {
               },
             ]}
           >
-            <Select allowClear placeholder="Select a type">
+            <Select allowClear placeholder="Select a type" disabled={isEditingWeekDayModal}>
               {weeks.map((option) => (
                 <Select.Option key={option.LookupID} value={option.LookupID}>
                   {option.LookupDescription}

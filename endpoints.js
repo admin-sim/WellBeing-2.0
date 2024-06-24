@@ -214,3 +214,6 @@ export const urlGetProviderCalenderBasedOnProviderId = `${baseURL}/api/ScheduleP
 export const urlGetProviderBasedOnDept = `${baseURL}/api/ScheduleProviderAppointment/GetProviderBasedOnDept`;
 export const urlAddNewScheduleProviderExisitingAppointment = `${baseURL}/api/ScheduleProviderAppointment/AddNewScheduleProviderExisitingAppointment`;
 export const urlPatientAppointmentExist = `${baseURL}/api/ScheduleProviderAppointment/PatientAppointmentExist`;
+export const urlGetBedsForWard = `${baseURL}/api/Encounter/GetBedsForWard`;
+export const urlGetWardForServiceLocation = `${baseURL}/api/Encounter/GetWardForServiceLocation`;
+export const urlGetWardsBasedOnWardCategory = `${baseURL}/api/Encounter/GetWardsBasedOnWardCategory`;
