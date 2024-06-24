@@ -532,7 +532,7 @@ const MyCalendar = ({}) => {
               }}
               titleFormat={{ year: "numeric", month: "long", day: "numeric" }}
               allDayText=""
-              slotMinTime="04:00:00"
+            //  slotMinTime="04:00:00"
               navLinks={true}
               nowIndicator={true}
               themeSystem="bootstrap"
