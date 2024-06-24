@@ -10,12 +10,18 @@ import {
   TimePicker,
 } from "antd";
 import Title from "antd/es/typography/Title";
+import { useEffect } from "react";
 //import { useForm } from "antd/es/form/Form";
 
 const SessionsForms = ({ numForms, form }) => {
-
   const numberPattern = /^\d*$/;
   //const [form] = useForm();
+
+  // useEffect(() => {
+  //   if (form) {
+  //     form.setFieldsValue(formData);
+  //   }
+  // }, [form, formData]);
 
   let forms = [];
   for (let i = 0; i < numForms; i++) {
@@ -30,18 +36,63 @@ const SessionsForms = ({ numForms, form }) => {
             <Form.Item
               name={["sessions", i, "StartTime"]}
               label="Start Time"
-              rules={[{ required: true, message: "Select the Start Time" }]}
+              rules={[
+                { required: true, message: "Select the Start Time" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (i === 0) return Promise.resolve(); // No previous session for the first one
+                    const prevEndTime = getFieldValue([
+                      "sessions",
+                      i - 1,
+                      "EndTime",
+                    ]);
+                    if (!value || (prevEndTime && value.isAfter(prevEndTime))) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error(
+                        "Start Time must be after the previous session's End Time"
+                      )
+                    );
+                  },
+                }),
+              ]}
             >
-              <TimePicker style={{ width: "100%" }} />
+              <TimePicker
+                style={{ width: "100%" }}
+                changeOnScroll
+                needConfirm={false}
+              />
             </Form.Item>
           </Col>
           <Col span={6}>
             <Form.Item
               name={["sessions", i, "EndTime"]}
               label="End Time"
-              rules={[{ required: true, message: "Select the Start Time" }]}
+              rules={[
+                { required: true, message: "Select the End Time" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    const startTime = getFieldValue([
+                      "sessions",
+                      i,
+                      "StartTime",
+                    ]);
+                    if (!value || (startTime && value.isAfter(startTime))) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error("End Time must be after Start Time")
+                    );
+                  },
+                }),
+              ]}
             >
-              <TimePicker style={{ width: "100%" }} />
+              <TimePicker
+                style={{ width: "100%" }}
+                changeOnScroll
+                needConfirm={false}
+              />
             </Form.Item>
           </Col>
           <Col span={6}>

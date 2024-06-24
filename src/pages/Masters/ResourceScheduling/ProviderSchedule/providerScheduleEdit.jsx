@@ -43,6 +43,8 @@ import WeeklyView from "./WeeklyView";
 function ProviderScheduleEdit() {
   debugger;
   const [form] = Form.useForm();
+  const [dailyForm] = Form.useForm();
+  const [weekDayForm] = Form.useForm();
   const [Loading, setLoading] = useState(false);
   const [weeklyView, setWeeklyView] = useState(false);
   const [dailyView, setDailyView] = useState(false);
@@ -215,7 +217,7 @@ function ProviderScheduleEdit() {
             const scheduleData = response.data.data.ProviderSchedule;
             setTemplateDayData(scheduleData);
             setIsDailyTemplateModalOpen(true);
-            form.setFieldsValue({
+            dailyForm.setFieldsValue({
               Day: scheduleData.DayNo,
               TemplateSession: scheduleData.TemplateId,
             });
@@ -224,7 +226,7 @@ function ProviderScheduleEdit() {
             const scheduleData = response.data.data.ProviderSchedule;
             setTemplateWeekDayData(scheduleData);
             setIsWeekDayTemplateModalOpen(true);
-            form.setFieldsValue({
+            weekDayForm.setFieldsValue({
               FrequencyDay: scheduleData.WeekDayFrequency,
               Day: scheduleData.WeekDay,
               TemplateSession: scheduleData.TemplateId,
@@ -238,7 +240,7 @@ function ProviderScheduleEdit() {
   const onDeleteTemplate = (record) => {
     debugger;
     console.log("edit day template", record);
-    setTemplateDayData(record);
+    // setTemplateDayData(record);
     try {
       customAxios
         .delete(
@@ -295,14 +297,17 @@ function ProviderScheduleEdit() {
 
   const handleCloseDayTemplateModal = () => {
     setIsDailyTemplateModalOpen(false);
+    dailyForm.resetFields();
   };
   const handleCloseWeekDayTemplateModal = () => {
     setIsWeekDayTemplateModalOpen(false);
+    weekDayForm.resetFields();
   };
 
   const handleSubmit = async () => {
     debugger;
     const values = await form.validateFields();
+
     console.log("Form Values:", values, selectedSessions);
     setLoading(true);
     try {
@@ -338,7 +343,7 @@ function ProviderScheduleEdit() {
             notification.success({
               message: "Schedule Template details updated Successfully",
             });
-            // handleBack();
+            handleBack();
             form.resetFields();
           } else if (response.data === "Failure") {
             notification.error({
@@ -350,9 +355,10 @@ function ProviderScheduleEdit() {
         }
       }
       if (dailyView) {
-        if (isEditingDayModal) {
+        const dailyFormValues = await dailyForm.getFieldsValue();
+        if (isEditingDayModal && dailyFormValues) {
           const response = await customAxios.post(
-            `${urlUpdateProviderScheduleOfType}?ProviderScheduleId=${templateDayData.ProviderScheduleId}&TemplateId=${values.TemplateSession}&TypeId=${ScheduleTypeId}&ProviderId=${values.Provider}`
+            `${urlUpdateProviderScheduleOfType}?ProviderScheduleId=${templateDayData.ProviderScheduleId}&TemplateId=${dailyFormValues.TemplateSession}&TypeId=${ScheduleTypeId}&ProviderId=${values.Provider}`
           );
           if (response.data !== null) {
             if (response.data.data !== undefined) {
@@ -372,6 +378,7 @@ function ProviderScheduleEdit() {
               notification.success({
                 message: "Schedule Template details updated Successfully",
               });
+              dailyForm.resetFields();
 
               // handleBack();
             } else if (response.data === "AlreadyExists") {
@@ -384,8 +391,10 @@ function ProviderScheduleEdit() {
         } else {
           const response = await customAxios.post(
             `${urlAddNewProviderScheduleOfTypeDay}?DayId=${
-              values.Day
-            }&FacilityId=${1}&TemplateId=${values.TemplateSession}&ProviderId=${
+              dailyFormValues.Day
+            }&FacilityId=${1}&TemplateId=${
+              dailyFormValues.TemplateSession
+            }&ProviderId=${
               values.Provider
             }&ScheduleType=${selectedScheduleType}&TypeId=${ScheduleTypeId}`
           );
@@ -405,6 +414,7 @@ function ProviderScheduleEdit() {
               notification.success({
                 message: "Schedule Template details added Successfully",
               });
+              dailyForm.resetFields();
 
               // handleBack();
             } else if (response.data === "AlreadyExists") {
@@ -417,9 +427,10 @@ function ProviderScheduleEdit() {
         }
       }
       if (weekDayView) {
-        if (isEditingWeekDayModal) {
+        const weekDayFormValues = weekDayForm.getFieldsValue();
+        if (isEditingWeekDayModal && weekDayFormValues) {
           const response = await customAxios.post(
-            `${urlUpdateProviderScheduleOfType}?ProviderScheduleId=${templateWeekDayData.ProviderScheduleId}&TemplateId=${values.TemplateSession}&TypeId=${ScheduleTypeId}&ProviderId=${values.Provider}`
+            `${urlUpdateProviderScheduleOfType}?ProviderScheduleId=${templateWeekDayData.ProviderScheduleId}&TemplateId=${weekDayFormValues.TemplateSession}&TypeId=${ScheduleTypeId}&ProviderId=${values.Provider}`
           );
           if (response.data !== null) {
             if (response.data.data !== undefined) {
@@ -439,6 +450,7 @@ function ProviderScheduleEdit() {
               notification.success({
                 message: "Schedule Template details updated Successfully",
               });
+              weekDayForm.resetFields();
 
               // handleBack();
             } else if (response.data === "AlreadyExists") {
@@ -451,9 +463,9 @@ function ProviderScheduleEdit() {
         } else {
           const response = await customAxios.post(
             `${urlAddNewProviderScheduleOfTypeWeekDay}?WeekDayFrequency=${
-              values.FrequencyDay
-            }&WeeksId=${values.Day}&FacilityId=${1}&TemplateId=${
-              values.TemplateSession
+              weekDayFormValues.FrequencyDay
+            }&WeeksId=${weekDayFormValues.Day}&FacilityId=${1}&TemplateId=${
+              weekDayFormValues.TemplateSession
             }&ProviderId=${
               values.Provider
             }&ScheduleType=${selectedScheduleType}&TypeId=${ScheduleTypeId}`
@@ -461,7 +473,7 @@ function ProviderScheduleEdit() {
 
           if (response.data !== null) {
             if (response.data.data !== undefined) {
-              setShowRadioButtons(true);
+             
               const templateData = response.data.data.ProviderSchedules.map(
                 (record, index) => {
                   return { ...record, key: index + 1 };
@@ -472,6 +484,7 @@ function ProviderScheduleEdit() {
               form.setFieldsValue({
                 Provider: templateData[0].ProviderId,
               });
+              weekDayForm.resetFields();
               // Display success notification
               notification.success({
                 message: "Schedule Template details added Successfully",
@@ -741,13 +754,13 @@ function ProviderScheduleEdit() {
                         htmlType="submit"
                         onClick={handleSubmit}
                       >
-                        Submit
+                        Update
                       </Button>
                     </Form.Item>
                   </Col>
                   <Col span={2} style={{ paddingLeft: "0px" }}>
                     <Form.Item>
-                      <Button type="default" onClick={handleBack} >
+                      <Button type="default" onClick={handleBack}>
                         Cancel
                       </Button>
                     </Form.Item>
@@ -876,23 +889,12 @@ function ProviderScheduleEdit() {
                 </Col>
               </Row>
             )}
-            {weeklyView && dailyView && (
-              <Row
-                gutter={32}
-                style={{
-                  height: "1.8rem",
-                  paddingBottom: "2rem",
-                  margin: "20px 0px",
-                }}
-              >
-                <Col offset={20} span={2}>
+            {(weekDayView || dailyView) && (
+              <Row justify="end">
+                <Col span={2} style={{ paddingLeft: "0px" }}>
                   <Form.Item>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      onClick={handleBack}
-                    >
-                      Back
+                    <Button type="primary" onClick={handleBack}>
+                      Cancel
                     </Button>
                   </Form.Item>
                 </Col>
@@ -911,7 +913,7 @@ function ProviderScheduleEdit() {
         <Form
           style={{ margin: "1rem 0" }}
           layout="vertical"
-          form={form}
+          form={dailyForm}
           onFinish={handleSubmit}
         >
           <Form.Item
@@ -928,6 +930,7 @@ function ProviderScheduleEdit() {
               allowClear
               placeholder="Select a type"
               options={days}
+              disabled = {isEditingDayModal}
             ></Select>
           </Form.Item>
 
@@ -981,7 +984,7 @@ function ProviderScheduleEdit() {
         <Form
           style={{ margin: "1rem 0" }}
           layout="vertical"
-          form={form}
+          form={weekDayForm}
           onFinish={handleSubmit}
         >
           <Form.Item
@@ -994,7 +997,7 @@ function ProviderScheduleEdit() {
               },
             ]}
           >
-            <Select allowClear placeholder="Select a type">
+            <Select allowClear placeholder="Select a type" disabled = {isEditingWeekDayModal}>
               {weekDays.map((option) => (
                 <Select.Option key={option.LookupID} value={option.LookupID}>
                   {option.LookupDescription}
@@ -1012,7 +1015,7 @@ function ProviderScheduleEdit() {
               },
             ]}
           >
-            <Select allowClear placeholder="Select a type">
+            <Select allowClear placeholder="Select a type" disabled = {isEditingWeekDayModal}>
               {weeks.map((option) => (
                 <Select.Option key={option.LookupID} value={option.LookupID}>
                   {option.LookupDescription}
