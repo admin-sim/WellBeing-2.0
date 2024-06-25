@@ -256,6 +256,7 @@ const NewPatient = () => {
   };
 
   useEffect(() => {
+    setLoading(true);
     customAxios.get(urlGetPatientDetail).then((response) => {
       const apiData = response.data.data;
       setPatientDropdown(apiData);
@@ -335,11 +336,6 @@ const NewPatient = () => {
     // Navigate to the new URL
     navigate(url);
   };
-
-  if (loadings) {
-    // Render a loading spinner while data is being fetched
-    return <Spin size="large" />;
-  }
 
   const handleOnFinish = async (values) => {
     setLoadings(true);
@@ -616,57 +612,42 @@ const NewPatient = () => {
 
   return (
     <>
-      {isloading ? (
-        // Skeleton Loading for Header
+      <Layout>
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100vh",
+            width: "100%",
+            backgroundColor: "white",
+            minHeight: "max-content",
+            borderRadius: "10px",
           }}
         >
-          <Spin size="large" style={{ textAlign: "center" }}>
-            <div className="content" />
-          </Spin>
-        </div>
-      ) : (
-        <Layout style={{ zIndex: "999999999" }}>
-          <div
+          <Row
             style={{
-              width: "100%",
-              backgroundColor: "white",
-              minHeight: "max-content",
-              borderRadius: "10px",
+              padding: "0.5rem 2rem 0.5rem 2rem",
+              backgroundColor: "#40A2E3",
+              borderRadius: "10px 10px 0px 0px ",
             }}
           >
-            <Row
-              style={{
-                padding: "0.5rem 2rem 0.5rem 2rem",
-                backgroundColor: "#40A2E3",
-                borderRadius: "10px 10px 0px 0px ",
-              }}
-            >
-              <Col span={16}>
-                <Title
-                  level={4}
-                  style={{
-                    color: "white",
-                    fontWeight: 500,
-                    margin: 0,
-                    paddingTop: 0,
-                  }}
-                >
-                  Register New Patient
-                </Title>
-              </Col>
-              <Col offset={5} span={3}>
-                <Button icon={<SearchOutlined />} onClick={handleSearchToVisit}>
-                  Search Patient
-                </Button>
-              </Col>
-            </Row>
-
+            <Col span={16}>
+              <Title
+                level={4}
+                style={{
+                  color: "white",
+                  fontWeight: 500,
+                  margin: 0,
+                  paddingTop: 0,
+                }}
+              >
+                Register New Patient
+              </Title>
+            </Col>
+            <Col offset={5} span={3}>
+              <Button icon={<SearchOutlined />} onClick={handleSearchToVisit}>
+                Search Patient
+              </Button>
+            </Col>
+          </Row>
+          <Spin spinning={loadings}>
             <Divider orientation="left">Patient Details</Divider>
 
             <Form
@@ -692,7 +673,11 @@ const NewPatient = () => {
                           },
                         ]}
                       >
-                        <Select placeholder="Select Title" allowClear>
+                        <Select
+                          placeholder="Select Title"
+                          allowClear
+                          loading={isloading}
+                        >
                           {patientDropdown.Title.map((option) => (
                             <Select.Option
                               key={option.LookupID}
@@ -751,7 +736,11 @@ const NewPatient = () => {
                           },
                         ]}
                       >
-                        <Select placeholder="select" allowClear>
+                        <Select
+                          placeholder="Select Gender"
+                          allowClear
+                          loading={isloading}
+                        >
                           {patientDropdown.Genders.map((option) => (
                             <Select.Option
                               key={option.LookupID}
@@ -765,7 +754,7 @@ const NewPatient = () => {
                     </Col>
                     <Col span={7}>
                       <Form.Item name="BloodGroup" label="Blood Group">
-                        <Select allowClear>
+                        <Select allowClear loading={isloading}>
                           {patientDropdown.BloodGroup.map((option) => (
                             <Select.Option
                               key={option.LookupID}
@@ -840,7 +829,7 @@ const NewPatient = () => {
                     </Col>
                     <Col span={3}>
                       <Form.Item name="titleFatherHusband" label="Title">
-                        <Select allowClear>
+                        <Select allowClear loading={isloading}>
                           {patientDropdown.Title.map((option) => (
                             <Select.Option
                               key={option.LookupID}
@@ -865,7 +854,7 @@ const NewPatient = () => {
                         name="MaritalStatus"
                         label="Patient Marital Status"
                       >
-                        <Select allowClear>
+                        <Select allowClear loading={isloading}>
                           {patientDropdown.MaritalStatus.map((option) => (
                             <Select.Option
                               key={option.LookupID}
@@ -937,6 +926,7 @@ const NewPatient = () => {
                           value={selectedCountry || ""}
                           onChange={handleCountryChange}
                           allowClear
+                          loading={isloading}
                         >
                           {patientDropdown.Countries.map((option) => (
                             <Select.Option
@@ -1053,6 +1043,7 @@ const NewPatient = () => {
                           value={selectedCountry || ""}
                           onChange={handleCountryChange}
                           allowClear
+                          loading={isloading}
                         >
                           {patientDropdown.Countries.map((option) => (
                             <Select.Option
@@ -1194,7 +1185,11 @@ const NewPatient = () => {
               <Row gutter={32}>
                 <Col span={6}>
                   <Form.Item name="Religion" label="Religion">
-                    <Select placeholder="Select Religion" allowClear>
+                    <Select
+                      placeholder="Select Religion"
+                      allowClear
+                      loading={isloading}
+                    >
                       {patientDropdown.Religion.map((option) => (
                         <Select.Option
                           key={option.LookupID}
@@ -1209,7 +1204,7 @@ const NewPatient = () => {
 
                 <Col span={6}>
                   <Form.Item name="Ethnicity" label="Ethnicity">
-                    <Select allowClear>
+                    <Select allowClear loading={isloading}>
                       {patientDropdown.Ethnicity.map((option) => (
                         <Select.Option
                           key={option.LookupID}
@@ -1224,7 +1219,7 @@ const NewPatient = () => {
 
                 <Col span={6}>
                   <Form.Item name="PrimaryLanguageId" label="Primary Language">
-                    <Select allowClear>
+                    <Select allowClear loading={isloading}>
                       {patientDropdown.Language.map((option) => (
                         <Select.Option
                           key={option.LookupID}
@@ -1319,12 +1314,7 @@ const NewPatient = () => {
               <Row justify="end" style={{ marginTop: "1rem" }}>
                 <Col style={{ marginRight: "1rem" }}>
                   <Form.Item>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      loading={loadings}
-                      size="middle"
-                    >
+                    <Button type="primary" htmlType="submit" size="middle">
                       Submit
                     </Button>
                   </Form.Item>
@@ -1343,9 +1333,10 @@ const NewPatient = () => {
                 </Col>
               </Row>
             </Form>
-          </div>
-        </Layout>
-      )}
+          </Spin>
+        </div>
+      </Layout>
+
       <Modal
         title="Create Identifiers"
         open={isModalOpen}
@@ -1370,7 +1361,7 @@ const NewPatient = () => {
               },
             ]}
           >
-            <Select allowClear>
+            <Select allowClear loading={isloading}>
               {patientDropdown.CardType.map((option) => (
                 <Select.Option key={option.LookupID} value={option.LookupID}>
                   {option.LookupDescription}
