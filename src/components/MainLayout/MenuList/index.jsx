@@ -92,8 +92,96 @@ const menuData = [
             title: "FacilityPriceDefinition",
             link: "/FacilityPriceDefinition",
           },
+          {
+            key: "PriceTariff",
+            icon: "GoDotFill",
+            title: "PriceTariff",
+            link: "/PriceTariff",
+          },
+          {
+            key: "BillAggrement",
+            icon: "GoDotFill",
+            title: "BillAggrement",
+            link: "/BillAggrement",
+          },
+          {
+            key: "AutoCharge",
+            icon: "GoDotFill",
+            title: "AutoCharge",
+            link: "/AutoCharge",
+          },
+          {
+            key: "ChargeException",
+            icon: "GoDotFill",
+            title: "ChargeException",
+            link: "/ChargeException",
+          },
+          {
+            key: "AdditionalCharge",
+            icon: "GoDotFill",
+            title: "AdditionalCharge",
+            link: "/AdditionalCharge",
+          },
+          {
+            key: "AccomodationCharge",
+            icon: "GoDotFill",
+            title: "AccomodationCharge",
+            link: "/AccomodationCharge",
+          },
+          {
+            key: "ReccuringCharge",
+            icon: "GoDotFill",
+            title: "ReccuringCharge",
+            link: "/ReccuringCharge",
+          },
         ]
       },
+      {
+        key: "MastersResourceScheduling",
+        icon: "CiSettings",
+        title: "Resource Scheduling",
+        children: [
+          {
+            key: "ScheduleTemplate",
+            icon: "GoDotFill",
+            title: "Schedule Template",
+            link: "/ScheduleTemplate",
+          },
+          {
+            key: "ProviderSchedule",
+            icon: "GoDotFill",
+            title: "Provider Schedule",
+            link: "/ProviderSchedule",
+          },
+          {
+            key: "PublishCalender",
+            icon: "GoDotFill",
+            title: "Publish Calender",
+            link: "/PublishCalender",
+          },
+          {
+            key: "ProviderAbsence",
+            icon: "GoDotFill",
+            title: "Provider Absence",
+            link: "/ProviderAbsence",
+          },
+          {
+            key: "SpecialEvent",
+            icon: "GoDotFill",
+            title: "Special Event",
+            link: "/SpecialEvent",
+          },
+          {
+            key: "Holiday",
+            icon: "GoDotFill",
+            title: "Holiday",
+            link: "/Holiday",
+          },
+        ],
+      },
+    ],
+  },
+  
       {
         key: "Inventorymanagement",
         icon: "CiSettings",
@@ -167,8 +255,7 @@ const menuData = [
             link: "/LabReportDefinitions",
           },
         ]
-      }
-    ],
+     
   },
   {
     key: "idManagement",

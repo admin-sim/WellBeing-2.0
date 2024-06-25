@@ -774,6 +774,22 @@ function App() {
             }
           />
           <Route
+            path="BillAggrement"
+            element={
+              <ProtectedRoute>
+                <BillAggrement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="CreateBillAgrement"
+            element={
+              <ProtectedRoute>
+                <CreateBillAgrement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="Vendor"
             element={
               <ProtectedRoute>
@@ -796,7 +812,7 @@ function App() {
                 <ProductClassification />
               </ProtectedRoute>
             }
-          />  
+          />
           <Route
             path="/ProductDefinition"
             element={
@@ -804,7 +820,7 @@ function App() {
                 <ProductDefinition />
               </ProtectedRoute>
             }
-          />    
+          />
           <Route
             path="/Store"
             element={
@@ -812,7 +828,7 @@ function App() {
                 <Store />
               </ProtectedRoute>
             }
-          />  
+          />
           <Route
             path="/CreateStore"
             element={
@@ -820,7 +836,7 @@ function App() {
                 <CreateStore />
               </ProtectedRoute>
             }
-          />             
+          />
           <Route
             path="/SubTestMapping"
             element={
@@ -828,7 +844,7 @@ function App() {
                 <SubTestMapping />
               </ProtectedRoute>
             }
-          />  
+          />
           <Route
             path="/TestMethods"
             element={
@@ -836,7 +852,7 @@ function App() {
                 <TestMethods />
               </ProtectedRoute>
             }
-          /> 
+          />
           <Route
             path="/TestReferences"
             element={
@@ -844,7 +860,7 @@ function App() {
                 <TestReferences />
               </ProtectedRoute>
             }
-          /> 
+          />
           <Route
             path="/ContainerDefinitions"
             element={
@@ -852,7 +868,7 @@ function App() {
                 <ContainerDefinition />
               </ProtectedRoute>
             }
-          /> 
+          />
           <Route path="*" element={<Error />} />
         </Route>
         <Route path="login" element={<Login />} />
