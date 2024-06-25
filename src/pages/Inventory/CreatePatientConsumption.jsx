@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router';
 import { Table, InputNumber } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { urlGetPurshaseOrderDetails } from "../../../endpoints.js";
+import { urlGetPurshaseOrderDetails, urlSearchUHID, urlGetLastEncounter } from "../../../endpoints.js";
 
 const PatientConsumption = () => {
   const [DropDown, setDropDown] = useState({
@@ -67,13 +67,13 @@ const PatientConsumption = () => {
   const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
   const [shouldValidateModel, setShouldValidateModel] = useState(false);
   const [dataModel, setDataModel] = useState([]);
-  const [formData, setFormData] = useState({});
+  const [encounter, setEncounter] = useState([])
   const [selectedUomText, setSelectedUomText] = useState({});
   const [selectedProductId, setSelectedProductId] = useState({});
   const [selectedUomId, setSelectedUomId] = useState({});
   const [recordKeys, setRecordKeys] = useState();
   const [delivery, setDelivery] = useState([]);
-  const [productIds, setProductIds] = useState({});
+  const [isDisabled, setIsDisable] = useState(true);
   const [isSubmit, setIsSubmit] = useState(false);
   const fields = form1.getFieldsValue();
   const [isSearchLoading, setIsSearchLoading] = useState(false);
@@ -87,19 +87,19 @@ const PatientConsumption = () => {
     });
   }, []);
 
-  const getPanelValue = async (searchText) => {
-    //     debugger;
-    //     try {
-    //       customAxios.get(`${urlAutocompleteProduct}?Product=${searchText}`).then((response) => {
-    //         const apiData = response.data.data;
-    //         const newOptions = apiData.map(item => ({ value: item.LongName, key: item.ProductDefinitionId, UomId: item.UOMPrimaryUOM }));
-    //         setAutoCompleteOptions(newOptions);
-    //       });
-    //     } catch (error) {
-    //       //console.error("Error fetching purchase order details:", error);
-    //       // Handle the error as needed
-    //     }
-  }
+  // const getPanelValue = async (searchText) => {
+  //     debugger;
+  //     try {
+  //       customAxios.get(`${urlAutocompleteProduct}?Product=${searchText}`).then((response) => {
+  //         const apiData = response.data.data;
+  //         const newOptions = apiData.map(item => ({ value: item.LongName, key: item.ProductDefinitionId, UomId: item.UOMPrimaryUOM }));
+  //         setAutoCompleteOptions(newOptions);
+  //       });
+  //     } catch (error) {
+  //       //console.error("Error fetching purchase order details:", error);
+  //       // Handle the error as needed
+  //     }
+  // }
   // useEffect(() => {
   //   debugger;
   //   const fetchData = async () => {
@@ -119,6 +119,25 @@ const PatientConsumption = () => {
 
   //   fetchData();
   // }, [inputValues]);
+
+  const handleSelect = (value, option) => {
+    debugger;
+    form1.setFieldsValue({ Name: option.Name })
+    // setPatientName(option.Name);
+    try {
+      customAxios.get(`${urlGetLastEncounter}?Uhid=${option.key}`).then((response) => {
+        debugger;
+        setEncounter(response.data.data);
+        if (response.data.data.length > 1) {
+          setIsDisable(false)
+        } else {
+          setIsDisable(true)
+        }
+      });
+    } catch (error) {
+      //console.error("Error fetching purchase order details:", error);        
+    }
+  }
 
   const onOkModal = () => {
     debugger;
@@ -267,50 +286,50 @@ const PatientConsumption = () => {
     //     setIsSearchLoading(false);
   };
 
-  const handleSelect = (value, option, key) => {
-    debugger;
-    // Update the product value in the form
-    form1.setFieldsValue({ [key]: { product: value } });
-    setProductIds((prevState) => ({ ...prevState, [key]: option.key }));
-    setSelectedProductId((prevState) => {
-      const newState = { ...prevState, [key]: option.key };
-      return newState;
-    })
+  // const handleSelect = (value, option, key) => {
+  //   debugger;
+  //   // Update the product value in the form
+  //   form1.setFieldsValue({ [key]: { product: value } });
+  //   setProductIds((prevState) => ({ ...prevState, [key]: option.key }));
+  //   setSelectedProductId((prevState) => {
+  //     const newState = { ...prevState, [key]: option.key };
+  //     return newState;
+  //   })
 
-    // form1.setFieldsValue({option});
-    // Set the selected UOM based on the selected product
-    const matchingUom = DropDown.UOM.find((uomOption) => uomOption.UomId === option.UomId);
-    setSelectedUomText((prevState) => {
-      const newState = { ...prevState, [key]: matchingUom.LongName };
-      return newState;
-    });
-    setSelectedUomId((prevState) => {
-      const newState = { ...prevState, [key]: matchingUom.UomId };
-      console.log(selectedUomId);
-      return newState;
-    });
-    if (matchingUom) {
-      // If a matching UomId is found, set this as the selected Uom
-      setSelectedUom((prevState) => {
-        const newState = { ...prevState, [key]: matchingUom.UomId };
-        console.log(newState); // Log the new state
-        return newState;
-      });
+  // form1.setFieldsValue({option});
+  // Set the selected UOM based on the selected product
+  // const matchingUom = DropDown.UOM.find((uomOption) => uomOption.UomId === option.UomId);
+  // setSelectedUomText((prevState) => {
+  //   const newState = { ...prevState, [key]: matchingUom.LongName };
+  //   return newState;
+  // });
+  // setSelectedUomId((prevState) => {
+  //   const newState = { ...prevState, [key]: matchingUom.UomId };
+  //   console.log(selectedUomId);
+  //   return newState;
+  // });
+  // if (matchingUom) {
+  // If a matching UomId is found, set this as the selected Uom
+  // setSelectedUom((prevState) => {
+  //   const newState = { ...prevState, [key]: matchingUom.UomId };
+  //   console.log(newState); // Log the new state
+  //   return newState;
+  // });
 
-      // Update the UOM value in the form
-      form1.setFieldsValue({ [key]: { uom: matchingUom.UomId } });
-    } else {
-      // If no matching UomId is found, clear the selected Uom
-      setSelectedUom((prevState) => {
-        const newState = { ...prevState, [key]: null };
-        console.log(newState); // Log the new state
-        return newState;
-      });
+  // Update the UOM value in the form
+  // form1.setFieldsValue({ [key]: { uom: matchingUom.UomId } });
+  // } else {
+  // If no matching UomId is found, clear the selected Uom
+  // setSelectedUom((prevState) => {
+  //   const newState = { ...prevState, [key]: null };
+  //   console.log(newState); // Log the new state
+  //   return newState;
+  // });
 
-      // Clear the UOM value in the form
-      form1.setFieldsValue({ [key]: { uom: null } });
-    }
-  };
+  // Clear the UOM value in the form
+  // form1.setFieldsValue({ [key]: { uom: null } });
+  // }
+  // };
 
   useEffect(() => {
     console.log(selectedUom);
@@ -369,6 +388,24 @@ const PatientConsumption = () => {
       setShouldValidate(true);
     }
   };
+
+  const getPanelValue = async (searchText) => {
+    debugger;
+    form1.setFieldsValue({ Name: searchText != '' ? '' : searchText })
+    if (searchText === '') {
+      setEncounter([])
+      form1.setFieldsValue({ Encounter: undefined })
+    }
+    try {
+      customAxios.get(`${urlSearchUHID}?Uhid=${searchText}`).then((response) => {
+        const apiData = response.data.data;
+        const newOptions = apiData.map(item => ({ value: item.UhId, key: item.UhId, Name: item.PatientFirstName + ' ' + item.PatientLastName }));
+        setAutoCompleteOptions(newOptions);
+      });
+    } catch (error) {
+      //console.error("Error fetching purchase order details:", error);        
+    }
+  }
 
   const columns = [
     {
@@ -768,45 +805,45 @@ const PatientConsumption = () => {
           initialValues={{
             ConsumptionDate: dayjs(),
           }}
-          onValuesChange={(changedValues, allValues) => {
-            debugger;
-            for (let i = 0; i < 9; i++) {
-              if (changedValues[i] !== undefined) {
-                if (changedValues[i].product !== undefined) {
-                  getPanelValue(form1.getFieldValue([i, 'product']));
-                }
-                const poQty = allValues[i]['poQty'];
-                const poRate = allValues[i]['poRate'];
+        // onValuesChange={(changedValues, allValues) => {
+        //   debugger;
+        //   for (let i = 0; i < 9; i++) {
+        //     if (changedValues[i] !== undefined) {
+        //       if (changedValues[i].product !== undefined) {
+        //         getPanelValue(form1.getFieldValue([i, 'product']));
+        //       }
+        //       const poQty = allValues[i]['poQty'];
+        //       const poRate = allValues[i]['poRate'];
 
-                if (poQty !== "" && poRate !== "") {
-                  const total = poQty * poRate;
-                  // Update the total value in the form fields
-                  if (allValues[i]['discount'] !== "") {
-                    form1.setFieldsValue({ [i]: { discountAmt: (total * (allValues[i]['discount'] / 100)).toFixed(2) } });
-                    form1.setFieldsValue({ [i]: { amount: (total - (total * (allValues[i]['discount'] / 100))) } });
-                    form1.setFieldsValue({ [i]: { totalAmount: (total - (total * (allValues[i]['discount'] / 100))) } });
-                    // form1.setFieldsValue({ Amount: form1.getFieldValue('Amount') + (total - (total * (allValues[i]['discount'] / 100))) })
-                  } else {
-                    form1.setFieldsValue({ [i]: { amount: total } });
-                    form1.setFieldsValue({ [i]: { totalAmount: total } });
-                  }
-                }
-                break;
-              }
-            }
-            let totalAmount = 0;
-            for (let j = 0; j < 10; j++) {
-              if (allValues[j] !== undefined) {
-                const Amount = form1.getFieldValue([j, 'amount']);
-                totalAmount += Amount;
-              }
-            }
-            form1.setFieldsValue({ Amount: totalAmount });
-            form1.setFieldsValue({ totalpoAmount: totalAmount });
-            // Assuming 'poQty' and 'poRate' are the names of the fields
+        //       if (poQty !== "" && poRate !== "") {
+        //         const total = poQty * poRate;
+        //         // Update the total value in the form fields
+        //         if (allValues[i]['discount'] !== "") {
+        //           form1.setFieldsValue({ [i]: { discountAmt: (total * (allValues[i]['discount'] / 100)).toFixed(2) } });
+        //           form1.setFieldsValue({ [i]: { amount: (total - (total * (allValues[i]['discount'] / 100))) } });
+        //           form1.setFieldsValue({ [i]: { totalAmount: (total - (total * (allValues[i]['discount'] / 100))) } });
+        //           // form1.setFieldsValue({ Amount: form1.getFieldValue('Amount') + (total - (total * (allValues[i]['discount'] / 100))) })
+        //         } else {
+        //           form1.setFieldsValue({ [i]: { amount: total } });
+        //           form1.setFieldsValue({ [i]: { totalAmount: total } });
+        //         }
+        //       }
+        //       break;
+        //     }
+        //   }
+        //   let totalAmount = 0;
+        //   for (let j = 0; j < 10; j++) {
+        //     if (allValues[j] !== undefined) {
+        //       const Amount = form1.getFieldValue([j, 'amount']);
+        //       totalAmount += Amount;
+        //     }
+        //   }
+        //   form1.setFieldsValue({ Amount: totalAmount });
+        //   form1.setFieldsValue({ totalpoAmount: totalAmount });
+        //   // Assuming 'poQty' and 'poRate' are the names of the fields
 
-            // Check if both values are valid numbers              
-          }}
+        //   // Check if both values are valid numbers              
+        // }}
         >
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
             <Col className="gutter-row" span={6}>
@@ -839,30 +876,14 @@ const PatientConsumption = () => {
             </Col>
             <Col className="gutter-row" span={6}>
               <div>
-                <Form.Item
-                  label="Issue Owner"
-                  name="IssueOwner"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please input!'
-                    }
-                  ]}
-                >
+                <Form.Item label="Issue Owner" name="IssueOwner">
                   <Input style={{ width: '100%' }} allowClear />
                 </Form.Item>
               </div>
             </Col>
             <Col className="gutter-row" span={3}>
               <div>
-                <Form.Item label="Status" name="Status"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please input!'
-                    }
-                  ]}
-                >
+                <Form.Item label="Status" name="Status">
                   <Select allowClear placeholder='Select Value'>
                     <Select.Option key='Draft' value='Draft'></Select.Option>
                     <Select.Option key='Finalize' value='Finalize'></Select.Option>
@@ -887,7 +908,14 @@ const PatientConsumption = () => {
                     }
                   ]}
                 >
-                  <Input style={{ width: '100%' }} allowClear />
+                  <AutoComplete
+                    options={autoCompleteOptions}
+                    // options={autoCompleteOptions[record.key]}
+                    onSearch={getPanelValue}
+                    onSelect={(value, option) => handleSelect(value, option)}
+                    placeholder="Search for a Uhid"
+                    allowClear
+                  />
                 </Form.Item>
               </div>
             </Col>
@@ -901,7 +929,10 @@ const PatientConsumption = () => {
             <Col className="gutter-row" span={6}>
               <div>
                 <Form.Item label="Encounter" name="Encounter">
-                  <Select disabled>
+                  <Select disabled={isDisabled}>
+                    {encounter.map((option) => (
+                      <Select.Option key={option.EncounterId} value={option.EncounterId}>{option.GeneratedEncounterId}</Select.Option>
+                    ))}
                   </Select>
                 </Form.Item>
               </div>

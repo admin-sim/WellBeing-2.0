@@ -67,8 +67,8 @@ const DirectGRN = () => {
   }, []);
 
   const navigate = useNavigate();
-  const handleAddTemplate = () => {
-    navigate(`/CreateDirectGRN`);
+  const handleAddTemplate = (GRNHeaderId) => {    
+    navigate("/CreateDirectGRN", { state: { GRNHeaderId } });
   };
 
   const colorMapping = {
@@ -79,10 +79,6 @@ const DirectGRN = () => {
     Completed: "green",
   };
 
-  const GetModelDetails = (text, record, index) => {
-    debugger;
-    console.log("welcome");
-  };
   const columns = [
     {
       title: "Sl No",
@@ -100,7 +96,7 @@ const DirectGRN = () => {
           return (
             <Button
               type="link"
-              onClick={() => GetModelDetails(text, record, index)}
+              onClick={() => handleAddTemplate(record.GRNHeaderId)}
             >
               {text}
             </Button>
@@ -307,7 +303,7 @@ const DirectGRN = () => {
             <Button
               icon={<PlusCircleOutlined />}
               style={{ marginRight: 0 }}
-              onClick={handleAddTemplate}
+              onClick={()=>handleAddTemplate(0)}
             >
               Add Direct GRN
             </Button>

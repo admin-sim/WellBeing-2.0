@@ -134,7 +134,7 @@ const menuData = [
             title: "ReccuringCharge",
             link: "/ReccuringCharge",
           },
-        ],
+        ]
       },
       {
         key: "MastersResourceScheduling",
@@ -181,6 +181,82 @@ const menuData = [
       },
     ],
   },
+  
+      {
+        key: "Inventorymanagement",
+        icon: "CiSettings",
+        title: "Inventory Management",
+        children: [
+          {
+            key: "Vendor",
+            icon: "GoDotFill",
+            title: "Vendor",
+            link: "/Vendor",
+          },
+          {
+            key: "ProductClassification",
+            icon: "GoDotFill",
+            title: "Product Classification",
+            link: "/ProductClassification",
+          },
+          {
+            key: "ProductDefinition",
+            icon: "GoDotFill",
+            title: "Product Definition",
+            link: "/ProductDefinition",
+          },
+          {
+            key: "Store",
+            icon: "GoDotFill",
+            title: "Store",
+            link: "/Store",
+          },
+          {
+            key: "FacilityProductPriceDefinition",
+            icon: "GoDotFill",
+            title: "FacilityProduct PriceDefinition",
+            link: "/FacilityProductPriceDefinition",
+          },
+        ]
+      },
+      {
+        key: "LaboratoryManagement",
+        icon: "MdInventory",
+        title: "Laboratory Management",
+        children: [
+          {
+            key: "SubTestMapping",
+            icon: "GoDotFill",
+            title: "SubTest Mapping",
+            link: "/SubTestMapping",
+          },
+          {
+            key: "TestMethods",
+            icon: "GoDotFill",
+            title: "Test Methods",
+            link: "/TestMethods",
+          },
+          {
+            key: "TestReferences",
+            icon: "GoDotFill",
+            title: "Test References",
+            link: "/TestReferences",
+          },
+          {
+            key: "ContainerDefinitions",
+            icon: "GoDotFill",
+            title: "Container Definitions",
+            link: "/ContainerDefinitions",
+          },
+          {
+            key: "LabReportDefinitions",
+            icon: "GoDotFill",
+            title: "LabReport Definitions",
+            link: "/LabReportDefinitions",
+          },
+        ]
+     
+  },
   {
     key: "idManagement",
     icon: "FaUserFriends",
@@ -193,7 +269,7 @@ const menuData = [
         link: "/Patient",
       },
 
-      {
+       {
         key: "Queue-Mgmt",
         title: "Queue Management",
         icon: "FaPersonWalkingArrowRight",
@@ -403,5 +479,5 @@ const menuData = [
         link: "/StockExpiry",
       },
     ],
-  },
+  },  
 ];
