@@ -34,11 +34,51 @@ import {
   DeleteOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
+import customAxios from "../../components/customAxios/customAxios.jsx";
+import React, { useEffect, useState } from "react";
+import Button from "antd/es/button";
+import {
+  urlCreatePurchaseOrder,
+  urlAutocompleteProduct,
+  urlGetProductDetailsById,
+  urlAddNewPurchaseOrder,
+  urlEditPurchaseOrder,
+  urlUpdatePurchaseOrder,
+} from "../../../endpoints";
+import Select from "antd/es/select";
+import {
+  ConfigProvider,
+  Typography,
+  Checkbox,
+  Tag,
+  Modal,
+  Popconfirm,
+  Spin,
+  Col,
+  Divider,
+  Row,
+  AutoComplete,
+  message,
+} from "antd";
+import Input from "antd/es/input";
+import Form from "antd/es/form";
+import { DatePicker } from "antd";
+import Layout from "antd/es/layout/layout";
+import {
+  LeftOutlined,
+  CloseSquareFilled,
+  DeleteOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 //import Typography from 'antd/es/typography';
 import { useNavigate } from "react-router";
 import { Table, InputNumber } from "antd";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router";
+import { Table, InputNumber } from "antd";
+import dayjs from "dayjs";
 //import { Calculate } from '@mui/icons-material';
+import { useLocation } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 const CreatePurchaseOrder = () => {
   const [DropDown, setDropDown] = useState({
@@ -49,6 +89,8 @@ const CreatePurchaseOrder = () => {
     TaxType: [],
     DateFormat: []
   });
+  const location = useLocation();
+  const PoHeaderId = location.state.PoHeaderId;
   const location = useLocation();
   const PoHeaderId = location.state.PoHeaderId;
   const [form1] = Form.useForm();
@@ -757,13 +799,16 @@ const CreatePurchaseOrder = () => {
           >
             {DropDown.UOM.map((option) => (
               <Option key={option.UomId} value={option.UomId}>
+              <Option key={option.UomId} value={option.UomId}>
                 {option.ShortName}
+              </Option>
               </Option>
             ))}
           </Select>
         </Form.Item>
       )
     },
+
     {
       title: "PO Qty",
       dataIndex: "PoQuantity",
@@ -778,7 +823,11 @@ const CreatePurchaseOrder = () => {
               required: true,
               message: "Required",
             },
+              message: "Required",
+            },
           ]}
+          style={{ width: "100%" }}
+          initialValue={record.PoQuantity}
           style={{ width: "100%" }}
           initialValue={record.PoQuantity}
         >
@@ -838,7 +887,11 @@ const CreatePurchaseOrder = () => {
               required: true,
               message: "Required",
             },
+              message: "Required",
+            },
           ]}
+          style={{ width: "100%" }}
+          initialValue={record.PoRate}
           style={{ width: "100%" }}
           initialValue={record.PoRate}
         >
@@ -896,6 +949,7 @@ const CreatePurchaseOrder = () => {
       )
     },
 
+
     {
       title: "ExpectedMRP",
       dataIndex: "MrpExpected",
@@ -946,7 +1000,9 @@ const CreatePurchaseOrder = () => {
           >
             {DropDown.TaxType.map((option) => (
               <Option key={option.LookupID} value={option.LookupID}>
+              <Option key={option.LookupID} value={option.LookupID}>
                 {option.LookupDescription}
+              </Option>
               </Option>
             ))}
           </Select>
@@ -988,7 +1044,9 @@ const CreatePurchaseOrder = () => {
           >
             {DropDown.TaxType.map((option) => (
               <Option key={option.LookupID} value={option.LookupID}>
+              <Option key={option.LookupID} value={option.LookupID}>
                 {option.LookupDescription}
+              </Option>
               </Option>
             ))}
           </Select>
@@ -1052,10 +1110,20 @@ const CreatePurchaseOrder = () => {
           initialValue={record.AvailableQuantity}
         >
           <InputNumber disabled min={0} defaultValue={text} />
+          <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
       )
     },
     {
+      title: "Delivery Schedule",
+      dataIndex: "deliverySchedule",
+      key: "deliverySchedule",
+      width: 100,
+      render: (text, record, index) => (
+        <Button type="link" onClick={() => handleOpenModal(record)}>
+          Delivery
+        </Button>
+      ),
       title: "Delivery Schedule",
       dataIndex: "deliverySchedule",
       key: "deliverySchedule",
@@ -1103,10 +1171,14 @@ const CreatePurchaseOrder = () => {
           layout="vertical"
           onFinish={handleOnFinish}
           onFinishFailed={onFinishFailed}
+          onFinishFailed={onFinishFailed}
           variant="outlined"
           size="default"
           initialValues={{
             PODate: dayjs(),
+            // SupplierList: headerData.VendorId
+          }}
+          form={form1}
             // SupplierList: headerData.VendorId
           }}
           form={form1}
@@ -1237,6 +1309,36 @@ const CreatePurchaseOrder = () => {
               </Form.Item>
             </Col>
           </Row>
+          <Divider style={{ marginTop: "0" }}></Divider>
+          <Button
+            type="primary"
+            onClick={handleAddRow}
+            style={{ marginBottom: 16 }}
+          >
+            Add a row
+          </Button>
+          <Table
+            columns={columns}
+            size="small"
+            dataSource={data.filter((item) => item.ActiveFlag !== false)}
+            locale={{ emptyText: "nodata " }}
+            scroll={{
+              x: 2000,
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              marginBottom: "16px",
+              float: "right",
+            }}
+          >
+            <Form.Item
+              label="Amount"
+              name="TotalAmount"
+              style={{ marginRight: "16px", width: 100 }}
+            >
           <Divider style={{ marginTop: "0" }}></Divider>
           <Button
             type="primary"

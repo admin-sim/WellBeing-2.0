@@ -31,6 +31,7 @@ import ProviderEdit from "./pages/Masters/GeneralMasters/Provider/ProviderEdit";
 import Referal from "./pages/Masters/GeneralMasters/Referral/Referal";
 import ReferralCreateEdit from "./pages/Masters/GeneralMasters/Referral/ReferralCreateEdit";
 import PayerRegistration from "./pages/Masters/GeneralMasters/Payer/PayerRegistration";
+import PayerSearch from "./pages/Masters/GeneralMasters/Payer/PayerSearch";
 import ServiceClassification from "./pages/Masters/GeneralMasters/AccountManagement/ServiceClassification";
 import Service from "./pages/Masters/GeneralMasters/AccountManagement/Service";
 import CreateService from "./pages/Masters/GeneralMasters/AccountManagement/CreateService";
@@ -65,8 +66,24 @@ import CreateAcknowledageReturn from "./pages/Inventory/CreateAcknowledageReturn
 import MedicalReturn from "./pages/Inventory/MedicalReturn";
 import StockExpiry from "./pages/Inventory/StockExpiry";
 import UpdateIndentIssue from "./pages/Inventory/UpdateIndentIssue";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import ManageAppointment from "./pages/ManageAppointment";
+import ProviderAppointment from "./pages/ProviderAppointment";
+import BedManager from "./pages/WardManagement/Inpatient.jsx/BedManager";
+import DischargeClearance from "./pages/WardManagement/Inpatient.jsx/DischargeClearance";
+import InPatientManagement from "./pages/WardManagement/Inpatient.jsx/InPatientManagement/InPatientManagement";
 import Queue from "./pages/Patient/QueueManagement/Queue";
 import PatientVitalSigns from "./pages/Patient/QueueManagement/PatientVitalSigns";
+import ScheduleIndex from "./pages/Masters/ResourceScheduling/ScheduleTemplate/scheduleIndex";
+import ScheduleCreate from "./pages/Masters/ResourceScheduling/ScheduleTemplate/ScheduleCreate";
+import ScheduleTemplateEdit from "./pages/Masters/ResourceScheduling/ScheduleTemplate/ScheduleTempEdit";
+import ProviderSchedule from "./pages/Masters/ResourceScheduling/ProviderSchedule/providerSchedule";
+import ProviderScheduleCreate from "./pages/Masters/ResourceScheduling/ProviderSchedule/providerScheduleCreate";
+import ProviderScheduleEdit from "./pages/Masters/ResourceScheduling/ProviderSchedule/providerScheduleEdit";
+import PublishCalender from "./pages/Masters/ResourceScheduling/PublishCalender/publishCalender";
+import ProviderAbsence from "./pages/Masters/ResourceScheduling/ProviderAbsence/providerAbsence";
+import SpecialEvent from "./pages/Masters/ResourceScheduling/SpecialEvent/specialEvent";
+import Holiday from "./pages/Masters/ResourceScheduling/Holiday/holiday";
 import Billing from "./pages/Billling/SearchPage";
 import CreateBilling from "./pages/Billling/CreateBilling";
 import Vendor from "./pages/Masters/InventoryManagement/Vendor";
@@ -79,6 +96,12 @@ import SubTestMapping from "./pages/Masters/LaboratoryManagement/SubTestMapping"
 import TestMethods from "./pages/Masters/LaboratoryManagement/TestMethods";
 import TestReferences from "./pages/Masters/LaboratoryManagement/TestReferences";
 import ContainerDefinition from "./pages/Masters/LaboratoryManagement/ContainerDefinition";
+import PriceTariff from "./pages/Masters/GeneralMasters/AccountManagement/PriceTariff";
+import CreatePriceTariff from "./pages/Masters/GeneralMasters/AccountManagement/CreatePriceTariff";
+import AutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/AutoCharge";
+import CreateAutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAutoCharge";
+import BillAggrement from "./pages/Masters/GeneralMasters/AccountManagement/BillAggrement";
+import CreateBillAgrement from "./pages/Masters/GeneralMasters/AccountManagement/CreateBillAgrement";
 
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
@@ -535,6 +558,94 @@ function App() {
             }
           />
           <Route
+            path="Payer/Search"
+            element={
+              <ProtectedRoute>
+                <PayerSearch />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ScheduleTemplate"
+            element={
+              <ProtectedRoute>
+                <ScheduleIndex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ScheduleTemplate/ScheduleCreate"
+            element={
+              <ProtectedRoute>
+                <ScheduleCreate />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ScheduleTemplate/ScheduleEdit"
+            element={
+              <ProtectedRoute>
+                <ScheduleTemplateEdit />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ProviderSchedule"
+            element={
+              <ProtectedRoute>
+                <ProviderSchedule />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ProviderSchedule/ProviderScheduleCreate"
+            element={
+              <ProtectedRoute>
+                <ProviderScheduleCreate />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ProviderSchedule/ProviderScheduleEdit"
+            element={
+              <ProtectedRoute>
+                <ProviderScheduleEdit />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="PublishCalender"
+            element={
+              <ProtectedRoute>
+                <PublishCalender />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ProviderAbsence"
+            element={
+              <ProtectedRoute>
+                <ProviderAbsence />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="SpecialEvent"
+            element={
+              <ProtectedRoute>
+                <SpecialEvent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="Holiday"
+            element={
+              <ProtectedRoute>
+                <Holiday />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="ServiceClassification"
             element={
               <ProtectedRoute>
@@ -574,7 +685,79 @@ function App() {
               </ProtectedRoute>
             }
           />
-           <Route
+          <Route
+            path="PriceTariff"
+            element={
+              <ProtectedRoute>
+                <PriceTariff />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="CreatePriceTariff"
+            element={
+              <ProtectedRoute>
+                <CreatePriceTariff />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="AutoCharge"
+            element={
+              <ProtectedRoute>
+                <AutoCharge />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="CreateAutoCharge"
+            element={
+              <ProtectedRoute>
+                <CreateAutoCharge />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ManageAppointment"
+            element={
+              <ProtectedRoute>
+                <ManageAppointment />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="ScheduleProviderAppointment"
+            element={
+              <ProtectedRoute>
+                <ProviderAppointment />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="WardManagement"
+            element={
+              <ProtectedRoute>
+                <InPatientManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="BedManager"
+            element={
+              <ProtectedRoute>
+                <BedManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="DischargeClearance"
+            element={
+              <ProtectedRoute>
+                <DischargeClearance />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="Billing"
             element={
               <ProtectedRoute>

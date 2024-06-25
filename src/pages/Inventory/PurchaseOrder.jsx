@@ -213,7 +213,7 @@ const PurchaseOrder = () => {
     setLoading(true);
     try {
       const postData1 = {
-        DocumentType: values.DocumentType,
+        DocumentType: values.DocumentType ,
         Supplier: values.Supplier,
         ProcurementStore: values.ProcurementStore,
         POStatus: values.POStatus === "" ? null : values.POStatus,
@@ -258,23 +258,6 @@ const PurchaseOrder = () => {
   };
 
   return (
-    // <div>
-    //   <Typography.Title
-    //     level={3}
-    //     style={{
-    //       backgroundColor: "#1E88E5",
-    //       color: "white",
-    //       padding: "12px",
-    //       borderRadius: "10px",
-    //       display: "flex",
-    //       justifyContent: "space-between",
-    //     }}
-    //   >
-    //     Purchase Order
-    //     <Button type="primary" icon={<PlusCircleOutlined />} onClick={handleAddTemplate}>
-    //       Add PO
-    //     </Button>
-    //   </Typography.Title>
     <Layout style={{ zIndex: '999999999' }}>
       <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
         <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>

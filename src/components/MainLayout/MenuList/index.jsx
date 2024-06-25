@@ -69,7 +69,6 @@ const menuData = [
           },
         ],
       },
-
       {
         key: "Accountmanagement",
         icon: "CiSettings",
@@ -181,7 +180,9 @@ const menuData = [
         icon: "FaUserPlus",
         title: "Patient Registration",
         link: "/Patient",
-      }, {
+      },
+
+       {
         key: "Queue-Mgmt",
         title: "Queue Management",
         icon: "FaPersonWalkingArrowRight",
@@ -209,6 +210,50 @@ const menuData = [
         icons: "FaUserFriends",
         title: "Billing",
         link: "Billing",
+      },
+    ],
+  },
+  {
+    key: "ResourceScheduling",
+    icon: "GrSchedule",
+    title: "Resource Scheduling",
+    children: [
+      {
+        key: "ManageAppointment",
+        icons: "FaUserFriends",
+        title: "Manage Appointment",
+        link: "ManageAppointment",
+      },
+      {
+        key: "ProviderAppointment",
+        icons: "FaUserFriends",
+        title: "Provider Appointment",
+        link: "ScheduleProviderAppointment",
+      },
+    ],
+  },
+  {
+    key: "WardManagement",
+    icon: "bed",
+    title: "Ward Management",
+    children: [
+      {
+        key: "InPatient",
+        icons: "FaUserFriends",
+        title: "InPatient Management",
+        link: "WardManagement",
+      },
+      {
+        key: "Bed",
+        icons: "FaUserFriends",
+        title: "Bed Manager",
+        link: "BedManager",
+      },
+      {
+        key: "Discharge",
+        icons: "FaUserFriends",
+        title: "Discharge Clearance",
+        link: "DischargeClearance",
       },
     ],
   },

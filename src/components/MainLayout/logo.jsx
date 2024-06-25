@@ -14,10 +14,13 @@ export default function Logo() {
               justifyContent: "center",
               alignItems: "center",
               marginTop: "1rem",
-              color: "green",
+              color: "#40679E",
+
+              fontFamily: "DancingScript-Bold",
+              fontSize: "2rem",
             }}
           >
-            <img src={Logo1} height={30} width={"auto"} />
+            <img src={Logo1} height={35} width={"auto"} />
             Wellbeing
             <br />
           </span>

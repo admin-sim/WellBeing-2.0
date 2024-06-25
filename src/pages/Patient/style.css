@@ -56,3 +56,7 @@
 .hovered-row {
   background-color: #b5f5ec; /* Change to whatever color you want */
 }
+
+.custom-padding {
+  padding-left: 0px !important;
+}

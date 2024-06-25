@@ -9,6 +9,8 @@ import SurgicalHistory from "./Components/SurgicalHistory.jsx";
 import FamilyHistory from "./Components/FamilyHistory.jsx";
 import SocialHistory from "./Components/SocialHistory.jsx";
 import Allergy from "./Components/Allergy.jsx";
+import PatientHeader from "../../components/PatientHeader/index.jsx";
+// import VitalSigns from "./Components/VitalSigns.jsx";
 
 function ClinicalChart() {
   const clinicalHeaders = [
@@ -57,7 +59,23 @@ function ClinicalChart() {
     {
       label: `Vitals & Physical Examination`,
       key: 2,
-      children: `Content 2`,
+      children: (
+        <Tabs
+          tabPosition="left"
+          items={[
+            {
+              label: `Vital Signs`,
+              key: 11,
+              children: <Allergy />,
+            },
+            {
+              label: `Physical Examination`,
+              key: 12,
+              children: <MedicalHistory />,
+            },
+          ]}
+        />
+      ),
     },
     {
       label: `Provisional Diagnosis`,
@@ -84,100 +102,27 @@ function ClinicalChart() {
     <div
       style={{
         backgroundColor: "white",
-        minHeight: "85vh",
+        minHeight: "87vh",
         borderRadius: "10px",
         overflow: "hidden",
         padding: "1rem",
       }}
     >
-      <Row gutter={32}>
-        <Col span={18}>
-          <div
-            style={{
-              padding: "5px 30px",
-              borderRadius: "4px",
-              margin: "4px 30px",
-              display: "flex",
-              justifyContent: "space-between",
-              boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
-            }}
-          >
-            <Row gutter={[16, 16]}>
-              <Col span={3}>
-                <Avatar
-                  shape="square"
-                  size={64}
-                  src={<img src={male} alt="avatar" />}
-                />
-              </Col>
-            </Row>
-            <Row
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-evenly",
-              }}
-            >
-              <Col span={12}>
-                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  UHID&nbsp;:
-                </span>
-                <span>273</span>
-              </Col>
-
-              <Col span={12}>
-                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  Name&nbsp;:
-                </span>
-                <span>Nitish</span>
-              </Col>
-            </Row>
-            <Row
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                // justifyContent: "space-evenly",
-              }}
-            >
-              <Col span={12}>
-                <span style={{ fontWeight: "bold" }}>Gender&nbsp;:&nbsp;</span>
-                <span>Male</span>
-              </Col>
-
-              <Col span={12}>
-                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  VisitId&nbsp;:
-                </span>
-                <span>15</span>
-              </Col>
-            </Row>
-            <Row
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-evenly",
-              }}
-            >
-              <Col span={12}>
-                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  Age&nbsp;:
-                </span>
-                <span>28</span>
-              </Col>
-              <Col span={12}>
-                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  Dob&nbsp;:
-                </span>
-                <span>27/09/1995</span>
-              </Col>
-            </Row>
-          </div>
+      <Row
+        gutter={32}
+        style={{
+          display: "flex",
+          alignItems: "end",
+        }}
+      >
+        <Col span={20}>
+          <PatientHeader />
         </Col>
         <Col
-          span={6}
+          span={4}
           style={{
             display: "flex",
-            alignItems: "center",
+            alignItems: "end",
             justifyContent: "center",
           }}
         >
@@ -187,12 +132,12 @@ function ClinicalChart() {
             danger
             size="large"
           >
-            End Consultation{" "}
+            End Consultation
             <RxExit style={{ marginLeft: "5px", fontSize: "1.3rem" }} />
           </Button>
         </Col>
       </Row>
-      <div style={{ display: "flex", marginTop: "2rem" }}>
+      <div style={{ display: "flex", marginTop: "1.5rem" }}>
         <Tabs
           defaultActiveKey="1"
           type="card"
