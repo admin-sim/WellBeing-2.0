@@ -23,10 +23,8 @@ import {
   SearchOutlined,
   EditOutlined,
   DeleteOutlined,
-  PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router";
-const { Option } = Select;
 
 import {
   urlGetPatientDetail,
@@ -40,7 +38,7 @@ import Title from "antd/es/typography/Title";
 import TextArea from "antd/es/input/TextArea";
 import WebcamImage from "../../../components/WebCam/index.jsx";
 import dayjs from "dayjs";
-import { truncate } from "lodash";
+import { DateTime } from "luxon";
 
 const NewPatient = () => {
   const [patientDropdown, setPatientDropdown] = useState({
@@ -82,8 +80,7 @@ const NewPatient = () => {
   const [loadings, setLoadings] = useState(false);
   const [isloading, setLoading] = useState(true);
   const [uploadedImage, setUploadedImage] = useState(null);
-  /*  const location = useLocation();
-  const patientData = location.state ? location.state.patient : null; */
+
   const [form] = Form.useForm();
   const [form2] = Form.useForm();
   const navigate = useNavigate();
@@ -103,82 +100,115 @@ const NewPatient = () => {
     return current && current > new Date();
   };
 
-  function formatDate(inputDate) {
-    const dateParts = inputDate.split("-");
-    if (dateParts.length === 3) {
-      const [year, month, day] = dateParts;
-      return `${day}-${month}-${year}`;
-    }
-    return inputDate; // Return as is if not in the expected format
-  }
-
   const handleDateChange = (date, dateString) => {
-    setSelectedDate(date);
-    // Calculate age based on the selected date and update the age state
-
     setselecteddob(dateString);
+    setSelectedDate(date);
+    if (date) {
+      const now = DateTime.now();
+      const birthDate = DateTime.fromJSDate(date.toDate());
+      const diff = now.diff(birthDate, ["years", "months", "days"]).toObject();
 
-    const today = dayjs();
-    const dob = dayjs(date, { format: "DD-MM-YYYY" }); // Assuming the date format is DD-MM-YYYY
-    // const diff = today.diff(dob);
-
-    const years = today.diff(dob, "year");
-    const remainingMonths = today.diff(dob.add(years, "year"), "month");
-    const months = remainingMonths % 12;
-    let days = today.diff(dob.add(years, "year").add(months, "month"), "day");
-
-    if (date == null) {
-      days = 0;
+      setAge({
+        years: Math.floor(diff.years),
+        months: Math.floor(diff.months),
+        days: Math.floor(diff.days),
+      });
+    } else {
+      setAge({ years: 0, months: 0, days: 0 });
     }
-
-    console.log("print values: ", years, months, days);
-    setAge({
-      years,
-      months,
-      days,
-    });
   };
 
   const handleYearsChange = (e) => {
-    const newYears = parseInt(e.target.value, 10);
-
-    // Check if newYears is a valid number
-    if (!isNaN(newYears) && newYears >= 1 && newYears <= 100) {
-      // Calculate the new date of birth based on the entered years
-      const newYears = parseInt(e.target.value, 10);
-      console.log("new year value", newYears);
-
-      // Calculate the new date of birth based on the entered years
-      const newDob = dayjs().subtract(newYears, "year").startOf("year");
-
-      console.log("new dob value", newDob);
-      setSelectedDate(newDob);
-      setselecteddob(newDob.format("DD-MM-YYYY"));
-
-      setAge({
-        years: newYears,
-        months: 0,
-        days: 0,
-      });
-    } else {
-      // Handle the case where the entered value is not a valid number
-      setAge({
-        years: 0,
-        months: 0,
-        days: 0,
-      });
-
-      setSelectedDate(null);
-      setselecteddob("");
-    }
+    const years = parseInt(e.target.value, 10) || 0;
+    console.log(typeof years);
+    const newAge = { ...age, years };
+    setAge(newAge);
+    updateDateOfBirth(newAge);
   };
 
-  const handleCountryChange = (newCountry) => {
+  const handleMonthsChange = (e) => {
+    const months = parseInt(e.target.value, 10) || 0;
+    const newAge = { ...age, months };
+    setAge(newAge);
+    updateDateOfBirth(newAge);
+  };
+
+  const handleDaysChange = (e) => {
+    const days = parseInt(e.target.value, 10) || 0;
+    const newAge = { ...age, days };
+    setAge(newAge);
+    updateDateOfBirth(newAge);
+  };
+
+  const updateDateOfBirth = ({ years, months, days }) => {
+    const today = new Date();
+
+    // Period to subtract
+    const yearsToSubtract = years;
+    const monthsToSubtract = months;
+    const daysToSubtract = days - 1;
+
+    // Create a new date object from today
+    let newDate = new Date(today);
+
+    // Subtract years
+    newDate.setFullYear(newDate.getFullYear() - yearsToSubtract);
+
+    // Subtract months
+    newDate.setMonth(newDate.getMonth() - monthsToSubtract);
+
+    // Subtract days
+    newDate.setDate(newDate.getDate() - daysToSubtract);
+
+    form.setFieldValue("dob", dayjs(newDate));
+    setSelectedDate(dayjs(newDate).format("DD-MM-YYYY"));
+    setselecteddob(dayjs(newDate).format("DD-MM-YYYY"));
+  };
+
+  const handlePresentCountryChange = (newCountry) => {
+    // form.resetFields(["state", "city", area]);
     form.setFieldsValue({
-      country: newCountry,
-      state: undefined,
-      city: undefined,
-      area: undefined,
+      presentCountryId: newCountry,
+      presentStateId: undefined,
+      presentPlaceId: undefined,
+      presentAreaId: undefined,
+    });
+
+    setSelectedCountry(newCountry);
+
+    if (!newCountry) {
+      // If newCountry is undefined, clear states and selected state
+      setFilteredStates([]);
+      setSelectedState(null);
+      // Also clear cities
+      setFilteredCities([]);
+      setSelectedCity(null);
+
+      setFilteredAreas([]);
+      setSelectedArea(null);
+    } else {
+      // Filter states based on the selected country
+      const statesForCountry = patientDropdown.States.filter(
+        (state) => state.CountryId === newCountry
+      );
+      setFilteredStates(statesForCountry);
+
+      // Check if the selected state is not in the filtered states, and if so, clear selected state
+      if (
+        selectedState &&
+        !statesForCountry.some((state) => state.StateID === selectedState)
+      ) {
+        setSelectedState(null);
+      }
+    }
+  };
+  const handlePermanentCountryChange = (newCountry) => {
+    // form.resetFields(["state", "city", area]);
+    form.setFieldsValue({
+      permanentCountryId: newCountry,
+      permanentStateId: undefined,
+      permanentPlaceId: undefined,
+      permanentAreaId: undefined,
     });
 
     setSelectedCountry(newCountry);
@@ -215,11 +245,32 @@ const NewPatient = () => {
   };
 
   // Handle state change
-  const handleStateChange = (newState) => {
+  const handlePresentStateChange = (newState) => {
     form.setFieldsValue({
-      state: newState,
-      city: undefined,
-      area: undefined,
+      presentStateId: newState,
+      presentPlaceId: undefined,
+      presentAreaId: undefined,
+    });
+    setSelectedState(newState);
+    if (!newState) {
+      setFilteredCities([]);
+      setSelectedCity(null);
+
+      setFilteredAreas([]);
+      setSelectedArea(null);
+    } else {
+      // Filter cities based on the selected state
+      const citiesForState = patientDropdown.Places.filter(
+        (city) => city.StateId === newState
+      );
+      setFilteredCities(citiesForState);
+    }
+  };
+  const handlePermanentStateChange = (newState) => {
+    form.setFieldsValue({
+      permanentStateId: newState,
+      permanentPlaceId: undefined,
+      permanentAreaId: undefined,
     });
     setSelectedState(newState);
     if (!newState) {
@@ -237,10 +288,27 @@ const NewPatient = () => {
     }
   };
 
-  const handleCityChange = (newCity) => {
+  const handlePresentCityChange = (newCity) => {
     form.setFieldsValue({
-      city: newCity,
-      area: undefined,
+      presentPlaceId: newCity,
+      presentAreaId: undefined,
+    });
+    setSelectedCity(newCity);
+    if (!newCity) {
+      setFilteredAreas([]);
+      setSelectedArea(null);
+    } else {
+      // Filter cities based on the selected state
+      const areasForCities = patientDropdown.Areas.filter(
+        (area) => area.PlaceId === newCity
+      );
+      setFilteredAreas(areasForCities);
+    }
+  };
+  const handleParmanentCityChange = (newCity) => {
+    form.setFieldsValue({
+      permanentPlaceId: newCity,
+      permanentAreaId: undefined,
     });
     setSelectedCity(newCity);
     if (!newCity) {
@@ -793,10 +861,8 @@ const NewPatient = () => {
                           <Form.Item label="Years">
                             <Input
                               style={{ width: "100%" }}
-                              // placeholder="Years"
-                              min={1}
-                              max={100}
-                              value={age.years.toString()}
+                              max={120}
+                              value={age?.years}
                               onChange={handleYearsChange}
                             />
                           </Form.Item>
@@ -806,10 +872,10 @@ const NewPatient = () => {
                             <Input
                               style={{ width: "100%" }}
                               // placeholder="Years"
-                              min={1}
-                              max={100}
-                              value={age.months}
-                              disabled
+                              onChange={handleMonthsChange}
+                              min={0}
+                              max={11}
+                              value={age?.months}
                             />
                           </Form.Item>
                         </Col>
@@ -818,10 +884,10 @@ const NewPatient = () => {
                             <Input
                               style={{ width: "100%" }}
                               // placeholder=""
-                              min={1}
-                              max={100}
-                              value={age.days}
-                              disabled
+                              min={0}
+                              max={30}
+                              value={age?.days}
+                              onChange={handleDaysChange}
                             />
                           </Form.Item>
                         </Col>
@@ -924,7 +990,7 @@ const NewPatient = () => {
                       <Form.Item name="presentCountryId" label="Country">
                         <Select
                           value={selectedCountry || ""}
-                          onChange={handleCountryChange}
+                          onChange={handlePresentCountryChange}
                           allowClear
                           loading={isloading}
                         >
@@ -943,7 +1009,7 @@ const NewPatient = () => {
                       <Form.Item name="presentStateId" label="State">
                         <Select
                           value={selectedState || ""}
-                          onChange={handleStateChange}
+                          onChange={handlePresentStateChange}
                           allowClear
                         >
                           {filteredStates.map((option) => (
@@ -961,7 +1027,7 @@ const NewPatient = () => {
                       <Form.Item name="presentPlaceId" label="City">
                         <Select
                           value={selectedCity || ""}
-                          onChange={handleCityChange}
+                          onChange={handlePresentCityChange}
                           allowClear
                         >
                           {filteredCities.map((option) => (
@@ -1041,7 +1107,7 @@ const NewPatient = () => {
                       <Form.Item name="permanentCountryId" label="Country">
                         <Select
                           value={selectedCountry || ""}
-                          onChange={handleCountryChange}
+                          onChange={handlePermanentCountryChange}
                           allowClear
                           loading={isloading}
                         >
@@ -1060,7 +1126,7 @@ const NewPatient = () => {
                       <Form.Item name="permanentStateId" label="State">
                         <Select
                           value={selectedState || ""}
-                          onChange={handleStateChange}
+                          onChange={handlePermanentStateChange}
                           allowClear
                         >
                           {filteredStates.map((option) => (
@@ -1078,7 +1144,7 @@ const NewPatient = () => {
                       <Form.Item name="permanentPlaceId" label="City">
                         <Select
                           value={selectedCity || ""}
-                          onChange={handleCityChange}
+                          onChange={handleParmanentCityChange}
                           allowClear
                         >
                           {filteredCities.map((option) => (
