@@ -39,6 +39,7 @@ import TextArea from "antd/es/input/TextArea";
 import WebcamImage from "../../../components/WebCam/index.jsx";
 import dayjs from "dayjs";
 import { DateTime } from "luxon";
+import PageHeader from "../../../components/pageHeader.jsx/index.jsx";
 
 const NewPatient = () => {
   const [patientDropdown, setPatientDropdown] = useState({
@@ -680,656 +681,635 @@ const NewPatient = () => {
 
   return (
     <>
-      <Layout>
-        <div
-          style={{
-            width: "100%",
-            backgroundColor: "white",
-            minHeight: "max-content",
-            borderRadius: "10px",
-          }}
-        >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
+      <div
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <PageHeader
+          title="Register New Patient"
+          buttonLabel=" Search Patient"
+          buttonIcon={<SearchOutlined />}
+          onButtonClick={handleSearchToVisit}
+        />
+        <Spin spinning={loadings}>
+          <Divider orientation="left">Patient Details</Divider>
+
+          <Form
+            layout="vertical"
+            form={form}
+            name="register"
+            onFinish={handleOnFinish}
+            scrollToFirstError={true}
+            style={{ padding: "0rem 2rem" }}
           >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
+            <Row gutter={20}>
+              <Col span={18}>
+                <Row gutter={16}>
+                  <Col span={3}>
+                    <Form.Item
+                      name="title"
+                      label="Title"
+                      // hasFeedback
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select title",
+                        },
+                      ]}
+                    >
+                      <Select
+                        placeholder="Select Title"
+                        allowClear
+                        loading={isloading}
+                      >
+                        {patientDropdown.Title.map((option) => (
+                          <Select.Option
+                            key={option.LookupID}
+                            value={option.LookupID}
+                          >
+                            {option.LookupDescription}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={7}>
+                    <Form.Item
+                      name="PatientFirstName"
+                      label="First Name"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please add First Name",
+                        },
+                      ]}
+                    >
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  <Col span={7}>
+                    <Form.Item name="PatientMiddleName" label="Middle Name">
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  <Col span={7}>
+                    <Form.Item
+                      name="PatientLastName"
+                      label="Last Name"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please add Last Name",
+                        },
+                      ]}
+                    >
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={16}>
+                  <Col span={3}>
+                    <Form.Item
+                      name="PatientGender"
+                      label="Gender"
+                      // hasFeedback
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select gender",
+                        },
+                      ]}
+                    >
+                      <Select
+                        placeholder="Select Gender"
+                        allowClear
+                        loading={isloading}
+                      >
+                        {patientDropdown.Genders.map((option) => (
+                          <Select.Option
+                            key={option.LookupID}
+                            value={option.LookupID}
+                          >
+                            {option.LookupDescription}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={7}>
+                    <Form.Item name="BloodGroup" label="Blood Group">
+                      <Select allowClear loading={isloading}>
+                        {patientDropdown.BloodGroup.map((option) => (
+                          <Select.Option
+                            key={option.LookupID}
+                            value={option.LookupID}
+                          >
+                            {option.LookupDescription}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={7}>
+                    <Form.Item
+                      name="dob"
+                      label="Date of Birth"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select Date Of Birth",
+                        },
+                      ]}
+                    >
+                      <DatePicker
+                        style={{ width: "100%" }}
+                        value={selectedDate}
+                        onChange={handleDateChange}
+                        disabledDate={disabledDate}
+                        format={"DD-MM-YYYY"}
+                        placeholder="DD-MM-YYYY"
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={7}>
+                    <Row gutter={14}>
+                      <Col span={8}>
+                        <Form.Item label="Years">
+                          <Input
+                            style={{ width: "100%" }}
+                            max={120}
+                            value={age?.years}
+                            onChange={handleYearsChange}
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item label="Months">
+                          <Input
+                            style={{ width: "100%" }}
+                            // placeholder="Years"
+                            onChange={handleMonthsChange}
+                            min={0}
+                            max={11}
+                            value={age?.months}
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item label="Days">
+                          <Input
+                            style={{ width: "100%" }}
+                            // placeholder=""
+                            min={0}
+                            max={30}
+                            value={age?.days}
+                            onChange={handleDaysChange}
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </Col>
+                  <Col span={3}>
+                    <Form.Item name="titleFatherHusband" label="Title">
+                      <Select allowClear loading={isloading}>
+                        {patientDropdown.Title.map((option) => (
+                          <Select.Option
+                            key={option.LookupID}
+                            value={option.LookupID}
+                          >
+                            {option.LookupDescription}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={7}>
+                    <Form.Item
+                      name="FatherHusbandName"
+                      label="Father / Spouse Name"
+                    >
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  <Col span={7}>
+                    <Form.Item
+                      name="MaritalStatus"
+                      label="Patient Marital Status"
+                    >
+                      <Select allowClear loading={isloading}>
+                        {patientDropdown.MaritalStatus.map((option) => (
+                          <Select.Option
+                            key={option.LookupID}
+                            value={option.LookupID}
+                          >
+                            {option.LookupDescription}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={7}>
+                    <Row gutter={16}>
+                      <Col span={12}>
+                        <Form.Item
+                          name="Height"
+                          label="Height"
+                          rules={[
+                            {
+                              pattern: /^\d{2,3}$/,
+                              message: "Please enter valid input for height",
+                            },
+                          ]}
+                        >
+                          <Input suffix="Cms" type="number" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item
+                          name="Weight"
+                          label="Weight"
+                          rules={[
+                            {
+                              pattern: /^\d{2,3}$/,
+                              message: "Please enter valid input for height",
+                            },
+                          ]}
+                        >
+                          <Input suffix="Kgs" type="number" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </Col>
+                </Row>
+              </Col>
+              <Col
+                span={6}
+                style={{ overflow: "hidden", paddingRight: "10px" }}
               >
-                Register New Patient
-              </Title>
-            </Col>
-            <Col offset={5} span={3}>
-              <Button icon={<SearchOutlined />} onClick={handleSearchToVisit}>
-                Search Patient
-              </Button>
-            </Col>
-          </Row>
-          <Spin spinning={loadings}>
-            <Divider orientation="left">Patient Details</Divider>
+                <WebcamImage onImageUpload={handleImageUpload} />
+              </Col>
+            </Row>
 
-            <Form
-              layout="vertical"
-              form={form}
-              name="register"
-              onFinish={handleOnFinish}
-              scrollToFirstError={true}
-              style={{ padding: "0rem 2rem" }}
-            >
-              <Row gutter={20}>
-                <Col span={18}>
-                  <Row gutter={16}>
-                    <Col span={3}>
-                      <Form.Item
-                        name="title"
-                        label="Title"
-                        // hasFeedback
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please select title",
-                          },
-                        ]}
+            <Divider />
+            <Row gutter={32}>
+              <Col span={12}>
+                <Divider orientation="left" style={{ margin: "0" }}>
+                  Present Address
+                </Divider>
+                <Row gutter={32}>
+                  <Col span={24}>
+                    <Form.Item name="presentAddress1" label="Address">
+                      <TextArea placeholder="Add Address" autoSize />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="presentCountryId" label="Country">
+                      <Select
+                        value={selectedCountry || ""}
+                        onChange={handlePresentCountryChange}
+                        allowClear
+                        loading={isloading}
                       >
-                        <Select
-                          placeholder="Select Title"
-                          allowClear
-                          loading={isloading}
-                        >
-                          {patientDropdown.Title.map((option) => (
-                            <Select.Option
-                              key={option.LookupID}
-                              value={option.LookupID}
-                            >
-                              {option.LookupDescription}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={7}>
-                      <Form.Item
-                        name="PatientFirstName"
-                        label="First Name"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please add First Name",
-                          },
-                        ]}
-                      >
-                        <Input />
-                      </Form.Item>
-                    </Col>
-                    <Col span={7}>
-                      <Form.Item name="PatientMiddleName" label="Middle Name">
-                        <Input />
-                      </Form.Item>
-                    </Col>
-                    <Col span={7}>
-                      <Form.Item
-                        name="PatientLastName"
-                        label="Last Name"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please add Last Name",
-                          },
-                        ]}
-                      >
-                        <Input />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Row gutter={16}>
-                    <Col span={3}>
-                      <Form.Item
-                        name="PatientGender"
-                        label="Gender"
-                        // hasFeedback
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please select gender",
-                          },
-                        ]}
-                      >
-                        <Select
-                          placeholder="Select Gender"
-                          allowClear
-                          loading={isloading}
-                        >
-                          {patientDropdown.Genders.map((option) => (
-                            <Select.Option
-                              key={option.LookupID}
-                              value={option.LookupID}
-                            >
-                              {option.LookupDescription}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={7}>
-                      <Form.Item name="BloodGroup" label="Blood Group">
-                        <Select allowClear loading={isloading}>
-                          {patientDropdown.BloodGroup.map((option) => (
-                            <Select.Option
-                              key={option.LookupID}
-                              value={option.LookupID}
-                            >
-                              {option.LookupDescription}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={7}>
-                      <Form.Item
-                        name="dob"
-                        label="Date of Birth"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please select Date Of Birth",
-                          },
-                        ]}
-                      >
-                        <DatePicker
-                          style={{ width: "100%" }}
-                          value={selectedDate}
-                          onChange={handleDateChange}
-                          disabledDate={disabledDate}
-                          format={"DD-MM-YYYY"}
-                          placeholder="DD-MM-YYYY"
-                        />
-                      </Form.Item>
-                    </Col>
-                    <Col span={7}>
-                      <Row gutter={14}>
-                        <Col span={8}>
-                          <Form.Item label="Years">
-                            <Input
-                              style={{ width: "100%" }}
-                              max={120}
-                              value={age?.years}
-                              onChange={handleYearsChange}
-                            />
-                          </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                          <Form.Item label="Months">
-                            <Input
-                              style={{ width: "100%" }}
-                              // placeholder="Years"
-                              onChange={handleMonthsChange}
-                              min={0}
-                              max={11}
-                              value={age?.months}
-                            />
-                          </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                          <Form.Item label="Days">
-                            <Input
-                              style={{ width: "100%" }}
-                              // placeholder=""
-                              min={0}
-                              max={30}
-                              value={age?.days}
-                              onChange={handleDaysChange}
-                            />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                    </Col>
-                    <Col span={3}>
-                      <Form.Item name="titleFatherHusband" label="Title">
-                        <Select allowClear loading={isloading}>
-                          {patientDropdown.Title.map((option) => (
-                            <Select.Option
-                              key={option.LookupID}
-                              value={option.LookupID}
-                            >
-                              {option.LookupDescription}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={7}>
-                      <Form.Item
-                        name="FatherHusbandName"
-                        label="Father / Spouse Name"
-                      >
-                        <Input />
-                      </Form.Item>
-                    </Col>
-                    <Col span={7}>
-                      <Form.Item
-                        name="MaritalStatus"
-                        label="Patient Marital Status"
-                      >
-                        <Select allowClear loading={isloading}>
-                          {patientDropdown.MaritalStatus.map((option) => (
-                            <Select.Option
-                              key={option.LookupID}
-                              value={option.LookupID}
-                            >
-                              {option.LookupDescription}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={7}>
-                      <Row gutter={16}>
-                        <Col span={12}>
-                          <Form.Item
-                            name="Height"
-                            label="Height"
-                            rules={[
-                              {
-                                pattern: /^\d{2,3}$/,
-                                message: "Please enter valid input for height",
-                              },
-                            ]}
+                        {patientDropdown.Countries.map((option) => (
+                          <Select.Option
+                            key={option.LookupID}
+                            value={option.LookupID}
                           >
-                            <Input suffix="Cms" type="number" />
-                          </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                          <Form.Item
-                            name="Weight"
-                            label="Weight"
-                            rules={[
-                              {
-                                pattern: /^\d{2,3}$/,
-                                message: "Please enter valid input for height",
-                              },
-                            ]}
+                            {option.LookupDescription}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="presentStateId" label="State">
+                      <Select
+                        value={selectedState || ""}
+                        onChange={handlePresentStateChange}
+                        allowClear
+                      >
+                        {filteredStates.map((option) => (
+                          <Select.Option
+                            key={option.StateID}
+                            value={option.StateID}
                           >
-                            <Input suffix="Kgs" type="number" />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                    </Col>
-                  </Row>
-                </Col>
-                <Col
-                  span={6}
-                  style={{ overflow: "hidden", paddingRight: "10px" }}
+                            {option.StateName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="presentPlaceId" label="City">
+                      <Select
+                        value={selectedCity || ""}
+                        onChange={handlePresentCityChange}
+                        allowClear
+                      >
+                        {filteredCities.map((option) => (
+                          <Select.Option
+                            key={option.PlaceId}
+                            value={option.PlaceId}
+                          >
+                            {option.PlaceName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="presentAreaId" label="Area">
+                      <Select
+                        value={selectedArea || ""}
+                        onChange={(value) => setSelectedArea(value)}
+                        allowClear
+                      >
+                        {filteredAreas.map((option) => (
+                          <Select.Option
+                            key={option.AreaId}
+                            value={option.AreaId}
+                          >
+                            {option.AreaName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="presentPinCode"
+                      label="Pin Code"
+                      rules={[
+                        {
+                          pattern: new RegExp(/^\d{6}$/),
+                          message: "Invalid Pin Code",
+                        },
+                      ]}
+                    >
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  <Col
+                    offset={3}
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      marginTop: "1.5rem",
+                    }}
+                  >
+                    <Tooltip title="Permanent Address same as Present Address?">
+                      <Button
+                        type="primary"
+                        size="middle"
+                        onClick={handleAddressClick}
+                      >
+                        <FaAnglesRight />
+                      </Button>
+                    </Tooltip>
+                  </Col>
+                </Row>
+              </Col>
+              <Col span={12}>
+                <Divider orientation="left" style={{ margin: "0" }}>
+                  Permanent Address
+                </Divider>
+                <Row gutter={32}>
+                  <Col span={24}>
+                    <Form.Item name="permanentAddress1" label="Address">
+                      <TextArea placeholder="Add Address" autoSize />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="permanentCountryId" label="Country">
+                      <Select
+                        value={selectedCountry || ""}
+                        onChange={handlePermanentCountryChange}
+                        allowClear
+                        loading={isloading}
+                      >
+                        {patientDropdown.Countries.map((option) => (
+                          <Select.Option
+                            key={option.LookupID}
+                            value={option.LookupID}
+                          >
+                            {option.LookupDescription}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="permanentStateId" label="State">
+                      <Select
+                        value={selectedState || ""}
+                        onChange={handlePermanentStateChange}
+                        allowClear
+                      >
+                        {filteredStates.map((option) => (
+                          <Select.Option
+                            key={option.StateID}
+                            value={option.StateID}
+                          >
+                            {option.StateName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="permanentPlaceId" label="City">
+                      <Select
+                        value={selectedCity || ""}
+                        onChange={handleParmanentCityChange}
+                        allowClear
+                      >
+                        {filteredCities.map((option) => (
+                          <Select.Option
+                            key={option.PlaceId}
+                            value={option.PlaceId}
+                          >
+                            {option.PlaceName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="permanentAreaId" label="Area">
+                      <Select
+                        value={selectedArea || ""}
+                        onChange={(value) => setSelectedArea(value)}
+                        allowClear
+                      >
+                        {filteredAreas.map((option) => (
+                          <Select.Option
+                            key={option.AreaId}
+                            value={option.AreaId}
+                          >
+                            {option.AreaName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="permanentPinCode"
+                      label="Pin Code"
+                      rules={[
+                        {
+                          pattern: new RegExp(/^\d{6}$/),
+                          message: "Invalid Pin Code",
+                        },
+                      ]}
+                    >
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+            <Divider orientation="left">Contact Details</Divider>
+            <Row gutter={32}>
+              <Col span={6}>
+                <Form.Item
+                  name="MobileNumber"
+                  label="Mobile Number"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter your mobile number.",
+                    },
+                    {
+                      pattern: new RegExp(/^\d{10}$/),
+                      message: "Invalid mobile number!",
+                    },
+                  ]}
                 >
-                  <WebcamImage onImageUpload={handleImageUpload} />
-                </Col>
-              </Row>
-
-              <Divider />
-              <Row gutter={32}>
-                <Col span={12}>
-                  <Divider orientation="left" style={{ margin: "0" }}>
-                    Present Address
-                  </Divider>
-                  <Row gutter={32}>
-                    <Col span={24}>
-                      <Form.Item name="presentAddress1" label="Address">
-                        <TextArea placeholder="Add Address" autoSize />
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="presentCountryId" label="Country">
-                        <Select
-                          value={selectedCountry || ""}
-                          onChange={handlePresentCountryChange}
-                          allowClear
-                          loading={isloading}
-                        >
-                          {patientDropdown.Countries.map((option) => (
-                            <Select.Option
-                              key={option.LookupID}
-                              value={option.LookupID}
-                            >
-                              {option.LookupDescription}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="presentStateId" label="State">
-                        <Select
-                          value={selectedState || ""}
-                          onChange={handlePresentStateChange}
-                          allowClear
-                        >
-                          {filteredStates.map((option) => (
-                            <Select.Option
-                              key={option.StateID}
-                              value={option.StateID}
-                            >
-                              {option.StateName}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="presentPlaceId" label="City">
-                        <Select
-                          value={selectedCity || ""}
-                          onChange={handlePresentCityChange}
-                          allowClear
-                        >
-                          {filteredCities.map((option) => (
-                            <Select.Option
-                              key={option.PlaceId}
-                              value={option.PlaceId}
-                            >
-                              {option.PlaceName}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="presentAreaId" label="Area">
-                        <Select
-                          value={selectedArea || ""}
-                          onChange={(value) => setSelectedArea(value)}
-                          allowClear
-                        >
-                          {filteredAreas.map((option) => (
-                            <Select.Option
-                              key={option.AreaId}
-                              value={option.AreaId}
-                            >
-                              {option.AreaName}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item
-                        name="presentPinCode"
-                        label="Pin Code"
-                        rules={[
-                          {
-                            pattern: new RegExp(/^\d{6}$/),
-                            message: "Invalid Pin Code",
-                          },
-                        ]}
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="LandlineNumber"
+                  label="Landline Number"
+                  rules={[
+                    {
+                      pattern: new RegExp(/^\d{6,10}$/),
+                      message: "Invalid Landline Number",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="EmailId"
+                  label="Email Id"
+                  rules={[
+                    {
+                      type: "email",
+                      message: "Please input valid E-mail",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name="Occupation" label="Occupation">
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Divider orientation="left">Other Details</Divider>
+            <Row gutter={32}>
+              <Col span={6}>
+                <Form.Item name="Religion" label="Religion">
+                  <Select
+                    placeholder="Select Religion"
+                    allowClear
+                    loading={isloading}
+                  >
+                    {patientDropdown.Religion.map((option) => (
+                      <Select.Option
+                        key={option.LookupID}
+                        value={option.LookupID}
                       >
-                        <Input />
-                      </Form.Item>
-                    </Col>
-                    <Col
-                      offset={3}
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        marginTop: "1.5rem",
-                      }}
-                    >
-                      <Tooltip title="Permanent Address same as Present Address?">
-                        <Button
-                          type="primary"
-                          size="middle"
-                          onClick={handleAddressClick}
-                        >
-                          <FaAnglesRight />
-                        </Button>
-                      </Tooltip>
-                    </Col>
-                  </Row>
-                </Col>
-                <Col span={12}>
-                  <Divider orientation="left" style={{ margin: "0" }}>
-                    Permanent Address
-                  </Divider>
-                  <Row gutter={32}>
-                    <Col span={24}>
-                      <Form.Item name="permanentAddress1" label="Address">
-                        <TextArea placeholder="Add Address" autoSize />
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="permanentCountryId" label="Country">
-                        <Select
-                          value={selectedCountry || ""}
-                          onChange={handlePermanentCountryChange}
-                          allowClear
-                          loading={isloading}
-                        >
-                          {patientDropdown.Countries.map((option) => (
-                            <Select.Option
-                              key={option.LookupID}
-                              value={option.LookupID}
-                            >
-                              {option.LookupDescription}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="permanentStateId" label="State">
-                        <Select
-                          value={selectedState || ""}
-                          onChange={handlePermanentStateChange}
-                          allowClear
-                        >
-                          {filteredStates.map((option) => (
-                            <Select.Option
-                              key={option.StateID}
-                              value={option.StateID}
-                            >
-                              {option.StateName}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="permanentPlaceId" label="City">
-                        <Select
-                          value={selectedCity || ""}
-                          onChange={handleParmanentCityChange}
-                          allowClear
-                        >
-                          {filteredCities.map((option) => (
-                            <Select.Option
-                              key={option.PlaceId}
-                              value={option.PlaceId}
-                            >
-                              {option.PlaceName}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="permanentAreaId" label="Area">
-                        <Select
-                          value={selectedArea || ""}
-                          onChange={(value) => setSelectedArea(value)}
-                          allowClear
-                        >
-                          {filteredAreas.map((option) => (
-                            <Select.Option
-                              key={option.AreaId}
-                              value={option.AreaId}
-                            >
-                              {option.AreaName}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item
-                        name="permanentPinCode"
-                        label="Pin Code"
-                        rules={[
-                          {
-                            pattern: new RegExp(/^\d{6}$/),
-                            message: "Invalid Pin Code",
-                          },
-                        ]}
+                        {option.LookupDescription}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              <Col span={6}>
+                <Form.Item name="Ethnicity" label="Ethnicity">
+                  <Select allowClear loading={isloading}>
+                    {patientDropdown.Ethnicity.map((option) => (
+                      <Select.Option
+                        key={option.LookupID}
+                        value={option.LookupID}
                       >
-                        <Input />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
-              <Divider orientation="left">Contact Details</Divider>
-              <Row gutter={32}>
-                <Col span={6}>
-                  <Form.Item
-                    name="MobileNumber"
-                    label="Mobile Number"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please enter your mobile number.",
-                      },
-                      {
-                        pattern: new RegExp(/^\d{10}$/),
-                        message: "Invalid mobile number!",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="LandlineNumber"
-                    label="Landline Number"
-                    rules={[
-                      {
-                        pattern: new RegExp(/^\d{6,10}$/),
-                        message: "Invalid Landline Number",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="EmailId"
-                    label="Email Id"
-                    rules={[
-                      {
-                        type: "email",
-                        message: "Please input valid E-mail",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="Occupation" label="Occupation">
-                    <Input />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Divider orientation="left">Other Details</Divider>
-              <Row gutter={32}>
-                <Col span={6}>
-                  <Form.Item name="Religion" label="Religion">
-                    <Select
-                      placeholder="Select Religion"
-                      allowClear
-                      loading={isloading}
-                    >
-                      {patientDropdown.Religion.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
+                        {option.LookupDescription}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
 
-                <Col span={6}>
-                  <Form.Item name="Ethnicity" label="Ethnicity">
-                    <Select allowClear loading={isloading}>
-                      {patientDropdown.Ethnicity.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
+              <Col span={6}>
+                <Form.Item name="PrimaryLanguageId" label="Primary Language">
+                  <Select allowClear loading={isloading}>
+                    {patientDropdown.Language.map((option) => (
+                      <Select.Option
+                        key={option.LookupID}
+                        value={option.LookupID}
+                      >
+                        {option.LookupDescription}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name="CanSpeakEnglish" label="Can speak English?">
+                  <Select>
+                    <Select.Option key="Y">Yes</Select.Option>
+                    <Select.Option key="N">No</Select.Option>
+                    <Select.Option key="M">Maybe</Select.Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name="BirthPlace" label="Birth Place">
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="birthIdentification1"
+                  label="Birth Identification 1"
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="birthIdentification2"
+                  label="Birth Identification 2"
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
 
-                <Col span={6}>
-                  <Form.Item name="PrimaryLanguageId" label="Primary Language">
-                    <Select allowClear loading={isloading}>
-                      {patientDropdown.Language.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="CanSpeakEnglish" label="Can speak English?">
-                    <Select>
-                      <Select.Option key="Y">Yes</Select.Option>
-                      <Select.Option key="N">No</Select.Option>
-                      <Select.Option key="M">Maybe</Select.Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="BirthPlace" label="Birth Place">
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="birthIdentification1"
-                    label="Birth Identification 1"
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="birthIdentification2"
-                    label="Birth Identification 2"
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              {/* <div
+            {/* <div
                 style={{
                   width: "100%",
                   backgroundColor: "white",
@@ -1365,43 +1345,42 @@ const NewPatient = () => {
                   </Col>
                 </Row>
               </div> */}
-              <Divider orientation="left" style={{ fontSize: "1.3rem" }}>
-                Patient Identifiers
-              </Divider>
-              <Table
-                dataSource={identifierDetails}
-                columns={columns}
-                size="small"
-                locale={{ emptyText: "No data available" }}
-                className="vitals-table"
-                scroll={{ x: 1000 }}
-                bordered
-              />
-              <Row justify="end" style={{ marginTop: "1rem" }}>
-                <Col style={{ marginRight: "1rem" }}>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit" size="middle">
-                      Submit
-                    </Button>
-                  </Form.Item>
-                </Col>
-                <Col>
-                  <Form.Item>
-                    <Button
-                      type="primary"
-                      danger
-                      onClick={handleReset}
-                      size="middle"
-                    >
-                      Reset
-                    </Button>
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </Spin>
-        </div>
-      </Layout>
+            <Divider orientation="left" style={{ fontSize: "1.3rem" }}>
+              Patient Identifiers
+            </Divider>
+            <Table
+              dataSource={identifierDetails}
+              columns={columns}
+              size="small"
+              locale={{ emptyText: "No data available" }}
+              className="vitals-table"
+              scroll={{ x: 1000 }}
+              bordered
+            />
+            <Row justify="end" style={{ marginTop: "1rem" }}>
+              <Col style={{ marginRight: "1rem" }}>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit" size="middle">
+                    Submit
+                  </Button>
+                </Form.Item>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    danger
+                    onClick={handleReset}
+                    size="middle"
+                  >
+                    Reset
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Spin>
+      </div>
 
       <Modal
         title="Create Identifiers"
