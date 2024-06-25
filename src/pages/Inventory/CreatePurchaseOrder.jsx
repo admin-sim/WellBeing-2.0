@@ -1,23 +1,45 @@
-import customAxios from '../../components/customAxios/customAxios.jsx';
-import React, { useEffect, useRef, useState } from 'react';
-import Button from 'antd/es/button';
-import { urlCreatePurchaseOrder, urlAutocompleteProduct, urlGetProductDetailsById, urlAddNewPurchaseOrder, urlEditPurchaseOrder, urlUpdatePurchaseOrder } from '../../../endpoints';
-import Select from 'antd/es/select';
-import { ConfigProvider, Typography, Checkbox, Tag, Modal, Popconfirm, Spin, Col, Divider, Row, AutoComplete, message } from 'antd';
-import Input from 'antd/es/input';
-import Form from 'antd/es/form';
-import { DatePicker } from 'antd';
-import Layout from 'antd/es/layout/layout';
-import { LeftOutlined } from '@ant-design/icons';
+import customAxios from "../../components/customAxios/customAxios.jsx";
+import React, { useEffect, useState } from "react";
+import Button from "antd/es/button";
+import {
+  urlCreatePurchaseOrder,
+  urlAutocompleteProduct,
+  urlGetProductDetailsById,
+  urlAddNewPurchaseOrder,
+  urlEditPurchaseOrder,
+  urlUpdatePurchaseOrder,
+} from "../../../endpoints";
+import Select from "antd/es/select";
+import {
+  ConfigProvider,
+  Typography,
+  Checkbox,
+  Tag,
+  Modal,
+  Popconfirm,
+  Spin,
+  Col,
+  Divider,
+  Row,
+  AutoComplete,
+  message,
+} from "antd";
+import Input from "antd/es/input";
+import Form from "antd/es/form";
+import { DatePicker } from "antd";
+import Layout from "antd/es/layout/layout";
+import {
+  LeftOutlined,
+  CloseSquareFilled,
+  DeleteOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 //import Typography from 'antd/es/typography';
-import { useNavigate } from 'react-router';
-import { Table, InputNumber } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
-import { useLocation } from "react-router-dom";
-import FormItem from 'antd/es/form/FormItem/index.js';
+import { useNavigate } from "react-router";
+import { Table, InputNumber } from "antd";
+import dayjs from "dayjs";
 //import { Calculate } from '@mui/icons-material';
-
+import { useLocation } from "react-router-dom";
 const CreatePurchaseOrder = () => {
   const [DropDown, setDropDown] = useState({
     DocumentType: [],
@@ -27,106 +49,153 @@ const CreatePurchaseOrder = () => {
     TaxType: [],
     DateFormat: []
   });
-
-  const idCounter = useRef(0)
-  // let [idCounter, setCounter] = useState(0);
-  let [idCounterModel, setCounterModel] = useState(0);
-
+  const location = useLocation();
+  const PoHeaderId = location.state.PoHeaderId;
   const [form1] = Form.useForm();
   const [form2] = Form.useForm();
   const { Title } = Typography;
   const { TextArea } = Input;
   const { Option } = Select;
   const navigate = useNavigate();
-  const [data, setData] = useState([]);
-  //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');
-  const [isLoading, setIsLoading] = useState(true);
-  const [inputValues, setInputValues] = useState({});
-  const [shouldValidate, setShouldValidate] = useState(false);
-  const [selectedUom, setSelectedUom] = useState({});
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
-  const [shouldValidateModel, setShouldValidateModel] = useState(false);
-  const [dataModel, setDataModel] = useState([]);
-  const [recordKeys, setRecordKeys] = useState();
-  const fields = form1.getFieldsValue();
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
-  const [productIds, setProductIds] = useState({});
-  const location = useLocation();
-  const [poHeaderId, setPoHeaderId] = useState(location.state.PoHeaderId);
+
+  const [counter, setCounter] = useState(2);
+  const [counterDelivery, setCounterDelivery] = useState(2);
   const [buttonTitle, setButtonTitle] = useState('Save');
-  const [schedule, setSchedule] = useState([]);
-  const [poQty, setPoQty] = useState();
+  const [productOptions, setProductOptions] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const [deliveryRecord, setDeliveryRecord] = useState([]);
+
+  const [poDate, setPoDate] = useState(null);
+
+  const initialDataSource =
+    PoHeaderId === 0
+      ? [
+        {
+          key: 1,
+          ProductName: '',
+          // ProductId: 0,
+          PoLineId: 0,
+          UomId: "",
+          PoQuantity: "",
+          BonusQuantity: 0,
+          PoRate: "",
+          DiscountRate: 0,
+          DiscountAmount: 0,
+          MrpExpected: 0,
+          TaxType1: '',
+          TaxAmount1: 0,
+          TaxType2: '',
+          TaxAmount2: 0,
+          LineAmount: 0,
+          LineAmount: 0,
+          AvailableQuantity: 0,
+          deliverySchedule: "",
+          LongName: "",
+          ShortName: "",
+          ActiveFlag: true,
+        },
+      ]
+      : [];
+
+  const [data, setData] = useState(initialDataSource);
+
+  const initialDeliveryDataSource =
+    PoHeaderId === 0
+      ? [
+        {
+          key: 1,
+          ProductId: "",
+          UomId: '',
+          PoDeliveryId: 0,
+          DeliveryQuantity: "",
+          DeliveryDate: "",
+          DeliveryLocation: "",
+          ActiveFlag: true,
+        },
+      ]
+      : [];
+
+  const [schedule, setSchedule] = useState(initialDeliveryDataSource);
+
+  //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');
 
   useEffect(() => {
-    debugger;
     customAxios.get(urlCreatePurchaseOrder).then((response) => {
       const apiData = response.data.data;
       setDropDown(apiData);
-      setIsLoading(false);
     });
-    if (idCounter.current === 0) {
-      handleAdd();
-    }
-    if (poHeaderId > 0) {
-      setButtonTitle('Update');
-      debugger;
-      customAxios.get(`${urlEditPurchaseOrder}?Id=${poHeaderId}`).then((response) => {
-        const apiData = response.data.data;
-        if (apiData.newPurchaseOrderModel != null) {
-          form1.setFieldsValue({ PoHeaderId: poHeaderId })
-          form1.setFieldsValue({ SupplierList: apiData.newPurchaseOrderModel.SupplierId })
-          form1.setFieldsValue({ StoreDetails: apiData.newPurchaseOrderModel.ProcurementStoreId })
-          form1.setFieldsValue({ DocumentType: apiData.newPurchaseOrderModel.DocumentType })
-          form1.setFieldsValue({ Remarks: apiData.newPurchaseOrderModel.Remarks })
-          let dateForDatePicker = null
-          if (apiData.newPurchaseOrderModel.PoDate != null) {
-            dateForDatePicker = DateBindtoDatepicker(apiData.newPurchaseOrderModel.PoDate);
-          }
-          form1.setFieldsValue({ PODate: dateForDatePicker })
-          form1.setFieldsValue({ POStatus: apiData.newPurchaseOrderModel.PoStatus === 'Created' ? undefined : apiData.newPurchaseOrderModel.PoStatus })
-          form1.setFieldsValue({ Amount: apiData.newPurchaseOrderModel.PoPurchaseValue })
-          form1.setFieldsValue({ gstTax: apiData.newPurchaseOrderModel.PoTaxAmount })
-          form1.setFieldsValue({ totalpoAmount: apiData.newPurchaseOrderModel.PoTotalAmount })
-        }
-        if (apiData.PurchaseOrderDetails != null) {
-          for (let i = 0; i < apiData.PurchaseOrderDetails.length; i++) {
-            handleAdd()
-            form1.setFieldsValue({ [i]: { productId: apiData.PurchaseOrderDetails[i].ProductId } })
-            form1.setFieldsValue({ [i]: { product: apiData.PurchaseOrderDetails[i].ProductName } })
-            form1.setFieldsValue({ [i]: { uom: apiData.PurchaseOrderDetails[i].UomId } })
-            form1.setFieldsValue({ [i]: { poQty: apiData.PurchaseOrderDetails[i].PoQuantity } })
-            form1.setFieldsValue({ [i]: { bounsQty: apiData.PurchaseOrderDetails[i].BonusQuantity } })
-            form1.setFieldsValue({ [i]: { poRate: apiData.PurchaseOrderDetails[i].PoRate } })
-            form1.setFieldsValue({ [i]: { discount: apiData.PurchaseOrderDetails[i].DiscountRate } })
-            form1.setFieldsValue({ [i]: { discountAmt: apiData.PurchaseOrderDetails[i].DiscountAmount } })
-            form1.setFieldsValue({ [i]: { expectedMRP: apiData.PurchaseOrderDetails[i].MrpExpected } })
-            form1.setFieldsValue({ [i]: { cgst: apiData.PurchaseOrderDetails[i].TaxType1 === 0 ? null : apiData.PurchaseOrderDetails[i].TaxType1 } })
-            form1.setFieldsValue({ [i]: { cgstAmt: apiData.PurchaseOrderDetails[i].TaxAmount1 } })
-            form1.setFieldsValue({ [i]: { sgst: apiData.PurchaseOrderDetails[i].TaxType2 === 0 ? null : apiData.PurchaseOrderDetails[i].TaxType2 } })
-            form1.setFieldsValue({ [i]: { sgstAmt: apiData.PurchaseOrderDetails[i].TaxAmount2 } })
-            form1.setFieldsValue({ [i]: { amount: apiData.PurchaseOrderDetails[i].LineAmount } })
-            form1.setFieldsValue({ [i]: { totalAmount: apiData.PurchaseOrderDetails[i].LineAmount } })
-            form1.setFieldsValue({ [i]: { avlQty: apiData.PurchaseOrderDetails[i].AvailableQuantity } })
-            form2.setFieldsValue({ [i]: { uom: apiData.PurchaseOrderDetails[i].UomId } })
-            form2.setFieldsValue({ Product: apiData.PurchaseOrderDetails[i].ProductName })
-            form2.setFieldsValue({ productId: apiData.PurchaseOrderDetails[i].ProductId })
-          }
-        }
-        if (apiData.DeliveryDetails != null) {
-          for (let i = 0; i < apiData.DeliveryDetails.length; i++) {
-            ModelAdd();
-            form2.setFieldsValue({ [i]: { datedelivery: DateBindtoDatepicker(apiData.DeliveryDetails[i].DeliveryDate) } })
-            form2.setFieldsValue({ [i]: { deliveryloc: apiData.DeliveryDetails[i].DeliveryLocation } })
-            form2.setFieldsValue({ [i]: { quantity: apiData.DeliveryDetails[i].DeliveryQuantity } })
-            form2.setFieldsValue({ [i]: { poQty: apiData.DeliveryDetails[i].PoLineId } })
-            form2.setFieldsValue({ [i]: { bounsQty: apiData.DeliveryDetails[i].PoDeliveryId } })
-          }
-        }
-      });
-      setPoHeaderId(0);
-    }
   }, []);
+
+  useEffect(() => {
+    debugger;
+    const fetchData = async () => {
+      if (PoHeaderId > 0) {
+        setButtonTitle('Update')
+        try {
+          const response = await customAxios.get(
+            `${urlEditPurchaseOrder}?Id=${PoHeaderId}`
+          );
+          if (response.status == 200 && response.data.data != null) {
+            const editeddata = response.data.data;
+            const products = editeddata.PurchaseOrderDetails.map(
+              (item, index) => ({
+                ...item,
+                key: index + 1,
+              })
+            );
+            setData(products);
+            const formdata = editeddata.newPurchaseOrderModel;
+
+            form1.setFieldsValue({
+              SupplierList: formdata.SupplierId,
+              StoreDetails: formdata.ProcurementStoreId,
+              DocumentType: formdata.DocumentType,
+              TotalAmount: formdata.PoTotalAmount,
+              totalpoAmount: formdata.PoTotalAmount,
+            });
+            setCounter(products.length + 1);
+            const delivery = editeddata.DeliveryDetails.map(
+              (item, index) => ({
+                ...item,
+                key: index + 1,
+              })
+            );
+            setCounterDelivery(editeddata.DeliveryDetails.length + 1)
+            // setSchedule(editeddata.DeliveryDetails);
+            const updatedSchedule = delivery.map(item => {
+              const key = item.key;
+              const prod = editeddata.PurchaseOrderDetails.filter(item1 => item1.PoLineId === item.PoLineId)
+              if (delivery[key - 1] != undefined) {
+                if (delivery[key - 1].DeliveryQuantity || delivery[key - 1].DeliveryDate || delivery[key - 1].DeliveryLocation) {
+                  return {
+                    ...item,
+                    ProductId: prod[0].ProductId,
+                    DeliveryQuantity: delivery[key - 1].DeliveryQuantity,
+                    DeliveryDate: DateBindtoDatepicker(delivery[key - 1].DeliveryDate),
+                    DeliveryLocation: delivery[key - 1].DeliveryLocation,
+                    UomId: prod[0].UomId,
+                    Uom: prod[0].Uom
+                  };
+                }
+                return item;
+              }
+              return item;
+            });
+            setSchedule(updatedSchedule);
+          }
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleCancel = () => {
+    const url = '/purchaseOrder';
+    navigate(url);
+  };
 
   const DateBindtoDatepicker = (value) => {
     const isoDateString = value;
@@ -135,804 +204,885 @@ const CreatePurchaseOrder = () => {
     return dayjs(formattedDate, 'DD-MM-YYYY');
   }
 
-  const getPanelValue = async (searchText, key) => {
-    debugger;
-    if (searchText === "") {
-      form1.setFieldsValue({ [key]: { uom: undefined } });
-      form1.setFieldsValue({ [key]: { poQty: undefined } });
-      form1.setFieldsValue({ [key]: { bounsQty: undefined } });
-      form1.setFieldsValue({ [key]: { poRate: undefined } });
-      form1.setFieldsValue({ [key]: { discountAmt: 0 } });
-      form1.setFieldsValue({ [key]: { discount: undefined } });
-      form1.setFieldsValue({ [key]: { cgstAmt: 0 } });
-      form1.setFieldsValue({ [key]: { sgstAmt: 0 } });
-      form1.setFieldsValue({ [key]: { amount: 0 } });
-      form1.setFieldsValue({ [key]: { totalAmount: 0 } });
-      form1.setFieldsValue({ [key]: { avlQty: 0 } });
-      form1.setFieldsValue({ [key]: { expectedMRP: undefined } });
-    }
-
-    try {
-      customAxios.get(`${urlAutocompleteProduct}?Product=${searchText}`).then((response) => {
-        const apiData = response.data.data;
-        const newOptions = apiData.map(item => ({ value: item.LongName, key: item.ProductDefinitionId, UomId: item.UOMPrimaryUOM }));
-        setAutoCompleteOptions(newOptions);
-      });
-    } catch (error) {
-      //console.error("Error fetching purchase order details:", error);        
-    }
-  }
-
-  const onOkModal = () => {
-    debugger;
-    form2
-      .validateFields()
-      .then(() => {
-        form2.submit();
-      })
-      .catch((error) => {
-        console.log('Validation error:', error);
-      });
-  }
-  const deliveries = [];
-  const onFinishModel = (values) => {
-    debugger;
-    for (let i = 0; i < idCounterModel; i++) {
-      if (values[i] !== undefined && values.productId !== undefined) {
-        const delivery = {
-          DeliveryQuantity: values[i].quantity,
-          UomId: values[i].uom,
-          DeliveryDate: values[i].datedelivery,
-          DeliveryLocation: values[i].deliveryloc === undefined ? null : values[i].deliveryloc,
-          ProductId: values.productId
-        }
-        deliveries.push(delivery);
-      }
-      else {
-        message.warning('Some think went Wroung')
-        onCancelModel()
-        return false
-      }
-    }
-    let Poqty = 0;
-    for (let i = 0; i < idCounterModel; i++) {
-      if (deliveries[i] !== undefined) {
-        Poqty += deliveries[i].DeliveryQuantity
-      }
-    }
-
-    if (Poqty === poQty) {
-      debugger;
-      const newArray = schedule.filter(item => item.ProductId !== deliveries[0].ProductId);
-      setSchedule(newArray);
-      setSchedule(prevState => [...prevState, ...deliveries]);
-      // for (let i = 0; i < idCounterModel.length; i++) {
-      //   setSchedule((prevState) => {
-      //     const newState = { ...prevState, [i]: deliveries };
-      //     return newState;
-      //   });
-      // }
-      setIsModalOpen(false);
-    } else {
-      message.warning('Quantity Must Equal to PO Quantity')
-      while (deliveries.length > 0) {
-        deliveries.pop();
-      }
-      return false;
-    }
-    onCancelModel();
-  }
-
-  const onCancelModel = () => {
-    debugger;
-    form2.resetFields();
-    setDataModel([])
-    setShouldValidateModel(false);
-    setIsModalOpen(false);
-    setCounterModel(0);
-  }
-  const handleCancel = () => {
-    const url = '/purchaseOrder';
-    navigate(url);
-  };
-
-  const ModelOpen = (value, record) => {
-    debugger;
-    form1
-      .validateFields()
-      .then(() => {
-        const pid = form1.getFieldValue([record.key, 'productId'])
-        setPoQty(form1.getFieldValue([record.key, 'poQty']))
-        setIsModalOpen(true);
-        if (schedule.length > 0 && schedule[record.key] != undefined) {
-          form2.setFieldsValue({ Product: form1.getFieldValue([record.key, 'product']) })
-          let j = 0
-          for (let i = 0; i < schedule.length; i++) {
-            if (pid == schedule[i].ProductId) {
-              ModelAdd();
-              form2.setFieldsValue({ Product: form1.getFieldValue([0, 'product']) })
-              form2.setFieldsValue({ productId: pid })
-              form2.setFieldsValue({ [j]: { quantity: schedule[i].DeliveryQuantity } })
-              form2.setFieldsValue({ [j]: { deliveryloc: schedule[i].DeliveryLocation } })
-              form2.setFieldsValue({ [j]: { datedelivery: schedule[i].DeliveryDate } })
-              setSelectedUom(schedule[j].UomId)
-              j = j + 1
-            }
-          }
-          if (j === 0) {
-            ModelAdd();
-            form2.setFieldsValue({ Product: form1.getFieldValue([record.key, 'product']) })
-            form2.setFieldsValue({ productId: pid })
-            setSelectedUom(form1.getFieldValue([record.key, 'uom']))
-          }
-        } else {
-          ModelAdd();
-          form2.setFieldsValue({ Product: form1.getFieldValue([record.key, 'product']) })
-          form2.setFieldsValue({ productId: pid })
-          setSelectedUom(form1.getFieldValue([record.key, 'uom']))
-        }
-      })
-      .catch((error) => {
-        console.log('Validation error:', error);
-      });
-  }
-
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
-
-  const handleToPurchaseOrder = () => {
-    const url = '/purchaseOrder';
-    navigate(url);
-  };
-
-  const handleDelete = (record) => {
-    debugger;
-    const newData = data.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
-    Object.keys(fields).forEach(fieldName => {
-      if (fieldName.startsWith(`${record.key}.`)) {
-        form1.resetFields([fieldName]);
-      }
-    });
-    setData(newData);
-    setCounter(newData.length);
-  };
-
-  const ModelDelete = (record) => {
-    debugger;
-    const newData = dataModel.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
-    setDataModel(newData);
-    form2.setFieldsValue({ [record.key]: { quantity: '' } })
-    form2.setFieldsValue({ [record.key]: { deliveryloc: '' } })
-    form2.setFieldsValue({ [record.key]: { datedelivery: dayjs() } })
-    setCounterModel(idCounterModel - 1)
-  };
-
-  const handleInputChange = (value, option, key) => {
-    setInputValues((prevState) => ({ ...prevState, [key]: value }));
-  };
-
   const handleOnFinish = async (values) => {
     debugger;
-    // setIsSearchLoading(true);
+    console.log("values:", values);
+    console.log("tabledata:", data);
     const products = [];
-    for (let i = 0; i <= idCounter.current; i++) {
+    for (let i = 1; i <= data.length; i++) {
       if (values[i] !== undefined) {
         const product = {
-          ProductId: values[i].productId,
-          UomId: values[i].uom,
-          PoQuantity: values[i].poQty,
-          BonusQuantity: values[i].bounsQty === undefined ? 0 : values[i].bounsQty,
-          PoRate: values[i].poRate === undefined ? null : values[i].poRate,
-          DiscountRate: values[i].discount === undefined ? 0 : values[i].discount,
-          DiscountAmount: values[i].discountAmt === "" ? 0 : parseFloat(values[i].discountAmt),
-          MrpExpected: values[i].expectedMRP === undefined ? 0 : values[i].expectedMRP,
-          TaxType1: values[i].cgst === undefined ? 0 : values[i].cgst,
-          TaxAmount1: values[i].cgstAmt === "" ? 0 : values[i].cgstAmt,
-          TaxType2: values[i].sgst === undefined ? 0 : values[i].sgst,
-          TaxAmount2: values[i].sgstAmt === "" ? 0 : values[i].sgstAmt,
-          LineAmount: values[i].amount === "" ? null : values[i].amount,
-          PoTotalAmount: values[i].totalAmount === "" ? null : values[i].totalAmount,
-          AvailableQuantity: values[i].avlQty === "" ? null : values[i].avlQty,
+          ProductId: values[i].ProductId,
+          UomId: values[i].UomId,
+          PoQuantity: values[i].PoQuantity,
+          BonusQuantity: values[i].BonusQuantity,
+          PoRate: values[i].PoRate,
+          DiscountRate: values[i].DiscountRate,
+          DiscountAmount: values[i].DiscountAmount,
+          MrpExpected: values[i].MrpExpected,
+          TaxType1: values[i].TaxType1 === undefined ? 0 : values[i].TaxType1,
+          TaxAmount1: values[i].TaxAmount1 === undefined ? 0 : values[i].TaxAmount1,
+          TaxType2: values[i].TaxType2 === undefined ? 0 : values[i].TaxType2,
+          TaxAmount2: values[i].TaxAmount2 === undefined ? 0 : values[i].TaxAmount2,
+          LineAmount: values[i].LineAmount,
+          PoTotalAmount: values[i].LineAmount,
+          AvailableQuantity: values[i].AvailableQuantity === undefined ? 0 : values[i].AvailableQuantity,
+          PoLineId: values[i].PoLineId === undefined ? 0 : values[i].PoLineId
         }
         products.push(product);
       }
     }
 
     const purchaseOrder = {
+      PoHeaderId: values.PoHeaderId,
       SupplierId: values.SupplierList === undefined ? '' : values.SupplierList,
       ProcurementStoreId: values.StoreDetails === undefined ? '' : values.StoreDetails,
       DocumentType: values.DocumentType === undefined ? '' : values.DocumentType,
-      PurchaseDate: values.PODate,
+      PoDate: values.PODate,
       PoStatus: values.POStatus === undefined ? 'Created' : values.POStatus,
       Remarks: values.Remarks === undefined ? null : values.Remarks,
-      PoPurchaseValue: values.Amount === undefined ? null : values.Amount,
-      PoTotalAmount: values.totalpoAmount === undefined ? null : values.totalpoAmount,
-      PoTaxAmount: values.PoTaxAmount === undefined ? 0 : values.PoTaxAmount,
-    }
+      PoPurchaseValue: values.TotalAmount === undefined ? 0 : values.TotalAmount,
+      PoTotalAmount: values.totalpoAmount === undefined ? 0 : values.totalpoAmount,
+      PoTaxAmount: values.gstTax === undefined ? 0 : values.gstTax,
+    };
+
+    // data.forEach((item) => {
+    //   for (let key in item) {
+    //     if (key !== "LongName" && key !== "ShortName" && item[key] === "") {
+    //       item[key] = 0;
+    //     }
+    //   }
+    // });
+    const activeData = schedule.filter((item) => item.ActiveFlag === true && item.ProductId);
     const postData = {
       newPurchaseOrderModel: purchaseOrder,
       PurchaseOrderDetails: products,
-      Delivery: schedule === undefined ? [] : schedule,
-    }
-    try {
-      if (values.PoHeaderId > 0) {
-        // const response = await customAxios.post(urlUpdatePurchaseOrder, postData, {
-        //   headers: {
-        //     'Content-Type': 'application/json'
-        //   }
-        // });
-        form1.resetFields();
+      Delivery: activeData.length > 0 && activeData[0].ProductId === '' ? [] : activeData,
+    };
+    if (PoHeaderId == 0) {
+      const response = await customAxios.post(
+        urlAddNewPurchaseOrder,
+        postData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.status == 200) {
+        message.success("Purchase Order Created Successfully");
         handleCancel();
       } else {
-        // const response = await customAxios.post(urlAddNewPurchaseOrder, postData, {
-        //   headers: {
-        //     'Content-Type': 'application/json'
-        //   }
-        // });
-        form1.resetFields();
-        handleCancel();
+        message.error("Something went wrong");
       }
-      // const response = await customAxios.post(urlAddNewPurchaseOrder, postData);
-      // debugger;
-      // form1.resetFields();
-      // handleCancel();
-    } catch (error) {
-      // Handle error      
-    }
-    // setIsSearchLoading(false);
-  };
-
-  const handleSelect = (value, option, key) => {
-    debugger;
-    try {
-      customAxios.get(`${urlGetProductDetailsById}?ProductId=${option.key}`).then((response) => {
-        debugger;
-        const apiData = response.data.data;
-        if (apiData.PORate != null) {
-          form1.setFieldsValue({ [key]: { poRate: apiData.PORate.PoRate } });
-          form1.setFieldsValue({ [key]: { expectedMRP: apiData.PORate.MrpExpected } });
-          form1.setFieldsValue({ [key]: { productId: option.key } });
-          form1.setFieldsValue({ [key]: { uom: option.UomId } });
-        }
-        let qty = 0;
-        if (apiData.Stock.length > 0) {
-          apiData.Stock.forEach(value => {
-            qty += value.Quantity
-          })
-        }
-        form1.setFieldsValue({ [key]: { avlQty: qty } });
-        form1.setFieldsValue({ [key]: { discountAmt: 0 } });
-        form1.setFieldsValue({ [key]: { amount: 0 } });
-        form1.setFieldsValue({ [key]: { totalAmount: 0 } });
-      });
-    } catch (error) {
-      //console.error("Error fetching purchase order details:", error);        
-    }
-    // Update the product value in the form
-    // form1.setFieldsValue({ [key]: { product: value } });
-    // setProductIds((prevState) => ({ ...prevState, [key]: option.key }));
-    // setSelectedProductId((prevState) => {
-    //   const newState = { ...prevState, [key]: option.key };
-    //   return newState;
-    // })
-
-    // // form1.setFieldsValue({option});
-    // // Set the selected UOM based on the selected product
-    // const matchingUom = DropDown.UOM.find((uomOption) => uomOption.UomId === option.UomId);
-    // setSelectedUomText((prevState) => {
-    //   const newState = { ...prevState, [key]: matchingUom.LongName };
-    //   return newState;
-    // });
-    // setSelectedUomId((prevState) => {
-    //   const newState = { ...prevState, [key]: matchingUom.UomId };
-    //   console.log(selectedUomId);
-    //   return newState;
-    // });
-
-    // if (matchingUom) {
-    //   setSelectedUom((prevState) => {
-    //     const newState = { ...prevState, [key]: matchingUom.UomId };
-    //     console.log(newState);
-    //     return newState;
-    //   });
-
-    //   form1.setFieldsValue({ [key]: { uom: matchingUom.UomId } });
-    // } else {
-    //   setSelectedUom((prevState) => {
-    //     const newState = { ...prevState, [key]: null };
-    //     console.log(newState);
-    //     return newState;
-    //   });
-
-    //   form1.setFieldsValue({ [key]: { uom: null } });
-    // }
-  };
-
-  const handleAdd = () => {
-    debugger;
-    // setCounter(idCounter + 1);    
-    if (shouldValidate) {
-      form1
-        .validateFields()
-        .then(() => {
-          const newRow = {
-            key: idCounter.current.toString(),
-            product: '',
-            uom: '',
-            poQty: '',
-            bounsQty: '',
-            poRate: '',
-            discount: '',
-            discountAmt: '',
-            expectedMRP: '',
-            cgst: '',
-            cgstAmt: '',
-            sgst: '',
-            sgstAmt: '',
-            amount: '',
-            totalAmount: '',
-            avlQty: '',
-            deliverySchedule: ''
-          };
-          setData([...data, newRow]);
-          idCounter.current = idCounter.current + 1
-        })
     } else {
-      const newRow = {
-        key: idCounter.current.toString(),
-        product: '',
-        uom: '',
-        poQty: '',
-        bounsQty: '',
-        poRate: '',
-        discount: '',
-        discountAmt: '',
-        expectedMRP: '',
-        cgst: '',
-        cgstAmt: '',
-        sgst: '',
-        sgstAmt: '',
-        amount: '',
-        totalAmount: '',
-        avlQty: '',
-        deliverySchedule: ''
-      };
-      setData([...data, newRow]);
-      setShouldValidate(true);
-      idCounter.current = idCounter.current + 1
+      const response = await customAxios.post(
+        urlUpdatePurchaseOrder,
+        postData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.status == 200) {
+        message.success("Purchase Order Updated Successfully");
+        handleCancel();
+      } else {
+        message.error("Something went wrong");
+      }
+    }
+  };
+  const handleToPurchaseOrder = () => {
+    const url = "/purchaseOrder";
+    navigate(url);
+  };
+
+  const handleAddRow = async () => {
+    setProductOptions([]);
+    await form1.validateFields();
+    setData([
+      ...data,
+      {
+        key: counter,
+        ProductName: '',
+        // ProductId: 0,
+        PoLineId: 0,
+        UomId: "",
+        PoQuantity: "",
+        BonusQuantity: 0,
+        PoRate: "",
+        DiscountRate: 0,
+        DiscountAmount: 0,
+        MrpExpected: 0,
+        TaxType1: '',
+        TaxAmount1: 0,
+        TaxType2: '',
+        TaxAmount2: 0,
+        LineAmount: 0,
+        LineAmount: 0,
+        AvailableQuantity: 0,
+        deliverySchedule: "",
+        ActiveFlag: true,
+      },
+    ]);
+    setCounter(counter + 1);
+  };
+
+  const handleAddDelivery = async () => {
+    //setProductOptions([]);
+    await form2.validateFields();
+    setSchedule([
+      ...schedule,
+      {
+        key: counterDelivery,
+        ProductId: "",
+        UomId: '',
+        PoDeliveryId: 0,
+        DeliveryQuantity: "",
+        DeliveryDate: "",
+        DeliveryLocation: "",
+        ActiveFlag: true,
+      },
+    ]);
+    setCounterDelivery(counterDelivery + 1);
+  };
+
+  // const handlePoDate = (date, dateString) => {
+  //   setPoDate(dateString);
+  // };
+
+  // const handleDeliveryInputChange = (e, column, index, record) => {
+  //   debugger;
+  //   const newData = schedule.map((item) => {
+  //     if (item.key === record.key) {
+  //       const updatedItem = { ...item, [column]: e.target.value };
+  //       return updatedItem;
+  //     }
+  //     return item;
+  //   });
+  //   // Update the state with the new data
+  //   setSchedule(newData);
+  // };
+
+  const handleSearch = async (searchText) => {
+    debugger
+    if (searchText) {
+      const response = await customAxios.get(
+        `${urlAutocompleteProduct}?Product=${searchText}`
+      );
+      const apiData = response.data.data;
+      const newOptions = apiData.map((item) => ({
+        value: item.LongName,
+        key: item.ProductDefinitionId,
+        UomId: item.UOMPrimaryUOM
+      }));
+      setProductOptions(newOptions);
     }
   };
 
-  // const handleAdd = () => {
-  //   // setCounter(idCounter + 1);
-  //   debugger;
-  //   setCounter(prevCounter => prevCounter + 1);
-  //   idCounter
-  //   shouldValidate
-  //   if (shouldValidate) {
-  //     form1
-  //       .validateFields()
-  //       .then(() => {
-  //         setData(prevData => {
-  //           const newRow = {
-  //             key: prevData.length.toString(),
-  //             product: '',
-  //             uom: '',
-  //             poQty: '',
-  //             bounsQty: '',
-  //             poRate: '',
-  //             discount: '',
-  //             discountAmt: '',
-  //             expectedMRP: '',
-  //             cgst: '',
-  //             cgstAmt: '',
-  //             sgst: '',
-  //             sgstAmt: '',
-  //             amount: '',
-  //             totalAmount: '',
-  //             avlQty: '',
-  //             deliverySchedule: ''
-  //           };
-  //           return ([...prevData, newRow]);
-  //         })
-  //       })
-  //   } else {
-  //     setData(prevData => {
-  //       const newRow = {
-  //         key: prevData.length.toString(),
-  //         product: '',
-  //         uom: '',
-  //         poQty: '',
-  //         bounsQty: '',
-  //         poRate: '',
-  //         discount: '',
-  //         discountAmt: '',
-  //         expectedMRP: '',
-  //         cgst: '',
-  //         cgstAmt: '',
-  //         sgst: '',
-  //         sgstAmt: '',
-  //         amount: '',
-  //         totalAmount: '',
-  //         avlQty: '',
-  //         deliverySchedule: ''
-  //       };
-  //       return ([...prevData, newRow]);
-  //     })
-  //     setShouldValidate(prevState => !prevState);
-  //   }
-  // };
+  function calculateTotalAmount(data) {
+    debugger
+    let LineAmount = 0;
+    data.forEach((item) => {
+      if (
+        item.ActiveFlag &&
+        !isNaN(item.LineAmount) &&
+        item.LineAmount !== null &&
+        item.LineAmount !== undefined
+      ) {
+        LineAmount += parseFloat(item.LineAmount);
+      }
+    });
+    return LineAmount;
+  }
 
-  const columns = [
-    {
-      title: 'Product',
-      // width: 15,
-      dataIndex: 'product',
-      key: 'product',
-      render: (_, record) => (
-        <>
-          <Form.Item style={{ width: '250px' }}
-            name={[record.key, 'product']}
-            rules={[
-              {
-                required: true,
-                message: 'Please input!'
-              }
-            ]}
-          >
-            <AutoComplete style={{ width: '100%' }}
-              options={autoCompleteOptions}
-              onSearch={(value) => getPanelValue(value, record.key)}
-              onSelect={(value, option) => handleSelect(value, option, record.key)}
-              placeholder="Search for a product"
-              allowClear
-            />
-          </Form.Item>
-          <FormItem name={[record.key, 'productId']} hidden><Input></Input></FormItem>
-        </>
-      )
-    },
-    {
-      title: 'UOM',
-      //width: 110,
-      dataIndex: 'uom',
-      key: 'uom',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'uom']} style={{ width: '100%' }}>
-          <Select value={selectedUom[record.key]} placeholder='Select Value' style={{ width: '100%' }} disabled>
-            {DropDown.UOM.map((option) => (
-              <Select.Option key={option.UomId} value={option.UomId}>
-                {option.ShortName}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-      )
-    },
-    {
-      title: 'PO Qty',
-      dataIndex: 'poQty',
-      // width: 100,
-      key: 'poQty',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'poQty']}
-          rules={[
-            {
-              required: true,
-              message: 'Please input!'
-            }
-          ]}
-          style={{ width: '100%' }}
-        >
-          <InputNumber min={0} />
-        </Form.Item>
-      )
-    },
-    {
-      title: 'Bonus Qty',
-      dataIndex: 'bounsQty',
-      // width: 100,
-      key: 'bounsQty',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'bounsQty']} style={{ width: '100%' }}>
-          <InputNumber min={0} />
-        </Form.Item>
-      )
-    },
-    {
-      title: 'PO Rate',
-      dataIndex: 'poRate',
-      // width: 100,
-      key: 'poRate',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'poRate']}
-          rules={[
-            {
-              required: true,
-              message: 'Please input!'
-            }
-          ]}
-          style={{ width: '100%' }}
-        >
-          <InputNumber min={0} />
-        </Form.Item>
-      )
-    },
-    {
-      title: 'Discount%',
-      dataIndex: 'discount',
-      // width: 100,
-      key: 'discount',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'discount']} style={{ width: 100 }}>
-          <InputNumber min={0} />
-        </Form.Item>
-      )
-    },
-    {
-      title: 'Discount Amount',
-      dataIndex: 'discountAmt',
-      //width: 250,
-      key: 'discountAmt',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'discountAmt']}>
-          <InputNumber disabled />
-        </Form.Item>
-      )
-    },
-    {
-      title: 'ExpectedMRP',
-      dataIndex: 'expectedMRP',
-      // width: 100,
-      key: 'expectedMRP',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'expectedMRP']} style={{ width: 100 }}>
-          <InputNumber min={0} />
-        </Form.Item>
-      )
-    },
-    {
-      title: 'CGST',
-      dataIndex: 'cgst',
-      // width: 100,
-      key: 'cgst',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'cgst']} style={{ width: 100 }}>
-          <Select value={selectedUom[record.key]}>
-            {DropDown.TaxType.map((option) => (
-              <Select.Option key={option.LookupID} value={option.LookupID}>
-                {option.LookupDescription}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-      )
-    },
-    {
-      title: 'CGST Amount',
-      dataIndex: 'cgstAmt',
-      // width: 100,
-      key: 'cgstAmt',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'cgstAmt']} style={{ width: 100 }}>
-          <InputNumber disabled />
-        </Form.Item>
-      )
-    },
-    {
-      title: 'SGST',
-      dataIndex: 'sgst',
-      // width: 100,
-      key: 'sgst',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'sgst']} style={{ width: 100 }}>
-          <Select value={selectedUom[record.key]}>
-            {DropDown.TaxType.map((option) => (
-              <Select.Option key={option.LookupID} value={option.LookupID}>
-                {option.LookupDescription}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-      )
-    },
-    {
-      title: 'SGST Amount',
-      dataIndex: 'sgstAmt',
-      // width: 100,
-      key: 'sgstAmt',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'sgstAmt']} style={{ width: 100 }}>
-          <InputNumber disabled />
-        </Form.Item>
-      )
-    },
-    {
-      title: 'Amount',
-      dataIndex: 'amount',
-      // width: 100,
-      key: 'amount',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'amount']} style={{ width: 100 }}>
-          <InputNumber disabled />
-        </Form.Item>
-      )
-    },
-    {
-      title: 'Total Amount',
-      dataIndex: 'totalAmount',
-      // width: 100,
-      key: 'totalAmount',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'totalAmount']} style={{ width: 100 }}>
-          <InputNumber disabled />
-        </Form.Item>
-      )
-    },
-    {
-      title: 'Avl Qty',
-      dataIndex: 'avlQty',
-      // width: 100,
-      key: 'avlQty',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'avlQty']} style={{ width: 100 }}>
-          <InputNumber disabled />
-        </Form.Item>
-      )
-    },
-    {
-      title: 'Delivery Schedule',
-      dataIndex: 'deliverySchedule',
-      width: 150,
-      key: 'deliverySchedule',
-      render: (value, record) => <Button type="link" onClick={() => ModelOpen(value, record)}>Delivery Schedule</Button>
-    },
-    {
-      title: <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}></Button>,
-      dataIndex: 'add',
-      key: 'add',
-      width: 50,
-      render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}><DeleteOutlined /></Popconfirm>
-      //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>      
+  const handleSelect = (value, option, column, record) => {
+    debugger;
+    form1.setFieldsValue({ [record.key]: { ProductId: option.key } })
+    const newData = data.map((item) => {
+      if (item.key === record.key) {
+        const updatedItem = { ...item, [column]: option.key, LongName: option.value, UomId: option.UomId, ProductId: option.key };
+        return updatedItem;
+      }
+      return item;
+    });
+    setData(newData);
+  };
+
+  const handleInputChange = (e, column, index, record) => {
+    debugger;
+    let newData;
+    if (["PoQuantity", "PoRate", "DiscountRate"].includes(column)) {
+      newData = data.map((item) => {
+        if (item.key === record.key) {
+          const updatedItem = { ...item, [column]: e.target.value };
+
+          const poQuantity =
+            column === "PoQuantity" ? e.target.value : item.PoQuantity;
+          const poRate = column === "PoRate" ? e.target.value : item.PoRate;
+          const discountRate =
+            column === "DiscountRate" ? e.target.value : item.DiscountRate;
+
+          let discountAmount = 0;
+          let amount = 0;
+          if (poRate != null && poQuantity != null) {
+            const discount = discountRate != null ? discountRate : 0;
+            discountAmount = (poRate * poQuantity * discount) / 100;
+            amount = poRate * poQuantity - discountAmount;
+          }
+
+          updatedItem.DiscountAmount = discountAmount;
+          updatedItem.LineAmount = amount;
+          updatedItem.LineAmount = amount;
+
+          form1.setFieldsValue({ [record.key]: { DiscountAmount: discountAmount } });
+          form1.setFieldsValue({ [record.key]: { LineAmount: amount } });
+          form1.setFieldsValue({ [record.key]: { LineAmount: amount } });
+
+          return updatedItem;
+        }
+        return item;
+      });
+    } else {
+      newData = data.map((item) => {
+        if (item.key === record.key) {
+          const updatedItem = { ...item, [column]: e.target.value };
+          return updatedItem;
+        }
+        return item;
+      });
     }
-  ];
 
-  // const ModelAdd = () => {
-  //   debugger;
-  //   setCounterModel(prevCounter => prevCounter + 1);
-  //   if (shouldValidateModel) {
-  //     form2
-  //       .validateFields()
-  //       .then(() => {
-  //         const newRow = {
-  //           key: dataModel.length.toString(),
-  //           quantity: '',
-  //           uom: '',
-  //           datedelivery: '',
-  //           deliveryloc: '',
-  //         };
-  //         setDataModel([...dataModel, newRow]);
-  //       })
-  //   } else {
-  //     const newRow = {
-  //       key: dataModel.length.toString(),
-  //       quantity: '',
-  //       uom: '',
-  //       datedelivery: '',
-  //       deliveryloc: '',
-  //     };
-  //     setDataModel([...dataModel, newRow]);
-  //     setShouldValidateModel(true);
-  //   }
-  // };
+    if (["PoQuantity", "PoRate", "DiscountRate"].includes(column)) {
+      const totalAmount = calculateTotalAmount(newData);
+      form1.setFieldsValue({
+        TotalAmount: totalAmount,
+        totalpoAmount: totalAmount,
+      });
+    }
+    setData(newData);
+  };
 
+  const handleUomChange = (option, column, index, record) => {
+    debugger;
+
+    const newData = data.map((item) => {
+      if (item.key === record.key) {
+        const updatedItem = { ...item, [column]: option.value, Uom: option.children };
+        return updatedItem;
+      }
+      return item;
+    });
+
+    setData(newData);
+  };
+
+  const handleDelete = (record) => {
+    debugger;
+    const newData = data.map((item) => {
+      if (item.key === record.key) {
+        return { ...item, ActiveFlag: false };
+      }
+      return item;
+    });
+    setData(newData);
+    const newSchedule = schedule.map((item) => {
+      if (item.ProductId === record.ProductId) {
+        return { ...item, ActiveFlag: false };
+      }
+      return item;
+    });
+    setSchedule(newSchedule)
+    const totalAmount = calculateTotalAmount(newData);
+
+    form1.setFieldsValue({
+      TotalAmount: totalAmount,
+      totalpoAmount: totalAmount,
+    });
+  };
   const ModelAdd = () => {
+
+  };
+  const onFinishModel = async (values) => {
+
+  };
+
+  // const handleOpenModal = async (record) => {
+  //   // handle opening of modal here
+  //   console.log("deliveryrecord", record);
+
+  //   setModalVisible(true);
+  // };
+
+  const handleOpenModal = async (record) => {
     debugger;
-    setCounterModel(prevCounter => prevCounter + 1);
-    if (shouldValidateModel) {
-      form2
-        .validateFields()
-        .then(() => {
-          setDataModel(prevDataModel => {
-            const newRow = {
-              key: prevDataModel.length.toString(),
-              quantity: '',
-              uom: '',
-              datedelivery: '',
-              deliveryloc: '',
+    await form1.validateFields();
+    setDeliveryRecord(record);
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    debugger
+    const newData = schedule.map((item) => {
+      if (item.ProductId === '') {
+        return { ...item, ActiveFlag: false };
+      }
+      return item;
+    });
+    setSchedule(newData)
+    setModalVisible(false);
+    form2.resetFields();
+  };
+
+  const handleSaveModal = async () => {
+    debugger;
+    await form2.validateFields();
+    const values = form2.getFieldsValue();
+    const valuesArray = Object.values(values);
+    const qty = valuesArray.reduce((total, item) => total + (item.DeliveryQuantity || 0), 0);
+    if (qty <= deliveryRecord.PoQuantity) {
+      const updatedSchedule = schedule.map(item => {
+        const key = item.key;
+        if (values[key] != undefined) {
+          if (values[key].DeliveryQuantity || values[key].DeliveryDate || values[key].DeliveryLocation) {
+            return {
+              ...item,
+              ProductId: deliveryRecord.ProductId,
+              DeliveryQuantity: values[key].DeliveryQuantity,
+              DeliveryDate: values[key].DeliveryDate,
+              DeliveryLocation: values[key].DeliveryLocation,
+              UomId: deliveryRecord.UomId
             };
-            return [...prevDataModel, newRow];
-          });
-        })
-    } else {
-      setDataModel(prevDataModel => {
-        const newRow = {
-          key: prevDataModel.length.toString(),
-          quantity: '',
-          uom: '',
-          datedelivery: '',
-          deliveryloc: '',
-        };
-        return [...prevDataModel, newRow];
+          }
+          return item;
+        }
+        return item;
       });
-      setShouldValidateModel(true);
+      setSchedule(updatedSchedule);
+      setModalVisible(false);
+    } else {
+      message.warning('Quantity must not be Greater than PO Quantity')
     }
   };
 
+
+  // const handleSaveModal = async () => {
+  //   debugger;
+  //   await form2.validateFields();
+  //   const values = form2.getFieldsValue();
+
+  //   const updatedSchedule = schedule.map(item => {
+  //     const key = item.key;
+
+  //     if (values[key].DeliveryQuantity || values[key].DeliveryDate || values[key].DeliveryLocation) {
+  //       return {
+  //         ...item,
+  //         ProductId: deliveryRecord.ProductId,
+  //         DeliveryQuantity: values[key].DeliveryQuantity,
+  //         DeliveryDate: values[key].DeliveryDate,
+  //         DeliveryLocation: values[key].DeliveryLocation,
+  //       };
+  //     }
+  //     return item;
+  //   });
+
+  //   setSchedule(updatedSchedule);
+  //   console.log('modalsavedvalues', updatedSchedule);
+  //   setModalVisible(false);
+  // };
+
+  const ModelDelete = (record) => {
+    debugger
+    const newData = schedule.map((item) => {
+      if (item.key === record.key) {
+        return { ...item, ActiveFlag: false };
+      }
+      return item;
+    });
+    setSchedule(newData);
+  }
 
   const columnsModel = [
     {
-      title: 'Quantity',
-      dataIndex: 'quantity',
-      key: 'quantity',
-      render: (_, record) => (
-        <Form.Item style={{ width: 100 }} name={[record.key, 'quantity']}
+      title: "Quantity",
+      dataIndex: "DeliveryQuantity",
+      width: 100,
+      key: "DeliveryQuantity",
+      render: (text, record, index) => (
+        <Form.Item
+          name={[record.key, 'DeliveryQuantity']}          
+          rules={[{ required: true, message: "Required" }]}
+          style={{ width: "100%" }}
+          initialValue={record.DeliveryQuantity}
+        >
+          <InputNumber
+            min={0}
+            defaultValue={text}
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      title: "UOM",
+      dataIndex: "UomId",
+      key: "UomId",
+      width: 150,
+      render: (text, record, index) => (
+        <Form.Item
+          // name={["UomId", record.key]} 
+          name={[record.key, 'UomId']}
+        // rules={[{ required: true, message: "Required" }]}        
+        >
+          {deliveryRecord.Uom === undefined ? record.Uom : deliveryRecord.Uom}
+        </Form.Item>
+      ),
+    },
+    {
+      title: "Date of Delivery",
+      dataIndex: "DeliveryDate",
+      key: "DeliveryDate",
+      render: (text, record, index) => (
+        <Form.Item
+          style={{ width: 200 }}
+          // name={["DeliveryDate", record.key]}
+          name={[record.key, 'DeliveryDate']}
+          initialValue={record.DeliveryDate}
+        >
+          <DatePicker value={text == '' ? dayjs() : text}
+            style={{ width: "150%" }}
+            format="DD-MM-YYYY"
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      title: "Delivery Location",
+      dataIndex: "DeliveryLocation",
+      // width: 150,
+      key: "DeliveryLocation",
+      render: (text, record, index) => (
+        <Form.Item
+          // name={["DeliveryLocation", record.key]}
+          name={[record.key, 'DeliveryLocation']}
+          initialValue={record.DeliveryLocation}
+          style={{ width: 200 }}
+        >
+          <Input
+            style={{ width: "150%" }}
+            allowClear
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      title: (
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={handleAddDelivery}
+        ></Button>
+      ),
+      dataIndex: "add",
+      key: "add",
+      width: 50,
+      render: (text, record) => (
+        <Popconfirm
+          title="Sure to delete?"
+          onConfirm={() => ModelDelete(record)}
+        >
+          <DeleteOutlined />
+        </Popconfirm>
+      ),
+      //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>
+    },
+  ];
+
+  const columns = [
+    {
+      title: "Product",
+      dataIndex: "ProductName",
+      fixed: "left",
+      key: "ProductName",
+      width: 350,
+      render: (text, record, index) => (
+        <>
+          <Form.Item
+            name={[record.key, 'ProductName']}
+            // name={["ProductId", record.key]}
+            rules={[{ required: true, message: "Required" }]}
+            initialValue={record.LongName == undefined ? record.ProductName : record.LongName}
+          >
+            <AutoComplete
+              options={productOptions}
+              onSearch={handleSearch}
+              onSelect={(value, option) =>
+                handleSelect(value, option, "ProductName", record)
+              }
+              onChange={(value) => {
+                if (!value) {
+                  setProductOptions([]);
+                }
+              }}
+              allowClear={{
+                clearIcon: <CloseSquareFilled />,
+              }}
+              disabled={!!record.PoLineId}
+            />
+          </Form.Item>
+          <Form.Item name={[record.key, 'ProductId']} hidden initialValue={record.ProductId}><Input defaultValue={record.ProductId}></Input></Form.Item>
+          <Form.Item name={[record.key, 'PoLineId']} hidden initialValue={record.PoLineId}><Input></Input></Form.Item>
+        </>
+      ),
+    },
+    {
+      title: "UOM",
+      dataIndex: "UomId",
+      key: "UomId",
+      width: 150,
+      render: (text, record, index) => (
+        <Form.Item
+          name={[record.key, 'UomId']}
+          // name={["UomId", record.key]}
+          rules={[{ required: true, message: "Required" }]}
+          initialValue={record.UomId}
+        >
+          <Select defaultValue={text}
+            onChange={(value, option) =>
+              handleUomChange(option, "UomId", index, record)
+            }
+          >
+            {DropDown.UOM.map((option) => (
+              <Option key={option.UomId} value={option.UomId}>
+                {option.ShortName}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+      )
+    },
+    {
+      title: "PO Qty",
+      dataIndex: "PoQuantity",
+      width: 100,
+      key: "PoQuantity",
+      render: (text, record, index) => (
+        <Form.Item
+          name={[record.key, 'PoQuantity']}
+          // name={["PoQuantity", record.key]}
           rules={[
             {
               required: true,
-              message: 'Please input!'
+              message: "Required",
             },
           ]}
+          style={{ width: "100%" }}
+          initialValue={record.PoQuantity}
         >
-          <InputNumber min={0} style={{ width: '150%' }} allowClear />
+          <InputNumber
+            min={0}
+            defaultValue={text}
+            onChange={(value) => {
+              handleInputChange(
+                { target: { value } },
+                "PoQuantity",
+                index,
+                record
+              );
+            }}
+          />
         </Form.Item>
       )
     },
     {
-      title: 'UOM',
-      dataIndex: 'uom',
-      key: 'uom',
-      render: (text, record) => {
-        return (
-          <>
-            <Form.Item style={{ width: 100 }} name={[record.key, 'uom']} initialValue={selectedUom}>
-              <Select disabled>
-                {DropDown.UOM.map((option) => (
-                  <Select.Option value={option.UomId} key={option.UomId}>{option.LongName}</Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <FormItem name='PoLineId' hidden><Input></Input></FormItem>
-            <FormItem name='PoDeliveryId' hidden><Input></Input></FormItem>
-          </>
-        );
-      }
+      title: "BonusQty",
+      dataIndex: "BonusQuantity",
+      width: 100,
+      key: "BonusQuantity",
+      render: (text, record, index) => (
+        <Form.Item
+          name={[record.key, 'BonusQuantity']}
+          // name={["BonusQuantity", record.key]}
+          style={{ width: "100%" }}
+          initialValue={record.BonusQuantity}
+        >
+          <InputNumber
+            min={0}
+            defaultValue={text}
+            onChange={(value) =>
+              handleInputChange(
+                { target: { value } },
+                "BonusQuantity",
+                index,
+                record
+              )
+            }
+          />
+        </Form.Item>
+      )
     },
     {
-      title: 'Date of Delivery',
-      dataIndex: 'datedelivery',
-      key: 'datedelivery',
-      render: (text, record) => (
-        <Form.Item style={{ width: 200 }} name={[record.key, 'datedelivery']} initialValue={dayjs()}
+      title: "PoRate",
+      dataIndex: "PoRate",
+      width: 100,
+      key: "PoRate",
+      render: (text, record, index) => (
+        <Form.Item
+          name={[record.key, 'PoRate']}
+          // name={["PoRate", record.key]}
           rules={[
             {
               required: true,
-            }
+              message: "Required",
+            },
           ]}
+          style={{ width: "100%" }}
+          initialValue={record.PoRate}
         >
-          <DatePicker style={{ width: '150%' }} format="DD-MM-YYYY" />
+          <InputNumber
+            min={0}
+            defaultValue={text}
+            onChange={(value) => {
+              handleInputChange({ target: { value } }, "PoRate", index, record);
+            }}
+          />
         </Form.Item>
       )
     },
     {
-      title: 'Delivery Location',
-      dataIndex: 'deliveryloc',
-      key: 'deliveryloc',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'deliveryloc']} style={{ width: 200 }}>
-          <Input style={{ width: '150%' }} allowClear />
+      title: "Discount %",
+      dataIndex: "DiscountRate",
+      width: 100,
+      key: "DiscountRate",
+      render: (text, record, index) => (
+        <Form.Item
+          name={[record.key, 'DiscountRate']}
+          // name={["DiscountRate", record.key]}
+          style={{ width: "100%" }}
+          initialValue={record.DiscountRate}
+        >
+          <InputNumber
+            min={0}
+            defaultValue={text}
+            onChange={(value) => {
+              handleInputChange(
+                { target: { value } },
+                "DiscountRate",
+                index,
+                record
+              );
+            }}
+          />
         </Form.Item>
       )
     },
     {
-      title: <Button type="primary" icon={<PlusOutlined />} onClick={ModelAdd}></Button>,
-      dataIndex: 'add',
-      key: 'add',
-      width: 50,
-      render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => ModelDelete(record)}><DeleteOutlined /></Popconfirm>
-    }
-  ]
+      title: "DiscountAmount",
+      dataIndex: "DiscountAmount",
+      width: 100,
+      key: "DiscountAmount",
+      render: (text, record, index) => (
+        <Form.Item
+          name={[record.key, 'DiscountAmount']}
+          // name={[`DiscountAmount`, record.key]}
+          style={{ width: "100%" }}
+          initialValue={record.DiscountAmount}
+        >
+          <InputNumber disabled min={0} defaultValue={text} />
+        </Form.Item>
+      )
+    },
+
+    {
+      title: "ExpectedMRP",
+      dataIndex: "MrpExpected",
+      width: 100,
+      key: "MrpExpected",
+      render: (text, record, index) => (
+        <Form.Item
+          name={[record.key, 'MrpExpected']}
+          // name={["MrpExpected", record.key]}
+          style={{ width: "100%" }}
+          initialValue={record.MrpExpected}
+        >
+          <InputNumber
+            min={0}
+            defaultValue={text}
+            onChange={(value) =>
+              handleInputChange(
+                { target: { value } },
+                "MrpExpected",
+                index,
+                record
+              )
+            }
+          />
+        </Form.Item>
+      )
+    },
+    {
+      title: "CGST",
+      dataIndex: "TaxType1",
+      key: "TaxType1",
+      width: 100,
+      render: (text, record, index) => (
+        <Form.Item
+          name={[record.key, 'TaxType1']}
+        // name={["TaxType1", record.key]} 
+        >
+          <Select
+            defaultValue={text}
+            onChange={(value) =>
+              handleInputChange(
+                { target: { value } },
+                "TaxType1",
+                index,
+                record
+              )
+            }
+          >
+            {DropDown.TaxType.map((option) => (
+              <Option key={option.LookupID} value={option.LookupID}>
+                {option.LookupDescription}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+      )
+    },
+    {
+      title: "CGSTAmount",
+      dataIndex: "TaxAmount1",
+      width: 100,
+      key: "TaxAmount1",
+      render: (text, record, index) => (
+        <Form.Item name={[record.key, 'TaxAmount1']} style={{ width: "100%" }}>
+          <InputNumber min={0} disabled defaultValue={text} />
+        </Form.Item>
+      )
+    },
+    {
+      title: "SGST",
+      dataIndex: "TaxType2",
+      key: "TaxType2",
+      width: 100,
+      render: (text, record, index) => (
+        <Form.Item
+          // name={["TaxType2", record.key]} 
+
+          name={[record.key, 'TaxType2']}
+        >
+          <Select
+            defaultValue={text}
+          // onChange={(value) =>
+          //   handleInputChange(
+          //     { target: { value } },
+          //     "TaxType2",
+          //     index,
+          //     record
+          //   )
+          // }
+          >
+            {DropDown.TaxType.map((option) => (
+              <Option key={option.LookupID} value={option.LookupID}>
+                {option.LookupDescription}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+      )
+    },
+    {
+      title: "SGSTAmount",
+      dataIndex: "TaxAmount2",
+      width: 100,
+      key: "TaxAmount2",
+      render: (text, record, index) => (
+        <Form.Item name={[record.key, 'TaxAmount2']} style={{ width: "100%" }}>
+          <InputNumber disabled min={0} defaultValue={text} />
+        </Form.Item>
+      )
+    },
+    {
+      title: "Amount",
+      dataIndex: "LineAmount",
+      width: 100,
+      key: "LineAmount",
+      render: (text, record, index) => (
+        <Form.Item
+          // name={[`LineAmount`, record.key]}
+          name={[record.key, 'LineAmount']}
+          style={{ width: "100%" }}
+          initialValue={record.LineAmount}
+        >
+          <InputNumber disabled min={0} defaultValue={text}
+          />
+        </Form.Item>
+      )
+    },
+    {
+      title: "TotalAmount",
+      dataIndex: "LineAmount",
+      width: 100,
+      key: "LineAmount",
+      render: (text, record, index) => (
+        <Form.Item
+          // name={[`totalAmount`, record.key]}
+          name={[record.key, 'LineAmount']}
+          style={{ width: "100%" }}
+          initialValue={record.LineAmount}
+        >
+          <InputNumber disabled min={0} defaultValue={text} />
+        </Form.Item>
+      )
+    },
+    {
+      title: "AvlQty",
+      dataIndex: "AvailableQuantity",
+      width: 100,
+      key: "AvailableQuantity",
+      render: (text, record, index) => (
+        <Form.Item
+          // name={["AvailableQuantity", record.key]}
+          name={[record.key, 'AvailableQuantity']}
+          style={{ width: "100%" }}
+          initialValue={record.AvailableQuantity}
+        >
+          <InputNumber disabled min={0} defaultValue={text} />
+        </Form.Item>
+      )
+    },
+    {
+      title: "Delivery Schedule",
+      dataIndex: "deliverySchedule",
+      key: "deliverySchedule",
+      width: 100,
+      render: (text, record, index) => (
+        <Button type="link" onClick={() => handleOpenModal(record)}>
+          Delivery
+        </Button>
+      ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (text, record, index) => (
+        <Popconfirm
+          title="Are you sure you want to delete this record?"
+          onConfirm={() => handleDelete(record)}
+        >
+          <Button
+            size="small"
+            danger
+            icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
+          ></Button>
+        </Popconfirm>
+      ),
+    },
+  ];
 
   return (
     <Layout style={{ zIndex: '999999999' }}>
@@ -952,65 +1102,14 @@ const CreatePurchaseOrder = () => {
         <Form
           layout="vertical"
           onFinish={handleOnFinish}
+          onFinishFailed={onFinishFailed}
           variant="outlined"
           size="default"
-          style={{
-            maxWidth: 1500
-          }}
-          form={form1}
           initialValues={{
             PODate: dayjs(),
-            [idCounter.current]: {
-              discountAmt: 0,
-              totalAmount: 0,
-              amount: 0,
-              cgstAmt: 0,
-              sgstAmt: 0
-            },
-            totalpoAmount: 0.0000,
-            Amount: 0.0000,
-            gstTax: 0.0000
+            // SupplierList: headerData.VendorId
           }}
-          onValuesChange={(changedValues, allValues) => {
-            debugger;
-            for (let i = 0; i < 9; i++) {
-              if (changedValues[i] !== undefined) {
-                if (changedValues[i].product !== undefined) {
-                  getPanelValue(form1.getFieldValue([i, 'product']));
-                }
-                const poQty = allValues[i]['poQty'];
-                const poRate = allValues[i]['poRate'];
-
-                if (poQty !== "" && poRate !== "") {
-                  const total = poQty * poRate;
-                  if (allValues[i]['discount'] !== undefined) {
-                    form1.setFieldsValue({ [i]: { discountAmt: (total * (allValues[i]['discount'] / 100)).toFixed(2) } });
-                    form1.setFieldsValue({ [i]: { amount: (total - (total * (allValues[i]['discount'] / 100))) } });
-                    form1.setFieldsValue({ [i]: { totalAmount: (total - (total * (allValues[i]['discount'] / 100))) } });
-                    // form1.setFieldsValue({ Amount: form1.getFieldValue('Amount') + (total - (total * (allValues[i]['discount'] / 100))) })
-                  } else {
-                    if (total > 0) {
-                      form1.setFieldsValue({ [i]: { amount: total } });
-                      form1.setFieldsValue({ [i]: { totalAmount: total } });
-                    }
-                  }
-                }
-                break;
-              }
-            }
-            let totalAmount = 0;
-            for (let j = 0; j < idCounter.current; j++) {
-              if (allValues[j] !== undefined) {
-                const Amount = form1.getFieldValue([j, 'amount']);
-                totalAmount += Amount;
-              }
-            }
-            form1.setFieldsValue({ Amount: totalAmount });
-            form1.setFieldsValue({ totalpoAmount: totalAmount });
-            // Assuming 'poQty' and 'poRate' are the names of the fields
-
-            // Check if both values are valid numbers              
-          }}
+          form={form1}
         >
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
             <Col className="gutter-row" span={6}>
@@ -1031,7 +1130,7 @@ const CreatePurchaseOrder = () => {
                     ))}
                   </Select>
                 </Form.Item>
-                <FormItem name='PoHeaderId' hidden><Input></Input></FormItem>
+                <Form.Item name='PoHeaderId' hidden initialValue={PoHeaderId}><Input></Input></Form.Item>
               </div>
             </Col>
             <Col className="gutter-row" span={6}>
@@ -1085,7 +1184,13 @@ const CreatePurchaseOrder = () => {
             <Col className="gutter-row" span={6}>
               <div>
                 <Form.Item label="PO Date" name="PODate">
-                  <DatePicker style={{ width: '100%' }} disabled format="DD-MM-YYYY" />
+                  <DatePicker style={{ width: '100%' }} disabled format='DD-MM-YYYY' />
+                  {/* <DatePicker
+                    style={{ width: "100%" }}
+                    disabled
+                    format="DD-MM-YYYY"
+                    // onChange={handlePoDate}
+                  /> */}
                 </Form.Item>
               </div>
             </Col>
@@ -1101,7 +1206,7 @@ const CreatePurchaseOrder = () => {
                 >
                   <Select allowClear placeholder='Select Value'>
                     <Option value="Draft">Draft</Option>
-                    <Option value="Finalize">Finalize</Option>
+                    <Option value="Pending">Finalize</Option>
                   </Select>
                 </Form.Item>
               </div>
@@ -1115,7 +1220,11 @@ const CreatePurchaseOrder = () => {
           <Row justify="end" style={{ padding: '0rem 1rem' }}>
             <Col style={{ marginRight: '10px' }}>
               <Form.Item>
-                <Button type="primary" loading={isSearchLoading} htmlType="submit">
+                <Button
+                  type="primary"
+                  //loading={isSearchLoading}
+                  htmlType="submit"
+                >
                   {buttonTitle}
                 </Button>
               </Form.Item>
@@ -1128,10 +1237,36 @@ const CreatePurchaseOrder = () => {
               </Form.Item>
             </Col>
           </Row>
-          <Divider style={{ marginTop: '0' }}></Divider>
-          <Table columns={columns} dataSource={data} scroll={{ x: 0 }} />
-          <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px', float: 'right' }}>
-            <Form.Item label="Amount" name='Amount' style={{ marginRight: '16px', width: 100 }} >
+          <Divider style={{ marginTop: "0" }}></Divider>
+          <Button
+            type="primary"
+            onClick={handleAddRow}
+            style={{ marginBottom: 16 }}
+          >
+            Add a row
+          </Button>
+          <Table
+            columns={columns}
+            size="small"
+            dataSource={data.filter((item) => item.ActiveFlag !== false)}
+            locale={{ emptyText: "nodata " }}
+            scroll={{
+              x: 2000,
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              marginBottom: "16px",
+              float: "right",
+            }}
+          >
+            <Form.Item
+              label="Amount"
+              name="TotalAmount"
+              style={{ marginRight: "16px", width: 100 }}
+            >
               <InputNumber min={0} disabled />
             </Form.Item>
             <Form.Item label="GST Tax" name='gstTax' style={{ marginRight: '16px', width: 100 }}>
@@ -1142,51 +1277,59 @@ const CreatePurchaseOrder = () => {
             </Form.Item>
           </div>
         </Form>
-        <ConfigProvider
-          theme={{
-            token: {
-              zIndexPopupBase: 3000
-            }
-          }}>
-          <Modal
-            title="Basic Modal"
-            onOk={onOkModal}
-            onCancel={onCancelModel}
-            width={1000}
-            open={isModalOpen}
+        <Modal
+          width={1000}
+          maskClosable={false}
+          title="Delivery Schedule"
+          open={modalVisible}
+          onCancel={handleCloseModal}
+          onOk={handleSaveModal}
+          okText={"Save"}
+        >
+          {/* Modal content goes here */}
+          <Form
+            name="basic"
+            labelCol={{
+              span: 8,
+            }}
+            wrapperCol={{
+              span: 16,
+            }}
+            style={{
+              width: "100%",
+            }}
+            initialValues={{
+              remember: true,
+            }}
+            onFinish={onFinishModel}
+            onFinishFailed={onFinishFailed}
+            autoComplete="off"
+            form={form2}
+          // initialValues={{
+          //   [counterDelivery - 1]: { DeliveryDate: dayjs() }
+          // }}
           >
-            <Form
-              name="basic"
-              labelCol={{
-                span: 8,
-              }}
-              wrapperCol={{
-                span: 16,
-              }}
-              style={{
-                width: '100%',
-              }}
-              onFinish={onFinishModel}
-              onFinishFailed={onFinishFailed}
-              autoComplete="off"
-              form={form2}
-            >
-              <Col className="gutter-row" span={6}>
-                <div>
-                  <Form.Item
-                    label="Product"
-                    name="Product"
-                    style={{ marginLeft: '10px' }}
-                  >
-                    <Tag color="blue">{form2.getFieldValue('Product')}</Tag>
-                  </Form.Item>
-                  <FormItem hidden name='productId'><Input></Input></FormItem>
-                </div>
-              </Col>
-              <Table columns={columnsModel} dataSource={dataModel} />
-            </Form>
-          </Modal>
-        </ConfigProvider>
+            <Col className="gutter-row" span={6}>
+              <div>
+                <span>
+                  Product :{" "}
+                  <b style={{ color: "#1677ff" }}>{deliveryRecord.LongName}</b>{" "}
+                </span>
+              </div>
+            </Col>
+
+            <Table
+              columns={columnsModel}
+              size="small"
+              locale={{ emptyText: "Nodata " }}
+              dataSource={
+                deliveryRecord.ProductId
+                  ? schedule.filter(item => item.ProductId === deliveryRecord.ProductId && item.ActiveFlag || item.ProductId === "" && item.ActiveFlag)
+                  : initialDeliveryDataSource
+              }
+            />
+          </Form>
+        </Modal>
       </div>
     </Layout >
   );

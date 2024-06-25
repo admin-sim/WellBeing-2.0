@@ -1,9 +1,9 @@
 import customAxios from '../../components/customAxios/customAxios.jsx';
 import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
-import { urlCreatePurchaseOrder/*, urlAddNewGRNAgainstPO, urlCreateGRNAgainstPO, urlSearchPendingPO*/ } from '../../../endpoints.js';
+import { urlCreatePurchaseOrder, urlAddNewGRNAgainstPO, urlCreateGRNAgainstPO, urlSearchPendingPO, urlEditGRNAgainstPO, urlUpdateGRNAgainstPO } from '../../../endpoints.js';
 import Select from 'antd/es/select';
-import { ConfigProvider, Tooltip, Typography, Checkbox, Tag, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
+import { ConfigProvider, Tooltip, Typography, Checkbox, Tag, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete, message } from 'antd';
 import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
@@ -14,6 +14,8 @@ import { useNavigate } from 'react-router';
 import { Table, InputNumber } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { useLocation } from "react-router-dom";
+import { MdOutlineWifiTetheringError } from 'react-icons/md';
 //import { useParams } from 'react-router-dom';
 
 const CreateGRNAgainstPO = () => {
@@ -26,9 +28,55 @@ const CreateGRNAgainstPO = () => {
         DateFormat: []
     });
 
-    let [counter, setCounter] = useState(0);
-    let [productCount, setProductcount] = useState(0);
+    let [counter, setCounter] = useState(2);
+    let [productCount, setProductcount] = useState(1);
 
+    const initialProductDataSource =
+        [
+            {
+                key: 1,
+                ProductName: '',
+                UomId: '',
+                PoBalanceQty: '',
+                ReceivedQty: '',
+                BonusQuantity: '',
+                PoRate: '',
+                DiscountRate: '',
+                DiscountAmount: '',
+                Batch: '',
+                LineAmount: '',
+                TaxAmount1: 0,
+                TotalAmount: 0,
+                Replaceable: '',
+                ActiveFlag: true,
+            },
+        ]
+
+    const initialModelDataSource =
+        [
+            {
+                key: 1,
+                BarCode: '',
+                BatchNo: '',
+                Quantity: '',
+                ProductId: '',
+                uom: '',
+                BatchBonusQty: '',
+                MFGDate: '',
+                EXPDate: '',
+                rate: '',
+                mrp: '',
+                DiscountRate: '',
+                DiscountAmount: '',
+                TaxType1: undefined,
+                TaxAmount1: undefined,
+                TaxType2: undefined,
+                TaxAmount2: undefined,
+                stocklocator: 0,
+                ActiveFlag: true,
+            },
+        ]
+    const location = useLocation();
     //const { PoHeaderId, SupplierId, StoreId } = useParams();
     const [form1] = Form.useForm();
     const [form2] = Form.useForm();
@@ -36,14 +84,16 @@ const CreateGRNAgainstPO = () => {
     const { Title } = Typography;
     const { TextArea } = Input;
     const { Option } = Select;
+    const GrnHeaderId = location.state.GrnHeaderId;
     const navigate = useNavigate();
     //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
-    const [data, setData] = useState([]);
-    const [dataModal, setDataModal] = useState([]);
-    const [dataBatchModal, setdataBatchModal] = useState([]);
-    const [selectedStore, setSelectedStore] = useState({});
+    const [data, setData] = useState(initialProductDataSource);
+    const [dataModal, setDataModal] = useState();
+    const [dataBatchModal, setdataBatchModal] = useState(initialModelDataSource);
+    const [selectedStore, setSelectedStore] = useState();
+    const [selectedSupplier, setSelectedSupplier] = useState();
     const [istablevisible, setIstablevisible] = useState(false);
     const [shouldValidateModal, setshouldValidateModal] = useState(false);
     const [isPoSearchTable, setIsPoSearchTable] = useState(false);
@@ -51,15 +101,92 @@ const CreateGRNAgainstPO = () => {
     const [poloading, setPoloading] = useState(false);
     const [productLineId, setProductLineId] = useState(0);
     const [selecetdUomText, setSelecetdUomText] = useState({});
-    const [selecetdProductId, setSelecetdProductId] = useState({});
+    const [buttonTitle, setButtonTitle] = useState('Save');
     const [batches, setBatches] = useState([]);
+    const [batchRecord, setBatchRecord] = useState([]);
 
     useEffect(() => {
-        debugger;
         customAxios.get(urlCreatePurchaseOrder).then((response) => {
             const apiData = response.data.data;
             setDropDown(apiData);
         });
+    }, []);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (GrnHeaderId > 0) {
+                setButtonTitle('Update')
+                try {
+                    const response = await customAxios.get(
+                        `${urlEditGRNAgainstPO}?GrnHeaderId=${GrnHeaderId}`
+                    );
+                    if (response.status == 200 && response.data.data != null) {
+                        setIstablevisible(true);
+                        const editeddata = response.data.data;
+                        const products = editeddata.GRNAgainstPODetails.map(
+                            (item, index) => ({
+                                ...item,
+                                key: index + 1,
+                            })
+                        );
+                        setData(products);
+                        const formdata = editeddata.newGRNAgainstPOModel;
+
+                        form1.setFieldsValue({
+                            SupplierId: formdata.SupplierId,
+                            StoreId: formdata.StoreId,
+                            DocumentType: formdata.DocumentType,
+                            TotalAmount: formdata.TotalPoAmount,
+                            TotalPoAmount: formdata.TotalPoAmount,
+                            PoHeaderId: formdata.PoHeaderId,
+                            GRNHeaderId: formdata.GRNHeaderId,
+                            InvoiceNumber: formdata.InvoiceNumber,
+                            InvoiceAmount: formdata.InvoiceAmount,
+                            InvoiceDate: DateBindtoDatepicker(formdata.InvoiceDate),
+                            ReceivingDate: DateBindtoDatepicker(formdata.InvoiceDate),
+                            DCChallanDate: DateBindtoDatepicker(formdata.InvoiceDate),
+                            DCChallanNumber: formdata.DCChallanNumber,
+                            GRNStatus: formdata.GRNStatus == 'Created' ? undefined : formdata.GRNStatus,
+                            GRNDate: DateBindtoDatepicker(formdata.GRNDate),
+                            Remarks: formdata.Remarks
+                        });
+                        setProductcount(products.length + 1);
+                        const batch = editeddata.BatchDetails.map(
+                            (item, index) => ({
+                                ...item,
+                                key: index + 1,
+                            })
+                        );
+                        setCounter(editeddata.BatchDetails.length + 1)
+                        setdataBatchModal(editeddata.BatchDetails);
+                        const updatedBatch = batch.map(item => {
+                            const key = item.key - 1;
+                            const prod = editeddata.GRNAgainstPODetails.filter(item1 => item1.GrnLineId === item.GrnLineId)
+                            if (batch[key] != undefined) {
+                                if (batch[key].Quantity || batch[key].EXPDate || batch[key].BatchNo) {
+                                    return {
+                                        ...item,
+                                        ProductId: prod[0].ProductId,
+                                        Quantity: batch[key].Quantity,
+                                        EXPDate: DateBindtoDatepicker(batch[key].EXPDate),
+                                        BarCode: batch[key].BarCode,
+                                        BatchNo: batch[key].BatchNo,
+                                        UomId: prod[0].UomId,
+                                        Uom: prod[0].Uom
+                                    };
+                                }
+                                return item;
+                            }
+                            return item;
+                        });
+                        setdataBatchModal(updatedBatch);
+                    }
+                } catch (error) {
+                    console.error("Error fetching data:", error);
+                }
+            }
+        };
+        fetchData();
     }, []);
 
     const onOkModal = () => {
@@ -68,90 +195,201 @@ const CreateGRNAgainstPO = () => {
             .validateFields()
             .then(() => {
                 setIsModalOpen(false);
-                // If validation succeeds, submit the form        
             })
             .catch((error) => {
                 console.log('Validation error:', error);
             });
     }
 
+    function calculateTotalAmount(data) {
+        let totalAmount = 0;
+        data.forEach((item) => {
+            if (
+                item.ActiveFlag &&
+                !isNaN(item.LineAmount) &&
+                item.LineAmount !== null &&
+                item.LineAmount !== undefined
+            ) {
+                totalAmount += parseFloat(item.LineAmount);
+            }
+        });
+        return totalAmount;
+    }
+
+    const handleInputChange = (e, column, index, record) => {
+        let newData;
+        if (["ReceivedQty", "PoRate", "DiscountRate"].includes(column)) {
+            newData = data.map((item) => {
+                if (item.key === record.key) {
+                    const updatedItem = { ...item, [column]: e.target.value };
+                    const recievingQty = column === "ReceivedQty" ? e.target.value : item.ReceivedQty;
+                    const poRate = column === "PoRate" ? e.target.value : item.PoRate;
+                    const discountRate = column === "DiscountRate" ? e.target.value : item.DiscountRate;
+
+                    let discountAmount = 0;
+                    let amount = 0;
+                    if (poRate != null && recievingQty != null) {
+                        const discount = discountRate != null ? discountRate : 0;
+                        discountAmount = (poRate * recievingQty * discount) / 100;
+                        amount = poRate * recievingQty - discountAmount;
+                    }
+
+                    updatedItem.DiscountAmount = discountAmount;
+                    updatedItem.LineAmount = amount;
+                    updatedItem.TotalAmount = amount;
+
+                    form1.setFieldsValue({ [record.key]: { DiscountAmount: discountAmount } });
+                    form1.setFieldsValue({ [record.key]: { LineAmount: amount } });
+                    form1.setFieldsValue({ [record.key]: { TotalAmount: amount } });
+
+                    return updatedItem;
+                }
+                return item;
+            });
+        } else {
+            newData = data.map((item) => {
+                if (item.key === record.key) {
+                    const updatedItem = { ...item, [column]: e.target.value };
+                    return updatedItem;
+                }
+                return item;
+            });
+        }
+
+        if (["ReceivedQty", "PoRate", "DiscountRate"].includes(column)) {
+            const totalAmount = calculateTotalAmount(newData);
+            form1.setFieldsValue({
+                TotalAmount: totalAmount,
+                TotalPoAmount: totalAmount,
+            });
+        }
+        setData(newData);
+    };
+
     const onFinishmodal = (values) => {
         debugger;
+        const va = form1.getFieldsValue()
         setPoloading(true);
         setIsPoSearchTable(true);
         const postData = {
-            Supplier: values.Supplier,
-            ReceivingStore: values.ReceivingStore,
+            Supplier: va.SupplierId,
+            ReceivingStore: va.StoreId,
             POStatus: values.POStatus,
-            FromDate: values.PODateFrom === undefined || values.PODateFrom === null ? '' : (values.PODateFrom.$D.toString().padStart(2, '0') + '-' + (values.PODateFrom.$M + 1).toString().padStart(2, '0') + '-' + values.PODateFrom.$y).toString(),
-            ToDate: values.PODateTo === undefined || values.PODateTo === null ? '' : (values.PODateTo.$D.toString().padStart(2, '0') + '-' + (values.PODateTo.$M + 1).toString().padStart(2, '0') + '-' + values.PODateTo.$y).toString(), // A sample value
+            FromDate: values.PODateFrom,
+            ToDate: values.PODateTo
         }
-        // try {
-        //   customAxios.get(`${urlSearchPendingPO}?Supplier=${postData.Supplier}&ReceivingStore=${postData.ReceivingStore}&POStatus=${postData.POStatus}&PODateFrom=${postData.FromDate}&PODateTo=${postData.ToDate}`).then((response) => {
-        //     debugger;
-        //     const apiData = response.data.data;
-        //     setDataModal(apiData.PurchaseOrderDetails);
-        //     setPoloading(false);
-        //   });
-        // } catch (error) {
-        //   // Handle the error as needed
-        // }
+        try {
+            customAxios.get(`${urlSearchPendingPO}?Supplier=${postData.Supplier}&Store=${postData.ReceivingStore}&POStatus=${postData.POStatus}&PODateFrom=${postData.FromDate}&PODateTo=${postData.ToDate}`).then((response) => {
+                debugger;
+                const apiData = response.data.data;
+                setDataModal(apiData.PurchaseOrderDetails);
+                setPoloading(false);
+            });
+        } catch (error) {
+            // Handle the error as needed
+        }
     }
 
     const BatchmodalOpen = (record) => {
         debugger;
         const fieldsToValidate = [[record.key, 'POReceivedQty']];
-        form1
-            .validateFields(fieldsToValidate)
-            .then(() => {
-                setBatches([]);
-                setProductLineId(parseInt(record.key));
-                setIsBatchModalOpen(true);
-                BatchAdd();
-            })
-            .catch((error) => {
-                console.log('Validation error:', error);
-            });
+        const va = form1.getFieldsValue();
+        form1.validateFields(fieldsToValidate)
+        if (va[record.key].ReceivedQty <= va[record.key].PoBalanceQty) {
+            record.ReceivedQty = va[record.key].ReceivedQty
+            setBatchRecord(record);
+            setBatches([]);
+            setProductLineId(parseInt(record.key));
+            setIsBatchModalOpen(true);
+        }
+        else {
+            message.warning('Recieved Qty should not greater than Pending Qty.')
+        }
     }
 
-    const AddProduct = () => {
-        const newData = {
-            key: productCount.toString(),
-            product: '',
-            uom: '',
-            poPendingQty: '',
-            POReceivedQty: '',
-            BonusQty: '',
-            poRate: '',
-            discount: '',
-            discountAmt: '',
-            Batch: '',
-            Amount: '',
-            TaxAmount: '',
-            totalAmount: '',
-            Replaceable: '',
+    const handlePoNumber = (record) => {
+        debugger;
+        form1.resetFields()
+        const postData = {
+            PoHeaderId: record.PoHeaderId,
+            Supplier: record.SupplierId,
+            Store: record.ProcurementStoreId,
         }
-        setData([...data, newData]);
+        try {
+            customAxios.get(`${urlCreateGRNAgainstPO}?PoHeaderId=${postData.PoHeaderId}&Supplier=${postData.Supplier}&Store=${postData.Store}`).then((response) => {
+                debugger;
+                const apiData = response.data.data;
+                const products = apiData.ProductDetails.map(
+                    (item, index) => ({
+                        ...item,
+                        key: index + 1,
+                    })
+                );
+                setData(products);
+                const formdata = apiData.POProducts;
+                form1.setFieldsValue({
+                    SupplierId: formdata.SupplierId,
+                    StoreId: formdata.ProcurementStoreId,
+                    DocumentType: formdata.DocumentType,
+                    // GRNDate: DateBindtoDatepicker(formdata.PoDate),
+                    // GRNStatus: formdata.PoStatus,
+                    PoHeaderId: formdata.PoHeaderId
+                });
+                setIstablevisible(true);
+                setIsModalOpen(false);
+            });
+        } catch (error) {
+            //console.error("Error fetching purchase order details:", error);      
+        }
+    };
+
+    const AddProduct = async () => {
+        await form2.validateFields();
+        setData([
+            ...data,
+            {
+                key: productCount,
+                ProductName: '',
+                UomId: '',
+                PoBalanceQty: '',
+                ReceivedQty: '',
+                BonusQuantity: '',
+                PoRate: '',
+                DiscountRate: '',
+                DiscountAmount: '',
+                Batch: '',
+                LineAmount: '',
+                TaxAmount1: '',
+                totalAmount: '',
+                Replaceable: '',
+                ActiveFlag: true,
+            },
+        ]);
         setProductcount(productCount + 1);
     }
 
     const columns = [
         {
             title: 'Product',
-            dataIndex: 'product',
-            key: 'product',
+            dataIndex: 'ProductName',
+            key: 'ProductName',
             render: (_, record) => (
-                <Form.Item name={[record.key, 'product']}>
-                    <Input disabled />
-                </Form.Item>
+                <>
+                    <Form.Item name={[record.key, 'ProductName']} initialValue={record.ProductName}>
+                        <Input style={{ width: 100 }} disabled value={record.ProductName} />
+                    </Form.Item>
+                    <Form.Item name={[record.key, 'ProductId']} hidden initialValue={record.ProductId}><Input /></Form.Item>
+                    <Form.Item name={[record.key, 'PoLineId']} hidden initialValue={record.PoLineId}><Input /></Form.Item>
+                    <Form.Item name={[record.key, 'GrnLineId']} hidden initialValue={record.GrnLineId}><Input /></Form.Item>
+                </>
             )
         },
         {
             title: 'UOM',
-            dataIndex: 'uom',
-            key: 'uom',
+            dataIndex: 'UomId',
+            key: 'UomId',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'uom']}>
+                <Form.Item name={[record.key, 'UomId']} initialValue={record.UomId}>
                     <Select disabled>
                         {DropDown.UOM.map((option) => (
                             <Select.Option key={option.UomId} value={option.UomId}>
@@ -164,47 +402,56 @@ const CreateGRNAgainstPO = () => {
         },
         {
             title: 'PO Pending Qty',
-            dataIndex: 'poPendingQty',
-            key: 'poPendingQty',
+            dataIndex: 'PoBalanceQty',
+            key: 'PoBalanceQty',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'poPendingQty']}>
+                <Form.Item name={[record.key, 'PoBalanceQty']} initialValue={record.PoBalanceQty}>
                     <InputNumber min={0} disabled />
                 </Form.Item>
             )
         },
         {
             title: 'PO Received Qty',
-            dataIndex: 'POReceivedQty',
-            key: 'POReceivedQty',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'POReceivedQty']}
+            dataIndex: 'ReceivedQty',
+            key: 'ReceivedQty',
+            render: (text, record, index) => (
+                <Form.Item name={[record.key, 'ReceivedQty']} initialValue={record.ReceivedQty == 0 ? undefined : record.ReceivedQty}
                     rules={[
                         {
                             required: true,
                             message: 'Please input!'
-                        }
+                        },
                     ]}
                 >
-                    <InputNumber min={0} />
+                    <InputNumber min={0}
+                        onChange={(value) => {
+                            handleInputChange(
+                                { target: { value } },
+                                "ReceivedQty",
+                                index,
+                                record
+                            );
+                        }}
+                    />
                 </Form.Item>
             )
         },
         {
             title: 'Bonus Qty',
-            dataIndex: 'BonusQty',
-            key: 'BonusQty',
+            dataIndex: 'BonusQuantity',
+            key: 'BonusQuantity',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'BonusQty']}>
+                <Form.Item name={[record.key, 'BonusQuantity']} initialValue={record.BonusQuantity}>
                     <InputNumber min={0} disabled />
                 </Form.Item>
             )
         },
         {
             title: 'PO Rate',
-            dataIndex: 'poRate',
-            key: 'poRate',
+            dataIndex: 'PoRate',
+            key: 'PoRate',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'poRate']}
+                <Form.Item name={[record.key, 'PoRate']} initialValue={record.PoRate}
                     rules={[
                         {
                             required: true,
@@ -218,20 +465,20 @@ const CreateGRNAgainstPO = () => {
         },
         {
             title: 'Discount%',
-            dataIndex: 'discount',
-            key: 'discount',
+            dataIndex: 'DiscountRate',
+            key: 'DiscountRate',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'discount']}>
+                <Form.Item name={[record.key, 'DiscountRate']} initialValue={record.DiscountRate}>
                     <InputNumber min={0} disabled />
                 </Form.Item>
             )
         },
         {
             title: 'Discount Amount',
-            dataIndex: 'discountAmt',
-            key: 'discountAmt',
+            dataIndex: 'DiscountAmont',
+            key: 'DiscountAmont',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'discountAmt']}>
+                <Form.Item name={[record.key, 'DiscountAmont']} initialValue={record.DiscountAmont}>
                     <InputNumber disabled />
                 </Form.Item>
             )
@@ -244,30 +491,30 @@ const CreateGRNAgainstPO = () => {
         },
         {
             title: 'Amount',
-            dataIndex: 'Amount',
-            key: 'Amount',
+            dataIndex: 'LineAmount',
+            key: 'LineAmount',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'Amount']}>
+                <Form.Item name={[record.key, 'LineAmount']} initialValue={record.LineAmount}>
                     <InputNumber disabled />
                 </Form.Item>
             )
         },
         {
             title: 'Tax Amount',
-            dataIndex: 'TaxAmount',
-            key: 'TaxAmount',
+            dataIndex: 'TaxAmount1',
+            key: 'TaxAmount1',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'TaxAmount']}>
+                <Form.Item name={[record.key, 'TaxAmount1']} >
                     <InputNumber disabled />
                 </Form.Item>
             )
         },
         {
             title: 'Total Amount',
-            dataIndex: 'totalAmount',
-            key: 'totalAmount',
+            dataIndex: 'LineAmount',
+            key: 'LineAmount',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'totalAmount']}>
+                <Form.Item name={[record.key, 'LineAmount']} initialValue={record.LineAmount}>
                     <InputNumber disabled />
                 </Form.Item>
             )
@@ -302,6 +549,16 @@ const CreateGRNAgainstPO = () => {
             dataIndex: 'PoDate',
             key: 'PoDate',
             sorter: (a, b) => a.PoDate.localeCompare(b.PoDate),
+            render: (text) => {
+                if (text !== undefined) {
+                    const dateParts = text.split('T')[0].split('-');
+                    const year = dateParts[0];
+                    const month = dateParts[1];
+                    const day = dateParts[2];
+
+                    return `${day}-${month}-${year}`;
+                }
+            },
         },
         {
             title: 'PO Raised By',
@@ -335,10 +592,20 @@ const CreateGRNAgainstPO = () => {
 
     const Searchmodal = (value, record) => {
         debugger;
-        const fieldsToValidate = ['SupplierList', 'StoreDetails'];
+        const fieldsToValidate = ['SupplierId', 'StoreId'];
         form1
             .validateFields(fieldsToValidate)
             .then(() => {
+                const selectedSupplier = form1.getFieldValue('SupplierId');
+                const selcctedStore = form1.getFieldValue('StoreId');
+
+                const selectedOptionSupplier = DropDown.SupplierList.find(option => option.VendorId === selectedSupplier);
+                const selectedOptionStore = DropDown.StoreDetails.find(option => option.StoreId === selcctedStore)
+
+                if (selectedOptionStore && selectedOptionSupplier) {
+                    setSelectedSupplier(selectedOptionStore.LongName);
+                    setSelectedStore(selectedOptionSupplier.LongName);
+                }
                 setIsModalOpen(true);
             })
             .catch((error) => {
@@ -350,100 +617,60 @@ const CreateGRNAgainstPO = () => {
         console.log('Failed:', errorInfo);
     };
 
-    const handlePoNumber = (record) => {
+    const onOkBatchModal = async () => {
         debugger;
-        const postData = {
-            PoHeaderId: record.PoHeaderId,
-            Supplier: record.SupplierId,
-            Store: record.ProcurementStoreId,
-        }
-        // try {
-        //   customAxios.get(`${urlCreateGRNAgainstPO}?PoHeaderId=${postData.PoHeaderId}&Supplier=${postData.Supplier}&Store=${postData.Store}`).then((response) => {
-        //     debugger;
-        //     const apiData = response.data.data;
-        //     setDropDown(prevState => ({
-        //       ...prevState,
-        //       UOM: apiData.UOM
-        //     }));
-        //     setIstablevisible(true);
-        //     apiData.ProductDetails.map((product, index) => {
-        //       if (data.length == 0) {
-        //         AddProduct();
-        //       }
-        //       form1.setFieldsValue({ DocumentType: apiData.POProducts.DocumentType });
-        //       form1.setFieldsValue({ [productCount]: { product: product.ProductName } });
-        //       form1.setFieldsValue({ [productCount]: { uom: product.UomId } });
-        //       form1.setFieldsValue({ [productCount]: { poPendingQty: product.PoQuantity } });
-        //       form1.setFieldsValue({ [productCount]: { poRate: product.PoRate } });
-        //       form1.setFieldsValue({ [productCount]: { BonusQty: product.BonusQuantity === null ? 0 : product.BonusQuantity } });
-        //       form1.setFieldsValue({ [productCount]: { discount: product.DiscountRate } });
-        //       form1.setFieldsValue({ [productCount]: { discountAmt: product.DiscountAmount } });
-        //       form1.setFieldsValue({ [productCount]: { TaxAmount: product.TaxAmount1 } });
-        //       setSelecetdUomText((prevState) => {
-        //         const newState = { ...prevState, [productCount]: product.Uom };
-        //         return newState;
-        //       });
-        //       setSelecetdProductId((prevState) => {
-        //         const newState = { ...prevState, [productCount]: product.ProductId };
-        //         return newState;
-        //       });
-        //       setMrp(product.MrpExpected);
-        //     })
-        //     setIsModalOpen(false);
-        //   });
-        // } catch (error) {
-        //   //console.error("Error fetching purchase order details:", error);      
-        // }
-        //const url = `/CreateGRNAgainstPO/${record.PoHeaderId}/${record.SupplierId}/${record.ProcurementStoreId}`;
-        //navigate(url);
-    };
-
-    const onOkBatchModal = () => {
-        debugger;
-        form3
-            .validateFields()
-            .then(() => {
-                form3.submit();
-                setIsBatchModalOpen(false);
-            })
-            .catch((error) => {
-                console.log('Validation error:', error);
+        await form3.validateFields();
+        const values = form3.getFieldsValue();
+        const valuesArray = Object.values(values);
+        const qty = valuesArray.reduce((total, item) => item ? total + (item.Quantity || 0) : total, 0);
+        if (qty <= batchRecord.ReceivedQty) {
+            const updatedBatch = dataBatchModal.map(item => {
+                const key = item.key;
+                if (values[key] != undefined) {
+                    if (values[key].Quantity || values[key].EXPDate || values[key].mrp) {
+                        return {
+                            ...item,
+                            ProductId: batchRecord.ProductId,
+                            UomId: batchRecord.UomId,
+                            BarCode: values[key].BarCode,
+                            Quantity: values[key].Quantity,
+                            BatchBonusQty: values[key].BatchBonusQty,
+                            MFGDate: values[key].MFGDate == '' ? undefined : values[key].MFGDate,
+                            BatchNo: values[key].BatchNo,
+                            EXPDate: values[key].EXPDate,
+                            rate: values[key].rate,
+                            mrp: values[key].mrp,
+                            DiscountRate: values[key].DiscountRate == '' ? 0 : values[key].DiscountRate,
+                            DiscountAmount: values[key].DiscountAmount,
+                            StockLocator: 0,
+                            PoLineId: values[key].PoLineId === undefined ? 0 : values[key].PoLineId
+                        };
+                    }
+                    return item;
+                }
+                return item;
             });
-    }
+            setdataBatchModal(updatedBatch);
+            setIsBatchModalOpen(false);
+        } else {
+            message.warning('Quantity must not be Greater than Recieved Quantity')
+        }
+    };
 
     const onCancelBatchmodal = () => {
         setIsBatchModalOpen(false);
-        setdataBatchModal([]);
-        setshouldValidateModal(false);
     }
 
-    const onFinishBatchmodal = (values) => {
+    const DateBindtoDatepicker = (value) => {
+        const isoDateString = value;
+        const dateValue = new Date(isoDateString);
+        const formattedDate = dayjs(dateValue).format('DD-MM-YYYY');
+        return dayjs(formattedDate, 'DD-MM-YYYY');
+    }
+
+    const onFinishBatchmodal = () => {
         debugger;
-        const batche = [];
-        for (let i = 0; i < counter; i++) {
-            const batch = {
-                BarCode: values[i].barcode,
-                BatchNo: values[i].batchnumber,
-                BatchQty: values[i].quantity,
-                BatchBonusQty: values[i].bonusqty,
-                UomId: values[i].uom,
-                EXPDateString: values[i].expdate.$D.toString().padStart(2, '0') + '-' + (values[i].expdate.$M + 1).toString().padStart(2, '0') + '-' + (values[i].expdate.$y).toString(),
-                BatchMRP: values[i].rate,
-                MRP: values[i].mrp,
-                DiscountRate: values[i].discount,
-                DiscountAmount: values[i].discountamt,
-                BatchTaxType1: values[i].cgst,
-                BatchTaxAmount1: values[i].cgstamt,
-                BatchTaxType2: values[i].sgst,
-                BatchTaxAmount2: values[i].sgstamt,
-                BatchStockLocator: values[i].stocklocator,
-                MFGDateString: values[i].mfgdate === undefined ? null : (values[i].mfgdate.$D.toString().padStart(2, '0') + '-' + (values[i].mfgdate.$M + 1).toString().padStart(2, '0') + '-' + values[i].mfgdate.$y).toString(),
-            }
-            batche.push(batch);
-            setBatches(batche);
-            setIsBatchModalOpen(false);
-        }
-        onCancelBatchmodal();
+
     }
 
     const onFinishBatchFailed = () => {
@@ -453,141 +680,151 @@ const CreateGRNAgainstPO = () => {
         debugger;
         const products = [];
         for (let i = 0; i <= productCount; i++) {
-            if (values[i] !== undefined) {
-                const product = {
-                    ProductId: selecetdProductId[i],
-                    UomId: values[i].uom,
-                    ReceivedQty: values[i].POReceivedQty,
-                    PendingQty: values[i].poPendingQty === "" ? 0 : values[i].poPendingQty,
-                    BonusQty: values[i].BonusQty === "" ? null : values[i].BonusQty,
-                    QuantityTobeIssued: values[i].discount === "" ? 0 : values[i].discount,
-                    PoRate: values[i].poRate === "" ? 0 : parseFloat(values[i].poRate),
-                    DiscountRate: values[i].discount === "" ? 0 : values[i].discount,
-                    DiscountAmount: values[i].discountAmt === "" ? 0 : values[i].discountAmt,
-                    LineAmount: values[i].Amount === "" ? 0 : values[i].Amount,
-                    TaxAmount: values[i].TaxAmount,
-                    TotalAmount: values[i].totalAmount === "" ? 0 : values[i].totalAmount,
-                    Replaceable: values[i].Replaceable === true ? "Yes" : "No"
+            if (values.TotalPoAmount == values.InvoiceAmount) {
+                if (values[i] !== undefined) {
+                    if (values[i].ReceivedQty + values[i].BonusQuantity <= values[i].PoBalanceQty) {
+                        const product = {
+                            ProductId: values[i].ProductId,
+                            UomId: values[i].UomId,
+                            ReceivedQty: values[i].ReceivedQty,
+                            PoBalanceQty: values[i].PoBalanceQty,
+                            BonusQuantity: values[i].BonusQuantity,
+                            PoLineId: values[i].PoLineId,
+                            GrnLineId: values[i].GrnLineId,
+                            // QuantityTobeIssued: values[i].discount === "" ? 0 : values[i].discount,
+                            PoRate: values[i].PoRate,
+                            DiscountRate: values[i].DiscountRate,
+                            DiscountAmount: values[i].DiscountAmount == undefined ? 0 : values[i].DiscountAmount,
+                            LineAmount: values[i].LineAmount,
+                            TaxAmount1: values[i].TaxAmount1 == undefined ? 0 : values[i].TaxAmount1,
+                            TotalAmount: values[i].LineAmount,
+                            Replaceable: values[i].Replaceable === true ? "Y" : "N",
+                            PoStatus: values[i].ReceivedQty + values[i].BonusQuantity == values[i].PoBalanceQty ? 'Completed' : 'Pending',
+                            ActiveFlag: true
+                        }
+                        products.push(product);
+                    }
+                    else {
+                        message.warning('Recieved Qty must not Greater than PoPending Qty')
+                        return false
+                    }
                 }
-                products.push(product);
+            } else {
+                message.warning('Invoice Amount Must be equals to Total Po Amount')
+                return false
             }
         }
 
         const GRNAgainstPO = {
-            SupplierId: values.SupplierList === undefined ? '' : values.SupplierList,
-            ReceivingStoreId: values.StoreDetails === undefined ? '' : values.StoreDetails,
+            GRNHeaderId: values.GRNHeaderId,
+            PoHeaderId: values.PoHeaderId,
+            SupplierId: values.SupplierId,
+            StoreId: values.StoreId,
             DocumentType: values.DocumentType === undefined ? '' : values.DocumentType,
             // GrnNumber: values.PODate === undefined ? dayjs(`${currentDate}`).format(dateFormat) : values.PODate,
-            GRNDatestring: values.GRNDate === undefined ? null : (values.GRNDate.$D.toString().padStart(2, '0') + '-' + (values.GRNDate.$M + 1).toString().padStart(2, '0') + '-' + values.GRNDate.$y).toString(),
+            // GRNDatestring: values.GRNDate === undefined ? null : (values.GRNDate.$D.toString().padStart(2, '0') + '-' + (values.GRNDate.$M + 1).toString().padStart(2, '0') + '-' + values.GRNDate.$y).toString(),
+            GRNDate: values.GRNDate,
             Remarks: values.Remarks === undefined ? null : values.Remarks,
-            GrnStatus: values.GRNStatus === undefined ? null : values.GRNStatus,
-            InvoiceNo: values.InvoiceNumber === undefined ? null : values.InvoiceNumber,
+            GrnStatus: values.GRNStatus === undefined ? 'Created' : values.GRNStatus,
+            InvoiceNumber: values.InvoiceNumber === undefined ? null : values.InvoiceNumber,
             InvoiceAmount: values.InvoiceAmount === undefined ? 0 : values.InvoiceAmount,
-            InvoiceDateString: values.InvoiceDate === undefined ? null : (values.InvoiceDate.$D.toString().padStart(2, '0') + '-' + (values.InvoiceDate.$M + 1).toString().padStart(2, '0') + '-' + values.InvoiceDate.$y).toString(),
-            DcNo: values.DCChallanNumber === undefined ? 0 : values.DCChallanNumber,
-            DCChallanDateString: values.DCChallanDate === undefined ? null : (values.DCChallanDate.$D.toString().padStart(2, '0') + '-' + (values.DCChallanDate.$M + 1).toString().padStart(2, '0') + '-' + values.DCChallanDate.$y).toString(),
-            ReceivingDateString: values.ReceivingDate === undefined ? null : (values.ReceivingDate.$D.toString().padStart(2, '0') + '-' + (values.ReceivingDate.$M + 1).toString().padStart(2, '0') + '-' + values.ReceivingDate.$y).toString(),
-            Amount: values.PoTaxAmount === undefined ? 0 : values.PoTaxAmount,
-            TaxAmount: values.TotalAmount === undefined ? 0 : values.TotalAmount,
-            RoundOff: values.RoundOff === undefined ? 0 : values.RoundOff,
-            TotalPoAmount: values.totalpoAmount === undefined ? 0 : values.totalpoAmount,
+            InvoiceDate: values.InvoiceDate,
+            DCChallanNumber: values.DCChallanNumber,
+            DCChallanDate: values.DCChallanDate,
+            ReceivingDate: values.ReceivingDate,
+            TotalAmount: values.TotalAmount,
+            TaxAmount1: values.TaxAmount == undefined ? 0 : values.TaxAmount,
+            RoundOff: values.RoundOff == undefined ? 0 : values.RoundOff,
+            TotalPoAmount: values.TotalPoAmount,
             // GrnType: values.PoTaxAmount === undefined ? 0 : values.PoTaxAmount,
         }
+        batches.forEach((item, index) => {
+            form1.getFieldValue([index, 'POReceivedQty'])
+        })
+        const activeData = dataBatchModal.filter((item) => item.ActiveFlag === true && item.ProductId);
         const postData = {
             newGRNAgainstPOModel: GRNAgainstPO,
             GRNAgainstPODetails: products,
-            BatchDetails: batches
+            BatchDetails: activeData.length > 0 && activeData[0].ProductId === '' ? [] : activeData,
         }
-        // try {
-        //   const response = await customAxios.post(urlAddNewGRNAgainstPO, postData, {
-        //     headers: {
-        //       'Content-Type': 'application/json'
-        //     }
-        //   });
-        //   form1.resetFields();
-        // } catch (error) {
-        //   // Handle error      
-        // }
-        // setIsSearchLoading(false);
+        if (GrnHeaderId > 0) {
+            const response = await customAxios.post(urlUpdateGRNAgainstPO, postData, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response != false && response.status == 200) {
+                message.success('Updated Successfully')
+            } else {
+                message.error('Updated Failure')
+            }
+        }
+        else {
+            const response = await customAxios.post(urlAddNewGRNAgainstPO, postData, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response != false && response.status == 200) {
+                message.success('Created Successfully')
+            } else {
+                message.error('Create Failure')
+            }
+        }
+        handleCancel()
     };
 
-    const BatchAdd = () => {
+    const BatchAdd = async () => {
         debugger;
-        if (shouldValidateModal) {
-            form3
-                .validateFields()
-                .then(() => {
-                    const newRow = {
-                        key: counter.toString(),
-                        barcode: '',
-                        batchnumber: '',
-                        quantity: '',
-                        uom: '',
-                        bonusqty: '',
-                        mfgdate: '',
-                        expdate: '',
-                        rate: '',
-                        mrp: '',
-                        discountamt: '',
-                        cgst: '',
-                        cgstamt: '',
-                        sgst: '',
-                        sgstamt: '',
-                        stocklocator: '',
-                    };
-                    setdataBatchModal([...dataBatchModal, newRow]);
-                    setCounter(counter + 1);
-                })
-        } else {
-            const newRow = {
-                key: counter.toString(),
-                barcode: '',
-                batchnumber: '',
-                quantity: '',
-                bonusqty: '',
+        await form2.validateFields();
+        setdataBatchModal([
+            ...dataBatchModal,
+            {
+                key: counter,
+                BarCode: '',
+                BatchNo: '',
+                Quantity: '',
                 uom: '',
-                mfgdate: '',
-                expdate: '',
+                BatchBonusQty: '',
+                MFGDate: '',
+                EXPDate: '',
                 rate: '',
                 mrp: '',
-                discount: '',
-                discountamt: '',
-                cgst: '',
-                cgstamt: '',
-                sgst: '',
-                sgstamt: '',
-                stocklocator: '',
-            };
-            setdataBatchModal([...dataBatchModal, newRow]);
-            setshouldValidateModal(true);
-            setCounter(counter + 1);
-        }
+                DiscountRate: '',
+                DiscountAmount: '',
+                TaxType1: undefined,
+                TaxAmount1: undefined,
+                TaxType2: undefined,
+                TaxAmount2: undefined,
+                stocklocator: 0,
+                ActiveFlag: true,
+            },
+        ]);
+        setCounter(counter + 1);
     };
 
     const Batchmodal = [
         {
             title: 'Bar Code',
-            dataIndex: 'barcode',
-            key: 'barcode',
+            dataIndex: 'BarCode',
+            key: 'BarCode',
             render: (_, record) => (
-                <Form.Item name={[record.key, 'barcode']}
-                    rules={[
-                        {
-                            required: false,
-                        },
-                    ]}
-                >
-                    <InputNumber style={{ width: 50 }} min={0} />
-                </Form.Item>
+                <>
+                    <Form.Item name={[record.key, 'BarCode']} initialValue={record.BarCode}>
+                        <InputNumber style={{ width: 50 }} min={0} disabled={!!GrnHeaderId} />
+                    </Form.Item>
+                    <Form.Item name={[record.key, 'GrnLineId']} hidden initialValue={record.GrnLineId}><Input></Input></Form.Item>
+                    <Form.Item name={[record.key, 'GrnBatchId']} hidden initialValue={record.GrnBatchId}><Input></Input></Form.Item>
+                </>
             )
         },
         {
             title: 'Batch Number',
-            dataIndex: 'batchnumber',
-            key: 'batchnumber',
+            dataIndex: 'BatchNo',
+            key: 'BatchNo',
             render: (text, record) => {
                 return (
-                    <Form.Item style={{ width: 60 }} name={[record.key, 'batchnumber']}
+                    <Form.Item style={{ width: 100 }} name={[record.key, 'BatchNo']} initialValue={record.BatchNo}
                         rules={[
                             {
                                 required: true,
@@ -595,17 +832,17 @@ const CreateGRNAgainstPO = () => {
                             }
                         ]}
                     >
-                        <Input />
+                        <Input disabled={!!GrnHeaderId} />
                     </Form.Item>
                 );
             }
         },
         {
             title: 'Quantity',
-            dataIndex: 'quantity',
-            key: 'quantity',
+            dataIndex: 'Quantity',
+            key: 'Quantity',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'quantity']}
+                <Form.Item name={[record.key, 'Quantity']} initialValue={record.Quantity}
                     rules={[
                         {
                             required: true,
@@ -613,16 +850,18 @@ const CreateGRNAgainstPO = () => {
                         }
                     ]}
                 >
-                    <InputNumber min={0} style={{ width: 50 }} />
+                    <InputNumber min={0} style={{ width: 50 }} disabled={!!GrnHeaderId} />
                 </Form.Item>
             )
         },
         {
             title: 'Bonus Qty',
-            dataIndex: 'bonusqty',
-            key: 'bonusqty',
+            dataIndex: 'BatchBonusQty',
+            key: 'BatchBonusQty',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'bonusqty']} initialValue={form1.getFieldValue([productLineId, 'BonusQty'])}>
+                <Form.Item name={[record.key, 'BatchBonusQty']} initialValue={batchRecord.BonusQuantity}
+                    disabled={!!GrnHeaderId}
+                >
                     <InputNumber min={0} style={{ width: 50 }} disabled />
                 </Form.Item>
             )
@@ -632,27 +871,27 @@ const CreateGRNAgainstPO = () => {
             dataIndex: 'uom',
             key: 'uom',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'uom']} initialValue={form1.getFieldValue([productLineId, 'uom'])}>
-                    <Tag color="blue">{selecetdUomText[productLineId]}</Tag>
+                <Form.Item name={[record.key, 'uom']}>
+                    <Tag color="blue">{batchRecord.Uom}</Tag>
                 </Form.Item>
             )
         },
         {
             title: 'MFG Date',
-            dataIndex: 'mfgdate',
-            key: 'mfgdate',
+            dataIndex: 'MFGDate',
+            key: 'MFGDate',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'mfgdate']}>
-                    <DatePicker format={dateFormat} />
+                <Form.Item name={[record.key, 'MFGDate']} initialValue={record.MFGDate} >
+                    <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' disabled={!!GrnHeaderId} />
                 </Form.Item>
             )
         },
         {
             title: 'Exp Date',
-            dataIndex: 'expdate',
-            key: 'expdate',
+            dataIndex: 'EXPDate',
+            key: 'EXPDate',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'expdate']}
+                <Form.Item name={[record.key, 'EXPDate']} initialValue={record.EXPDate}
                     rules={[
                         {
                             required: true,
@@ -660,7 +899,7 @@ const CreateGRNAgainstPO = () => {
                         }
                     ]}
                 >
-                    <DatePicker format={dateFormat} />
+                    <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' disabled={!!GrnHeaderId} />
                 </Form.Item>
             )
         },
@@ -669,7 +908,7 @@ const CreateGRNAgainstPO = () => {
             dataIndex: 'rate',
             key: 'rate',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'rate']} initialValue={form1.getFieldValue([productLineId, 'poRate'])}>
+                <Form.Item name={[record.key, 'rate']} initialValue={batchRecord.PoRate}>
                     <InputNumber min={0} style={{ width: 50 }} disabled />
                 </Form.Item>
             )
@@ -679,80 +918,87 @@ const CreateGRNAgainstPO = () => {
             dataIndex: 'mrp',
             key: 'mrp',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'mrp']} initialValue={mrp}>
-                    <InputNumber min={0} style={{ width: 50 }} allowClear />
+                <Form.Item name={[record.key, 'mrp']} initialValue={batchRecord.MrpExpected == 0 ? undefined : batchRecord.MrpExpected}
+                    rules={[
+                        {
+                            required: true,
+                            message: "input!"
+                        }
+                    ]}
+                >
+                    <InputNumber min={0} style={{ width: 50 }} allowClear disabled={!!GrnHeaderId} />
                 </Form.Item>
             )
         },
         {
             title: 'Discount',
-            dataIndex: 'discount',
-            key: 'discount',
+            dataIndex: 'DiscountRate',
+            key: 'DiscountRate',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'discount']} initialValue={form1.getFieldValue([productLineId, 'discount'])}>
+                <Form.Item name={[record.key, 'DiscountRate']} initialValue={batchRecord.DiscountRate}>
                     <InputNumber min={0} style={{ width: 50 }} disabled />
                 </Form.Item>
             )
         },
         {
             title: 'Discount Amt',
-            dataIndex: 'discountamt',
-            key: 'discountamt',
+            dataIndex: 'DiscountAmount',
+            key: 'DiscountAmount',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'discountamt']} initialValue={form1.getFieldValue([productLineId, 'discountAmt'])}>
+                <Form.Item name={[record.key, 'DiscountAmount']} initialValue={batchRecord.DiscountAmount}>
                     <InputNumber min={0} style={{ width: 50 }} disabled />
                 </Form.Item>
             )
         },
         {
             title: 'CGST',
-            dataIndex: 'cgst',
-            key: 'cgst',
+            dataIndex: 'TaxType1',
+            key: 'TaxType1',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'cgst']}>
-                    <Select>
+                <Form.Item name={[record.key, 'TaxType1']}>
+                    <Select disabled={!!GrnHeaderId}>
                     </Select>
                 </Form.Item>
             )
         },
         {
             title: 'CGST Amount',
-            dataIndex: 'cgstamt',
-            key: 'cgstamt',
+            dataIndex: 'TaxAmount1',
+            key: 'TaxAmount1',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'cgstamt']}>
+                <Form.Item name={[record.key, 'TaxAmount1']}>
                     <InputNumber min={0} style={{ width: 50 }} disabled />
                 </Form.Item>
             )
         },
         {
             title: 'SGST',
-            dataIndex: 'sgst',
-            key: 'sgst',
+            dataIndex: 'TaxType2',
+            key: 'TaxType2',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'sgst']}>
-                    <Select>
+                <Form.Item name={[record.key, 'TaxType2']}>
+                    <Select disabled={!!GrnHeaderId}>
                     </Select>
                 </Form.Item>
             )
         },
         {
             title: 'SGST Amount',
-            dataIndex: 'sgstamt',
-            key: 'sgstamt',
+            dataIndex: 'TaxAmount2',
+            key: 'TaxAmount2',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'sgstamt']}>
+                <Form.Item name={[record.key, 'TaxAmount2']}>
                     <InputNumber min={0} style={{ width: 50 }} disabled />
                 </Form.Item>
             )
         },
         {
             title: 'Stock Locator',
-            dataIndex: 'stocklocator',
-            key: 'stocklocator',
+            dataIndex: 'StockLocator',
+            key: 'StockLocator',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'stocklocator']} initialValue={'Manual'}>
-                    <Input style={{ width: 60 }} />
+                <Form.Item name={[record.key, 'StockLocator']} initialValue={'Manual'}>
+                    <Input style={{ width: 60 }} disabled={!!GrnHeaderId} />
                 </Form.Item>
             )
         },
@@ -762,19 +1008,18 @@ const CreateGRNAgainstPO = () => {
             key: 'add',
             width: 50,
             render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => BatchDelete(record)}><DeleteOutlined /></Popconfirm>
-            //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>      
         }
     ]
 
     const BatchDelete = (record) => {
         debugger;
-        const newData = data.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
-        Object.keys(fields).forEach(fieldName => {
-            if (fieldName.startsWith(`${record.key}.`)) {
-                form1.resetFields([fieldName]);
+        const newData = dataBatchModal.map((item) => {
+            if (item.key === record.key) {
+                return { ...item, ActiveFlag: false };
             }
+            return item;
         });
-        setData(newData);
+        setdataBatchModal(newData);
     };
 
     return (
@@ -808,51 +1053,32 @@ const CreateGRNAgainstPO = () => {
                         InvoiceDate: dayjs(),
                         DCChallanDate: dayjs(),
                     }}
-                    onValuesChange={(changedValues, allValues) => {
-                        debugger;
-                        for (let i = 0; i <= counter; i++) {
-                            if (allValues[i] !== undefined) {
-                                if (allValues[i]['POReceivedQty'] !== undefined) {
-                                    const total = parseFloat(allValues[i]['POReceivedQty'] * allValues[i]['poRate']).toFixed(4);
-                                    form1.setFieldsValue({ [i]: { Amount: total } });
-                                    form1.setFieldsValue({ [i]: { totalAmount: total } });
-                                    form1.setFieldsValue({ Tax: parseFloat(allValues[i]['TaxAmount']).toFixed(4) });
-                                    // cosole.log(allValues['POReceivedQty']);
-                                }
-                            }
-                        }
-                        let totalAmount = 0;
-                        for (let j = 0; j <= counter; j++) {
-                            if (allValues[j] !== undefined) {
-                                const Amount = form1.getFieldValue([j, 'Amount']);
-                                totalAmount += Amount;
-                            }
-                        }
-                        form1.setFieldsValue({ TotalAmount: totalAmount });
-                        form1.setFieldsValue({ totalpoAmount: totalAmount });
-                    }}
                 >
                     <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
                         <Col className="gutter-row" span={6}>
-                            <Form.Item label="Supplier" name="SupplierList"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input!'
-                                    }
-                                ]}
-                            >
-                                <Select allowClear placeholder='Select Value'>
-                                    {DropDown.SupplierList.map((option) => (
-                                        <Select.Option key={option.VendorId} value={option.VendorId}>
-                                            {option.LongName}
-                                        </Select.Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
+                            <>
+                                <Form.Item label="Supplier" name="SupplierId"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Please input!'
+                                        }
+                                    ]}
+                                >
+                                    <Select loading={true} allowClear placeholder='Select Value' disabled={!!GrnHeaderId}>
+                                        {DropDown.SupplierList.map((option) => (
+                                            <Select.Option key={option.VendorId} value={option.VendorId}>
+                                                {option.LongName}
+                                            </Select.Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                                <Form.Item name='PoHeaderId' hidden><Input></Input></Form.Item>
+                                <Form.Item name='GRNHeaderId' hidden><Input></Input></Form.Item>
+                            </>
                         </Col>
                         <Col className="gutter-row" span={6}>
-                            <Form.Item label="Receiving Store" name="StoreDetails"
+                            <Form.Item label="Receiving Store" name="StoreId"
                                 rules={[
                                     {
                                         required: true,
@@ -860,7 +1086,7 @@ const CreateGRNAgainstPO = () => {
                                     }
                                 ]}
                             >
-                                <Select allowClear placeholder='Select Value'>
+                                <Select allowClear placeholder='Select Value' disabled={!!GrnHeaderId}>
                                     {DropDown.StoreDetails.map((option) => (
                                         <Select.Option key={option.StoreId} value={option.StoreId}>
                                             {option.LongName}
@@ -899,12 +1125,12 @@ const CreateGRNAgainstPO = () => {
                         </Col>
                         <Col className="gutter-row" span={2}>
                             <Form.Item label="GRNStatus" name="GRNStatus"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input!'
-                                    }
-                                ]}
+                            // rules={[
+                            //     {
+                            //         required: true,
+                            //         message: 'Please input!'
+                            //     }
+                            // ]}
                             >
                                 <Select allowClear placeholder='Select Value'>
                                     <Option value="Draft">Draft</Option>
@@ -918,7 +1144,14 @@ const CreateGRNAgainstPO = () => {
                             </Form.Item>
                         </Col>
                         <Col className="gutter-row" span={6}>
-                            <Form.Item label="Invoice Number" name="InvoiceNumber" hasFeedback validateDebounce={2000}>
+                            <Form.Item label="Invoice Number" name="InvoiceNumber" hasFeedback validateDebounce={2000}
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: 'Please input!'
+                                    }
+                                ]}
+                            >
                                 <Input style={{ width: '100%' }} allowClear />
                             </Form.Item>
                         </Col>
@@ -928,7 +1161,14 @@ const CreateGRNAgainstPO = () => {
                             </Form.Item>
                         </Col>
                         <Col className="gutter-row" span={5}>
-                            <Form.Item label="Invoice Amount" name="InvoiceAmount">
+                            <Form.Item label="Invoice Amount" name="InvoiceAmount"
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: 'Please input!'
+                                    }
+                                ]}
+                            >
                                 <Input style={{ width: '100%' }} allowClear />
                             </Form.Item>
                         </Col>
@@ -964,7 +1204,7 @@ const CreateGRNAgainstPO = () => {
                         <Col style={{ marginRight: '10px' }}>
                             <Form.Item>
                                 <Button type="primary" htmlType="submit">
-                                    Submit
+                                    {buttonTitle}
                                 </Button>
                             </Form.Item>
                         </Col>
@@ -984,13 +1224,13 @@ const CreateGRNAgainstPO = () => {
                                 <Form.Item label="Amount" name='TotalAmount' style={{ marginRight: '16px', width: 100 }} >
                                     <InputNumber min={0} disabled />
                                 </Form.Item>
-                                <Form.Item label="Tax" name='Tax' style={{ marginRight: '16px', width: 100 }} >
+                                <Form.Item label="Tax" name='TaxAmount' style={{ marginRight: '16px', width: 100 }} >
                                     <InputNumber min={0} disabled />
                                 </Form.Item>
                                 <Form.Item label="Round Off" name='RoundOff' style={{ marginRight: '16px', width: 100 }}>
                                     <InputNumber min={0} disabled />
                                 </Form.Item>
-                                <Form.Item label="Total PO Amount" name='totalpoAmount' style={{ width: 150 }}>
+                                <Form.Item label="Total PO Amount" name='TotalPoAmount' style={{ width: 150 }}>
                                     <InputNumber min={0} disabled />
                                 </Form.Item>
                             </div>
@@ -1012,21 +1252,23 @@ const CreateGRNAgainstPO = () => {
                     >
                         <Form name="basic" labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} style={{ width: '100%' }}
                             onFinish={onFinishmodal}
-                            onFinishFailed={onFinishFailed}                            
+                            onFinishFailed={onFinishFailed}
                             form={form2}
                             initialValues={{
                                 POStatus: 0,
+                                PODateFrom: dayjs().subtract(1, 'day'),
+                                PODateTo: dayjs()
                             }}
                         >
                             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                                 <Col span={12}>
                                     <Form.Item label="Supplier" name="Supplier">
-                                        <Tag color="blue"></Tag>
+                                        <Tag color="blue">{selectedStore}</Tag>
                                     </Form.Item>
                                 </Col>
                                 <Col span={12}>
                                     <Form.Item label="Receiving Store" name="ReceivingStore">
-                                        <Tag color="blue">{selectedStore}</Tag>
+                                        <Tag color="blue">{selectedSupplier}</Tag>
                                     </Form.Item>
                                 </Col>
                             </Row>
@@ -1083,11 +1325,12 @@ const CreateGRNAgainstPO = () => {
                                     </Form.Item>
                                 </Col>
                             </Row>
-                            {isPoSearchTable && poloading ? (
+                            <Table columns={columnsmodal} dataSource={dataModal} />
+                            {/* {isPoSearchTable && poloading ? (
                                 <Skeleton active />
                             ) : (
                                 <Table columns={columnsmodal} dataSource={dataModal} />
-                            )}
+                            )} */}
                         </Form>
                     </Modal>
                 </ConfigProvider>
@@ -1109,21 +1352,29 @@ const CreateGRNAgainstPO = () => {
                             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                                 <Col span={8}>
                                     <Form.Item label="Product" name="Product">
-                                        <Tag color="blue">{form1.getFieldValue([productLineId, 'product'])}</Tag>
+                                        <Tag color="blue">{batchRecord.ProductName}</Tag>
                                     </Form.Item>
                                 </Col>
                                 <Col span={8}>
                                     <Form.Item label="Received Qty" name="ReceivedQty" handleCancel>
-                                        <Tag color="blue">{form1.getFieldValue([productLineId, 'POReceivedQty'])}</Tag>
+                                        <Tag color="blue">{batchRecord.ReceivedQty}</Tag>
                                     </Form.Item>
                                 </Col>
                                 <Col className="gutter-row" span={8}>
                                     <Form.Item label="Bonus qty" name="Bonusqty">
-                                        <Tag color="blue">{form1.getFieldValue([productLineId, 'BonusQty'])}</Tag>
+                                        <Tag color="blue">{batchRecord.BonusQuantity}</Tag>
                                     </Form.Item>
                                 </Col>
                             </Row>
-                            <Table columns={Batchmodal} dataSource={dataBatchModal} />
+                            <Table
+                                columns={Batchmodal} size="small"
+                                dataSource={
+                                    batchRecord.ProductId
+                                        ? dataBatchModal.filter(item => item.ProductId === batchRecord.ProductId && item.ActiveFlag || item.ProductId === "" && item.ActiveFlag)
+                                        : initialModelDataSource
+                                }
+                            // dataSource={dataBatchModal} 
+                            />
                         </Form>
                     </Modal>
                 </ConfigProvider>

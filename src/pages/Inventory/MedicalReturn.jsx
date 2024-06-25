@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from 'antd/es/layout/layout';
 import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import male from "../../assets/m.png";
 import dayjs from 'dayjs';
 import {
   Spin,
@@ -18,14 +19,13 @@ import {
   Divider,
   Tooltip,
   Table,
+  AutoComplete,
+  Avatar
 } from "antd";
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
 
-// import {
-//   urlGetMedicalReturnDetails,
-//   //   urlSearchMedicalReturn,
-// } from "../../../endpoints.js";
+import { urlSearchUHID, urlGetLastEncounter } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
@@ -39,25 +39,16 @@ const MedicalReturn = () => {
   });
   const [paginationSize, setPaginationSize] = useState(5);
   const [filteredData, setFilteredData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isDisabled, setIsDisable] = useState(true);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [form] = Form.useForm();
+  const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isTable, setIsTable] = useState(false);
+  const [encounter, setEncounter] = useState([])
   const { Title } = Typography;
-  useEffect(() => {
-    // try {
-    //   customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-    //     debugger;
-    //     const apiData = response.data.data;
-    //     setMedicalReturnDropDown(apiData);
-    //     setIsLoading(false);
-    //   });
-    // } catch (error) {
-    //   console.error("Error fetching purchase order details:", error);
-    // }
-  }, []);
+  const [patientName, setPatientName] = useState();
 
   const colorMapping = {
     Created: "blue",
@@ -66,6 +57,42 @@ const MedicalReturn = () => {
     "Partially Pending": "orange",
     Completed: "green",
   };
+
+  const getPanelValue = async (searchText) => {
+    debugger;
+    form.setFieldsValue({ Name: searchText != '' ? '' : searchText })
+    if (searchText === '') {
+      setEncounter([])
+    }
+    try {
+      customAxios.get(`${urlSearchUHID}?Uhid=${searchText}`).then((response) => {
+        const apiData = response.data.data;
+        const newOptions = apiData.map(item => ({ value: item.UhId, key: item.UhId, Name: item.PatientFirstName + ' ' + item.PatientLastName }));
+        setAutoCompleteOptions(newOptions);
+      });
+    } catch (error) {
+      //console.error("Error fetching purchase order details:", error);        
+    }
+  }
+
+  const handleSelect = (value, option) => {
+    debugger;
+    form.setFieldsValue({ Name: option.Name })
+    // setPatientName(option.Name);
+    try {
+      customAxios.get(`${urlGetLastEncounter}?Uhid=${option.key}`).then((response) => {
+        debugger;
+        setEncounter(response.data.data);
+        if (response.data.data.length > 1) {
+          setIsDisable(false)
+        }else{
+          setIsDisable(true)
+        }
+      });
+    } catch (error) {
+      //console.error("Error fetching purchase order details:", error);        
+    }
+  }
 
   const GetModelDetails = (text, record, index) => {
     debugger;
@@ -282,7 +309,7 @@ const MedicalReturn = () => {
             <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
               Medical Return
             </Title>
-          </Col>         
+          </Col>
         </Row>
         <Card>
           <Form
@@ -305,7 +332,14 @@ const MedicalReturn = () => {
                     },
                   ]}
                 >
-                  <Input style={{ width: '100%' }} allowClear />
+                  <AutoComplete
+                    options={autoCompleteOptions}
+                    // options={autoCompleteOptions[record.key]}
+                    onSearch={getPanelValue}
+                    onSelect={(value, option) => handleSelect(value, option)}
+                    placeholder="Search for a Uhid"
+                    allowClear
+                  />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={4}>
@@ -320,12 +354,17 @@ const MedicalReturn = () => {
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={4}>
-                <Form.Item name="Encounter" label="Encounter">
-                  <Select disabled>
-                    <Select.Option key={0} value='All'></Select.Option>
-                    {MedicalReturnDropdown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
-                        {option.LongName}
+                <Form.Item name="Encounter" label="Encounter"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Select disabled={isDisabled}>
+                    {encounter.map((option) => (
+                      <Select.Option key={option.EncounterId} value={option.EncounterId}>
+                        {option.GeneratedEncounterId}
                       </Select.Option>
                     ))}
                   </Select>
@@ -350,6 +389,108 @@ const MedicalReturn = () => {
             </Row>
           </Form>
         </Card>
+        <Row gutter={32}>
+          <Col span={18}>
+            <div
+              style={{
+                padding: "5px 30px",
+                borderRadius: "4px",
+                margin: "4px 30px",
+                display: "flex",
+                justifyContent: "space-between",
+                boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
+              }}
+            >
+              <Row gutter={[16, 16]}>
+                <Col span={3}>
+                  <Avatar
+                    shape="square"
+                    size={64}
+                    src={<img src={male} alt="avatar" />}
+                  />
+                </Col>
+              </Row>
+              <Row
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-evenly",
+                }}
+              >
+                <Col span={12}>
+                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
+                    UHID&nbsp;:
+                  </span>
+                  <span>273</span>
+                </Col>
+
+                <Col span={12}>
+                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
+                    Name&nbsp;:
+                  </span>
+                  <span>Nitish</span>
+                </Col>
+              </Row>
+              <Row
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  // justifyContent: "space-evenly",
+                }}
+              >
+                <Col span={12}>
+                  <span style={{ fontWeight: "bold" }}>Gender&nbsp;:&nbsp;</span>
+                  <span>Male</span>
+                </Col>
+
+                <Col span={12}>
+                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
+                    VisitId&nbsp;:
+                  </span>
+                  <span>15</span>
+                </Col>
+              </Row>
+              <Row
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-evenly",
+                }}
+              >
+                <Col span={12}>
+                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
+                    Age&nbsp;:
+                  </span>
+                  <span>28</span>
+                </Col>
+                <Col span={12}>
+                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
+                    Dob&nbsp;:
+                  </span>
+                  <span>27/09/1995</span>
+                </Col>
+              </Row>
+            </div>
+          </Col>
+          {/* <Col
+            span={6}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Button
+              type="default"
+              style={{ display: "flex", alignItems: "center" }}
+              danger
+              size="large"
+            >
+              End Consultation{" "}
+              <RxExit style={{ marginLeft: "5px", fontSize: "1.3rem" }} />
+            </Button>
+          </Col> */}
+        </Row>
         {loading ? (
           <Skeleton active />
         ) : (
