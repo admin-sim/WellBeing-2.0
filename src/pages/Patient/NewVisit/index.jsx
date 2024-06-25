@@ -25,6 +25,7 @@ import {
 import { EnvironmentOutlined } from "@ant-design/icons";
 import "../style.css";
 import Title from "antd/es/typography/Title.js";
+import PageHeader from "../../../components/pageHeader.jsx/index.jsx";
 
 const containsDropdown = [
   { id: "1", name: "Starts With" },
@@ -580,7 +581,7 @@ const NewVisit = () => {
 
   return (
     <div>
-      <Card
+      {/* <Card
         title={
           <Title
             level={3}
@@ -607,15 +608,29 @@ const NewVisit = () => {
             Back to list
           </Button>
         }
+      > */}
+      <div
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          // minHeight: "min-content",
+          borderRadius: "10px",
+        }}
       >
+        <PageHeader
+          title="Patient Search"
+          buttonLabel="Back to list"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleBackToList}
+        />
         <Form
           layout="vertical"
           onFinish={handleOnSearch}
           variant="outlined"
           size="default"
-          /* style={{
-            maxWidth: 1500
-          }} */
+          style={{
+            padding: "1rem 1rem 0rem 1rem",
+          }}
           form={form}
         >
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
@@ -785,7 +800,7 @@ const NewVisit = () => {
             </Col>
           </Row>
           <Row justify="end">
-            <Col style={{ marginRight: "10px" }}>
+            <Col style={{ marginRight: "1rem" }}>
               <Form.Item>
                 <Button type="primary" htmlType="submit">
                   Search
@@ -794,14 +809,14 @@ const NewVisit = () => {
             </Col>
             <Col>
               <Form.Item>
-                <Button type="primary" onClick={handleReset}>
+                <Button danger onClick={handleReset}>
                   Clear
                 </Button>
               </Form.Item>
             </Col>
           </Row>
         </Form>
-      </Card>
+      </div>
       <Card>
         <Spin spinning={loading}>
           <Table
