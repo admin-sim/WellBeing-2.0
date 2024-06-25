@@ -146,7 +146,7 @@ const NewPatient = () => {
     // Period to subtract
     const yearsToSubtract = years;
     const monthsToSubtract = months;
-    const daysToSubtract = days - 1;
+    const daysToSubtract = days;
 
     // Create a new date object from today
     let newDate = new Date(today);
