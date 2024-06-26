@@ -416,11 +416,6 @@ const CreateBilling = () => {
           key: "actions",
           render: (_, row) => (
             <span style={{ display: "flex" }}>
-              <Tooltip title="Edit">
-                <Button type="link" onClick={() => handleEdit(row)}>
-                  <EditOutlined style={{ fontSize: ".8rem" }} />
-                </Button>
-              </Tooltip>
               <Tooltip title="Delete">
                 <Button type="danger" onClick={() => handleEdit(row)}>
                   <DeleteOutlined style={{ fontSize: ".8rem" }} />
@@ -1068,14 +1063,14 @@ const CreateBilling = () => {
           open={isinvoiceModalOpen}
           handleClose={() => setIsInvoiceModalOpen(false)}
           discountDetails={invoicediscountDetails}
-          //setColumnData={setColumnData}
+          setCharges={setCharges}
         />
         <DiscountModal
           options={discountReason}
           open={isModalOpen}
           handleClose={() => setIsModalOpen(false)}
           discountDetails={discountDetails}
-          //setColumnData={setColumnData}
+          setCharges={setCharges}
         />
         {/* <Divider orientation="left"></Divider> */}
         <Form
