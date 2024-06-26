@@ -484,7 +484,7 @@ const NewPatient = () => {
           : values.permanentPinCode,
       // PhotoUrl: uploadedImage,
       PresentCountryId:
-        values?.presentCountryId === undefined ? null : values.presentCountryId,
+        values?.presentCountryId ,
       PresentStateId: values.presentStateId,
       PresentPlaceId: values.presentPlaceId,
       PresentAreaId: values.presentAreaId,
