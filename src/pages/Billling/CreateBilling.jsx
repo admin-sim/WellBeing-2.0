@@ -813,7 +813,6 @@ const CreateBilling = () => {
           layout="vertical"
           onFinish={handleOnFinish}
           variant="outlined"
-          size="default"
           style={{ padding: "0rem 2rem" }}
           form={form}
           initialValues={{
@@ -970,7 +969,6 @@ const CreateBilling = () => {
             dataSource={charges}
             columns={columns}
             rowKey={(row) => row.ChargeID} // Specify the custom id property here
-            size="small"
             locale={{
               emptyText: <span style={{ color: "" }}>No data available</span>,
             }}
@@ -1077,7 +1075,7 @@ const CreateBilling = () => {
           layout="vertical"
           onFinish={handleSaveBill}
           variant="outlined"
-          size="default"
+        
           //style={{ padding: '0rem 2rem' }}
           form={form1}
         >

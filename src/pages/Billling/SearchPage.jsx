@@ -186,10 +186,6 @@ function Billing() {
           layout="vertical"
           onFinish={handleOnSubmit}
           variant="outlined"
-          size="medium"
-          /* style={{
-            maxWidth: 1500
-          }} */
           form={form}
         >
           <Row gutter={32}>
