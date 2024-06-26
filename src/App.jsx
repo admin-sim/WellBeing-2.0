@@ -86,12 +86,23 @@ import SpecialEvent from "./pages/Masters/ResourceScheduling/SpecialEvent/specia
 import Holiday from "./pages/Masters/ResourceScheduling/Holiday/holiday";
 import Billing from "./pages/Billling/SearchPage";
 import CreateBilling from "./pages/Billling/CreateBilling";
+import Vendor from "./pages/Masters/InventoryManagement/Vendor";
+import VendorSearch from "./pages/Masters/InventoryManagement/VendorSearch";
+import ProductClassification from "./pages/Masters/InventoryManagement/ProductClassification";
+import ProductDefinition from "./pages/Masters/InventoryManagement/ProductDefinition";
+import Store from "./pages/Masters/InventoryManagement/Store";
+import CreateStore from "./pages/Masters/InventoryManagement/CreateStore";
+import SubTestMapping from "./pages/Masters/LaboratoryManagement/SubTestMapping";
+import TestMethods from "./pages/Masters/LaboratoryManagement/TestMethods";
+import TestReferences from "./pages/Masters/LaboratoryManagement/TestReferences";
+import ContainerDefinition from "./pages/Masters/LaboratoryManagement/ContainerDefinition";
 import PriceTariff from "./pages/Masters/GeneralMasters/AccountManagement/PriceTariff";
 import CreatePriceTariff from "./pages/Masters/GeneralMasters/AccountManagement/CreatePriceTariff";
 import AutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/AutoCharge";
 import CreateAutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAutoCharge";
 import BillAggrement from "./pages/Masters/GeneralMasters/AccountManagement/BillAggrement";
 import CreateBillAgrement from "./pages/Masters/GeneralMasters/AccountManagement/CreateBillAgrement";
+
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -770,7 +781,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-              <Route
+          <Route
             path="CreateBillAgrement"
             element={
               <ProtectedRoute>
@@ -778,7 +789,86 @@ function App() {
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="Vendor"
+            element={
+              <ProtectedRoute>
+                <Vendor />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/VendorSearch"
+            element={
+              <ProtectedRoute>
+                <VendorSearch />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ProductClassification"
+            element={
+              <ProtectedRoute>
+                <ProductClassification />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ProductDefinition"
+            element={
+              <ProtectedRoute>
+                <ProductDefinition />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Store"
+            element={
+              <ProtectedRoute>
+                <Store />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/CreateStore"
+            element={
+              <ProtectedRoute>
+                <CreateStore />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/SubTestMapping"
+            element={
+              <ProtectedRoute>
+                <SubTestMapping />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/TestMethods"
+            element={
+              <ProtectedRoute>
+                <TestMethods />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/TestReferences"
+            element={
+              <ProtectedRoute>
+                <TestReferences />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ContainerDefinitions"
+            element={
+              <ProtectedRoute>
+                <ContainerDefinition />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<Error />} />
         </Route>
         <Route path="login" element={<Login />} />

@@ -15,8 +15,8 @@ function WebcamImage({ onImageUpload }) {
     setHasCameraPermission(false);
   };
   const props = {
-    name: "file",
-    action: "https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188",
+    name: "patient",
+    // action: "https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188",
     headers: {
       authorization: "authorization-text",
     },
@@ -38,6 +38,7 @@ function WebcamImage({ onImageUpload }) {
           let base64data = reader.result;
           setImg(base64data);
           onImageUpload(base64data);
+          console.log(base64data);
         };
       }
     },
@@ -60,14 +61,17 @@ function WebcamImage({ onImageUpload }) {
   }, [webcamRef]);
 
   return (
-    <div className="Container">
+    <div
+      className="Container"
+      style={{ display: "flex", flexDirection: "column" }}
+    >
       {img === null ? (
         <>
           {hasCameraPermission ? (
             <Webcam
               audio={false}
               mirrored={true}
-              height={300}
+              height={200}
               width={"auto"}
               ref={webcamRef}
               screenshotFormat="image/jpeg"
@@ -98,15 +102,22 @@ function WebcamImage({ onImageUpload }) {
               </Button>
             </div>
           )}
-          <Row gutter={0} style={{ display: "flex", justifyContent: "center" }}>
+          <Row
+            gutter={0}
+            style={{
+              display: "flex",
+              justifyContent: "space-around",
+              marginTop: "0.5rem",
+            }}
+          >
             {hasCameraPermission && (
-              <Col span={12}>
+              <Col>
                 <Button size="small" onClick={capture}>
                   Capture photo
                 </Button>
               </Col>
             )}
-            <Col span={12}>
+            <Col>
               <Upload {...props}>
                 <Button size="small" icon={<UploadOutlined />}>
                   Click to Upload
@@ -117,7 +128,9 @@ function WebcamImage({ onImageUpload }) {
         </>
       ) : (
         <>
-          <img src={img} alt="PatientPhoto" width={"auto"} height={300} />
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <img src={img} alt="PatientPhoto" width={200} height={200} />
+          </div>
           <Row className="py-1">
             <Col span={12}>
               <Button size="small" onClick={() => setImg(null)}>

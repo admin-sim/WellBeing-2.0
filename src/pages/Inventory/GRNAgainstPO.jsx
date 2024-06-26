@@ -29,7 +29,6 @@ const GRNAgainstPO = () => {
     const { Title } = Typography;
 
     useEffect(() => {
-        debugger;
         try {
             customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
                 const apiData = response.data.data;
@@ -42,15 +41,16 @@ const GRNAgainstPO = () => {
     }, []);
 
     const navigate = useNavigate();
-    const handleAddTemplate = () => {
-        navigate('/CreateGRNAgainstPO');
-    }
 
     const colorMapping = {
         Created: 'blue',
         Draft: 'geekblue',
         FINALIZE: 'green',
     };
+
+    const handleGRN = (GrnHeaderId) => {
+        navigate("/CreateGRNAgainstPO", { state: { GrnHeaderId } });
+    }
 
     const columns = [
         {
@@ -66,7 +66,7 @@ const GRNAgainstPO = () => {
             sortDirections: ['descend', 'ascend'],
             render: (text, record, index) => {
                 if (record.GRNStatus === "Created" || record.GRNStatus === "Draft") {
-                    return (<Button type="link" onClick={() => GetModelDetails(text, record, index)}>
+                    return (<Button type="link" onClick={() => handleGRN(record.GRNHeaderId)}>
                         {text}
                     </Button>
                     )
@@ -148,7 +148,6 @@ const GRNAgainstPO = () => {
     ];
 
     const onFinish = async (values) => {
-        debugger;
         try {
             const postData1 = {
                 DocumentType: values.DocumentType,
@@ -173,12 +172,11 @@ const GRNAgainstPO = () => {
                 )
                 .then((response) => {
                     console.log('Response:', response.data);
-                    debugger;
                     setFilteredData(response.data.data.GRNAgainstPODetails);
-                    if(response.data.data.GRNAgainstPODetails.length > 0){
+                    if (response.data.data.GRNAgainstPODetails.length > 0) {
                         setIsTableHasValue(true);
                     }
-                    else{
+                    else {
                         setIsTableHasValue(false);
                     }
                 })
@@ -205,7 +203,7 @@ const GRNAgainstPO = () => {
                         </Title>
                     </Col>
                     <Col offset={5} span={2}>
-                        <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={handleAddTemplate}>
+                        <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={() => handleGRN(0)}>
                             Add GRN Against PO
                         </Button>
                     </Col>

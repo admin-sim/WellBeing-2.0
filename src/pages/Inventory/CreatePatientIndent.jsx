@@ -1,7 +1,7 @@
 import customAxios from '../../components/customAxios/customAxios.jsx';
 import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
-import { urlCreatePurchaseOrder, urlSearchUHID, urlGetAllEncounterForPatientId, urlAutocompleteProduct, urlUpdateIndent, urlEditIndent, urlGetProductDetailsById, urlAddNewIndent } from '../../../endpoints.js';
+import { urlCreatePurchaseOrder, urlSearchUHID, urlGetLastEncounter, urlAutocompleteProduct, urlUpdateIndent, urlEditIndent, urlGetProductDetailsById, urlAddNewIndent } from '../../../endpoints.js';
 import Select from 'antd/es/select';
 import { ConfigProvider, Tooltip, Typography, Checkbox, Tag, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
 import Input from 'antd/es/input';
@@ -388,7 +388,7 @@ const CreatePatientIndent = () => {
         form1
             .validateFields(['UHID'])
             .then(() => {
-                setIsModalOpen(true);                       
+                setIsModalOpen(true);
             })
             .catch((error) => {
                 console.log('Validation error:', error);
@@ -397,7 +397,7 @@ const CreatePatientIndent = () => {
 
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
-    };    
+    };
 
     const handleOnFinish = async (values) => {
         debugger;
@@ -473,7 +473,7 @@ const CreatePatientIndent = () => {
         debugger;
         form1.setFieldsValue({ Name: option.PatientName });
         form1.setFieldsValue({ UHID: option.value });
-        customAxios.get(`${urlGetAllEncounterForPatientId}?PatientId=${option.PatientId}`).then((response) => {
+        customAxios.get(`${urlGetLastEncounter}?Uhid=${option.key}`).then((response) => {
             const apiData = response.data.data;
             if (apiData.length > 0) {
                 setEncounter(apiData);
@@ -639,7 +639,7 @@ const CreatePatientIndent = () => {
                         </Col>
                         <Col className="gutter-row" span={6}>
                             <Form.Item label="Encounter" name="Encounter">
-                                <Select>
+                                <Select disabled={encounter.length > 1 ? false : true}>
                                     {encounter.map((option) => (
                                         <Select.Option key={option.EncounterId} value={option.EncounterId}>{option.GeneratedEncounterId}</Select.Option>
                                     ))}
