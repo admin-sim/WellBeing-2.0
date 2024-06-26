@@ -32,16 +32,11 @@ import {
   DeleteOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-//import Typography from 'antd/es/typography';
 import { useNavigate } from "react-router";
-
 import dayjs from "dayjs";
-
 import { Table, InputNumber } from "antd";
-
-//import { Calculate } from '@mui/icons-material';
 import { useLocation } from "react-router-dom";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import customAxios from "../../components/customAxios/customAxios";
 
 const CreatePurchaseOrder = () => {
@@ -123,8 +118,6 @@ const CreatePurchaseOrder = () => {
 
   const [schedule, setSchedule] = useState(initialDeliveryDataSource);
 
-  //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');
-
   useEffect(() => {
     customAxios.get(urlCreatePurchaseOrder).then((response) => {
       const apiData = response.data.data;
@@ -153,8 +146,8 @@ const CreatePurchaseOrder = () => {
             const formdata = editeddata.newPurchaseOrderModel;
 
             form1.setFieldsValue({
-              SupplierList: formdata.SupplierId,
-              StoreDetails: formdata.ProcurementStoreId,
+              SupplierId: formdata.SupplierId,
+              StoreId: formdata.ProcurementStoreId,
               DocumentType: formdata.DocumentType,
               TotalAmount: formdata.PoTotalAmount,
               totalpoAmount: formdata.PoTotalAmount,
@@ -167,7 +160,6 @@ const CreatePurchaseOrder = () => {
               })
             );
             setCounterDelivery(editeddata.DeliveryDetails.length + 1)
-            // setSchedule(editeddata.DeliveryDetails);
             const updatedSchedule = delivery.map(item => {
               const key = item.key;
               const prod = editeddata.PurchaseOrderDetails.filter(item1 => item1.PoLineId === item.PoLineId)
@@ -214,8 +206,6 @@ const CreatePurchaseOrder = () => {
   };
   const handleOnFinish = async (values) => {
     debugger;
-    console.log("values:", values);
-    console.log("tabledata:", data);
     const products = [];
     for (let i = 1; i <= data.length; i++) {
       if (values[i] !== undefined) {
@@ -243,8 +233,8 @@ const CreatePurchaseOrder = () => {
 
     const purchaseOrder = {
       PoHeaderId: values.PoHeaderId,
-      SupplierId: values.SupplierList === undefined ? '' : values.SupplierList,
-      ProcurementStoreId: values.StoreDetails === undefined ? '' : values.StoreDetails,
+      SupplierId: values.SupplierId === undefined ? '' : values.SupplierId,
+      ProcurementStoreId: values.StoreId === undefined ? '' : values.StoreId,
       DocumentType: values.DocumentType === undefined ? '' : values.DocumentType,
       PoDate: values.PODate,
       PoStatus: values.POStatus === undefined ? 'Created' : values.POStatus,
@@ -254,13 +244,6 @@ const CreatePurchaseOrder = () => {
       PoTaxAmount: values.gstTax === undefined ? 0 : values.gstTax,
     };
 
-    // data.forEach((item) => {
-    //   for (let key in item) {
-    //     if (key !== "LongName" && key !== "ShortName" && item[key] === "") {
-    //       item[key] = 0;
-    //     }
-    //   }
-    // });
     const activeData = schedule.filter((item) => item.ActiveFlag === true && item.ProductId);
     const postData = {
       newPurchaseOrderModel: purchaseOrder,
@@ -338,7 +321,6 @@ const CreatePurchaseOrder = () => {
   };
 
   const handleAddDelivery = async () => {
-    //setProductOptions([]);
     await form2.validateFields();
     setSchedule([
       ...schedule,
@@ -355,23 +337,6 @@ const CreatePurchaseOrder = () => {
     ]);
     setCounterDelivery(counterDelivery + 1);
   };
-
-  // const handlePoDate = (date, dateString) => {
-  //   setPoDate(dateString);
-  // };
-
-  // const handleDeliveryInputChange = (e, column, index, record) => {
-  //   debugger;
-  //   const newData = schedule.map((item) => {
-  //     if (item.key === record.key) {
-  //       const updatedItem = { ...item, [column]: e.target.value };
-  //       return updatedItem;
-  //     }
-  //     return item;
-  //   });
-  //   // Update the state with the new data
-  //   setSchedule(newData);
-  // };
 
   const handleSearch = async (searchText) => {
     debugger
@@ -509,19 +474,10 @@ const CreatePurchaseOrder = () => {
       totalpoAmount: totalAmount,
     });
   };
-  const ModelAdd = () => {
 
-  };
   const onFinishModel = async (values) => {
 
   };
-
-  // const handleOpenModal = async (record) => {
-  //   // handle opening of modal here
-  //   console.log("deliveryrecord", record);
-
-  //   setModalVisible(true);
-  // };
 
   const handleOpenModal = async (record) => {
     debugger;
@@ -574,32 +530,6 @@ const CreatePurchaseOrder = () => {
     }
   };
 
-
-  // const handleSaveModal = async () => {
-  //   debugger;
-  //   await form2.validateFields();
-  //   const values = form2.getFieldsValue();
-
-  //   const updatedSchedule = schedule.map(item => {
-  //     const key = item.key;
-
-  //     if (values[key].DeliveryQuantity || values[key].DeliveryDate || values[key].DeliveryLocation) {
-  //       return {
-  //         ...item,
-  //         ProductId: deliveryRecord.ProductId,
-  //         DeliveryQuantity: values[key].DeliveryQuantity,
-  //         DeliveryDate: values[key].DeliveryDate,
-  //         DeliveryLocation: values[key].DeliveryLocation,
-  //       };
-  //     }
-  //     return item;
-  //   });
-
-  //   setSchedule(updatedSchedule);
-  //   console.log('modalsavedvalues', updatedSchedule);
-  //   setModalVisible(false);
-  // };
-
   const ModelDelete = (record) => {
     debugger
     const newData = schedule.map((item) => {
@@ -638,9 +568,8 @@ const CreatePurchaseOrder = () => {
       width: 150,
       render: (text, record, index) => (
         <Form.Item
-          // name={["UomId", record.key]} 
           name={[record.key, 'UomId']}
-        // rules={[{ required: true, message: "Required" }]}        
+        // rules={[{ required: true, message: "Required" }]}
         >
           {deliveryRecord.Uom === undefined ? record.Uom : deliveryRecord.Uom}
         </Form.Item>
@@ -653,7 +582,6 @@ const CreatePurchaseOrder = () => {
       render: (text, record, index) => (
         <Form.Item
           style={{ width: 200 }}
-          // name={["DeliveryDate", record.key]}
           name={[record.key, 'DeliveryDate']}
           initialValue={record.DeliveryDate}
         >
@@ -671,7 +599,6 @@ const CreatePurchaseOrder = () => {
       key: "DeliveryLocation",
       render: (text, record, index) => (
         <Form.Item
-          // name={["DeliveryLocation", record.key]}
           name={[record.key, 'DeliveryLocation']}
           initialValue={record.DeliveryLocation}
           style={{ width: 200 }}
@@ -702,7 +629,6 @@ const CreatePurchaseOrder = () => {
           <DeleteOutlined />
         </Popconfirm>
       ),
-      //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>
     },
   ];
 
@@ -717,7 +643,6 @@ const CreatePurchaseOrder = () => {
         <>
           <Form.Item
             name={[record.key, 'ProductName']}
-            // name={["ProductId", record.key]}
             rules={[{ required: true, message: "Required" }]}
             initialValue={record.LongName == undefined ? record.ProductName : record.LongName}
           >
@@ -751,7 +676,6 @@ const CreatePurchaseOrder = () => {
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, 'UomId']}
-          // name={["UomId", record.key]}
           rules={[{ required: true, message: "Required" }]}
           initialValue={record.UomId}
         >
@@ -762,9 +686,7 @@ const CreatePurchaseOrder = () => {
           >
             {DropDown.UOM.map((option) => (
               <Option key={option.UomId} value={option.UomId}>
-                <Option key={option.UomId} value={option.UomId}>
-                  {option.ShortName}
-                </Option>
+                {option.ShortName}
               </Option>
             ))}
           </Select>
@@ -780,7 +702,6 @@ const CreatePurchaseOrder = () => {
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, 'PoQuantity']}
-          // name={["PoQuantity", record.key]}
           rules={[
             {
               required: true,
@@ -788,8 +709,6 @@ const CreatePurchaseOrder = () => {
             },
 
           ]}
-          style={{ width: "100%" }}
-          initialValue={record.PoQuantity}
           style={{ width: "100%" }}
           initialValue={record.PoQuantity}
         >
@@ -851,8 +770,6 @@ const CreatePurchaseOrder = () => {
             },
 
           ]}
-          style={{ width: "100%" }}
-          initialValue={record.PoRate}
           style={{ width: "100%" }}
           initialValue={record.PoRate}
         >
@@ -1071,7 +988,6 @@ const CreatePurchaseOrder = () => {
           initialValue={record.AvailableQuantity}
         >
           <InputNumber disabled min={0} defaultValue={text} />
-          <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
       )
     },
@@ -1132,21 +1048,17 @@ const CreatePurchaseOrder = () => {
           layout="vertical"
           onFinish={handleOnFinish}
           onFinishFailed={onFinishFailed}
-          onFinishFailed={onFinishFailed}
           variant="outlined"
           size="default"
           initialValues={{
             PODate: dayjs(),
-            // SupplierList: headerData.VendorId
           }}
           form={form1}
-        // SupplierList: headerData.VendorId
-
         >
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
             <Col className="gutter-row" span={6}>
               <div>
-                <Form.Item label="Supplier" name="SupplierList"
+                <Form.Item label="Supplier" name="SupplierId"
                   rules={[
                     {
                       required: true,
@@ -1167,7 +1079,7 @@ const CreatePurchaseOrder = () => {
             </Col>
             <Col className="gutter-row" span={6}>
               <div>
-                <Form.Item label="Procurement Store" name="StoreDetails"
+                <Form.Item label="Procurement Store" name="StoreId"
                   rules={[
                     {
                       required: true,
@@ -1217,25 +1129,12 @@ const CreatePurchaseOrder = () => {
               <div>
                 <Form.Item label="PO Date" name="PODate">
                   <DatePicker style={{ width: '100%' }} disabled format='DD-MM-YYYY' />
-                  {/* <DatePicker
-                    style={{ width: "100%" }}
-                    disabled
-                    format="DD-MM-YYYY"
-                    // onChange={handlePoDate}
-                  /> */}
                 </Form.Item>
               </div>
             </Col>
             <Col className="gutter-row" span={6}>
               <div>
-                <Form.Item label="PO Status" name="POStatus"
-                // rules={[
-                //   {
-                //     required: true,
-                //     message: 'Please input!'
-                //   }
-                // ]}
-                >
+                <Form.Item label="PO Status" name="POStatus">
                   <Select allowClear placeholder='Select Value'>
                     <Option value="Draft">Draft</Option>
                     <Option value="Pending">Finalize</Option>
@@ -1244,7 +1143,7 @@ const CreatePurchaseOrder = () => {
               </div>
             </Col>
             <Col>
-              <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }}>
+              <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }} valuePropName='cheched'>
                 <Checkbox>Submit</Checkbox>
               </Form.Item>
             </Col>
@@ -1295,13 +1194,13 @@ const CreatePurchaseOrder = () => {
             float: "right",
           }}
         >
-          <Form.Item
+          {/* <Form.Item
             label="Amount"
             name="TotalAmount"
             style={{ marginRight: "16px", width: 100 }}
           >
-          </Form.Item>
-          <Divider style={{ marginTop: "0" }}></Divider>
+          </Form.Item> */}
+          {/* <Divider style={{ marginTop: "0" }}></Divider>
           <Button
             type="primary"
             onClick={handleAddRow}
@@ -1325,22 +1224,21 @@ const CreatePurchaseOrder = () => {
               marginBottom: "16px",
               float: "right",
             }}
-          >
+          >*/}
             <Form.Item
               label="Amount"
               name="TotalAmount"
               style={{ marginRight: "16px", width: 100 }}
             >
               <InputNumber min={0} disabled />
-            </Form.Item>
-            <Form.Item label="GST Tax" name='gstTax' style={{ marginRight: '16px', width: 100 }}>
-              <InputNumber min={0} disabled />
-            </Form.Item>
-            <Form.Item label="Total PO Amount" name='totalpoAmount' style={{ width: 150 }}>
-              <InputNumber min={0} disabled />
-            </Form.Item>
-          </div>
-     
+            </Form.Item> 
+          <Form.Item label="GST Tax" name='gstTax' style={{ marginRight: '16px', width: 100 }}>
+            <InputNumber min={0} disabled />
+          </Form.Item>
+          <Form.Item label="Total PO Amount" name='totalpoAmount' style={{ width: 150 }}>
+            <InputNumber min={0} disabled />
+          </Form.Item>
+        </div>
         <Modal
           width={1000}
           maskClosable={false}
@@ -1395,7 +1293,7 @@ const CreatePurchaseOrder = () => {
           </Form>
         </Modal>
       </div>
-    </div>
+      {/* </div> */}
     </Layout >
   );
 }

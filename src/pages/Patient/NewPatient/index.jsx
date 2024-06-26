@@ -93,6 +93,7 @@ const NewPatient = () => {
 
   const handleImageUpload = (base64data) => {
     setUploadedImage(base64data);
+    console.log(base64data);
   };
   //Default Patient data
 
@@ -407,76 +408,114 @@ const NewPatient = () => {
   };
 
   const handleOnFinish = async (values) => {
+    debugger;
     setLoadings(true);
     console.log("Received values from form: ", values);
 
     values.dob = selecteddob;
     const patientDetails = {
       PatientId: 0,
-      PatientTitle: values.title,
-      PatientFirstName: values.PatientFirstName,
+      PatientTitle: values.title === undefined ? null : values.title,
+      PatientFirstName:
+        values.PatientFirstName === undefined || values.PatientFirstName === ""
+          ? null
+          : values.PatientFirstName,
       PatientMiddleName:
-        values.PatientMiddleName === undefined
+        values.PatientMiddleName === undefined ||
+        values.PatientMiddleName === ""
           ? null
           : values.PatientMiddleName,
-      PatientLastName: values.PatientLastName,
-      Gender: values.PatientGender,
+      PatientLastName:
+        values.PatientLastName === undefined || values.PatientLastName === ""
+          ? null
+          : values.PatientLastName,
+      Gender: values.PatientGender === undefined ? null : values.PatientGender,
       FacilityId: 1,
       BloodGroup: values.BloodGroup === undefined ? null : values.BloodGroup,
-      DateOfBirthstring: values.dob,
+      DateOfBirthstring: values.dob === undefined ? null : values.dob,
       FatherHusbandTitle:
         values.titleFatherHusband === undefined
           ? null
           : values.titleFatherHusband,
       FatherHusbandName:
-        values.FatherHusbandName === undefined
+        values.FatherHusbandName === undefined ||
+        values.FatherHusbandName === ""
           ? null
           : values.FatherHusbandName,
       MaritalStatus:
         values.MaritalStatus === undefined ? null : values.MaritalStatus,
-      Height: values.Height === undefined ? null : values.Height,
-      Weight: values.Weight === undefined ? null : values.Weight,
-      MobileNumber: values.MobileNumber,
+      Height:
+        values.Height === undefined || values.Height === ""
+          ? null
+          : values.Height,
+      Weight:
+        values.Weight === undefined || values.Weight === ""
+          ? null
+          : values.Weight,
+      MobileNumber:
+        values.MobileNumber === undefined || values.MobileNumber === ""
+          ? null
+          : values.MobileNumber,
       LandlineNumber:
-        values.LandlineNumber === undefined ? null : values.LandlineNumber,
-      EmailId: values.EmailId === undefined ? null : values.EmailId,
+        values.LandlineNumber === undefined || values.LandlineNumber === ""
+          ? null
+          : values.LandlineNumber,
+      EmailId:
+        values.EmailId === undefined || values.EmailId === ""
+          ? null
+          : values.EmailId,
       PresentAddress1:
-        values.presentAddress1 === undefined ? null : values.presentAddress1,
+        values.presentAddress1 === undefined || values.presentAddress1 === ""
+          ? null
+          : values.presentAddress1,
       ReligionId: values.Religion === undefined ? null : values.Religion,
       PermanentAddress1:
-        values.permanentAddress1 === undefined
+        values.permanentAddress1 === undefined ||
+        values.permanentAddress1 === ""
           ? null
           : values.permanentAddress1,
-      PermanentCountryId: values.permanentCountryId,
+      PermanentCountryId: values?.permanentCountryId,
       PermanentStateId: values.permanentStateId,
       PermanentPlaceId: values.permanentPlaceId,
-      PermanentAreaId:
-        values.permanentAreaId === undefined ? null : values.permanentAreaId,
+      PermanentAreaId: values.permanentAreaId,
       PermanentPinCode:
-        values.permanentPinCode === undefined ? null : values.permanentPinCode,
+        values.permanentPinCode === undefined || values.permanentPinCode === ""
+          ? null
+          : values.permanentPinCode,
       // PhotoUrl: uploadedImage,
-      PresentCountryId: values.presentCountryId,
+      PresentCountryId: values?.presentCountryId,
       PresentStateId: values.presentStateId,
       PresentPlaceId: values.presentPlaceId,
-      PresentAreaId:
-        values.presentAreaId === undefined ? null : values.presentAreaId,
+      PresentAreaId: values.presentAreaId,
       PresentPinCode:
-        values.presentPinCode === undefined ? null : values.presentPinCode,
-      Occupation: values.Occupation === undefined ? null : values.Occupation,
+        values.presentPinCode === undefined || values.presentPinCode === ""
+          ? null
+          : values.presentPinCode,
+      Occupation:
+        values.Occupation === undefined || values.Occupation === ""
+          ? null
+          : values.Occupation,
       EthnicityId: values.Ethnicity === undefined ? null : values.Ethnicity,
       PrimaryLanguageId:
         values.PrimaryLanguageId === undefined
           ? null
           : values.PrimaryLanguageId,
       CanSpeakEnglish:
-        values.CanSpeakEnglish === undefined ? null : values.CanSpeakEnglish,
-      BirthPlace: values.BirthPlace === undefined ? null : values.BirthPlace,
+        values.CanSpeakEnglish === undefined || values.CanSpeakEnglish === ""
+          ? null
+          : values.CanSpeakEnglish,
+      BirthPlace:
+        values.BirthPlace === undefined || values.BirthPlace === ""
+          ? null
+          : values.BirthPlace,
       BirthIdentification1:
-        values.birthIdentification1 === undefined
+        values.birthIdentification1 === undefined ||
+        values.birthIdentification1 === ""
           ? null
           : values.birthIdentification1,
       BirthIdentification2:
-        values.birthIdentification2 === undefined
+        values.birthIdentification2 === undefined ||
+        values.birthIdentification2 === ""
           ? null
           : values.birthIdentification2,
     };
@@ -597,7 +636,7 @@ const NewPatient = () => {
       });
       form2.resetFields();
     }
-
+    form2.resetFields();
     setIdentifierDetails(identifiersArray);
     setIsModalOpen(false);
   };
@@ -935,7 +974,7 @@ const NewPatient = () => {
                           rules={[
                             {
                               pattern: /^\d{2,3}$/,
-                              message: "Please enter valid input for height",
+                              message: "Please enter valid input for weight",
                             },
                           ]}
                         >
@@ -1185,12 +1224,12 @@ const NewPatient = () => {
                       message: "Please enter your mobile number.",
                     },
                     {
-                      pattern: new RegExp(/^\d{10}$/),
-                      message: "Invalid mobile number!",
+                      pattern: /^\d{10}$/,
+                      message: "Please enter a valid 10 digit number!",
                     },
                   ]}
                 >
-                  <Input />
+                  <Input maxLength={10} />
                 </Form.Item>
               </Col>
               <Col span={6}>
