@@ -22,7 +22,7 @@ function DiscountModal({
   open,
   handleClose,
   discountDetails,
-  setColumnData,
+  setCharges,
 }) {
   const [form] = Form.useForm();
 
@@ -47,6 +47,9 @@ function DiscountModal({
     debugger;
       values.ChargeID=discountDetails.ChargeID;
       values.ServiceId=discountDetails.ServiceId;
+      values.PatientId=discountDetails.PatientId;
+      values.EncounterId=discountDetails.EncounterId;
+
       try {
         const response = await customAxios.post(
           urlUpdateDiscount,
@@ -57,17 +60,17 @@ function DiscountModal({
             },
           }
         );
-        if (response.status == 200 && response.data) {
-          if (response.status === 200 && response.data.data===true) {
+    
+          if (response.status === 200 && response.data.data!=null) {
           
-           // setColumnData(resdata.BillTariffLineModels);
+            setCharges(response.data.data.PatientAccountCharges);
            message.success("Discount Applied");
             handleCancel();
             
           } else {
             message.error("Something Went Wrong");
           }
-        }
+        
       } catch (error) {
         message.error("Something went wrong");
         console.error(error);

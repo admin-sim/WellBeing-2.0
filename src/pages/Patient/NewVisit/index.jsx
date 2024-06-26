@@ -22,6 +22,8 @@ import {
   urlGetBedsForWard,
 } from "../../../../endpoints.js";
 
+import debounce from "lodash/debounce";
+
 import { EnvironmentOutlined } from "@ant-design/icons";
 import "../style.css";
 import Title from "antd/es/typography/Title.js";
@@ -46,6 +48,8 @@ const NewVisit = () => {
     WardCategory: [],
   });
   const [loading, setLoading] = useState(false);
+  const [AutoCompleteLoader, setAutomaticLoader] = useState(false);
+  const [ModalLoader, setModalLoader] = useState(false);
 
   const [options, setOptions] = useState([]);
 
@@ -83,11 +87,10 @@ const NewVisit = () => {
 
   useEffect(() => {
     debugger;
-    setLoading(true);
+
     customAxios.get(urlGetPatientDetail).then((response) => {
       const apiData = response.data.data;
       setPatientDropdown(apiData);
-      setLoading(false);
     });
   }, []);
 
@@ -98,19 +101,16 @@ const NewVisit = () => {
 
   const handleReset = () => {
     form.resetFields();
+    setPatientSearchDetails(null);
   };
 
-  const handleSelect = (value, option) => {
-    debugger;
-    console.log("UhId", value);
-    setSelectedUhId(option.value);
-  };
-
-  const handleAutoCompleteChange = async (value) => {
-    debugger;
+  const handleAutoCompleteChange = debounce(async (value) => {
     try {
+      setAutomaticLoader(true); // Set loading state to true
+
       if (!value.trim()) {
         setOptions([]); // Set options to an empty array
+        setAutomaticLoader(false); // Set loading state to false
         return;
       }
 
@@ -123,20 +123,25 @@ const NewVisit = () => {
         responseData.length > 0 &&
         responseData[0].UhId !== undefined
       ) {
+        setAutomaticLoader(false);
         const newOptions = responseData.map((option) => ({
           value: option.UhId,
           label: option.UhId,
           key: option.PatientId,
         }));
         setOptions(newOptions);
-        // setOptions(responseData);
       } else {
         setOptions([]); // Set options to an empty array if the structure is not as expected
       }
     } catch (error) {
+      setAutomaticLoader(false);
       console.error("Error fetching suggestions:", error);
       setOptions([]); // Set options to an empty array in case of an error
     }
+  }, 300); // Debounce time in milliseconds (adjust as needed)
+
+  const handleSelect = (value, option) => {
+    setSelectedUhId(option.value);
   };
 
   function formatDate(inputDate) {
@@ -193,33 +198,37 @@ const NewVisit = () => {
     // Handle form submission logic here
     console.log("Form submitted with values:", values);
 
-    console.log("Form Values:", values);
-
-    // ... Repeat for other parameters
     try {
       setLoading(true);
-
       values.dob = selecteddob;
       values.RegFrom = selectedRegFrom;
       values.RegTo = selectedRegTo;
       // Assuming postData1 is an object with your input values
       const postData1 = {
-        Uhid: values.Uhid === undefined ? '""' : values.Uhid, // Set to empty string when left blank
+        Uhid:
+          values.Uhid === undefined || values.Uhid === "" ? '""' : values.Uhid, // Set to empty string when left blank
         NameFilter: values.NameFilter === undefined ? "" : values.NameFilter,
         PatientName:
-          values.PatientName === undefined ? '""' : values.PatientName,
+          values.PatientName === undefined || values.PatientName === ""
+            ? '""'
+            : values.PatientName,
         DateOfBirth: values.dob === undefined ? '""' : values.dob,
         RegistrationFrom: values.RegFrom === undefined ? '""' : values.RegFrom,
         RegistrationTo: values.RegTo === undefined ? '""' : values.RegTo,
-        Age: values.Age === undefined ? "" : values.Age,
+        Age: values.Age === undefined || values.Age === "" ? "" : values.Age,
         Gender: values.PatientGender === undefined ? "" : values.PatientGender,
         MobileNumber:
-          values.MobileNumber === undefined ? '""' : values.MobileNumber,
-        City: values.City === undefined ? '""' : values.City,
+          values.MobileNumber === undefined || values.MobileNumber === ""
+            ? '""'
+            : values.MobileNumber,
+        City:
+          values.City === undefined || values.City === "" ? '""' : values.City,
         identifierType:
           values.IdentifierType === undefined ? "" : values.IdentifierType,
         IdentifierTypeValue:
-          values.IdentifierValue === undefined ? '""' : values.IdentifierValue,
+          values.IdentifierValue === undefined || values.IdentifierValue === ""
+            ? '""'
+            : values.IdentifierValue,
       };
       customAxios
         .get(
@@ -230,17 +239,16 @@ const NewVisit = () => {
           }
         )
         .then((response) => {
+          setLoading(false);
           console.log("Response:", response.data);
           //resetForm();
           setPatientSearchDetails(response.data.data.Patients);
           setOptions([]);
-          setLoading(false);
         });
     } catch (error) {
+      setLoading(false);
       // Handle any errors here
       console.error("Error:", error);
-    } finally {
-      setLoading(false); // Set loading state to false when the operation is complete
     }
     // Reset the form fields
   };
@@ -256,7 +264,7 @@ const NewVisit = () => {
   };
 
   const handleEditRegistrationsDetails = (record) => {
-    // debugger;
+    debugger;
 
     const url = `/patient/PatientEdit`;
 
@@ -278,6 +286,7 @@ const NewVisit = () => {
 
   const handleOk = async () => {
     debugger;
+    setModalLoader(true);
     try {
       await form1.validateFields(); // Trigger form validation
       const values = form1.getFieldsValue();
@@ -302,37 +311,33 @@ const NewVisit = () => {
         BedId: values.Bed,
       };
 
-      try {
-        // Send a POST request to the server
-        const response = await customAxios.post(urlAddNewVisit1, postData, {
-          headers: {
-            "Content-Type": "application/json", // Replace with the appropriate content type if needed
-            // Add any other required headers here
-          },
-        });
+      // Send a POST request to the server
+      const response = await customAxios.post(urlAddNewVisit1, postData, {
+        headers: {
+          "Content-Type": "application/json", // Replace with the appropriate content type if needed
+          // Add any other required headers here
+        },
+      });
 
-        if (response.data != null) {
+      // Check if the request was successful
+      if (response.data != null) {
+        if (response.data.EncounterResult != null) {
+          messageApi.warning({
+            type: "warning",
+            content: `Patient visit is already created as In-Patient`,
+          });
+        } else {
           const genVisitId = response.data.GeneratedEncounterId;
           setEncounterId(genVisitId);
-        } else {
-          alert("Invalid Login");
-        }
-        // Check if the request was successful
-        if (response.status !== 200) {
-          throw new Error(
-            `Server responded with status code ${response.status}`
-          );
-        } else {
           messageApi.open({
             type: "success",
             content: `Successfully  visit created for patient.`,
           });
         }
-      } catch (error) {
-        console.error("Failed to send data to server: ", error);
+      } else {
         messageApi.open({
           type: "error",
-          content: `Error creating visit for patient: ${error}.`,
+          content: `Visit Creation Unsuccessful`,
         });
       }
 
@@ -345,6 +350,13 @@ const NewVisit = () => {
       // Additional logic after the asynchronous operation
     } catch (error) {
       // Handle errors if needed
+      console.error("Failed to send data to server: ", error);
+      messageApi.open({
+        type: "error",
+        content: `Error creating visit for patient: ${error}.`,
+      });
+    } finally {
+      setModalLoader(false);
     }
   };
 
@@ -378,7 +390,7 @@ const NewVisit = () => {
         );
 
         if (response.status === 200) {
-          const dept = response.data.data.Department;
+          const dept = response.data.data.Departments;
           setDepartments(dept);
         } else {
           // Handle other response statuses if needed
@@ -407,14 +419,14 @@ const NewVisit = () => {
           `${urlGetServiceLocationBasedonId}?DepartmentId=${value}&patienttype=${patientTypeValue}`
         );
         if (providerResponse.status === 200) {
-          const provider = providerResponse.data.data.Provider;
+          const provider = providerResponse.data.data.Providers;
           setProviders(provider);
         } else {
           console.error("Failed to fetch providers");
         }
 
         if (serviceLocationResponse.status === 200) {
-          const serviceLoc = serviceLocationResponse.data.data.ServiceLocation;
+          const serviceLoc = serviceLocationResponse.data.data.ServiceLocations;
           setServiceLocations(serviceLoc);
         } else {
           console.error("Failed to fetch service locations");
@@ -640,6 +652,7 @@ const NewVisit = () => {
                   <AutoComplete
                     id="uhid-autocomplete"
                     options={options}
+                    //loading={AutoCompleteLoader}
                     onSearch={handleAutoCompleteChange}
                     onSelect={handleSelect}
                     value={selectedUhId}
@@ -651,6 +664,17 @@ const NewVisit = () => {
                     allowClear
                   />
                 </Form.Item>
+                {AutoCompleteLoader && (
+                  <Spin
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      zIndex: 1,
+                    }}
+                  />
+                )}
               </div>
             </Col>
             <Col className="gutter-row" span={6}>
@@ -800,10 +824,11 @@ const NewVisit = () => {
             </Col>
           </Row>
           <Row justify="end">
-            <Col style={{ marginRight: "1rem" }}>
-              <Form.Item>
-                <Button type="primary" htmlType="submit">
-                  Search
+            <Col style={{ marginRight: "10px" }}>
+              <Form.Item disabled={loading}>
+                <Button type="primary" htmlType="submit" disabled={loading}>
+                  {/* Search */}
+                  {loading ? "Searching..." : "Search"}
                 </Button>
               </Form.Item>
             </Col>
@@ -816,22 +841,23 @@ const NewVisit = () => {
             </Col>
           </Row>
         </Form>
-      </div>
-      <Card>
         <Spin spinning={loading}>
-          <Table
-            rowHoverable
-            dataSource={patientsearchDetails}
-            columns={columns}
-            className="custom-table"
-            rowKey={(row) => row.PatientId}
-            size="small"
-            onChange={(pagination) => {
-              setCurrentPage(pagination.current);
-              setItemsPerPage(pagination.pageSize);
-            }}
-            bordered
-          />
+          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+            <Col span={24}>
+              <Table
+                dataSource={patientsearchDetails}
+                columns={columns}
+                className="custom-table"
+                rowKey={(row) => row.PatientId}
+                size="small"
+                onChange={(pagination) => {
+                  setCurrentPage(pagination.current);
+                  setItemsPerPage(pagination.pageSize);
+                }}
+                bordered
+              />
+            </Col>
+          </Row>
         </Spin>
         <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
           <Col className="gutter-row" span={12} offset={6}>
@@ -858,7 +884,7 @@ const NewVisit = () => {
             </div>
           </Col>
         </Row>
-      </Card>
+      </div>
 
       <ConfigProvider
         theme={{
@@ -874,6 +900,8 @@ const NewVisit = () => {
           open={isVisitModalVisible}
           onOk={handleOk}
           // okButtonProps={{ disabled: IsVisitCreated }}
+          //confirmLoading={ModalLoader}
+          confirmLoading={ModalLoader}
           onCancel={handleVisitModalCancel}
           okText="Submit"
           maskClosable={false}
@@ -1059,7 +1087,29 @@ const NewVisit = () => {
                     </Col>
                     <Col span={12}>
                       <Form.Item name="admittedUnder" label="Admitted Under">
-                        <Input allowClear />
+                        <Select
+                          allowClear
+                          showSearch // Enable search functionality
+                          filterOption={(input, option) =>
+                            option.children
+                              .toLowerCase()
+                              .includes(input.toLowerCase())
+                          }
+                          filterSort={(optionA, optionB) =>
+                            optionA.children
+                              .toLowerCase()
+                              .localeCompare(optionB.children.toLowerCase())
+                          } // Custom filtering logic
+                        >
+                          {providers.map((option) => (
+                            <Select.Option
+                              key={option.ProviderId}
+                              value={option.ProviderId}
+                            >
+                              {option.ProviderName}
+                            </Select.Option>
+                          ))}
+                        </Select>
                       </Form.Item>
                     </Col>
                     <Col span={12}>
