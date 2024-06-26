@@ -230,3 +230,4 @@ export const urlCancelSelectedAppointment = `${baseURL}/api/ScheduleProviderAppo
 export const urlGetSlotTransferDetails = `${baseURL}/api/ScheduleProviderAppointment/GetSlotTransferDetails`;
 export const urlGetFutureAppointmentDateSessions = `${baseURL}/api/ScheduleProviderAppointment/GetFutureAppointmentDateSessions`;
 export const urlTransferSelectedAppointment = `${baseURL}/api/ScheduleProviderAppointment/TransferSelectedAppointment`;
+export const urlGetEncounterDetails = `${baseURL}/api/Encounter/GetEncounterDetails`;
