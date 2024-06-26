@@ -20,7 +20,7 @@ import {
   Row,
   AutoComplete,
   message,
-  Button
+  Button,
 } from "antd";
 import Input from "antd/es/input";
 import Form from "antd/es/form";
@@ -38,6 +38,7 @@ import { Table, InputNumber } from "antd";
 import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import customAxios from "../../components/customAxios/customAxios";
+import { FaPlusCircle } from "react-icons/fa";
 
 const CreatePurchaseOrder = () => {
   const [DropDown, setDropDown] = useState({
@@ -46,7 +47,7 @@ const CreatePurchaseOrder = () => {
     SupplierList: [],
     UOM: [],
     TaxType: [],
-    DateFormat: []
+    DateFormat: [],
   });
   const location = useLocation();
   const PoHeaderId = location.state.PoHeaderId;
@@ -60,7 +61,7 @@ const CreatePurchaseOrder = () => {
 
   const [counter, setCounter] = useState(2);
   const [counterDelivery, setCounterDelivery] = useState(2);
-  const [buttonTitle, setButtonTitle] = useState('Save');
+  const [buttonTitle, setButtonTitle] = useState("Save");
   const [productOptions, setProductOptions] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -71,31 +72,31 @@ const CreatePurchaseOrder = () => {
   const initialDataSource =
     PoHeaderId === 0
       ? [
-        {
-          key: 1,
-          ProductName: '',
-          // ProductId: 0,
-          PoLineId: 0,
-          UomId: "",
-          PoQuantity: "",
-          BonusQuantity: 0,
-          PoRate: "",
-          DiscountRate: 0,
-          DiscountAmount: 0,
-          MrpExpected: 0,
-          TaxType1: '',
-          TaxAmount1: 0,
-          TaxType2: '',
-          TaxAmount2: 0,
-          LineAmount: 0,
-          LineAmount: 0,
-          AvailableQuantity: 0,
-          deliverySchedule: "",
-          LongName: "",
-          ShortName: "",
-          ActiveFlag: true,
-        },
-      ]
+          {
+            key: 1,
+            ProductName: "",
+            // ProductId: 0,
+            PoLineId: 0,
+            UomId: "",
+            PoQuantity: "",
+            BonusQuantity: 0,
+            PoRate: "",
+            DiscountRate: 0,
+            DiscountAmount: 0,
+            MrpExpected: 0,
+            TaxType1: "",
+            TaxAmount1: 0,
+            TaxType2: "",
+            TaxAmount2: 0,
+            LineAmount: 0,
+            LineAmount: 0,
+            AvailableQuantity: 0,
+            deliverySchedule: "",
+            LongName: "",
+            ShortName: "",
+            ActiveFlag: true,
+          },
+        ]
       : [];
 
   const [data, setData] = useState(initialDataSource);
@@ -103,17 +104,17 @@ const CreatePurchaseOrder = () => {
   const initialDeliveryDataSource =
     PoHeaderId === 0
       ? [
-        {
-          key: 1,
-          ProductId: "",
-          UomId: '',
-          PoDeliveryId: 0,
-          DeliveryQuantity: "",
-          DeliveryDate: "",
-          DeliveryLocation: "",
-          ActiveFlag: true,
-        },
-      ]
+          {
+            key: 1,
+            ProductId: "",
+            UomId: "",
+            PoDeliveryId: 0,
+            DeliveryQuantity: "",
+            DeliveryDate: "",
+            DeliveryLocation: "",
+            ActiveFlag: true,
+          },
+        ]
       : [];
 
   const [schedule, setSchedule] = useState(initialDeliveryDataSource);
@@ -129,7 +130,7 @@ const CreatePurchaseOrder = () => {
     debugger;
     const fetchData = async () => {
       if (PoHeaderId > 0) {
-        setButtonTitle('Update')
+        setButtonTitle("Update");
         try {
           const response = await customAxios.get(
             `${urlEditPurchaseOrder}?Id=${PoHeaderId}`
@@ -153,26 +154,32 @@ const CreatePurchaseOrder = () => {
               totalpoAmount: formdata.PoTotalAmount,
             });
             setCounter(products.length + 1);
-            const delivery = editeddata.DeliveryDetails.map(
-              (item, index) => ({
-                ...item,
-                key: index + 1,
-              })
-            );
-            setCounterDelivery(editeddata.DeliveryDetails.length + 1)
-            const updatedSchedule = delivery.map(item => {
+            const delivery = editeddata.DeliveryDetails.map((item, index) => ({
+              ...item,
+              key: index + 1,
+            }));
+            setCounterDelivery(editeddata.DeliveryDetails.length + 1);
+            const updatedSchedule = delivery.map((item) => {
               const key = item.key;
-              const prod = editeddata.PurchaseOrderDetails.filter(item1 => item1.PoLineId === item.PoLineId)
+              const prod = editeddata.PurchaseOrderDetails.filter(
+                (item1) => item1.PoLineId === item.PoLineId
+              );
               if (delivery[key - 1] != undefined) {
-                if (delivery[key - 1].DeliveryQuantity || delivery[key - 1].DeliveryDate || delivery[key - 1].DeliveryLocation) {
+                if (
+                  delivery[key - 1].DeliveryQuantity ||
+                  delivery[key - 1].DeliveryDate ||
+                  delivery[key - 1].DeliveryLocation
+                ) {
                   return {
                     ...item,
                     ProductId: prod[0].ProductId,
                     DeliveryQuantity: delivery[key - 1].DeliveryQuantity,
-                    DeliveryDate: DateBindtoDatepicker(delivery[key - 1].DeliveryDate),
+                    DeliveryDate: DateBindtoDatepicker(
+                      delivery[key - 1].DeliveryDate
+                    ),
                     DeliveryLocation: delivery[key - 1].DeliveryLocation,
                     UomId: prod[0].UomId,
-                    Uom: prod[0].Uom
+                    Uom: prod[0].Uom,
                   };
                 }
                 return item;
@@ -190,19 +197,19 @@ const CreatePurchaseOrder = () => {
   }, []);
 
   const handleCancel = () => {
-    const url = '/purchaseOrder';
+    const url = "/purchaseOrder";
     navigate(url);
   };
 
   const DateBindtoDatepicker = (value) => {
     const isoDateString = value;
     const dateValue = new Date(isoDateString);
-    const formattedDate = dayjs(dateValue).format('DD-MM-YYYY');
-    return dayjs(formattedDate, 'DD-MM-YYYY');
-  }
+    const formattedDate = dayjs(dateValue).format("DD-MM-YYYY");
+    return dayjs(formattedDate, "DD-MM-YYYY");
+  };
 
   const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
+    console.log("Failed:", errorInfo);
   };
   const handleOnFinish = async (values) => {
     debugger;
@@ -219,36 +226,49 @@ const CreatePurchaseOrder = () => {
           DiscountAmount: values[i].DiscountAmount,
           MrpExpected: values[i].MrpExpected,
           TaxType1: values[i].TaxType1 === undefined ? 0 : values[i].TaxType1,
-          TaxAmount1: values[i].TaxAmount1 === undefined ? 0 : values[i].TaxAmount1,
+          TaxAmount1:
+            values[i].TaxAmount1 === undefined ? 0 : values[i].TaxAmount1,
           TaxType2: values[i].TaxType2 === undefined ? 0 : values[i].TaxType2,
-          TaxAmount2: values[i].TaxAmount2 === undefined ? 0 : values[i].TaxAmount2,
+          TaxAmount2:
+            values[i].TaxAmount2 === undefined ? 0 : values[i].TaxAmount2,
           LineAmount: values[i].LineAmount,
           PoTotalAmount: values[i].LineAmount,
-          AvailableQuantity: values[i].AvailableQuantity === undefined ? 0 : values[i].AvailableQuantity,
-          PoLineId: values[i].PoLineId === undefined ? 0 : values[i].PoLineId
-        }
+          AvailableQuantity:
+            values[i].AvailableQuantity === undefined
+              ? 0
+              : values[i].AvailableQuantity,
+          PoLineId: values[i].PoLineId === undefined ? 0 : values[i].PoLineId,
+        };
         products.push(product);
       }
     }
 
     const purchaseOrder = {
       PoHeaderId: values.PoHeaderId,
-      SupplierId: values.SupplierId === undefined ? '' : values.SupplierId,
-      ProcurementStoreId: values.StoreId === undefined ? '' : values.StoreId,
-      DocumentType: values.DocumentType === undefined ? '' : values.DocumentType,
+      SupplierId: values.SupplierId === undefined ? "" : values.SupplierId,
+      ProcurementStoreId: values.StoreId === undefined ? "" : values.StoreId,
+      DocumentType:
+        values.DocumentType === undefined ? "" : values.DocumentType,
       PoDate: values.PODate,
-      PoStatus: values.POStatus === undefined ? 'Created' : values.POStatus,
+      PoStatus: values.POStatus === undefined ? "Created" : values.POStatus,
       Remarks: values.Remarks === undefined ? null : values.Remarks,
-      PoPurchaseValue: values.TotalAmount === undefined ? 0 : values.TotalAmount,
-      PoTotalAmount: values.totalpoAmount === undefined ? 0 : values.totalpoAmount,
+      PoPurchaseValue:
+        values.TotalAmount === undefined ? 0 : values.TotalAmount,
+      PoTotalAmount:
+        values.totalpoAmount === undefined ? 0 : values.totalpoAmount,
       PoTaxAmount: values.gstTax === undefined ? 0 : values.gstTax,
     };
 
-    const activeData = schedule.filter((item) => item.ActiveFlag === true && item.ProductId);
+    const activeData = schedule.filter(
+      (item) => item.ActiveFlag === true && item.ProductId
+    );
     const postData = {
       newPurchaseOrderModel: purchaseOrder,
       PurchaseOrderDetails: products,
-      Delivery: activeData.length > 0 && activeData[0].ProductId === '' ? [] : activeData,
+      Delivery:
+        activeData.length > 0 && activeData[0].ProductId === ""
+          ? []
+          : activeData,
     };
     if (PoHeaderId == 0) {
       const response = await customAxios.post(
@@ -296,7 +316,7 @@ const CreatePurchaseOrder = () => {
       ...data,
       {
         key: counter,
-        ProductName: '',
+        ProductName: "",
         // ProductId: 0,
         PoLineId: 0,
         UomId: "",
@@ -306,9 +326,9 @@ const CreatePurchaseOrder = () => {
         DiscountRate: 0,
         DiscountAmount: 0,
         MrpExpected: 0,
-        TaxType1: '',
+        TaxType1: "",
         TaxAmount1: 0,
-        TaxType2: '',
+        TaxType2: "",
         TaxAmount2: 0,
         LineAmount: 0,
         LineAmount: 0,
@@ -327,7 +347,7 @@ const CreatePurchaseOrder = () => {
       {
         key: counterDelivery,
         ProductId: "",
-        UomId: '',
+        UomId: "",
         PoDeliveryId: 0,
         DeliveryQuantity: "",
         DeliveryDate: "",
@@ -339,7 +359,7 @@ const CreatePurchaseOrder = () => {
   };
 
   const handleSearch = async (searchText) => {
-    debugger
+    debugger;
     if (searchText) {
       const response = await customAxios.get(
         `${urlAutocompleteProduct}?Product=${searchText}`
@@ -348,14 +368,14 @@ const CreatePurchaseOrder = () => {
       const newOptions = apiData.map((item) => ({
         value: item.LongName,
         key: item.ProductDefinitionId,
-        UomId: item.UOMPrimaryUOM
+        UomId: item.UOMPrimaryUOM,
       }));
       setProductOptions(newOptions);
     }
   };
 
   function calculateTotalAmount(data) {
-    debugger
+    debugger;
     let LineAmount = 0;
     data.forEach((item) => {
       if (
@@ -372,10 +392,16 @@ const CreatePurchaseOrder = () => {
 
   const handleSelect = (value, option, column, record) => {
     debugger;
-    form1.setFieldsValue({ [record.key]: { ProductId: option.key } })
+    form1.setFieldsValue({ [record.key]: { ProductId: option.key } });
     const newData = data.map((item) => {
       if (item.key === record.key) {
-        const updatedItem = { ...item, [column]: option.key, LongName: option.value, UomId: option.UomId, ProductId: option.key };
+        const updatedItem = {
+          ...item,
+          [column]: option.key,
+          LongName: option.value,
+          UomId: option.UomId,
+          ProductId: option.key,
+        };
         return updatedItem;
       }
       return item;
@@ -409,7 +435,9 @@ const CreatePurchaseOrder = () => {
           updatedItem.LineAmount = amount;
           updatedItem.LineAmount = amount;
 
-          form1.setFieldsValue({ [record.key]: { DiscountAmount: discountAmount } });
+          form1.setFieldsValue({
+            [record.key]: { DiscountAmount: discountAmount },
+          });
           form1.setFieldsValue({ [record.key]: { LineAmount: amount } });
           form1.setFieldsValue({ [record.key]: { LineAmount: amount } });
 
@@ -442,7 +470,11 @@ const CreatePurchaseOrder = () => {
 
     const newData = data.map((item) => {
       if (item.key === record.key) {
-        const updatedItem = { ...item, [column]: option.value, Uom: option.children };
+        const updatedItem = {
+          ...item,
+          [column]: option.value,
+          Uom: option.children,
+        };
         return updatedItem;
       }
       return item;
@@ -466,7 +498,7 @@ const CreatePurchaseOrder = () => {
       }
       return item;
     });
-    setSchedule(newSchedule)
+    setSchedule(newSchedule);
     const totalAmount = calculateTotalAmount(newData);
 
     form1.setFieldsValue({
@@ -475,9 +507,7 @@ const CreatePurchaseOrder = () => {
     });
   };
 
-  const onFinishModel = async (values) => {
-
-  };
+  const onFinishModel = async (values) => {};
 
   const handleOpenModal = async (record) => {
     debugger;
@@ -487,14 +517,14 @@ const CreatePurchaseOrder = () => {
   };
 
   const handleCloseModal = () => {
-    debugger
+    debugger;
     const newData = schedule.map((item) => {
-      if (item.ProductId === '') {
+      if (item.ProductId === "") {
         return { ...item, ActiveFlag: false };
       }
       return item;
     });
-    setSchedule(newData)
+    setSchedule(newData);
     setModalVisible(false);
     form2.resetFields();
   };
@@ -504,19 +534,26 @@ const CreatePurchaseOrder = () => {
     await form2.validateFields();
     const values = form2.getFieldsValue();
     const valuesArray = Object.values(values);
-    const qty = valuesArray.reduce((total, item) => total + (item.DeliveryQuantity || 0), 0);
+    const qty = valuesArray.reduce(
+      (total, item) => total + (item.DeliveryQuantity || 0),
+      0
+    );
     if (qty <= deliveryRecord.PoQuantity) {
-      const updatedSchedule = schedule.map(item => {
+      const updatedSchedule = schedule.map((item) => {
         const key = item.key;
         if (values[key] != undefined) {
-          if (values[key].DeliveryQuantity || values[key].DeliveryDate || values[key].DeliveryLocation) {
+          if (
+            values[key].DeliveryQuantity ||
+            values[key].DeliveryDate ||
+            values[key].DeliveryLocation
+          ) {
             return {
               ...item,
               ProductId: deliveryRecord.ProductId,
               DeliveryQuantity: values[key].DeliveryQuantity,
               DeliveryDate: values[key].DeliveryDate,
               DeliveryLocation: values[key].DeliveryLocation,
-              UomId: deliveryRecord.UomId
+              UomId: deliveryRecord.UomId,
             };
           }
           return item;
@@ -526,12 +563,12 @@ const CreatePurchaseOrder = () => {
       setSchedule(updatedSchedule);
       setModalVisible(false);
     } else {
-      message.warning('Quantity must not be Greater than PO Quantity')
+      message.warning("Quantity must not be Greater than PO Quantity");
     }
   };
 
   const ModelDelete = (record) => {
-    debugger
+    debugger;
     const newData = schedule.map((item) => {
       if (item.key === record.key) {
         return { ...item, ActiveFlag: false };
@@ -539,7 +576,7 @@ const CreatePurchaseOrder = () => {
       return item;
     });
     setSchedule(newData);
-  }
+  };
 
   const columnsModel = [
     {
@@ -549,15 +586,12 @@ const CreatePurchaseOrder = () => {
       key: "DeliveryQuantity",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'DeliveryQuantity']}
+          name={[record.key, "DeliveryQuantity"]}
           rules={[{ required: true, message: "Required" }]}
           style={{ width: "100%" }}
           initialValue={record.DeliveryQuantity}
         >
-          <InputNumber
-            min={0}
-            defaultValue={text}
-          />
+          <InputNumber min={0} defaultValue={text} />
         </Form.Item>
       ),
     },
@@ -568,8 +602,8 @@ const CreatePurchaseOrder = () => {
       width: 150,
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'UomId']}
-        // rules={[{ required: true, message: "Required" }]}
+          name={[record.key, "UomId"]}
+          // rules={[{ required: true, message: "Required" }]}
         >
           {deliveryRecord.Uom === undefined ? record.Uom : deliveryRecord.Uom}
         </Form.Item>
@@ -582,10 +616,11 @@ const CreatePurchaseOrder = () => {
       render: (text, record, index) => (
         <Form.Item
           style={{ width: 200 }}
-          name={[record.key, 'DeliveryDate']}
+          name={[record.key, "DeliveryDate"]}
           initialValue={record.DeliveryDate}
         >
-          <DatePicker value={text == '' ? dayjs() : text}
+          <DatePicker
+            value={text == "" ? dayjs() : text}
             style={{ width: "150%" }}
             format="DD-MM-YYYY"
           />
@@ -599,14 +634,11 @@ const CreatePurchaseOrder = () => {
       key: "DeliveryLocation",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'DeliveryLocation']}
+          name={[record.key, "DeliveryLocation"]}
           initialValue={record.DeliveryLocation}
           style={{ width: 200 }}
         >
-          <Input
-            style={{ width: "150%" }}
-            allowClear
-          />
+          <Input style={{ width: "150%" }} allowClear />
         </Form.Item>
       ),
     },
@@ -642,9 +674,13 @@ const CreatePurchaseOrder = () => {
       render: (text, record, index) => (
         <>
           <Form.Item
-            name={[record.key, 'ProductName']}
+            name={[record.key, "ProductName"]}
             rules={[{ required: true, message: "Required" }]}
-            initialValue={record.LongName == undefined ? record.ProductName : record.LongName}
+            initialValue={
+              record.LongName == undefined
+                ? record.ProductName
+                : record.LongName
+            }
           >
             <AutoComplete
               options={productOptions}
@@ -663,8 +699,20 @@ const CreatePurchaseOrder = () => {
               disabled={!!record.PoLineId}
             />
           </Form.Item>
-          <Form.Item name={[record.key, 'ProductId']} hidden initialValue={record.ProductId}><Input defaultValue={record.ProductId}></Input></Form.Item>
-          <Form.Item name={[record.key, 'PoLineId']} hidden initialValue={record.PoLineId}><Input></Input></Form.Item>
+          <Form.Item
+            name={[record.key, "ProductId"]}
+            hidden
+            initialValue={record.ProductId}
+          >
+            <Input defaultValue={record.ProductId}></Input>
+          </Form.Item>
+          <Form.Item
+            name={[record.key, "PoLineId"]}
+            hidden
+            initialValue={record.PoLineId}
+          >
+            <Input></Input>
+          </Form.Item>
         </>
       ),
     },
@@ -675,11 +723,12 @@ const CreatePurchaseOrder = () => {
       width: 150,
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'UomId']}
+          name={[record.key, "UomId"]}
           rules={[{ required: true, message: "Required" }]}
           initialValue={record.UomId}
         >
-          <Select defaultValue={text}
+          <Select
+            defaultValue={text}
             onChange={(value, option) =>
               handleUomChange(option, "UomId", index, record)
             }
@@ -691,7 +740,7 @@ const CreatePurchaseOrder = () => {
             ))}
           </Select>
         </Form.Item>
-      )
+      ),
     },
 
     {
@@ -701,13 +750,12 @@ const CreatePurchaseOrder = () => {
       key: "PoQuantity",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'PoQuantity']}
+          name={[record.key, "PoQuantity"]}
           rules={[
             {
               required: true,
               message: "Required",
             },
-
           ]}
           style={{ width: "100%" }}
           initialValue={record.PoQuantity}
@@ -725,7 +773,7 @@ const CreatePurchaseOrder = () => {
             }}
           />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "BonusQty",
@@ -734,7 +782,7 @@ const CreatePurchaseOrder = () => {
       key: "BonusQuantity",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'BonusQuantity']}
+          name={[record.key, "BonusQuantity"]}
           // name={["BonusQuantity", record.key]}
           style={{ width: "100%" }}
           initialValue={record.BonusQuantity}
@@ -752,7 +800,7 @@ const CreatePurchaseOrder = () => {
             }
           />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "PoRate",
@@ -761,14 +809,13 @@ const CreatePurchaseOrder = () => {
       key: "PoRate",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'PoRate']}
+          name={[record.key, "PoRate"]}
           // name={["PoRate", record.key]}
           rules={[
             {
               required: true,
               message: "Required",
             },
-
           ]}
           style={{ width: "100%" }}
           initialValue={record.PoRate}
@@ -781,7 +828,7 @@ const CreatePurchaseOrder = () => {
             }}
           />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "Discount %",
@@ -790,7 +837,7 @@ const CreatePurchaseOrder = () => {
       key: "DiscountRate",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'DiscountRate']}
+          name={[record.key, "DiscountRate"]}
           // name={["DiscountRate", record.key]}
           style={{ width: "100%" }}
           initialValue={record.DiscountRate}
@@ -808,7 +855,7 @@ const CreatePurchaseOrder = () => {
             }}
           />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "DiscountAmount",
@@ -817,16 +864,15 @@ const CreatePurchaseOrder = () => {
       key: "DiscountAmount",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'DiscountAmount']}
+          name={[record.key, "DiscountAmount"]}
           // name={[`DiscountAmount`, record.key]}
           style={{ width: "100%" }}
           initialValue={record.DiscountAmount}
         >
           <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
-      )
+      ),
     },
-
 
     {
       title: "ExpectedMRP",
@@ -835,7 +881,7 @@ const CreatePurchaseOrder = () => {
       key: "MrpExpected",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'MrpExpected']}
+          name={[record.key, "MrpExpected"]}
           // name={["MrpExpected", record.key]}
           style={{ width: "100%" }}
           initialValue={record.MrpExpected}
@@ -853,7 +899,7 @@ const CreatePurchaseOrder = () => {
             }
           />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "CGST",
@@ -862,8 +908,8 @@ const CreatePurchaseOrder = () => {
       width: 100,
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'TaxType1']}
-        // name={["TaxType1", record.key]} 
+          name={[record.key, "TaxType1"]}
+          // name={["TaxType1", record.key]}
         >
           <Select
             defaultValue={text}
@@ -885,7 +931,7 @@ const CreatePurchaseOrder = () => {
             ))}
           </Select>
         </Form.Item>
-      )
+      ),
     },
     {
       title: "CGSTAmount",
@@ -893,10 +939,10 @@ const CreatePurchaseOrder = () => {
       width: 100,
       key: "TaxAmount1",
       render: (text, record, index) => (
-        <Form.Item name={[record.key, 'TaxAmount1']} style={{ width: "100%" }}>
+        <Form.Item name={[record.key, "TaxAmount1"]} style={{ width: "100%" }}>
           <InputNumber min={0} disabled defaultValue={text} />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "SGST",
@@ -905,20 +951,20 @@ const CreatePurchaseOrder = () => {
       width: 100,
       render: (text, record, index) => (
         <Form.Item
-          // name={["TaxType2", record.key]} 
+          // name={["TaxType2", record.key]}
 
-          name={[record.key, 'TaxType2']}
+          name={[record.key, "TaxType2"]}
         >
           <Select
             defaultValue={text}
-          // onChange={(value) =>
-          //   handleInputChange(
-          //     { target: { value } },
-          //     "TaxType2",
-          //     index,
-          //     record
-          //   )
-          // }
+            // onChange={(value) =>
+            //   handleInputChange(
+            //     { target: { value } },
+            //     "TaxType2",
+            //     index,
+            //     record
+            //   )
+            // }
           >
             {DropDown.TaxType.map((option) => (
               <Option key={option.LookupID} value={option.LookupID}>
@@ -929,7 +975,7 @@ const CreatePurchaseOrder = () => {
             ))}
           </Select>
         </Form.Item>
-      )
+      ),
     },
     {
       title: "SGSTAmount",
@@ -937,10 +983,10 @@ const CreatePurchaseOrder = () => {
       width: 100,
       key: "TaxAmount2",
       render: (text, record, index) => (
-        <Form.Item name={[record.key, 'TaxAmount2']} style={{ width: "100%" }}>
+        <Form.Item name={[record.key, "TaxAmount2"]} style={{ width: "100%" }}>
           <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "Amount",
@@ -950,14 +996,13 @@ const CreatePurchaseOrder = () => {
       render: (text, record, index) => (
         <Form.Item
           // name={[`LineAmount`, record.key]}
-          name={[record.key, 'LineAmount']}
+          name={[record.key, "LineAmount"]}
           style={{ width: "100%" }}
           initialValue={record.LineAmount}
         >
-          <InputNumber disabled min={0} defaultValue={text}
-          />
+          <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "TotalAmount",
@@ -967,13 +1012,13 @@ const CreatePurchaseOrder = () => {
       render: (text, record, index) => (
         <Form.Item
           // name={[`totalAmount`, record.key]}
-          name={[record.key, 'LineAmount']}
+          name={[record.key, "LineAmount"]}
           style={{ width: "100%" }}
           initialValue={record.LineAmount}
         >
           <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "AvlQty",
@@ -983,13 +1028,13 @@ const CreatePurchaseOrder = () => {
       render: (text, record, index) => (
         <Form.Item
           // name={["AvailableQuantity", record.key]}
-          name={[record.key, 'AvailableQuantity']}
+          name={[record.key, "AvailableQuantity"]}
           style={{ width: "100%" }}
           initialValue={record.AvailableQuantity}
         >
           <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "Delivery Schedule",
@@ -1012,7 +1057,13 @@ const CreatePurchaseOrder = () => {
       ),
     },
     {
-      title: "Action",
+      title: (
+        <>
+          <Button ghost type="link" onClick={handleAddRow}>
+            <FaPlusCircle style={{ fontSize: "1.5rem" }} />
+          </Button>
+        </>
+      ),
       key: "action",
       render: (text, record, index) => (
         <Popconfirm
@@ -1030,153 +1081,202 @@ const CreatePurchaseOrder = () => {
   ];
 
   return (
-    <Layout style={{ zIndex: '999999999' }}>
-      <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-        <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
+    <Layout style={{ zIndex: "999999999" }}>
+      <div
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <Row
+          style={{
+            padding: "0.5rem 2rem 0.5rem 2rem",
+            backgroundColor: "#40A2E3",
+            borderRadius: "10px 10px 0px 0px ",
+          }}
+        >
           <Col span={16}>
-            <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
+            <Title
+              level={4}
+              style={{
+                color: "white",
+                fontWeight: 500,
+                margin: 0,
+                paddingTop: 0,
+              }}
+            >
               Create Purchase Order
             </Title>
           </Col>
           <Col offset={6} span={2}>
-            <Button icon={<LeftOutlined />} style={{ marginBottom: 0 }} onClick={handleToPurchaseOrder}>
+            <Button
+              icon={<LeftOutlined />}
+              style={{ marginBottom: 0 }}
+              onClick={handleToPurchaseOrder}
+            >
               Back
             </Button>
           </Col>
         </Row>
-        <Form
-          layout="vertical"
-          onFinish={handleOnFinish}
-          onFinishFailed={onFinishFailed}
-          variant="outlined"
-          size="default"
-          initialValues={{
-            PODate: dayjs(),
-          }}
-          form={form1}
-        >
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item label="Supplier" name="SupplierId"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please input!'
-                    }
-                  ]}
+        <div style={{ padding: "0 1rem" }}>
+          <Form
+            layout="vertical"
+            onFinish={handleOnFinish}
+            onFinishFailed={onFinishFailed}
+            variant="outlined"
+            size="default"
+            initialValues={{
+              PODate: dayjs(),
+            }}
+            form={form1}
+          >
+            <Row
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+              style={{ padding: "1rem 0rem" }}
+            >
+              <Col span={6}>
+                <div>
+                  <Form.Item
+                    label="Supplier"
+                    name="SupplierId"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input!",
+                      },
+                    ]}
+                  >
+                    <Select allowClear placeholder="Select Value">
+                      {DropDown.SupplierList.map((option) => (
+                        <Select.Option
+                          key={option.VendorId}
+                          value={option.VendorId}
+                        >
+                          {option.LongName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                  <Form.Item name="PoHeaderId" hidden initialValue={PoHeaderId}>
+                    <Input></Input>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item
+                    label="Procurement Store"
+                    name="StoreId"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input!",
+                      },
+                    ]}
+                  >
+                    <Select allowClear placeholder="Select Value">
+                      {/* <Option value="">Select Value</Option> */}
+                      {DropDown.StoreDetails.map((option) => (
+                        <Select.Option
+                          key={option.StoreId}
+                          value={option.StoreId}
+                        >
+                          {option.LongName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item
+                    label="Document Type"
+                    name="DocumentType"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input!",
+                      },
+                    ]}
+                  >
+                    <Select allowClear placeholder="Select Value">
+                      {DropDown.DocumentType.map((option) => (
+                        <Select.Option
+                          key={option.LookupID}
+                          value={option.LookupID}
+                        >
+                          {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item label="Remarks" name="Remarks">
+                  <TextArea autoSize allowClear />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item label="PO Date" name="PODate">
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      disabled
+                      format="DD-MM-YYYY"
+                    />
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item label="PO Status" name="POStatus">
+                    <Select allowClear placeholder="Select Value">
+                      <Option value="Draft">Draft</Option>
+                      <Option value="Pending">Finalize</Option>
+                    </Select>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col>
+                <Form.Item
+                  name="SubmitCheck"
+                  style={{ marginTop: "30px" }}
+                  valuePropName="cheched"
                 >
-                  <Select allowClear placeholder='Select Value'>
-                    {DropDown.SupplierList.map((option) => (
-                      <Select.Option key={option.VendorId} value={option.VendorId}>
-                        {option.LongName}
-                      </Select.Option>
-                    ))}
-                  </Select>
+                  <Checkbox>Submit</Checkbox>
                 </Form.Item>
-                <Form.Item name='PoHeaderId' hidden initialValue={PoHeaderId}><Input></Input></Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item label="Procurement Store" name="StoreId"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please input!'
-                    }
-                  ]}
-                >
-                  <Select allowClear placeholder='Select Value'>
-                    {/* <Option value="">Select Value</Option> */}
-                    {DropDown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
-                        {option.LongName}
-                      </Select.Option>
-                    ))}
-                  </Select>
+              </Col>
+            </Row>
+            <Row justify="end" style={{ padding: "0rem 1rem" }}>
+              <Col style={{ marginRight: "10px" }}>
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    //loading={isSearchLoading}
+                    htmlType="submit"
+                  >
+                    {buttonTitle}
+                  </Button>
                 </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item label="Document Type" name="DocumentType"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please input!'
-                    }
-                  ]}
-                >
-                  <Select allowClear placeholder='Select Value'>
-                    {DropDown.DocumentType.map((option) => (
-                      <Select.Option key={option.LookupID} value={option.LookupID}>
-                        {option.LookupDescription}
-                      </Select.Option>
-                    ))}
-                  </Select>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button type="primary" onClick={handleCancel}>
+                    Cancel
+                  </Button>
                 </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <Form.Item label="Remarks" name="Remarks">
-                <TextArea autoSize allowClear />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '0rem 2rem', marginTop: '0' }}>
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item label="PO Date" name="PODate">
-                  <DatePicker style={{ width: '100%' }} disabled format='DD-MM-YYYY' />
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item label="PO Status" name="POStatus">
-                  <Select allowClear placeholder='Select Value'>
-                    <Option value="Draft">Draft</Option>
-                    <Option value="Pending">Finalize</Option>
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col>
-            <Col>
-              <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }} valuePropName='cheched'>
-                <Checkbox>Submit</Checkbox>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row justify="end" style={{ padding: '0rem 1rem' }}>
-            <Col style={{ marginRight: '10px' }}>
-              <Form.Item>
-                <Button
-                  type="primary"
-                  //loading={isSearchLoading}
-                  htmlType="submit"
-                >
-                  {buttonTitle}
-                </Button>
-              </Form.Item>
-            </Col>
-            <Col>
-              <Form.Item>
-                <Button type="primary" onClick={handleCancel}>
-                  Cancel
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
+              </Col>
+            </Row>
+          </Form>
+        </div>
         <Divider style={{ marginTop: "0" }}></Divider>
-        <Button
-          type="primary"
-          onClick={handleAddRow}
-          style={{ marginBottom: 16 }}
-        >
-          Add a row
-        </Button>
+
         <Table
           columns={columns}
           size="small"
@@ -1225,17 +1325,25 @@ const CreatePurchaseOrder = () => {
               float: "right",
             }}
           >*/}
-            <Form.Item
-              label="Amount"
-              name="TotalAmount"
-              style={{ marginRight: "16px", width: 100 }}
-            >
-              <InputNumber min={0} disabled />
-            </Form.Item> 
-          <Form.Item label="GST Tax" name='gstTax' style={{ marginRight: '16px', width: 100 }}>
+          <Form.Item
+            label="Amount"
+            name="TotalAmount"
+            style={{ marginRight: "16px", width: 100 }}
+          >
             <InputNumber min={0} disabled />
           </Form.Item>
-          <Form.Item label="Total PO Amount" name='totalpoAmount' style={{ width: 150 }}>
+          <Form.Item
+            label="GST Tax"
+            name="gstTax"
+            style={{ marginRight: "16px", width: 100 }}
+          >
+            <InputNumber min={0} disabled />
+          </Form.Item>
+          <Form.Item
+            label="Total PO Amount"
+            name="totalpoAmount"
+            style={{ width: 150 }}
+          >
             <InputNumber min={0} disabled />
           </Form.Item>
         </div>
@@ -1267,9 +1375,9 @@ const CreatePurchaseOrder = () => {
             onFinishFailed={onFinishFailed}
             autoComplete="off"
             form={form2}
-          // initialValues={{
-          //   [counterDelivery - 1]: { DeliveryDate: dayjs() }
-          // }}
+            // initialValues={{
+            //   [counterDelivery - 1]: { DeliveryDate: dayjs() }
+            // }}
           >
             <Col className="gutter-row" span={6}>
               <div>
@@ -1286,7 +1394,12 @@ const CreatePurchaseOrder = () => {
               locale={{ emptyText: "Nodata " }}
               dataSource={
                 deliveryRecord.ProductId
-                  ? schedule.filter(item => item.ProductId === deliveryRecord.ProductId && item.ActiveFlag || item.ProductId === "" && item.ActiveFlag)
+                  ? schedule.filter(
+                      (item) =>
+                        (item.ProductId === deliveryRecord.ProductId &&
+                          item.ActiveFlag) ||
+                        (item.ProductId === "" && item.ActiveFlag)
+                    )
                   : initialDeliveryDataSource
               }
             />
@@ -1294,8 +1407,8 @@ const CreatePurchaseOrder = () => {
         </Modal>
       </div>
       {/* </div> */}
-    </Layout >
+    </Layout>
   );
-}
+};
 
 export default CreatePurchaseOrder;

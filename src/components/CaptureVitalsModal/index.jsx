@@ -5,7 +5,8 @@ import React, { useState } from "react";
 import { FaBed, FaRegClock } from "react-icons/fa";
 import { BsPersonStanding } from "react-icons/bs";
 import TextArea from "antd/es/input/TextArea";
-import { ColWithSixSpan } from "../customGridColumns";
+import { ColWithSixSpan, ColWithThreeSpan } from "../customGridColumns";
+import { IoCalendarOutline } from "react-icons/io5";
 
 function CaptureVitalsModal({ open, close, onSubmit }) {
   const [form] = useForm();
@@ -165,9 +166,12 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                   padding: "10px",
                   borderRadius: "5px",
                   marginBottom: "10px",
+                  display: "flex",
+                  alignItems: "center",
                 }}
               >
                 You are capturing vitals for the above patient on &nbsp;
+                <IoCalendarOutline /> &nbsp;
                 {currentTimeString}
                 <FaRegClock style={{ marginLeft: "5px" }} />
               </div>
@@ -198,17 +202,17 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                   <Input addonAfter="cm" onChange={onHeightChange} />
                 </Form.Item>
               </ColWithSixSpan>
-              <Col span={3}>
+              <ColWithThreeSpan>
                 <Form.Item name="Feet" label="Feet">
                   <Input disabled value={heightWeightValues.Feet} />
                 </Form.Item>
-              </Col>
-              <Col span={3}>
+              </ColWithThreeSpan>
+              <ColWithThreeSpan>
                 <Form.Item name="Inch" label="Inch">
                   <Input disabled value={heightWeightValues.Inch} />
                 </Form.Item>
-              </Col>
-              <Col span={5}>
+              </ColWithThreeSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="Weight"
                   label="Weight"
@@ -221,18 +225,18 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                 >
                   <Input addonAfter="Kg" onChange={onWeightChange} />
                 </Form.Item>
-              </Col>
-              <Col span={5}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="BodyMassIndex" label="Body Mass Index">
                   <Input disabled value={heightWeightValues.BMI} />
                 </Form.Item>
-              </Col>
+              </ColWithSixSpan>
             </Row>
             <Row
               gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
               style={{ margin: "0px 10px" }}
             >
-              <Col span={8}>
+              <ColWithSixSpan>
                 <Form.Item
                   name="HeadCircumference"
                   label="Head Circumference"
@@ -246,8 +250,8 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                 >
                   <Input addonAfter="cm" />
                 </Form.Item>
-              </Col>
-              <Col span={8}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="Temperature"
                   label="Temperature"
@@ -260,8 +264,8 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                 >
                   <Input addonAfter={tempOptions} />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="HeartRate"
                   label="Heart Rate"
@@ -274,13 +278,13 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                 >
                   <Input addonAfter="bpm" />
                 </Form.Item>
-              </Col>
+              </ColWithSixSpan>
             </Row>
             <Row
               gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
               style={{ margin: "0px 10px" }}
             >
-              <Col span={6}>
+              <ColWithSixSpan>
                 <Form.Item
                   name="SystolicBP"
                   label="Systolic BP "
@@ -293,8 +297,8 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                 >
                   <Input addonAfter="mmHg" onChange={onSystolicBPChange} />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="DiastolicBP"
                   label="Diastolic BP "
@@ -307,8 +311,8 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                 >
                   <Input addonAfter="mmHg" onChange={onDiastolicBPChange} />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="MeanAtrialPressure"
                   label="Mean Atrial Pressure"
@@ -319,8 +323,8 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                     value={MAPValues.MeanAtrialPressure}
                   />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <p style={{ margin: "2px" }}>Position</p>
                 <div
                   style={{
@@ -342,13 +346,13 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                     </Radio.Group>
                   </Form.Item>
                 </div>
-              </Col>
+              </ColWithSixSpan>
             </Row>
             <Row
               gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
               style={{ margin: "0px 10px" }}
             >
-              <Col span={6}>
+              <ColWithSixSpan>
                 <Form.Item
                   name="RespiratoryRate"
                   label="Respiratory Rate "
@@ -361,8 +365,8 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                 >
                   <Input addonAfter="(C/M)" />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="OxygenSaturation"
                   label="SPO2 %"
@@ -375,35 +379,34 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                 >
                   <Input />
                 </Form.Item>
-              </Col>
-              <Col span={3}>
+              </ColWithSixSpan>
+              <ColWithThreeSpan>
                 <div style={{ marginLeft: "10px" }}>
                   <p>Oedema</p>
                   <Form.Item name="oedema">
                     <Switch size="large" style={{ margin: "0px 5px" }}></Switch>
                   </Form.Item>
                 </div>
-              </Col>
-              <Col span={3}>
+              </ColWithThreeSpan>
+              <ColWithThreeSpan>
                 <div>
                   <p>Pallor</p>
                   <Form.Item name="pallor" style={{ margin: "0px 0px" }}>
                     <Switch size="large"></Switch>
                   </Form.Item>
                 </div>
-              </Col>
+              </ColWithThreeSpan>
             </Row>
             <Row
               gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
               // style={{ margin: "0px 10px" }}
             >
-              <Col span={12} style={{ marginLeft: "25px" }}>
+              <Col span={24}>
                 <Form.Item name="otherComments" label="Other Comments (if any)">
                   <TextArea
-                    placeholder="Add your thoughts on capturing vitals"
                     autoSize={{
                       minRows: 2,
-                      maxRows: 6,
+                      maxRows: 4,
                     }}
                   />
                 </Form.Item>
