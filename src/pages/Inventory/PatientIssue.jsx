@@ -177,7 +177,7 @@ const PatientIssue = () => {
     }
 
     const handleSelect = (value, option) => {
-        debugger;
+        debugger;        
         setPatientName(option.Name);
         try {
             customAxios.get(`${urlGetAllEncounterByUhid}?Uhid=${option.key}`).then((response) => {

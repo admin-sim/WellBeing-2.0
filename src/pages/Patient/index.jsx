@@ -11,7 +11,7 @@ import {
   Spin,
   notification,
 } from "antd";
-
+import { LuCalendarSearch } from "react-icons/lu";
 import Input from "antd/es/input";
 import Form from "antd/es/form";
 import { Modal, Table, Layout, Tag, Avatar } from "antd";
@@ -448,76 +448,107 @@ const Patient = () => {
           <Row
             style={{
               // padding: '0rem 0rem 0rem 0rem',
-              backgroundColor: "#1a9bf0",
+              backgroundColor: "#40A2E3",
               borderRadius: "10px 10px 10px 10px",
-              height: "70px",
+              // height: "50px",
               marginLeft: "5px",
               marginRight: " 5px",
               alignItems: "center",
+              display: "flex",
+              justifyContent: "space-between",
             }}
             gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
           >
-            <Col span={1}>
-              <Button
-                type="default"
-                size="large"
-                onClick={navigateToNewPatient}
-              >
-                <UserAddOutlined
-                  style={{ fontWeight: "bold", fontSize: "18px" }}
-                />
-                <strong> Add New Patient </strong>
-              </Button>
-            </Col>
-            <Col span={3} offset={10}>
-              <div
-                style={{
-                  padding: "5px",
-                  borderRadius: "1em",
-                  display: "flex",
-                  justifyContent: "center",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  width: "100%",
-                  backgroundColor: "white",
-                }}
-              >
-                <span style={{ display: "flex", alignItems: "center" }}>
-                  <FaUsers style={{ fontSize: "30px", color: "#1a9bf0" }} />
-                  <div
+            <Col
+              style={{
+                display: "flex",
+                justifyContent: "space-evenly",
+                alignItems: "center",
+              }}
+            >
+              <Col>
+                <Button
+                  type="default"
+                  size="large"
+                  onClick={navigateToNewPatient}
+                  className="dfja"
+                >
+                  <UserAddOutlined
                     style={{
-                      height: "30px",
-                      width: "30px",
-                      color: "black",
-                      backgroundColor: "#fff",
-                      padding: "5px",
-                      fontSize: "23px",
+                      fontWeight: "bold",
+                      fontSize: "1.2rem",
+                    }}
+                  />
+                  <span style={{ fontWeight: "500" }}> Register Patient </span>
+                </Button>
+              </Col>
+              <Col>
+                <Button type="default" size="large" className="dfja">
+                  <LuCalendarSearch
+                    style={{ fontSize: "1.2rem", marginRight: "0.3rem" }}
+                  />
+                  <span style={{ fontWeight: "500" }}>Appointment Search</span>
+                </Button>
+              </Col>
+              <Col>
+                <div
+                  style={{
+                    margin: "0.2rem",
+                    borderRadius: "10px",
+                    display: "flex",
+                    justifyContent: "center",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    width: "100%",
+                    backgroundColor: "white",
+                  }}
+                >
+                  <span
+                    style={{
                       display: "flex",
-                      justifyContent: "center",
                       alignItems: "center",
-                      borderRadius: "10px",
-                      fontWeight: "bolder",
-                      marginLeft: "5px", // Added margin to create space between icon and text
+                      justifyContent: "space-around",
+                      width: "60%",
                     }}
                   >
-                    {patientDetails.length}
-                  </div>
-                </span>
-                <span style={{ fontWeight: 500, fontSize: "12px" }}>
-                  Visits for Today
-                </span>
-              </div>
+                    <FaUsers style={{ fontSize: "1.9rem", color: "#1a9bf0" }} />
+                    <div
+                      style={{
+                        fontSize: "1.3rem",
+                        fontWeight: "600",
+                      }}
+                    >
+                      {patientDetails.length}
+                    </div>
+                  </span>
+                  <span
+                    style={{
+                      fontWeight: 500,
+                      fontSize: "0.8rem",
+                      padding: "0 0.4rem",
+                    }}
+                  >
+                    Visits for Today
+                  </span>
+                </div>
+              </Col>
             </Col>
-            <Col span={1} offset={7}>
-              <Button type="default" size="large" onClick={navigateToNewVisit}>
-                <strong>Create Visit</strong>
-              </Button>
+            <Col>
+              <Col>
+                <Button
+                  type="default"
+                  size="large"
+                  onClick={navigateToNewVisit}
+                >
+                  <span style={{ fontWeight: "500" }}>Create Visit</span>
+                </Button>
+              </Col>
             </Col>
           </Row>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col span={24}>
               <Title level={4}> List of Patients in Visits</Title>
-              <Title level={5}>showing 1 of 1 Patients</Title>
+              <Title level={5}>Showing 1 of 1 Patients</Title>
             </Col>
           </Row>
           <Spin spinning={isLoading}>

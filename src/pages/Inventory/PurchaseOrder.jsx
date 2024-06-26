@@ -68,8 +68,7 @@ const PurchaseOrder = () => {
     Finalize: "green",
   };
 
-  const GetPobyId = (PoHeaderId) => {
-    debugger;
+  const GetPobyId = (PoHeaderId) => {    
     navigate("/CreatePurchaseOrder", { state: { PoHeaderId } });
   };
   const columns = [
@@ -209,8 +208,7 @@ const PurchaseOrder = () => {
     }
     return inputDate; // Return as is if not in the expected format
   }
-  const onFinish = async (values) => {
-    debugger;
+  const onFinish = async (values) => {    
     setIsSearchLoading(true);
     setLoading(true);
     try {
@@ -236,8 +234,7 @@ const PurchaseOrder = () => {
             },
           }
         )
-        .then((response) => {
-          debugger;
+        .then((response) => {          
           setFilteredData(response.data.data.PurchaseOrderDetails);
           response.data.data.PurchaseOrderDetails.PoHeaderId
           if (response.data.data.PurchaseOrderDetails.length > 0) {
@@ -380,7 +377,7 @@ const PurchaseOrder = () => {
             </Row>
           </Form>
         </Card>
-        {isTableHasValues && (
+        {isTableHasValues && (          
           <Table
             dataSource={filteredData}
             columns={columns}

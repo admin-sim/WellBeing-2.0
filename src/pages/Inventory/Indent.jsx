@@ -60,8 +60,7 @@ const Indent = () => {
         Completed: "green",
     };
 
-    const GetIndentById = (IndentId) => {
-        debugger;
+    const GetIndentById = (IndentId) => {        
         navigate("/CreateIndent", { state: { IndentId } });
     };
 

@@ -8,11 +8,10 @@ import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
 import Layout from 'antd/es/layout/layout';
-import { LeftOutlined } from '@ant-design/icons';
 //import Typography from 'antd/es/typography';
 import { useNavigate } from 'react-router';
 import { Table, InputNumber } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { LeftOutlined, CloseSquareFilled, DeleteOutlined, PlusOutlined, } from '@ant-design/icons';
 import { useLocation } from "react-router-dom";
 import dayjs from 'dayjs';
 //import { useParams } from 'react-router-dom';
@@ -93,8 +92,8 @@ const CreateIndent = () => {
                 }
                 if (apiData.IndentDetails !== null) {
                     for (let i = counter; i <= apiData.IndentDetails.length; i++) {
-                        form1.setFieldsValue({ [i]: { product: apiData.IndentDetails[i].ProductName } });
-                        form1.setFieldsValue({ [i]: { uom: apiData.IndentDetails[i].UomId } });
+                        form1.setFieldsValue({ [i]: { ProductId: apiData.IndentDetails[i].ProductName } });
+                        form1.setFieldsValue({ [i]: { UomId: apiData.IndentDetails[i].UomId } });
                         form1.setFieldsValue({ [i]: { RequestingQty: apiData.IndentDetails[i].RequestQty } });
                         form1.setFieldsValue({ [i]: { RequestingStoreStock: apiData.IndentDetails[i].AvlReqQuantity } });
                         form1.setFieldsValue({ [i]: { RequestingStoreStock: apiData.IndentDetails[i].AvlReqQuantity } });
@@ -115,25 +114,25 @@ const CreateIndent = () => {
         navigate(url);
     }
 
-    const getPanelValue = async (searchText, key) => {
-        debugger;
-        if (searchText === "") {
-            form1.setFieldsValue({ [key]: { uom: undefined } });
-            form1.setFieldsValue({ [key]: { RequestingQty: undefined } });
-            form1.setFieldsValue({ [key]: { RequestingStoreStock: undefined } });
-            form1.setFieldsValue({ [key]: { IssuingStoreStock: undefined } });
-            form1.setFieldsValue({ [key]: { product: undefined } });
-        }
-        try {
-            customAxios.get(`${urlAutocompleteProduct}?Product=${searchText}`).then((response) => {
-                const apiData = response.data.data;
-                const newOptions = apiData.map(item => ({ value: item.LongName, key: item.ProductDefinitionId, UomId: item.UOMPrimaryUOM }));
-                setAutoCompleteOptions(newOptions);
-            });
-        } catch (error) {
-            // Handle the error as needed
-        }
-    }
+    // const getPanelValue = async (searchText, key) => {
+    //     debugger;
+    //     if (searchText === "") {
+    //         form1.setFieldsValue({ [key]: { uom: undefined } });
+    //         form1.setFieldsValue({ [key]: { RequestingQty: undefined } });
+    //         form1.setFieldsValue({ [key]: { RequestingStoreStock: undefined } });
+    //         form1.setFieldsValue({ [key]: { IssuingStoreStock: undefined } });
+    //         form1.setFieldsValue({ [key]: { product: undefined } });
+    //     }
+    //     try {
+    //         customAxios.get(`${urlAutocompleteProduct}?Product=${searchText}`).then((response) => {
+    //             const apiData = response.data.data;
+    //             const newOptions = apiData.map(item => ({ value: item.LongName, key: item.ProductDefinitionId, UomId: item.UOMPrimaryUOM }));
+    //             setAutoCompleteOptions(newOptions);
+    //         });
+    //     } catch (error) {
+    //         // Handle the error as needed
+    //     }
+    // }
 
     const handleDelete = (record) => {
         debugger;
@@ -144,141 +143,220 @@ const CreateIndent = () => {
             }
         });
         setData(newData);
-        setCounter(newData.length);
-        // if (tableRef.current) {
-        //   tableRef.current.scrollLeft = 0;
-        // }      
+        setProductcount(newData.length);
     };
 
-    const handleSelect = (value, option, key) => {
+    const handleSelect = (value, option, column, record) => {
         debugger;
-        customAxios.get(`${urlGetProductDetailsById}?ProductId=${option.key}`).then((response) => {
+
+        const va = form1.getFieldsValue()
+        if (va.RequestingStore !== undefined && va.IssuingStore != undefined) {
+            if (va.RequestingStore !== va.IssuingStore) {
+                setIstablevisible(true);
+            } else {
+                form1.resetFields();
+                setIstablevisible(false);
+                message.warning('Please select Different Stores');
+            }
+        } else {
+            setData([]);
+            setIstablevisible(false);
+        }
+        customAxios.get(`${urlGetProductDetailsById}?ProductId=${option.ProductId}`).then((response) => {
             debugger;
             const apiData = response.data.data;
-            form1.setFieldsValue({ [productCount - 1]: { uom: apiData.UOMPrimaryUOM } });
-            form1.setFieldsValue({ [productCount - 1]: { productId: apiData.ProductDefinitionId } });            
-            if (apiData.PORate != null) {
-                form1.setFieldsValue({ [productCount - 1]: { IndentLineId: apiData.PORate.PoLineId } });
-                form1.setFieldsValue({ [key]: { poRate: apiData.PORate.PoRate } });
-            }
-            let reqstr = form1.getFieldValue('RequestingStore');
-            let issstr = form1.getFieldValue('IssuingStore');
-            let qty = 0, reqqty = 0;
-
-            apiData.Stock.forEach(value => {
-                if (apiData.Stock.length > 0 && apiData.Stock[0].StoreId === reqstr) {
-                    reqqty += value.Quantity;
+            const newData = data.map((item) => {
+                if (item.key === record.key) {
+                    const updatedItem = { ...item, [column]: option.key, LongName: option.value, ProductId: option.ProductId, UomId: option.UomId, Quantity: apiData.Stock[0].Quantity };
+                    return updatedItem;
                 }
-                if (apiData.Stock.length > 0 && apiData.Stock[0].StoreId === issstr) {
-                    qty += value.Quantity;
-                }
-            })
-            if (qty !== 0) {
-                form1.setFieldsValue({ [key]: { IssuingStoreStock: qty } });
-                form1.setFieldsValue({ [key]: { RequestingStoreStock: reqqty } });
-            } else {
-                getPanelValue('', key);
-                message.warning('Issue Store stock is empty! Please select other Product')
-            }
-        });
-
-        // form1.setFieldsValue({ [key]: { product: value } });
-        // setProductIds((prevState) => ({ ...prevState, [key]: option.key }));
-        // setSelectedProductId((prevState) => {
-        //     const newState = { ...prevState, [key]: option.key };
-        //     return newState;
-        // })
-
-        // const matchingUom = DropDown.UOM.find((uomOption) => uomOption.UomId === option.UomId);
-        // setSelectedUomText((prevState) => {
-        //     const newState = { ...prevState, [key]: matchingUom.LongName };
-        //     return newState;
-        // });
-        // setSelectedUomId((prevState) => {
-        //     const newState = { ...prevState, [key]: matchingUom.UomId };
-        //     console.log(selectedUomId);
-        //     return newState;
-        // });
-        // if (matchingUom) {
-        //     setSelectedUom((prevState) => {
-        //         const newState = { ...prevState, [key]: matchingUom.UomId };
-        //         console.log(newState); // Log the new state
-        //         return newState;
-        //     });
-
-        //     form1.setFieldsValue({ [key]: { uom: matchingUom.UomId } });
-        // } else {
-        //     setSelectedUom((prevState) => {
-        //         const newState = { ...prevState, [key]: null };
-        //         console.log(newState); // Log the new state
-        //         return newState;
-        //     });
-        //     form1.setFieldsValue({ [key]: { uom: null } });
-        // }
+                return item;
+            });
+            form1.setFieldsValue({ [record.key]: { productId: option.ProductId } })
+            // form1.setFieldValue({ [record.key]: newData.UomId })
+            setData(newData);
+        })
     };
 
-    const AddProduct = () => {
-        const newData = {
-            key: productCount.toString(),
-            product: '',
-            uom: '',
-            RequestingQty: '',
-            RequestingStoreStock: '',
-            IssuingStoreStock: '',
-            fav: '',
+    const handleUomChange = (option, column, index, record) => {
+        debugger;
+        const newData = data.map((item) => {
+            if (item.key === record.key) {
+                const updatedItem = { ...item, [column]: option.value, ShortName: option.children };
+                return updatedItem;
+            }
+            return item;
+        });
+        setData(newData);
+    };
+
+    // const handleSelect = (value, option, key) => {
+    //     debugger;
+    //     customAxios.get(`${urlGetProductDetailsById}?ProductId=${option.key}`).then((response) => {
+    //         debugger;
+    //         const apiData = response.data.data;
+    //         form1.setFieldsValue({ [productCount - 1]: { uom: apiData.UOMPrimaryUOM } });
+    //         form1.setFieldsValue({ [productCount - 1]: { productId: apiData.ProductDefinitionId } });
+    //         if (apiData.PORate != null) {
+    //             form1.setFieldsValue({ [productCount - 1]: { IndentLineId: apiData.PORate.PoLineId } });
+    //             form1.setFieldsValue({ [key]: { poRate: apiData.PORate.PoRate } });
+    //         }
+    //         let reqstr = form1.getFieldValue('RequestingStore');
+    //         let issstr = form1.getFieldValue('IssuingStore');
+    //         let qty = 0, reqqty = 0;
+
+    //         apiData.Stock.forEach(value => {
+    //             if (apiData.Stock.length > 0 && apiData.Stock[0].StoreId === reqstr) {
+    //                 reqqty += value.Quantity;
+    //             }
+    //             if (apiData.Stock.length > 0 && apiData.Stock[0].StoreId === issstr) {
+    //                 qty += value.Quantity;
+    //             }
+    //         })
+    //         if (qty !== 0) {
+    //             form1.setFieldsValue({ [key]: { IssuingStoreStock: qty } });
+    //             form1.setFieldsValue({ [key]: { RequestingStoreStock: reqqty } });
+    //         } else {
+    //             getPanelValue('', key);
+    //             message.warning('Issue Store stock is empty! Please select other Product')
+    //         }
+    //     });
+
+    // form1.setFieldsValue({ [key]: { product: value } });
+    // setProductIds((prevState) => ({ ...prevState, [key]: option.key }));
+    // setSelectedProductId((prevState) => {
+    //     const newState = { ...prevState, [key]: option.key };
+    //     return newState;
+    // })
+
+    // const matchingUom = DropDown.UOM.find((uomOption) => uomOption.UomId === option.UomId);
+    // setSelectedUomText((prevState) => {
+    //     const newState = { ...prevState, [key]: matchingUom.LongName };
+    //     return newState;
+    // });
+    // setSelectedUomId((prevState) => {
+    //     const newState = { ...prevState, [key]: matchingUom.UomId };
+    //     console.log(selectedUomId);
+    //     return newState;
+    // });
+    // if (matchingUom) {
+    //     setSelectedUom((prevState) => {
+    //         const newState = { ...prevState, [key]: matchingUom.UomId };
+    //         console.log(newState); // Log the new state
+    //         return newState;
+    //     });
+
+    //     form1.setFieldsValue({ [key]: { uom: matchingUom.UomId } });
+    // } else {
+    //     setSelectedUom((prevState) => {
+    //         const newState = { ...prevState, [key]: null };
+    //         console.log(newState); // Log the new state
+    //         return newState;
+    //     });
+    //     form1.setFieldsValue({ [key]: { uom: null } });
+    // }
+    // };
+    const handleSearch = async (searchText) => {
+        debugger
+        // Call your API here. This is just a placeholder.
+        if (searchText) {
+            const response = await customAxios.get(
+                `${urlAutocompleteProduct}?Product=${searchText}`
+            );
+            const apiData = response.data.data;
+            const newOptions = apiData.map((item) => ({
+                value: item.LongName,
+                key: item.ProductDefinitionId,
+                UomId: item.UOMPrimaryUOM,
+                ProductId: item.ProductDefinitionId
+            }));
+            setAutoCompleteOptions(newOptions);
         }
-        setData([...data, newData]);
+    };
+
+    const AddProduct = async () => {
+        setAutoCompleteOptions([]);
+        await form1.validateFields();
+        setData([
+            ...data,
+            {
+                key: productCount,
+                ProductId: '',
+                uom: '',
+                RequestingQty: '',
+                RequestingStoreStock: '',
+                IssuingStoreStock: '',
+                fav: '',
+                ActiveFlag: true,
+            },
+        ]);
         setProductcount(productCount + 1);
     }
 
     const columns = [
         {
-            title: 'Product',
-            width: 250,
-            dataIndex: 'product',
-            key: 'product',
-            render: (_, record) => (
+            title: "Product",
+            dataIndex: "ProductId",
+            fixed: "left",
+            key: "ProductId",
+            width: 350,
+            render: (text, record, index) => (
                 <>
-                    <Form.Item name={[record.key, 'product']}
-                        rules={[
-                            {
-                                required: true,
-                                message: 'Please input!'
-                            }
-                        ]}
+                    <Form.Item
+                        name={[record.key, 'ProductId']}
+                        // name={["ProductId", record.key]}
+                        rules={[{ required: true, message: "Required" }]}
+                        initialValue={record.LongName}
                     >
-                        <AutoComplete style={{ width: '100%' }}
+                        <AutoComplete
+                            defaultValue={record.ProductId}
                             options={autoCompleteOptions}
-                            onSearch={(value) => getPanelValue(value, record.key)}
-                            onSelect={(value, option) => handleSelect(value, option, record.key)}
-                            placeholder="Search for a product"
-                            allowClear
+                            onSearch={handleSearch}
+                            onSelect={(value, option) =>
+                                handleSelect(value, option, "ProductId", record)
+                            }
+                            onChange={(value) => {
+                                if (!value) {
+                                    setAutoCompleteOptions([]);
+                                }
+                            }}
+                            allowClear={{
+                                clearIcon: <CloseSquareFilled />,
+                            }}
+                            disabled={!!form1.getFieldValue('IndentId')}
                         />
                     </Form.Item>
-                    <Form.Item name={[record.key, 'productId']} hidden>
-                        <input></input>
-                    </Form.Item>
-                    <Form.Item name={[record.key, 'IndentLineId']} hidden>
-                        <Input></Input>
-                    </Form.Item>
+                    <Form.Item name={[record.key, 'productId']} hidden ><Input></Input></Form.Item>
+                    <Form.Item name={[record.key, 'IndentLineId']} hidden ><Input></Input></Form.Item>
                 </>
-            )
+            ),
         },
         {
-            title: 'UOM',
-            dataIndex: 'uom',
-            key: 'uom',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'uom']} style={{ width: '100%' }}>
-                    <Select disabled>
-                        {DropDown.UOM.map((option) => (
-                            <Select.Option key={option.UomId} value={option.UomId}>
-                                {option.FullName}
-                            </Select.Option>
-                        ))}
-                    </Select>
-                </Form.Item >
-            )
+            title: "UOM",
+            dataIndex: "UomId",
+            key: "UomId",
+            width: 150,
+            render: (text, record, index) => (
+                <>
+                    <Form.Item
+                        name={[record.key, 'UomId']}
+                        // name={["UomId", record.key]}
+                        rules={[{ required: true, message: "Required" }]} initialValue={record.UomId}>
+                        <Select defaultValue={record.UomId} disabled={!!form1.getFieldValue('IndentId')}
+                            onChange={(value, option) =>
+                                handleUomChange(option, "UomId", index, record)
+                            }
+                        >
+                            {DropDown.UOM.map((option) => (
+                                <Option key={option.UomId} value={option.UomId}>
+                                    {option.ShortName}
+                                </Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                    {/* <Form.Item name={[record.key, 'uom']} hidden><Input></Input></Form.Item> */}
+                </>
+            ),
         },
         {
             title: 'Requesting Qty',
@@ -287,6 +365,7 @@ const CreateIndent = () => {
             render: (text, record) => (
                 <Form.Item
                     name={[record.key, 'RequestingQty']}
+                    // name={["RequestingQty", record.key]}
                     style={{ width: '100%' }}
                     rules={[
                         {
@@ -304,7 +383,10 @@ const CreateIndent = () => {
             dataIndex: 'RequestingStoreStock',
             key: 'RequestingStoreStock',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'RequestingStoreStock']} style={{ width: '100%' }}>
+                <Form.Item
+                    name={[record.key, 'RequestingStoreStock']}
+                    // name={["RequestingStoreStock", record.key]}
+                    style={{ width: '100%' }}>
                     <InputNumber min={0} disabled />
                 </Form.Item>
             )
@@ -314,8 +396,12 @@ const CreateIndent = () => {
             dataIndex: 'IssuingStoreStock',
             key: 'IssuingStoreStock',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'IssuingStoreStock']}>
-                    <InputNumber min={0} disabled />
+                <Form.Item
+                    name={[record.key, 'IssuingStoreStock']}
+                    // name={["IssuingStoreStock", record.key]}
+                    initialValue={record.Quantity}
+                >
+                    <InputNumber min={0} disabled defaultValue={text} />
                 </Form.Item>
             )
         },
@@ -324,7 +410,10 @@ const CreateIndent = () => {
             dataIndex: 'fav',
             key: 'fav',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'fav']} style={{ width: 100 }} valuePropName="checked">
+                <Form.Item
+                    name={[record.key, 'fav']}
+                    // name={["fav", record.key]}
+                    style={{ width: 100 }} valuePropName="checked">
                     <Checkbox></Checkbox>
                 </Form.Item>
             )
@@ -350,7 +439,7 @@ const CreateIndent = () => {
             if (values[i] !== undefined) {
                 const product = {
                     ProductId: values[i].productId === undefined ? selectedProductId[i] : values[i].productId,
-                    UomId: values[i].uom,
+                    UomId: values[i].UomId,
                     RequestQty: values[i].RequestingQty,
                     Favourite: values[i].fav === false || values[i].fav === undefined ? "N" : "Y",
                     IssuingStoreStock: values[i].IssuingStoreStock,
@@ -431,30 +520,30 @@ const CreateIndent = () => {
                     initialValues={{
                         IndentDate: dayjs(),
                     }}
-                    onValuesChange={(changedValues, allValues) => {
-                        debugger;
-                        if (allValues.RequestingStore !== undefined && allValues.IssuingStore !== undefined) {
-                            if (allValues.RequestingStore !== allValues.IssuingStore) {
-                                setIstablevisible(true);
-                            } else {
-                                form1.resetFields();
-                                setIstablevisible(false);
-                                message.warning('Please select Different Stores');
-                            }
-                        } else {
-                            setData([]);
-                            setIstablevisible(false);
-                        }
-                        if (allValues[productCount - 1].RequestingQty !== undefined) {
-                            if (allValues[productCount - 1].IssuingStoreStock >= allValues[productCount - 1].RequestingQty) {
+                // onValuesChange={(changedValues, allValues) => {
+                //     debugger;
+                //     if (allValues.RequestingStore !== undefined && allValues.IssuingStore !== undefined) {
+                //         if (allValues.RequestingStore !== allValues.IssuingStore) {
+                //             setIstablevisible(true);
+                //         } else {
+                //             form1.resetFields();
+                //             setIstablevisible(false);
+                //             message.warning('Please select Different Stores');
+                //         }
+                //     } else {
+                //         setData([]);
+                //         setIstablevisible(false);
+                //     }
+                //     if (allValues[productCount - 1].RequestingQty !== undefined) {
+                //         if (allValues[productCount - 1].IssuingStoreStock >= allValues[productCount - 1].RequestingQty) {
 
-                            }
-                            else {
-                                form1.setFieldsValue({ [productCount - 1]: { RequestingQty: undefined } })
-                                message.warning('Requested Quanttity must less than Issue Store Stock');
-                            }
-                        }
-                    }}
+                //         }
+                //         else {
+                //             form1.setFieldsValue({ [productCount - 1]: { RequestingQty: undefined } })
+                //             message.warning('Requested Quanttity must less than Issue Store Stock');
+                //         }
+                //     }
+                // }}
                 >
                     <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
                         <Col className="gutter-row" span={6}>
@@ -466,7 +555,7 @@ const CreateIndent = () => {
                                     }
                                 ]}
                             >
-                                <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                                <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" disabled={!!form1.getFieldValue('IndentId')} />
                             </Form.Item>
                             <Form.Item name="IndentId" hidden>
                                 <Input></Input>
@@ -481,7 +570,7 @@ const CreateIndent = () => {
                                     }
                                 ]}
                             >
-                                <Select allowClear placeholder='Select Value'>
+                                <Select allowClear placeholder='Select Value' onChange={handleSelect} disabled={!!form1.getFieldValue('IndentId')} >
                                     {DropDown.StoreDetails.map((option) => (
                                         <Select.Option key={option.StoreId} value={option.StoreId}>
                                             {option.LongName}
@@ -499,7 +588,7 @@ const CreateIndent = () => {
                                     }
                                 ]}
                             >
-                                <Select allowClear placeholder='Select Value'>
+                                <Select allowClear placeholder='Select Value' onChange={handleSelect} disabled={!!form1.getFieldValue('IndentId')}>
                                     {DropDown.StoreDetails.map((option) => (
                                         <Select.Option key={option.StoreId} value={option.StoreId}>
                                             {option.LongName}
