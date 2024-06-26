@@ -65,7 +65,7 @@ li .ant-menu-item {
   margin-top: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 0.8rem;
   font-size: 1rem;
   width: auto;
   position: relative;
