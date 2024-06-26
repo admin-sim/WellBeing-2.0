@@ -68,14 +68,14 @@ const Queue = () => {
   const [form1] = Form.useForm();
   const [form3] = Form.useForm();
   const [selectedPatientRecord, setSelectedPatientRecord] = useState([]); // New state variable to store selected record
- 
+
   const [isShowSearchModalVisible, setIsShowSearchModalVisible] =
     useState(false);
   const [isMarkArrivalModalVisible, setIsMarkArrivalModalVisible] =
     useState(false);
   const [isPatientVitalSignsModalVisible, setIsPatientVitalSignsModalVisible] =
     useState(false);
-  
+
   const [isRevertToCheckInModalVisible, setIsRevertToCheckInModalVisible] =
     useState(false);
   const [isPushPatientModalVisible, setIsPushPatientModalVisible] =
@@ -208,7 +208,7 @@ const Queue = () => {
         );
 
         if (providerResponse.status === 200) {
-          const provider = providerResponse.data.data.Provider;
+          const provider = providerResponse.data.data.Providers;
           setProviders(provider);
         } else {
           console.error("Failed to fetch providers");
