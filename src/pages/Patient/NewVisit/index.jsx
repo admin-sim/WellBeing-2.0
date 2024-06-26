@@ -884,7 +884,7 @@ const NewVisit = () => {
             </div>
           </Col>
         </Row>
-      </Card>
+      </div>
 
       <ConfigProvider
         theme={{
