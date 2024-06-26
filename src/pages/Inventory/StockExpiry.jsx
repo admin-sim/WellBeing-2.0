@@ -22,10 +22,7 @@ import {
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
 
-// import {
-//   urlGetStockExpiryDetails,
-//   //   urlSearchStockExpiry,
-// } from "../../../endpoints.js";
+import { urlGetPurshaseOrderDetails, urlStockExpiryBasedOnExpiryCondition } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
@@ -44,12 +41,12 @@ const StockExpiry = () => {
   const [page, setPage] = useState(1);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [isTable, setIsTable] = useState(false);
+  const [showTable, setShowTable] = useState(false);
   const { Title } = Typography;
+
   useEffect(() => {
     try {
       customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-        debugger;
         const apiData = response.data.data;
         setStockExpiryDropDown(apiData);
         setIsLoading(false);
@@ -78,94 +75,36 @@ const StockExpiry = () => {
       render: (text, record, index) => index + 1,
     },
     {
-      title: "PO Number",
-      dataIndex: "PONumber",
-      key: "PONumber",
-      sorter: (a, b) => a.PONumber - b.PONumber,
-      sortDirections: ["descend", "ascend"],
-      render: (text, record, index) => (
-        <Button
-          type="link"
-          onClick={() => GetModelDetails(text, record, index)}
-        >
-          {text}
-        </Button>
-      ),
-    },
-    {
-      title: "Document Type",
-      dataIndex: "DocumentTypeName",
-      key: "DocumentTypeName",
-      sorter: (a, b) => a.DocumentTypeName.localeCompare(b.DocumentTypeName),
+      title: "Product Name",
+      dataIndex: "ProductName",
+      key: "ProductName",
+      sorter: (a, b) => a.ProductName - b.ProductName,
       sortDirections: ["descend", "ascend"],
     },
     {
-      title: "Po Date",
-      dataIndex: "PoDate",
-      key: "PoDate",
-      sorter: (a, b) => new Date(a.PoDate) - new Date(b.PoDate),
+      title: "Batch Number",
+      dataIndex: "BatchNo",
+      key: "BatchNo",
+      sorter: (a, b) => a.BatchNo.localeCompare(b.BatchNo),
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Expiry Date",
+      dataIndex: "EXPDate",
+      key: "EXPDate",
+      sorter: (a, b) => new Date(a.EXPDate) - new Date(b.EXPDate),
       sortDirections: ["descend", "ascend"],
       render: (text) => {
-        //const poDate = new Date(text);
-        //const formattedDate = text;
         return text;
       },
     },
     {
-      title: "Supplier Name",
-      dataIndex: "SupplierName",
-      key: "SupplierName",
-      sorter: (a, b) => a.SupplierName.localeCompare(b.SupplierName),
-      sortDirections: ["descend", "ascend"],
-    },
-    {
-      title: "Store Name",
-      dataIndex: "StoreName",
-      key: "StoreName",
-      sorter: (a, b) => a.StoreName.localeCompare(b.StoreName),
-      sortDirections: ["descend", "ascend"],
-    },
-    {
-      title: "PO Raised By",
-      dataIndex: "PORaisedBy",
-      key: "PORaisedBy",
-      sorter: (a, b) => a.StockExpiryId.localeCompare(b.StockExpiryId),
-      sortDirections: ["descend", "ascend"],
-    },
-    {
-      title: "Po Status",
-      dataIndex: "PoStatus",
-      key: "PoStatus",
-      sorter: (a, b) => a.PoStatus.localeCompare(b.PoStatus),
-      sortDirections: ["descend", "ascend"],
-      render: (text) => {
-        // let color = text === 'Pending' ? 'volcano' : text === 'Completed' ? 'green' : text === '';
-        return (
-          <Tag color={colorMapping[`${text}`]} key={text}>
-            {text.toUpperCase()}
-          </Tag>
-        );
-      },
-    },
-    {
-      title: "Actions",
-      dataIndex: "actions",
-      key: "actions",
-      render: (_, row) => (
-        <>
-          <Tooltip title="Edit">
-            <Button icon={<EditOutlined />} onClick={() => handleEdit(row)} />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(row)}
-            />
-          </Tooltip>
-        </>
-      ),
+      title: "Quantity",
+      dataIndex: "BalanceQty",
+      key: "BalanceQty",
     },
   ];
+
   // const handleSearch = (value) => {
   //   setSearchText(value);
   //   if (value === '') {
@@ -190,15 +129,6 @@ const StockExpiry = () => {
      return Promise.resolve();
    };*/
 
-  const handleSubmit = (values) => {
-    // Handle form submission logic here
-    console.log("Form submitted with values:", values);
-
-    console.log("Form Values:", values);
-    //const uhid = selectedUhId ? selectedUhId.UhId : '';
-
-    // ... Repeat for other parameters
-  };
   const [formatedFromDate, setFormatedFromDate] = useState();
   const [formatedToDate, setFormatedToDate] = useState();
   function formatDate(inputDate) {
@@ -209,68 +139,25 @@ const StockExpiry = () => {
     }
     return inputDate; // Return as is if not in the expected format
   }
+
   const onFinish = async (values) => {
     debugger;
-    setIsSearchLoading(true);
-    setLoading(true);
+    const temp = values.StoreLocation
+    const temp1 = parseInt(values.StockExpiryIn)
     try {
-      const postData1 = {
-        DocumentType:
-          values.DocumentType === undefined ? "" : values.DocumentType, // Set to empty string when left blank
-        Supplier: values.Supplier === undefined ? "" : values.Supplier,
-        ProcurementStore:
-          values.ProcurementStore === undefined ? "" : values.ProcurementStore,
-        POStatus: values.POStatus === undefined ? "" : values.POStatus,
-        FromDate:
-          values.FromDate === undefined || values.FromDate === null
-            ? ""
-            : (
-              values.FromDate.$D.toString().padStart(2, "0") +
-              "-" +
-              (values.FromDate.$M + 1).toString().padStart(2, "0") +
-              "-" +
-              values.FromDate.$y
-            ).toString(),
-        ToDate:
-          values.ToDate === undefined || values.ToDate === null
-            ? ""
-            : (
-              values.ToDate.$D.toString().padStart(2, "0") +
-              "-" +
-              (values.ToDate.$M + 1).toString().padStart(2, "0") +
-              "-" +
-              values.ToDate.$y
-            ).toString(), // A sample value
-        PONumber: values.PONumber === undefined ? "" : values.PONumber, // A sample value
-      };
-      customAxios
-        .get(
-          `${urlSearchStockExpiry}?DocumentType=${postData1.DocumentType}&Supplier=${postData1.Supplier}&ProcurementStore=${postData1.ProcurementStore}&DocumentStatus=${postData1.POStatus}&FromDate=${postData1.FromDate}&ToDate=${postData1.ToDate}&PoNumber=${postData1.PONumber}`,
-          null,
-          {
-            params: postData1,
-            headers: {
-              "Content-Type": "application/json", // Replace with the appropriate content type if needed
-            },
-          }
-        )
-        .then((response) => {
-          console.log("Response:", response.data);
-          //resetForm();
-          setFilteredData(response.data.data.StockExpiryDetails);
-          // setCurrentPage1(1);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      customAxios.get(`${urlStockExpiryBasedOnExpiryCondition}?StoreLocation=${temp}&StockExpireIn=${temp1}`).then((response) => {
+        debugger;
+        const apiData = response.data.data;
+        setFilteredData(apiData.IndentDetails)
+        setShowTable(true)
+      });
     } catch (error) {
-      // Handle any errors here
-      console.error("Error:", error);
+      //console.error("Error fetching purchase order details:", error);        
     }
-    setIsSearchLoading(false);
   };
 
   const onReset = () => {
+    setShowTable(false)
     form.resetFields();
   };
 
@@ -295,7 +182,7 @@ const StockExpiry = () => {
               maxWidth: 1500,
             }}
             initialValues={{
-              StockExpiryIn: 'All'
+              StockExpiryIn: '0'
             }}
             onFinish={onFinish}
           >
@@ -310,9 +197,9 @@ const StockExpiry = () => {
                   ]}
                 >
                   <Select allowClear placeholder='Select Value'>
-                    {StockExpiryDropdown.DocumentType.map((option) => (
-                      <Select.Option key={option.LookupID} value={option.LookupID}>
-                        {option.LookupDescription}
+                    {StockExpiryDropdown.StoreDetails.map((option) => (
+                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                        {option.LongName}
                       </Select.Option>
                     ))}
                   </Select>
@@ -321,12 +208,14 @@ const StockExpiry = () => {
               <Col className="gutter-row" span={6}>
                 <Form.Item name="StockExpiryIn" label="Stock Expiry In">
                   <Select allowClear>
-                    <Select.Option key='All' value='All'></Select.Option>
-                    {StockExpiryDropdown.SupplierList.map((option) => (
-                      <Select.Option key={option.VendorId} value={option.VendorId}>
-                        {option.LongName}
-                      </Select.Option>
-                    ))}
+                    <Select.Option key='0' value='0'>All</Select.Option>
+                    <Select.Option key='1' value='1'>Expired</Select.Option>
+                    <Select.Option key='7' value='7'>Expiring in a Week</Select.Option>
+                    <Select.Option key='15' value='15'>Expiring in 15 Days</Select.Option>
+                    <Select.Option key='30' value='30'>Expiring in a Month</Select.Option>
+                    <Select.Option key='90' value='90'>Expiring in 3 Months</Select.Option>
+                    <Select.Option key='180' value='180'>Expiring in 6 Months</Select.Option>
+                    <Select.Option key='365' value='365'>Expiring in a Year</Select.Option>
                   </Select>
                 </Form.Item>
               </Col>
@@ -349,34 +238,25 @@ const StockExpiry = () => {
             </Row>
           </Form>
         </Card>
-        {loading ? (
-          <Skeleton active />
-        ) : (
-          // <Spin tip="Loading" size="large">
-          //   <div className="content" />
-          // </Spin>
-          <div>
-            {isTable && (
-              <Table display={setIsTable}
-                dataSource={filteredData}
-                columns={columns}
-                pagination={{
-                  onChange: (current, pageSize) => {
-                    setPage(current);
-                    setPaginationSize(pageSize);
-                  },
-                  defaultPageSize: 5, // Set your default pagination size
-                  hideOnSinglePage: true,
-                  showSizeChanger: true,
-                  showTotal: (total, range) =>
-                    `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                }}
-                rowKey={(row) => row.AppUserId} // Specify the custom id property here
-                size="small"
-                bordered
-              />
-            )}
-          </div>
+        {showTable && (
+          <Table
+            dataSource={filteredData}
+            columns={columns}
+            pagination={{
+              onChange: (current, pageSize) => {
+                setPage(current);
+                setPaginationSize(pageSize);
+              },
+              defaultPageSize: 5, // Set your default pagination size
+              hideOnSinglePage: true,
+              showSizeChanger: true,
+              showTotal: (total, range) =>
+                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+            }}
+            rowKey={(row) => row.AppUserId} // Specify the custom id property here
+            size="small"
+            bordered
+          />
         )}
       </div>
     </Layout>

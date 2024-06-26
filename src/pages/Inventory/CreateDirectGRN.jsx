@@ -5,7 +5,9 @@ import {
   urlCreatePurchaseOrder,
   urlAutocompleteProduct,
   urlGetProductDetailsById,
+  urlEditGRNDirect,
   urlAddNewGRNDirect,
+  urlUpdateGRNDirect
 } from "../../../endpoints";
 import Select from "antd/es/select";
 import {
@@ -25,13 +27,12 @@ import Input from "antd/es/input";
 import Form from "antd/es/form";
 import { DatePicker } from "antd";
 import Layout from "antd/es/layout/layout";
-import { LeftOutlined } from "@ant-design/icons";
+import { LeftOutlined, CloseSquareFilled, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 //import Typography from 'antd/es/typography';
 import { useNavigate } from "react-router";
 import { Table, InputNumber } from "antd";
-import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-//import { Calculate } from '@mui/icons-material';
+import { useLocation } from "react-router-dom";
 
 const CreateDirectGRN = () => {
   const [DropDown, setDropDown] = useState({
@@ -43,133 +44,296 @@ const CreateDirectGRN = () => {
     DateFormat: [],
   });
 
-  let [idCounter, setCounter] = useState(0);
-  let [idCounterModel, setCounterModel] = useState(0);
+  let [idCounter, setCounter] = useState(2);
+  let [idCounterModel, setCounterModel] = useState(2);
+  const location = useLocation();
+  const grnHeaderId = location.state.GRNHeaderId;
+  const [batchRecord, setBatchRecord] = useState([]);
 
-  /*   const initialdata = [
-      {
-        key: idCounter.toString(),
-        product: '',
-        uom: '',
-        poQty: '',
-        bounsQty: '',
-        poRate: '',
-        discount: '',
-        discountAmt: '',
-        expectedMRP: '',
-        cgst: '',
-        cgstAmt: '',
-        sgst: '',
-        sgstAmt: '',
-        amount: '',
-        totalAmount: '',
-        avlQty: '',
-        deliverySchedule: ''
-      }
-    ];
-   */
+  const initialDataSource =
+    grnHeaderId === 0
+      ? [
+        {
+          key: 1,
+          ProductName: "",
+          UomId: "",
+          GrnLineId: '',
+          ReceivedQty: "",
+          BonusQty: '',
+          PoRate: "",
+          DiscountRate: "",
+          DiscountAmount: "",
+          Batch: "",
+          LineAmount: "",
+          TaxAmount: "",
+          TotalAmount: "",
+          Replaceable: true,
+          ActiveFlag: true,
+        },
+      ]
+      : [];
+
+  const initialModelDataSource =
+    grnHeaderId === 0
+      ? [
+        {
+          key: 1,
+          BarCode: '',
+          BatchNo: '',
+          BatchQty: 0,
+          UomId: '',
+          BatchBonusQty: 0,
+          MFGDate: '',
+          EXPDate: '',
+          rate: 0,
+          BatchMrp: 0,
+          DiscountRate: 0,
+          BatchTaxType1: '',
+          BatchTaxAmount1: 0,
+          BatchTaxType2: '',
+          BatchTaxAmount1: 0,
+          BatchStockLocator: '',
+          ProductId: '',
+          GrnBatchId: 0,
+          UomId: '',
+          ActiveFlag: true,
+        },
+      ]
+      : [];
+
   const [form1] = Form.useForm();
   const [form2] = Form.useForm();
   const { Title } = Typography;
   const { TextArea } = Input;
   const { Option } = Select;
   const navigate = useNavigate();
-  const [data, setData] = useState([]);
-  const currentDate = new Date();
+  const [data, setData] = useState(initialDataSource);
+  const [modalVisible, setModalVisible] = useState(false)
   //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');
-  const [isLoading, setIsLoading] = useState(true);
   const [inputValues, setInputValues] = useState({});
   const [shouldValidate, setShouldValidate] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedUom, setSelectedUom] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
+  const [productOptions, setProductOptions] = useState([]);
   const [shouldValidateModel, setShouldValidateModel] = useState(false);
-  const [dataModel, setDataModel] = useState([]);
-  const [formData, setFormData] = useState({});
+  const [dataModel, setDataModel] = useState(initialModelDataSource);
   const [selectedUomText, setSelectedUomText] = useState({});
-  const [selectedProductId, setSelectedProductId] = useState({});
+  const [buttonTitle, setButtonTitle] = useState('Save');
   const [selectedUomId, setSelectedUomId] = useState({});
   const [recordKeys, setRecordKeys] = useState();
   const [delivery, setDelivery] = useState([]);
   const [productIds, setProductIds] = useState({});
-  const [isSubmit, setIsSubmit] = useState(false);
   const fields = form1.getFieldsValue();
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [productLineId, setProductLineId] = useState(0);
-  const [selecetdUomText, setSelecetdUomText] = useState({});
   const [mrp, setMrp] = useState();
-  // const tableRef = useRef(null);
 
   useEffect(() => {
     customAxios.get(urlCreatePurchaseOrder).then((response) => {
       const apiData = response.data.data;
       setDropDown(apiData);
     });
-    if (idCounter === 0) {
-      handleAdd();
-      ModelAdd();
-    }
   }, []);
+
+  useEffect(() => {
+    debugger;
+    const fetchData = async () => {
+      if (grnHeaderId > 0) {
+        setButtonTitle('Update')
+        try {
+          const response = await customAxios.get(`${urlEditGRNDirect}?GrnHeaderId=${grnHeaderId}`);
+          if (response.status == 200 && response.data.data != null) {
+            const editeddata = response.data.data;
+            const products = editeddata.GRNAgainstPODetails.map(
+              (item, index) => ({
+                ...item,
+                key: index + 1,
+              })
+            );
+            setData(products);
+            const formdata = editeddata.newGRNAgainstPOModel;
+
+            form1.setFieldsValue({
+              SupplierList: formdata.SupplierId,
+              StoreDetails: formdata.StoreId,
+              DocumentType: formdata.DocumentType,
+              InvoiceNumber: formdata.InvoiceNumber,
+              InvoiceDate: DateBindtoDatepicker(formdata.InvoiceDate),
+              DCChallanDate: DateBindtoDatepicker(formdata.DCChallanDate),
+              DCChallanNumber: formdata.DCChallanNumber,
+              ReceivingDate: DateBindtoDatepicker(formdata.ReceivingDate),
+              InvoiceAmount: formdata.InvoiceAmount,
+              Amount: formdata.TotalAmount,
+              totalpoAmount: formdata.TotalPoAmount,
+              GRNDate: DateBindtoDatepicker(formdata.GRNDate),
+              Remarks: formdata.Remarks,
+              GRNStatus: formdata.GRNStatus === 'Created' ? '' : formdata.GRNStatus,
+              GRNHeaderId: formdata.GRNHeaderId,
+              PoHeaderId: formdata.PoHeaderId
+            });
+            setCounter(products.length + 1);
+            const batch = editeddata.BatchDetails.map(
+              (item, index) => ({
+                ...item,
+                key: index + 1,
+              })
+            );
+            setDataModel(batch);
+            setCounterModel(editeddata.BatchDetails.length + 1)
+          }
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      }
+    };
+    fetchData();
+  }, []);
+
+  const DateBindtoDatepicker = (value) => {
+    const isoDateString = value;
+    const dateValue = new Date(isoDateString);
+    const formattedDate = dayjs(dateValue).format('DD-MM-YYYY');
+    return dayjs(formattedDate, 'DD-MM-YYYY');
+  }
 
   const getPanelValue = async (searchText) => {
     debugger;
-    try {
-      customAxios
-        .get(`${urlAutocompleteProduct}?Product=${searchText}`)
-        .then((response) => {
-          const apiData = response.data.data;
-          const newOptions = apiData.map((item) => ({
-            value: item.LongName,
-            key: item.ProductDefinitionId,
-            UomId: item.UOMPrimaryUOM,
-          }));
-          setAutoCompleteOptions(newOptions);
-        });
-    } catch (error) {
-      // Handle the error as needed
+    if (searchText === "") {
+      form1.resetFields(['product', 'uom', 'recievingQty', 'BonusQty', 'poRate', 'discount', 'discountAmt', 'Batch', 'amount', 'taxAmount', 'totalAmount', 'replaceable']);
+    } else {
+      try {
+        customAxios
+          .get(`${urlAutocompleteProduct}?Product=${searchText}`)
+          .then((response) => {
+            const apiData = response.data.data;
+            const newOptions = apiData.map((item) => ({
+              value: item.LongName,
+              key: item.ProductDefinitionId,
+              UomId: item.UOMPrimaryUOM,
+            }));
+            setAutoCompleteOptions(newOptions);
+          });
+      } catch (error) {
+        // Handle the error as needed
+      }
     }
   };
-  // useEffect(() => {
-  //   debugger;
-  //   const fetchData = async () => {
-  //     try {
-  //       Object.entries(inputValues).forEach(async ([key, value]) => {
-  //         if (value) {
-  //           const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${value}`);
-  //           const apiData = response.data.data;
-  //           const newOptions = apiData.map((item) => ({ value: item.LongName, key: item.ProductDefinitionId, UomId: item.UOMPrimaryUOM }));
-  //           setAutoCompleteOptions((prevState) => ({ ...prevState, [key]: newOptions }));
-  //         }
-  //       });
-  //     } catch (error) {
-  //       // Handle the error as needed
-  //     }
-  //   };
 
-  //   fetchData();
-  // }, [inputValues]);
+  function calculateTotalAmount(data) {
+    let totalAmount = 0;
+    data.forEach((item) => {
+      if (
+        item.ActiveFlag &&
+        !isNaN(item.LineAmount) &&
+        item.LineAmount !== null &&
+        item.LineAmount !== undefined
+      ) {
+        totalAmount += parseFloat(item.LineAmount);
+      }
+    });
+    return totalAmount;
+  }
 
-  const onOkModal = () => {
+  const handleInputChange = (e, column, index, record) => {
     debugger;
-    form2
-      .validateFields()
-      .then(() => {
-        // If validation succeeds, submit the form
-        form2.submit();
-      })
-      .catch((error) => {
-        console.log("Validation error:", error);
+    let newData;
+    if (["ReceivedQty", "PoRate", "DiscountRate"].includes(column)) {
+      newData = data.map((item) => {
+        if (item.key === record.key) {
+          const updatedItem = { ...item, [column]: e.target.value };
+          const recievingQty = column === "ReceivedQty" ? e.target.value : item.ReceivedQty;
+          const poRate = column === "PoRate" ? e.target.value : item.PoRate;
+          const discountRate = column === "DiscountRate" ? e.target.value : item.DiscountRate;
+
+          let discountAmount = 0;
+          let amount = 0;
+          if (poRate != null && recievingQty != null) {
+            const discount = discountRate != null ? discountRate : 0;
+            discountAmount = (poRate * recievingQty * discount) / 100;
+            amount = poRate * recievingQty - discountAmount;
+          }
+
+          updatedItem.DiscountAmount = discountAmount;
+          updatedItem.LineAmount = amount;
+          updatedItem.TotalAmount = amount;
+
+          form1.setFieldsValue({ [record.key]: { DiscountAmount: discountAmount } });
+          form1.setFieldsValue({ [record.key]: { LineAmount: amount } });
+          form1.setFieldsValue({ [record.key]: { TotalAmount: amount } });
+
+          return updatedItem;
+        }
+        return item;
       });
+    } else {
+      newData = data.map((item) => {
+        if (item.key === record.key) {
+          const updatedItem = { ...item, [column]: e.target.value };
+          return updatedItem;
+        }
+        return item;
+      });
+    }
+
+    if (["ReceivedQty", "PoRate", "DiscountRate"].includes(column)) {
+      const totalAmount = calculateTotalAmount(newData);
+      form1.setFieldsValue({
+        TotalAmount: totalAmount,
+        TotalPoAmount: totalAmount,
+      });
+    }
+    setData(newData);
   };
+
+  const onOkModal = async () => {
+    debugger;
+    await form2.validateFields();
+    const values = form2.getFieldsValue();
+    const valuesArray = Object.values(values);
+    const qty = valuesArray.reduce((total, item) => item ? total + (item.Quantity || 0) : total, 0);
+    if (qty <= batchRecord.ReceivedQty) {
+      const updatedBatch = dataModel.map(item => {
+        const key = item.key;
+        if (values[key] != undefined) {
+          if (values[key].Quantity || values[key].EXPDate || values[key].BatchMrp) {
+            return {
+              ...item,
+              ProductId: batchRecord.ProductId,
+              UomId: batchRecord.UomId,
+              BarCode: values[key].BarCode,
+              Quantity: values[key].Quantity,
+              BatchBonusQty: values[key].BatchBonusQty,
+              MFGDate: values[key].MFGDate,
+              BatchNo: values[key].BatchNo,
+              EXPDate: values[key].EXPDate,
+              rate: values[key].rate,
+              MRP: values[key].BatchMrp,
+              DiscountRate: values[key].DiscountRate == '' ? 0 : values[key].DiscountRate,
+              DiscountAmount: values[key].DiscountAmount,
+              StockLocator: 0,
+              PoLineId: values[key].PoLineId === undefined ? 0 : values[key].PoLineId
+            };
+          }
+          return item;
+        }
+        return item;
+      });
+      setDataModel(updatedBatch);
+      setModalVisible(false);
+    } else {
+      message.warning('Quantity must not be Greater than Recieved Quantity')
+    }
+  };
+
   const onFinishModel = (values) => {
     debugger;
     const deliveries = [];
+    // if(form1.getFieldValue([recordKeys, 'recievingQty']) != form2.getFieldValue())
     for (let i = 0; i <= idCounterModel; i++) {
       const delivery = {
         BarCode: values[i].barcode === undefined ? null : values[i].barcode,
         BatchNo: values[i].batchnumber,
-        BatchBonusQty: values[i].bonusqty,
+        BatchBonusQty: values[i].BonusQty,
         TaxType1: values[i].cgst === undefined ? 0 : values[i].cgst,
         TaxAmount1: values[i].cgstamt,
         DiscountAmount: values[i].discountamt,
@@ -191,12 +355,10 @@ const CreateDirectGRN = () => {
 
   const onCancelModel = () => {
     debugger;
-    form2.resetFields();
-    for (let i = idCounterModel; i > 0; i--) {
-      ModelDelete(i);
-    }
-    setIsModalOpen(false);
+    // form2.resetFields();    
+    setModalVisible(false);
   };
+
   const handleCancel = () => {
     const url = "/DirectGRN";
     navigate(url);
@@ -209,18 +371,14 @@ const CreateDirectGRN = () => {
     // }
   };
 
-  const ModelOpen = (value, record) => {
-    debugger;
-    form1
-      .validateFields()
-      .then(() => {
-        // If validation succeeds, submit the form
-        setRecordKeys(record.key);
-        setIsModalOpen(true);
-      })
-      .catch((error) => {
-        console.log("Validation error:", error);
-      });
+  const handleOpenModal = async (value, record) => {
+    debugger
+    // const fieldNames = form1.getFieldsValue()
+    // const fieldsToValidate = Object.keys(fieldNames).filter(fieldName => fieldName !== record.key, ProductName);
+    record.BonusQty = form1.getFieldValue([record.key, 'BonusQty'])
+    await form1.validateFields(['StoreId', [record.key, 'UomId'], [record.key, 'ProductName'], [record.key, 'ReceivedQty'], [record.key, 'PoRate']]);
+    setBatchRecord(record);
+    setModalVisible(true);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -234,310 +392,288 @@ const CreateDirectGRN = () => {
 
   const handleDelete = (record) => {
     debugger;
-    const newData = data.filter(
-      (item) =>
-        item.key !== (record.key === undefined ? record.toString() : record.key)
-    );
-    Object.keys(fields).forEach((fieldName) => {
-      if (fieldName.startsWith(`${record.key}.`)) {
-        form1.resetFields([fieldName]);
+    const newData = data.map((item) => {
+      if (item.key === record.key) {
+        return { ...item, ActiveFlag: false };
       }
+      return item;
     });
     setData(newData);
-    // if (tableRef.current) {
-    //   tableRef.current.scrollLeft = 0;
-    // }
+    const newDataModel = dataModel.map((item) => {
+      if (item.ProductId === record.ProductId) {
+        return { ...item, ActiveFlag: false };
+      }
+      return item;
+    });
+    setDataModel(newDataModel)
+    const totalAmount = calculateTotalAmount(newData);
+
+    form1.setFieldsValue({
+      Amount: totalAmount,
+      totalpoAmount: totalAmount,
+    });
   };
 
   const ModelDelete = (record) => {
     debugger;
-    const newData = dataModel.filter(
-      (item) =>
-        item.key !== (record.key === undefined ? record.toString() : record.key)
-    );
-    Object.keys(fields).forEach((fieldName) => {
-      if (fieldName.startsWith(`${record.key}.`)) {
-        form2.resetFields([fieldName]);
+    const newData = dataModel.map((item) => {
+      if (item.key === record.key) {
+        return { ...item, ActiveFlag: false };
       }
+      return item;
     });
     setDataModel(newData);
   };
 
-  const handleInputChange = (value, option, key) => {
-    setInputValues((prevState) => ({ ...prevState, [key]: value }));
-  };
+  // const handleInputChange = (value, option, key) => {
+  //   setInputValues((prevState) => ({ ...prevState, [key]: value }));
+  // };
 
   const handleOnFinish = async (values) => {
     debugger;
-    if (delivery.length > 0) {
-      setIsSearchLoading(true);
-      const products = [];
-      for (let i = 0; i <= idCounter; i++) {
-        if (values[i] !== undefined) {
-          const product = {
-            ProductId: productIds[i],
-            UomId: values[i].uom,
-            ReceivedQty: values[i].recievingQty,
-            BonusQuantity: values[i].bounsQty === "" ? 0 : values[i].bounsQty,
-            PoRate:
-              values[i].poRate === undefined ? 0 : values[i].poRate.toFixed(4),
-            DiscountRate:
-              values[i].discount === undefined
-                ? 0
-                : values[i].discount.toFixed(4),
-            DiscountAmount:
-              values[i].discountAmt === undefined
-                ? 0
-                : parseFloat(values[i].discountAmt).toFixed(4),
-            // DiscountAmount: values[i].discountAmt === "" ? 0 : (form1.getFieldValue([i, 'discountAmt'])).toFixed(4),
-            TaxAmount1:
-              values[i].taxAmount === "" ? 0 : values[i].taxAmount.toFixed(4),
-            TotalAmount:
-              values[i].totalAmount === "" ? 0 : values[i].totalAmount,
-            Replaceable:
-              values[i].replaceable === undefined
-                ? "true"
-                : values[i].cgstAmt.toFixed(4),
-            LineAmount: values[i].amount === undefined ? 0 : values[i].amount,
-          };
-          products.push(product);
+    const isAnyIdNotNull = dataModel.some(item => item.ProductId !== '' && item.ActiveFlag);
+    const va = form1.getFieldsValue();
+    if (isAnyIdNotNull) {
+      if (values.InvoiceAmount === values.totalpoAmount) {
+        const products = [];
+        for (let i = 0; i <= idCounter; i++) {
+          if (data[i] !== undefined) {
+            const product = {
+              ProductId: data[i].ProductId,
+              UomId: data[i].UomId,
+              ReceivedQty: data[i].ReceivedQty,
+              BonusQuantity: data[i].BonusQty ?? 0,
+              PoRate: data[i].PoRate,
+              DiscountRate: data[i].DiscountRate == '' || data[i].DiscountRate == null || data[i].DiscountRate == undefined ? 0 : data[i].DiscountRate,
+              DiscountAmount: data[i].DiscountAmount ?? 0,
+              TaxAmount1: data[i].TaxAmount == '' || data[i].TaxAmount == undefined ? 0 : data[i].TaxAmount,
+              TotalAmount: data[i].LineAmount,
+              Replaceable: data[i].Replaceable === true || data[i].Replaceable == 'Y' ? 'Y' : 'N',
+              LineAmount: data[i].LineAmount,
+              PoLineId: data[i].PoLineId == null ? 0 : data[i].PoLineId,
+              GrnLineId: data[i].GrnLineId == '' || data[i].GrnLineId == null || data[i].GrnLineId == undefined ? 0 : data[i].GrnLineId,
+              ActiveFlag: data[i].ActiveFlag
+            };
+            products.push(product);
+          }
         }
-      }
 
-      const DirectGRN = {
-        SupplierId:
-          values.SupplierList === undefined ? "" : values.SupplierList,
-        StoreId: values.StoreDetails === undefined ? "" : values.StoreDetails,
-        DocumentType:
-          values.DocumentType === undefined ? "" : values.DocumentType,
-        DCChallanDate: values.DCChallanDate,
-        GRNDate: values.GRNDate,
-        InvoiceDate: values.InvoiceDate,
-        ReceivingDate: values.RecievingDate,
-        RoundOff: values.RoundOff,
-        // gstTax: values.gstTax,
-        InvoiceNumber: values.InvoiceNumber,
-        DCChallanNumber:
-          values.DCChallanNumber === undefined ? null : values.DCChallanNumber,
-        Remarks: values.Remarks === undefined ? null : values.Remarks,
-        GRNStatus:
-          values.GRNStatus === undefined ? "Created" : values.GRNStatus,
-        InvoiceAmount:
-          values.InvoiceAmount === undefined ? null : values.InvoiceAmount,
-        Amount: values.Amount === undefined ? null : values.Amount,
-        TotalPoAmount:
-          values.totalpoAmount === undefined ? null : values.totalpoAmount,
-        TaxAmount1: values.gstTax === undefined ? 0 : values.gstTax,
-      };
-      const postData = {
-        newGRNAgainstPOModel: DirectGRN,
-        GRNAgainstPODetails: products,
-        BatchDetails: delivery === undefined ? [] : delivery,
-      };
-      try {
-        const response = await customAxios.post(urlAddNewGRNDirect, postData, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        form1.resetFields();
-      } catch (error) {
-        // Handle error
+        const DirectGRN = {
+          SupplierId: values.SupplierList,
+          StoreId: values.StoreDetails,
+          DocumentType: values.DocumentType,
+          DCChallanDate: values.DCChallanDate,
+          GRNDate: values.GRNDate,
+          InvoiceDate: values.InvoiceDate,
+          ReceivingDate: values.RecievingDate,
+          RoundOff: values.RoundOff,
+          InvoiceNumber: values.InvoiceNumber,
+          DCChallanNumber: values.DCChallanNumber,
+          Remarks: values.Remarks ?? null,
+          GRNStatus: values.GRNStatus == '' || values.GRNStatus == undefined ? "Created" : values.GRNStatus,
+          InvoiceAmount: values.InvoiceAmount,
+          TotalAmount: values.Amount,
+          TotalPoAmount: values.totalpoAmount,
+          TaxAmount1: values.gstTax ?? 0,
+          GRNHeaderId: values.GRNHeaderId,
+          PoHeaderId: values.PoHeaderId
+        };
+        const postData = {
+          newGRNAgainstPOModel: DirectGRN,
+          GRNAgainstPODetails: products,
+          BatchDetails: dataModel === undefined ? [] : dataModel,
+        };
+        if (grnHeaderId == 0) {
+          // const response = await customAxios.post(
+          //   urlAddNewGRNDirect,
+          //   postData,
+          //   {
+          //     headers: {
+          //       "Content-Type": "application/json",
+          //     },
+          //   }
+          // );
+          if (response.status == 200) {
+            message.success("GRN Created Successfully");
+            handleCancel();
+          } else {
+            message.error("Something went wrong");
+          }
+        } else {
+          // const response = await customAxios.post(
+          //   urlUpdateGRNDirect,
+          //   postData,
+          //   {
+          //     headers: {
+          //       "Content-Type": "application/json",
+          //     },
+          //   }
+          // );
+          if (response.status == 200) {
+            message.success("GRN Updated Successfully");
+            handleCancel();
+          } else {
+            message.error("Something went wrong");
+          }
+        }
+        onCancelModel();
+      } else {
+        message.warning("Failure!Invoice Amount should match with Total Po Amount.");
       }
-      setIsSearchLoading(false);
-      onCancelModel();
     } else {
       message.warning("Please add Batch details");
     }
   };
 
-  const handleSelect = (value, option, key) => {
+  const handleSelect = (value, option, column, record) => {
     debugger;
-    try {
-      customAxios
-        .get(`${urlGetProductDetailsById}?ProductId=${option.key}`)
-        .then((response) => {
-          debugger;
-          const apiData = response.data.data;
-          if (apiData.PORate != null) {
-            form1.setFieldsValue({ [key]: { poRate: apiData.PORate.PoRate } });
-            // form1.setFieldsValue({ [key]: { expectedMRP: apiData.PORate.MrpExpected } });
-          }
-          //   let qty = 0;
-          //   if (apiData.Stock.length > 0) {
-          //     apiData.Stock.forEach(value => {
-          //       qty += value.Quantity
-          //     })
-          //   }
-          //   form1.setFieldsValue({ [key]: { avlQty: qty } });
-          //   form1.setFieldsValue({ [key]: { discountAmt: 0 } });
-          //   form1.setFieldsValue({ [key]: { amount: 0 } });
-          //   form1.setFieldsValue({ [key]: { totalAmount: 0 } });
-        });
-    } catch (error) {
-      //console.error("Error fetching purchase order details:", error);
-    }
-    // Update the product value in the form
-    form1.setFieldsValue({ [key]: { product: value } });
-    setProductIds((prevState) => ({ ...prevState, [key]: option.key }));
-    setSelectedProductId((prevState) => {
-      const newState = { ...prevState, [key]: option.key };
-      return newState;
+    form1.setFieldsValue({ [record.key]: { ProductId: option.key } })
+    const newData = data.map((item) => {
+      if (item.key === record.key) {
+        const updatedItem = { ...item, [column]: option.key, LongName: option.value, UomId: option.UomId, ProductId: option.key };
+        return updatedItem;
+      }
+      return item;
     });
+    setData(newData);
+  };
 
-    // form1.setFieldsValue({option});
-    // Set the selected UOM based on the selected product
-    const matchingUom = DropDown.UOM.find(
-      (uomOption) => uomOption.UomId === option.UomId
-    );
-    setSelectedUomText((prevState) => {
-      const newState = { ...prevState, [key]: matchingUom.LongName };
-      return newState;
-    });
-    setSelectedUomId((prevState) => {
-      const newState = { ...prevState, [key]: matchingUom.UomId };
-      console.log(selectedUomId);
-      return newState;
-    });
-    if (matchingUom) {
-      // If a matching UomId is found, set this as the selected Uom
-      setSelectedUom((prevState) => {
-        const newState = { ...prevState, [key]: matchingUom.UomId };
-        console.log(newState); // Log the new state
-        return newState;
-      });
+  // useEffect(
+  //   () => {
+  //     console.log(selectedUom);
+  //     console.log(selectedUomText); // log the current state
+  //   },
+  //   [selectedUom],
+  //   [selectedUomText]
+  // ); // run this effect whenever selectedUom changes
 
-      // Update the UOM value in the form
-      form1.setFieldsValue({ [key]: { uom: matchingUom.UomId } });
-    } else {
-      // If no matching UomId is found, clear the selected Uom
-      setSelectedUom((prevState) => {
-        const newState = { ...prevState, [key]: null };
-        console.log(newState); // Log the new state
-        return newState;
-      });
+  const handleAdd = async () => {
+    const fieldNames = form1.getFieldsValue()
+    setProductOptions([]);
+    const fieldsToValidate = Object.keys(fieldNames).filter(fieldName => fieldName !== 'InvoiceAmount');
+    await form1.validateFields(fieldsToValidate);
+    setData([
+      ...data,
+      {
+        key: idCounter,
+        ProductName: "",
+        UomId: "",
+        GrnLineId: '',
+        ReceivedQty: "",
+        BonusQty: '',
+        PoRate: "",
+        DiscountRate: "",
+        DiscountAmount: "",
+        Batch: "",
+        LineAmount: "",
+        TaxAmount: "",
+        TotalAmount: "",
+        Replaceable: true,
+        ActiveFlag: true,
+      },
+    ]);
+    setCounter(idCounter + 1);
+  };
 
-      // Clear the UOM value in the form
-      form1.setFieldsValue({ [key]: { uom: null } });
+  const handleSearch = async (searchText) => {
+    debugger
+    if (searchText) {
+      const response = await customAxios.get(
+        `${urlAutocompleteProduct}?Product=${searchText}`
+      );
+      const apiData = response.data.data;
+      const newOptions = apiData.map((item) => ({
+        value: item.LongName,
+        key: item.ProductDefinitionId,
+        UomId: item.UOMPrimaryUOM
+      }));
+      setProductOptions(newOptions);
     }
   };
 
-  useEffect(
-    () => {
-      console.log(selectedUom);
-      console.log(selectedUomText); // log the current state
-    },
-    [selectedUom],
-    [selectedUomText]
-  ); // run this effect whenever selectedUom changes
-
-  const handleAdd = () => {
-    setCounter(idCounter + 1);
-    // if (shouldValidate) { //first time going to add row without validation, call from use useEffect
-    //     // If shouldValidate is true, then perform form validation
-    //     form1
-    //         .validateFields()
-    //         .then(() => {
-    //             const newRow = {
-    //                 key: idCounter.toString(),
-    //                 product: '',
-    //                 uom: '',
-    //                 poQty: '',
-    //                 bounsQty: '',
-    //                 poRate: '',
-    //                 discount: '',
-    //                 discountAmt: '',
-    //                 expectedMRP: '',
-    //                 cgst: '',
-    //                 cgstAmt: '',
-    //                 sgst: '',
-    //                 sgstAmt: '',
-    //                 amount: '',
-    //                 totalAmount: '',
-    //                 avlQty: '',
-    //                 deliverySchedule: ''
-    //             }; // Define your new row data here
-    //             setData([...data, newRow]);
-    //         })
-    // } else {
-    const newRow = {
-      key: idCounter.toString(),
-      product: "",
-      uom: "",
-      recievingQty: "",
-      bounsQty: "",
-      poRate: "",
-      discount: "",
-      discountAmt: "",
-      Batch: "",
-      amount: "",
-      taxAmount: "",
-      totalAmount: "",
-      replaceable: "",
-    };
-    setData([...data, newRow]);
-    setShouldValidate(true);
-    // }
+  const handleUomChange = (option, column, index, record) => {
+    debugger;
+    const newData = data.map((item) => {
+      if (item.key === record.key) {
+        const updatedItem = { ...item, [column]: option.value, ShortName: option.children };
+        return updatedItem;
+      }
+      return item;
+    });
+    setData(newData);
   };
 
   const columns = [
     {
       title: "Product",
-      width: 250,
-      dataIndex: "product",
-      key: "product",
-      render: (_, record) => (
-        <Form.Item
-          name={[record.key, "product"]}
-          rules={[
-            {
-              required: true,
-              message: "Please input!",
-            },
-          ]}
-        >
-          <AutoComplete
-            style={{ width: "100%" }}
-            options={autoCompleteOptions}
-            onSearch={getPanelValue}
-            onSelect={(value, option) =>
-              handleSelect(value, option, record.key)
-            }
-            placeholder="Search for a product"
-            allowClear
-          />
-        </Form.Item>
+      dataIndex: "ProductName",
+      fixed: "left",
+      key: "ProductName",
+      width: 350,
+      render: (text, record, index) => (
+        <>
+          <Form.Item
+            name={[record.key, 'ProductName']}
+            rules={[{ required: true, message: "Required" }]}
+            initialValue={record.LongName == undefined ? record.ProductName : record.LongName}
+          >
+            <AutoComplete
+              options={productOptions}
+              onSearch={handleSearch}
+              onSelect={(value, option) =>
+                handleSelect(value, option, "ProductName", record)
+              }
+              onChange={(value) => {
+                if (!value) {
+                  setProductOptions([]);
+                }
+              }}
+              allowClear={{
+                clearIcon: <CloseSquareFilled />,
+              }}
+              disabled={!!grnHeaderId && record.GrnLineId}
+            />
+          </Form.Item>
+          <Form.Item hidden name={[record.key, 'ProductId']} initialValue={record.ProductId}><Input defaultValue={record.ProductId}></Input></Form.Item>
+          <Form.Item hidden name={[record.key, 'PoLineId']} initialValue={record.PoLineId}><Input defaultValue={record.PoLineId}></Input></Form.Item>
+          <Form.Item hidden name={[record.key, 'GrnLineId']} initialValue={record.GrnLineId}><Input defaultValue={record.GrnLineId}></Input></Form.Item>
+        </>
       ),
     },
     {
       title: "UOM",
-      width: 100,
-      dataIndex: "uom",
-      key: "uom",
-      render: (text, record) => (
-        <Form.Item name={[record.key, "uom"]}>
-          <Select
-            value={selectedUom[record.key]}
-            style={{ width: "100%" }}
-            onChange={(option) => handleSelectChange(record.key, option)}
+      dataIndex: "UomId",
+      key: "UomId",
+      width: 150,
+      render: (text, record, index) => (
+        <Form.Item
+          name={[record.key, 'UomId']}
+          rules={[{ required: true, message: "Required" }]}
+          initialValue={record.ShortName == undefined ? record.UomId : record.ShortName}
+        >
+          <Select defaultValue={text}
+            onChange={(value, option) =>
+              handleUomChange(option, "UomId", index, record)
+            }
           >
             {DropDown.UOM.map((option) => (
-              <Select.Option key={option.UomId} value={option.UomId}>
+              <Option key={option.UomId} value={option.UomId}>
                 {option.ShortName}
-              </Select.Option>
+              </Option>
             ))}
           </Select>
         </Form.Item>
       ),
     },
     {
-      title: "Recieving Qty",
-      dataIndex: "recievingQty",
+      title: "Recieved Qty",
+      dataIndex: "ReceivedQty",
       width: 110,
-      key: "recievingQty",
-      render: (text, record) => (
+      key: "ReceivedQty",
+      render: (text, record, index) => (
         <Form.Item
-          name={[record.key, "recievingQty"]}
+          name={[record.key, 'ReceivedQty']}
+          initialValue={text == 0 ? undefined : text}
           rules={[
             {
               required: true,
@@ -545,59 +681,87 @@ const CreateDirectGRN = () => {
             },
           ]}
         >
-          <InputNumber style={{ width: "100%" }} min={0} />
+          <InputNumber style={{ width: "100%" }}
+            onChange={(value) => {
+              handleInputChange(
+                { target: { value } },
+                "ReceivedQty",
+                index,
+                record
+              );
+            }}
+          />
         </Form.Item>
       ),
     },
     {
       title: "Bonus Qty",
-      dataIndex: "bounsQty",
+      dataIndex: "BonusQuantity",
       width: 100,
-      key: "bounsQty",
+      key: "BonusQuantity",
       render: (text, record) => (
-        <Form.Item name={[record.key, "bounsQty"]}>
-          <InputNumber min={0} style={{ width: "100%" }} />
+        <Form.Item name={[record.key, 'BonusQuantity']} initialValue={record.BonusQuantity} style={{ width: "100%" }}>
+          <InputNumber min={0} defaultValue={record.BonusQuantity} />
         </Form.Item>
       ),
     },
     {
       title: "PO Rate",
-      dataIndex: "poRate",
+      dataIndex: "PoRate",
       width: 100,
-      key: "poRate",
-      render: (text, record) => (
+      key: "PoRate",
+      render: (text, record, index) => (
         <Form.Item
-          name={[record.key, "poRate"]}
-          initialValue={text}
+          name={[record.key, 'PoRate']}
+          initialValue={text == 0 ? undefined : text}
           rules={[
             {
               required: true,
+              message: 'require'
             },
           ]}
         >
-          <InputNumber min={0} style={{ width: "100%" }} />
+          <InputNumber style={{ width: "100%" }}
+            onChange={(value) => {
+              handleInputChange(
+                { target: { value } },
+                "PoRate",
+                index,
+                record
+              );
+            }}
+          />
         </Form.Item>
       ),
     },
     {
       title: "Discount%",
-      dataIndex: "discount",
+      dataIndex: "DiscountRate",
       width: 100,
-      key: "discount",
-      render: (text, record) => (
-        <Form.Item name={[record.key, "discount"]}>
-          <InputNumber min={0} style={{ width: "100%" }} />
+      key: "DiscountRate",
+      render: (text, record, index) => (
+        <Form.Item name={[record.key, 'DiscountRate']} initialValue={text}>
+          <InputNumber min={0} style={{ width: "100%" }} defaultValue={text}
+            onChange={(value) => {
+              handleInputChange(
+                { target: { value } },
+                "DiscountRate",
+                index,
+                record
+              );
+            }}
+          />
         </Form.Item>
       ),
     },
     {
       title: "Discount Amount",
-      dataIndex: "discountAmt",
+      dataIndex: "DiscountAmount",
       width: 120,
-      key: "discountAmt",
+      key: "DiscountAmount",
       render: (text, record) => (
-        <Form.Item name={[record.key, "discountAmt"]}>
-          <InputNumber disabled style={{ width: "100%" }} />
+        <Form.Item name={[record.key, 'DiscountAmount']} initialValue={text}>
+          <InputNumber disabled style={{ width: "100%" }} defaultValue={text} />
         </Form.Item>
       ),
     },
@@ -607,52 +771,52 @@ const CreateDirectGRN = () => {
       width: 100,
       key: "Batch",
       render: (value, record) => (
-        <Button type="link" onClick={() => ModelOpen(value, record)}>
+        <Button type="link" onClick={() => handleOpenModal(value, record)}>
           Batch
         </Button>
       ),
     },
     {
       title: "Amount",
-      dataIndex: "amount",
+      dataIndex: "LineAmount",
       width: 100,
-      key: "amount",
+      key: "LineAmount",
       render: (text, record) => (
-        <Form.Item name={[record.key, "amount"]}>
-          <InputNumber min={0} style={{ width: "100%" }} disabled />
+        <Form.Item name={[record.key, 'LineAmount']} initialValue={record.LineAmount}>
+          <InputNumber min={0} style={{ width: "100%" }} disabled defaultValue={record.LineAmount} />
         </Form.Item>
       ),
     },
     {
       title: "Tax Amount",
-      dataIndex: "taxAmount",
+      dataIndex: "TaxAmount1",
       width: 100,
-      key: "taxAmount",
+      key: "TaxAmount1",
       render: (text, record) => (
-        <Form.Item name={[record.key, "taxAmount"]}>
-          <InputNumber min={0} style={{ width: "100%" }} disabled />
+        <Form.Item name={[record.key, 'TaxAmount1']} initialValue={text}>
+          <InputNumber min={0} style={{ width: "100%" }} disabled defaultValue={text} />
         </Form.Item>
       ),
     },
     {
       title: "Total Amount",
-      dataIndex: "totalAmount",
+      dataIndex: "TotalAmount",
       width: 100,
-      key: "totalAmount",
+      key: "TotalAmount",
       render: (text, record) => (
-        <Form.Item name={[record.key, "totalAmount"]}>
-          <InputNumber disabled style={{ width: "100%" }} />
+        <Form.Item name={[record.key, 'TotalAmount']} initialValue={record.LineAmount}>
+          <InputNumber disabled style={{ width: "100%" }} defaultValue={record.LineAmount} />
         </Form.Item>
       ),
     },
     {
       title: "Replaceable",
-      dataIndex: "replaceable",
+      dataIndex: "Replaceable",
       width: 100,
-      key: "replaceable",
+      key: "Replaceable",
       render: (text, record) => (
-        <Form.Item name={[record.key, "replaceable"]}>
-          <Checkbox></Checkbox>
+        <Form.Item name={[record.key, 'Replaceable']} initialValue={text} valuePropName='checked'>
+          <Checkbox defaultValue={text}></Checkbox>
         </Form.Item>
       ),
     },
@@ -667,92 +831,78 @@ const CreateDirectGRN = () => {
       dataIndex: "add",
       key: "add",
       width: 50,
-      render: (text, record) => (
+      render: (text, record, index) => (
         <Popconfirm
-          title="Sure to delete?"
+          title="Are you sure you want to delete this record?"
           onConfirm={() => handleDelete(record)}
         >
-          <DeleteOutlined />
+          <Button
+            size="small"
+            danger
+            icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
+          ></Button>
         </Popconfirm>
       ),
-      //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>
     },
   ];
-  const ModelAdd = () => {
+
+  const ModelAdd = async () => {
     debugger;
+    await form2.validateFields();
+    setDataModel([
+      ...dataModel,
+      {
+        key: idCounterModel,
+        BarCode: '',
+        BatchNo: '',
+        BatchQty: 0,
+        UomId: '',
+        BatchBonusQty: 0,
+        MFGDate: '',
+        EXPDate: '',
+        rate: 0,
+        BatchMrp: 0,
+        DiscountRate: 0,
+        BatchTaxType1: '',
+        BatchTaxAmount1: 0,
+        BatchTaxType2: '',
+        BatchTaxAmount1: 0,
+        BatchStockLocator: '',
+        ProductId: '',
+        UomId: '',
+        GrnBatchId: 0,
+        ActiveFlag: true,
+      },
+    ]);
     setCounterModel(idCounterModel + 1);
-    // if (shouldValidateModel) {
-    //     form2
-    //         .validateFields()
-    //         .then(() => {
-    //             const newRow = {
-    //                 key: counter.toString(),
-    //                 barcode: '',
-    //                 batchnumber: '',
-    //                 quantity: '',
-    //                 muom: '',
-    //                 bonusqty: '',
-    //                 mfgdate: '',
-    //                 expdate: '',
-    //                 rate: '',
-    //                 mrp: '',
-    //                 discountamt: '',
-    //                 cgst: '',
-    //                 cgstamt: '',
-    //                 sgst: '',
-    //                 sgstamt: '',
-    //                 stocklocator: '',
-    //             };
-    //             setDataModel([...dataModel, newRow]);
-    //             setCounter(idCounterModel + 1);
-    //         })
-    // } else {
-    const newRow = {
-      key: idCounterModel.toString(),
-      barcode: "",
-      batchnumber: "",
-      quantity: "",
-      bonusqty: "",
-      muom: "",
-      mfgdate: "",
-      expdate: "",
-      rate: "",
-      mrp: "",
-      mdiscount: "",
-      discountamt: "",
-      cgst: "",
-      cgstamt: "",
-      sgst: "",
-      sgstamt: "",
-      stocklocator: "",
-    };
-    setDataModel([...dataModel, newRow]);
-    setShouldValidateModel(true);
-    // }
   };
 
   const columnsModel = [
     {
       title: "Bar Code",
-      dataIndex: "barcode",
-      key: "barcode",
-      width: 180,
+      dataIndex: "BarCode",
+      key: "BarCode",
+      width: 100,
       render: (_, record) => (
-        <Form.Item name={[record.key, "barcode"]}>
-          <InputNumber min={0} style={{ width: "100%" }} />
-        </Form.Item>
+        <>
+          <Form.Item name={[record.key, 'BarCode']} style={{ width: "100%" }} initialValue={record.BarCode}>
+            <InputNumber min={0} defaultValue={record.BarCode} disabled={!!grnHeaderId && record.GrnBatchId} />
+          </Form.Item>
+          <Form.Item name={[record.key, 'GrnBatchId']} hidden initialValue={record.GrnBatchId}><Input></Input></Form.Item>
+          <Form.Item name={[record.key, 'GrnLineId']} hidden initialValue={record.GrnLineId}><Input></Input></Form.Item>
+        </>
       ),
     },
     {
       title: "Batch Number",
-      dataIndex: "batchnumber",
+      dataIndex: "BatchNo",
       width: 100,
-      key: "batchnumber",
+      key: "BatchNo",
       render: (text, record) => {
         return (
-          <Form.Item
-            name={[record.key, "batchnumber"]}
-            style={{ width: "150%" }}
+          <Form.Item style={{ width: "100%" }}
+            initialValue={record.BatchNo}
+            name={[record.key, 'BatchNo']}
             rules={[
               {
                 required: true,
@@ -760,20 +910,21 @@ const CreateDirectGRN = () => {
               },
             ]}
           >
-            <Input style={{ width: "100%" }} allowClear />
+            <Input allowClear style={{ width: 100 }} defaultValue={record.BatchNo} disabled={!!grnHeaderId && record.GrnBatchId} />
           </Form.Item>
         );
       },
     },
     {
       title: "Quantity",
-      dataIndex: "quantity",
+      dataIndex: "Quantity",
       width: 100,
-      key: "quantity",
+      key: "Quantity",
       render: (text, record) => (
         <Form.Item
-          name={[record.key, "quantity"]}
-          style={{ width: "150%" }}
+          initialValue={record.Quantity}
+          name={[record.key, 'Quantity']}
+          style={{ width: "100%" }}
           rules={[
             {
               required: true,
@@ -781,58 +932,60 @@ const CreateDirectGRN = () => {
             },
           ]}
         >
-          <InputNumber min={0} />
+          <InputNumber min={0} disabled={!!grnHeaderId && record.GrnBatchId} />
         </Form.Item>
       ),
     },
     {
       title: "Bonus Qty",
-      dataIndex: "bonusqty",
+      dataIndex: "BatchBonusQty",
       width: 100,
-      key: "bonusqty",
+      key: "BatchBonusQty",
       render: (text, record) => (
         <Form.Item
-          name={[record.key, "bonusqty"]}
-          initialValue={form1.getFieldValue([productLineId, "BonusQty"])}
-          style={{ width: "150%" }}
+          // name={["bonusqty", record.key]}
+          name={[record.key, 'BatchBonusQty']}
+          initialValue={batchRecord.BonusQty == undefined ? record.BatchBonusQty : batchRecord.BonusQty}
+          style={{ width: 100 }}
         >
-          <InputNumber min={0} style={{ width: 50 }} disabled />
+          <InputNumber min={0} style={{ width: 100 }} defaultValue={batchRecord.BonusQty} disabled />
         </Form.Item>
       ),
     },
     {
       title: "Uom",
-      dataIndex: "muom",
-      key: "muom",
+      dataIndex: "UomId",
+      key: "UomId",
+      width: 100,
       render: (text, record) => {
-        debugger;
-        const recordKeyAsNumber = parseInt(recordKeys);
-        const uoms = selectedUomText[recordKeyAsNumber];
-        <Form.Item
-          name={[record.key, "muom"]}
-          initialValue={selectedUomId[recordKeyAsNumber]}
-        >
-          <Tag color="blue">{uoms}</Tag>
+        <Form.Item name={[record.key, 'UomId']}>
+          {batchRecord.ShortName}
         </Form.Item>;
       },
     },
     {
       title: "MFG Date",
-      dataIndex: "mfgdate",
-      key: "mfgdate",
+      dataIndex: "MFGDate",
+      width: 100,
+      key: "MFGDate",
       render: (text, record) => (
-        <Form.Item name={[record.key, "mfgdate"]}>
-          <DatePicker format="DD-MM-YYYY" />
+        <Form.Item name={[record.key, 'MFGDate']} initialValue={record.MFGDate == '' || record.MFGDate == null ? '' : DateBindtoDatepicker(record.MFGDate)}>
+          <DatePicker format="DD-MM-YYYY" disabled={!!grnHeaderId && record.GrnBatchId}
+            // value={record.MFGDate && dayjs(record.MFGDate, "DD-MM-YYYY")} 
+            style={{ width: 100 }}
+          />
         </Form.Item>
       ),
     },
     {
       title: "Exp Date",
-      dataIndex: "expdate",
-      key: "expdate",
+      dataIndex: "EXPDate",
+      key: "EXPDate",
+      width: 100,
       render: (text, record) => (
         <Form.Item
-          name={[record.key, "expdate"]}
+          initialValue={record.EXPDate == null || record.EXPDate == '' ? '' : DateBindtoDatepicker(record.EXPDate)}
+          name={[record.key, 'EXPDate']}
           rules={[
             {
               required: true,
@@ -840,7 +993,7 @@ const CreateDirectGRN = () => {
             },
           ]}
         >
-          <DatePicker format="DD-MM-YYYY" />
+          <DatePicker format="DD-MM-YYYY" disabled={!!grnHeaderId && record.GrnBatchId} style={{ width: 100 }} />
         </Form.Item>
       ),
     },
@@ -848,23 +1001,26 @@ const CreateDirectGRN = () => {
       title: "Rate",
       dataIndex: "rate",
       key: "rate",
+      width: 100,
       render: (text, record) => (
         <Form.Item
-          name={[record.key, "rate"]}
-          initialValue={form1.getFieldValue([productLineId, "poRate"])}
+          // name={["rate", record.key]}
+          name={[record.key, 'rate']}
+          initialValue={batchRecord.PoRate}
         >
-          <InputNumber min={0} style={{ width: 50 }} disabled />
+          <InputNumber min={0} style={{ width: 100 }} disabled defaultValue={batchRecord.PoRate} />
         </Form.Item>
       ),
     },
     {
       title: "MRP",
-      dataIndex: "mrp",
-      key: "mrp",
+      dataIndex: "MRP",
+      key: "MRP",
+      width: 100,
       render: (text, record) => (
         <Form.Item
-          name={[record.key, "mrp"]}
-          initialValue={mrp}
+          name={[record.key, 'MRP']}
+          initialValue={record.MRP}
           rules={[
             {
               required: true,
@@ -872,80 +1028,88 @@ const CreateDirectGRN = () => {
             },
           ]}
         >
-          <InputNumber min={0} style={{ width: 50 }} allowClear />
+          <InputNumber min={0} style={{ width: 100 }} allowClear defaultValue={record.MRP} disabled={!!grnHeaderId && record.GrnBatchId} />
         </Form.Item>
       ),
     },
     {
       title: "Discount",
-      dataIndex: "mdiscount",
-      key: "mdiscount",
+      dataIndex: "DiscountRate",
+      key: "DiscountRate",
+      width: 100,
       render: (text, record) => (
-        <Form.Item name={[record.key, "mdiscount"]}>
-          <InputNumber min={0} style={{ width: 50 }} disabled />
+        <Form.Item name={[record.key, 'DiscountRate']} initialValue={batchRecord.DiscountRate}>
+          <InputNumber min={0} style={{ width: 100 }} disabled defaultValue={batchRecord.DiscountRate} />
         </Form.Item>
       ),
     },
     {
       title: "Discount Amt",
-      dataIndex: "discountamt",
-      key: "discountamt",
+      dataIndex: "DiscountAmount",
+      key: "DiscountAmount",
+      width: 100,
       render: (text, record) => (
         <Form.Item
-          name={[record.key, "discountamt"]}
-          initialValue={form1.getFieldValue([productLineId, "discountAmt"])}
+          // name={["discountamt", record.key]}
+          name={[record.key, 'DiscountAmount']}
+          initialValue={batchRecord.DiscountAmount}
         >
-          <InputNumber min={0} style={{ width: 50 }} disabled />
+          <InputNumber min={0} style={{ width: 100 }} disabled defaultValue={batchRecord.DiscountAmount} />
         </Form.Item>
       ),
     },
     {
       title: "CGST",
-      dataIndex: "cgst",
-      key: "cgst",
+      dataIndex: "TaxType1",
+      key: "TaxType1",
+      width: 100,
       render: (text, record) => (
-        <Form.Item name={[record.key, "cgst"]}>
-          <Select disabled></Select>
+        <Form.Item name={[record.key, 'TaxType1']}>
+          <Select disabled style={{ width: 100 }}></Select>
         </Form.Item>
       ),
     },
     {
       title: "CGST Amount",
-      dataIndex: "cgstamt",
-      key: "cgstamt",
+      dataIndex: "TaxAmount1",
+      key: "TaxAmount1",
+      width: 100,
       render: (text, record) => (
-        <Form.Item name={[record.key, "cgstamt"]}>
-          <InputNumber min={0} style={{ width: 50 }} disabled />
+        <Form.Item name={[record.key, 'TaxAmount1']}>
+          <InputNumber min={0} style={{ width: 100 }} disabled />
         </Form.Item>
       ),
     },
     {
       title: "SGST",
-      dataIndex: "sgst",
-      key: "sgst",
+      dataIndex: "TaxType2",
+      key: "TaxType2",
+      width: 100,
       render: (text, record) => (
-        <Form.Item name={[record.key, "sgst"]}>
-          <Select disabled></Select>
+        <Form.Item name={[record.key, 'TaxType2']}>
+          <Select disabled style={{ width: 100 }}></Select>
         </Form.Item>
       ),
     },
     {
       title: "SGST Amount",
-      dataIndex: "sgstamt",
-      key: "sgstamt",
+      dataIndex: "TaxAmount2",
+      key: "TaxAmount2",
+      width: 100,
       render: (text, record) => (
-        <Form.Item name={[record.key, "sgstamt"]}>
-          <InputNumber min={0} style={{ width: 50 }} disabled />
+        <Form.Item name={[record.key, 'TaxAmount2']}>
+          <InputNumber min={0} style={{ width: 100 }} disabled />
         </Form.Item>
       ),
     },
     {
       title: "Stock Locator",
-      dataIndex: "stocklocator",
-      key: "stocklocator",
+      dataIndex: "StockLocator",
+      key: "StockLocator",
+      width: 100,
       render: (text, record) => (
-        <Form.Item name={[record.key, "stocklocator"]}>
-          <Input style={{ width: 60 }} />
+        <Form.Item name={[record.key, 'StockLocator']} initialValue='Manual'>
+          <Input disabled={!!grnHeaderId && record.GrnBatchId} style={{ width: 100 }} />
         </Form.Item>
       ),
     },
@@ -1031,68 +1195,6 @@ const CreateDirectGRN = () => {
             gstTax: 0,
             totalpoAmount: 0,
             Amount: 0,
-            [idCounter]: {
-              bounsQty: 0,
-            },
-          }}
-          onValuesChange={(changedValues, allValues) => {
-            debugger;
-            for (let i = 0; i < 9; i++) {
-              if (changedValues[i] !== undefined) {
-                if (changedValues[i].product !== undefined) {
-                  getPanelValue(form1.getFieldValue([i, "product"]));
-                }
-                const RecievingQty = allValues[i]["recievingQty"];
-                const poRate = allValues[i]["poRate"];
-
-                if (RecievingQty > 0 && poRate > 0) {
-                  const total = RecievingQty * poRate;
-                  // Update the total value in the form fields
-                  if (allValues[i]["discount"] !== undefined) {
-                    form1.setFieldsValue({
-                      [i]: {
-                        discountAmt: (
-                          total *
-                          (allValues[i]["discount"] / 100)
-                        ).toFixed(2),
-                      },
-                    });
-                    form1.setFieldsValue({
-                      [i]: {
-                        amount:
-                          total - total * (allValues[i]["discount"] / 100),
-                      },
-                    });
-                    form1.setFieldsValue({
-                      [i]: {
-                        totalAmount:
-                          total - total * (allValues[i]["discount"] / 100),
-                      },
-                    });
-                    form1.setFieldsValue({ [i]: { taxAmount: 0 } });
-                  } else {
-                    form1.setFieldsValue({ [i]: { amount: total } });
-                    form1.setFieldsValue({ [i]: { totalAmount: total } });
-                    form1.setFieldsValue({ [i]: { taxAmount: 0 } });
-                  }
-                }
-                break;
-              }
-            }
-            let totalAmount = 0;
-            for (let j = 0; j < 10; j++) {
-              if (allValues[j] !== undefined) {
-                if (
-                  allValues[j]["recievingQty"] > 0 &&
-                  allValues[j]["poRate"] > 0
-                ) {
-                  const Amount = form1.getFieldValue([j, "amount"]);
-                  totalAmount += Amount;
-                }
-              }
-            }
-            form1.setFieldsValue({ Amount: totalAmount });
-            form1.setFieldsValue({ totalpoAmount: totalAmount });
           }}
         >
           <Row
@@ -1104,7 +1206,7 @@ const CreateDirectGRN = () => {
               <div>
                 <Form.Item
                   label="Supplier"
-                  name="SupplierList"
+                  name="SupplierId"
                   rules={[
                     {
                       required: true,
@@ -1112,7 +1214,7 @@ const CreateDirectGRN = () => {
                     },
                   ]}
                 >
-                  <Select allowClear placeholder="Select Value">
+                  <Select allowClear placeholder="Select Value" disabled={!!grnHeaderId}>
                     {/* <Select.Option key={0} value='Select Value'></Select.Option> */}
                     {DropDown.SupplierList.map((option) => (
                       <Select.Option
@@ -1124,13 +1226,15 @@ const CreateDirectGRN = () => {
                     ))}
                   </Select>
                 </Form.Item>
+                <Form.Item name='GRNHeaderId' hidden><Input></Input></Form.Item>
+                <Form.Item name='PoHeaderId' hidden><Input></Input></Form.Item>
               </div>
             </Col>
             <Col className="gutter-row" span={5}>
               <div>
                 <Form.Item
-                  label="Recieving Store "
-                  name="StoreDetails"
+                  label="Recieving Store"
+                  name="StoreId"
                   // style={{ marginLeft: '10px' }}
                   rules={[
                     {
@@ -1139,7 +1243,7 @@ const CreateDirectGRN = () => {
                     },
                   ]}
                 >
-                  <Select allowClear placeholder="Select Value">
+                  <Select allowClear placeholder="Select Value" disabled={!!grnHeaderId}>
                     {/* <Select.Option key={0} value='Select Value'></Select.Option> */}
                     {DropDown.StoreDetails.map((option) => (
                       <Select.Option
@@ -1166,7 +1270,7 @@ const CreateDirectGRN = () => {
                     },
                   ]}
                 >
-                  <Select allowClear placeholder="Select Value">
+                  <Select allowClear placeholder="Select Value" disabled={!!grnHeaderId}>
                     {/* <Select.Option key={0} value='Select Value'></Select.Option> */}
                     {DropDown.DocumentType.map((option) => (
                       <Select.Option
@@ -1257,7 +1361,7 @@ const CreateDirectGRN = () => {
                     },
                   ]}
                 >
-                  <Input type="number"></Input>
+                  <InputNumber allowClear style={{ width: '100%' }} />
                 </Form.Item>
               </div>
             </Col>
@@ -1281,7 +1385,7 @@ const CreateDirectGRN = () => {
                   <DatePicker
                     style={{ width: "100%" }}
                     format="DD-MM-YYYY"
-                    allowClear /*onChange={onChange}*/
+                    allowClear
                   />
                 </Form.Item>
               </div>
@@ -1311,7 +1415,7 @@ const CreateDirectGRN = () => {
                   loading={isSearchLoading}
                   htmlType="submit"
                 >
-                  Submit
+                  {buttonTitle}
                 </Button>
               </Form.Item>
             </Col>
@@ -1323,10 +1427,8 @@ const CreateDirectGRN = () => {
               </Form.Item>
             </Col>
           </Row>
-
           <Divider style={{ marginTop: "0" }}></Divider>
-
-          <Table columns={columns} dataSource={data} scroll={{ x: 2000 }} />
+          <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} scroll={{ x: 2000 }} />
           <div
             style={{
               display: "flex",
@@ -1337,14 +1439,14 @@ const CreateDirectGRN = () => {
           >
             <Form.Item
               label="Amount"
-              name="Amount"
+              name="TotalAmount"
               style={{ marginRight: "16px", width: 100 }}
             >
               <InputNumber min={0} disabled />
             </Form.Item>
             <Form.Item
               label="GST Tax"
-              name="gstTax"
+              name="TaxAmount1"
               style={{ marginRight: "16px", width: 100 }}
             >
               <InputNumber min={0} disabled />
@@ -1358,7 +1460,7 @@ const CreateDirectGRN = () => {
             </Form.Item>
             <Form.Item
               label="Total PO Amount"
-              name="totalpoAmount"
+              name="TotalPoAmount"
               style={{ width: 150 }}
             >
               <InputNumber min={0} disabled />
@@ -1376,8 +1478,8 @@ const CreateDirectGRN = () => {
             title="Basic Modal"
             onOk={onOkModal}
             onCancel={onCancelModel}
-            width={2000}
-            open={isModalOpen}
+            width={1500}
+            open={modalVisible}
           >
             <Form
               name="basic"
@@ -1397,56 +1499,59 @@ const CreateDirectGRN = () => {
               onFinishFailed={onFinishFailed}
               autoComplete="off"
               form={form2}
-              initialValues={{
-                [idCounterModel]: {
-                  bonusqty: 0,
-                  mdiscount: 0,
-                  discountamt: 0,
-                  cgstamt: 0,
-                  sgstamt: 0,
-                },
-              }}
+            // initialValues={{
+            //   [idCounterModel]: {
+            //     BonusQty: 0,
+            //     mdiscount: 0,
+            //     discountamt: 0,
+            //     cgstamt: 0,
+            //     sgstamt: 0,
+            //   },
+            // }}
             >
-              <Col className="gutter-row" span={6}>
-                <Form.Item
-                  label="Product"
-                  name="Product"
-                  initialValue={selectedProductId[recordKeys]}
-                >
-                  <Tag color="blue">
-                    {form1.getFieldValue([recordKeys, "product"])}
-                  </Tag>
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <Form.Item
-                  label="Recieved Quantity"
-                  name="RecievedQty"
-                  initialValue={selectedProductId[recordKeys]}
-                >
-                  <Tag color="blue">
-                    {form1.getFieldValue([recordKeys, "recievingQty"])}
-                  </Tag>
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <Form.Item
-                  label="Bonus Quantity"
-                  name="BonusQuantity"
-                  initialValue={selectedProductId[recordKeys]}
-                >
-                  <Tag color="blue">
-                    {form1.getFieldValue([recordKeys, "bounsQty"])}
-                  </Tag>
-                </Form.Item>
-              </Col>
-              <Table
+              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                <Col className="gutter-row" span={6}>
+                  <Form.Item
+                    label="Product"
+                    name="Product"
+                  >
+                    <Tag color="blue">
+                      {batchRecord.LongName == undefined ? batchRecord.ProductName : batchRecord.LongName}
+                    </Tag>
+                  </Form.Item>
+                </Col>
+                <Col className="gutter-row" span={6}>
+                  <Form.Item
+                    label="Recieved Quantity"
+                    name="RecievedQty"
+                  >
+                    <Tag color="blue">
+                      {batchRecord.ReceivedQty}
+                    </Tag>
+                  </Form.Item>
+                </Col>
+                <Col className="gutter-row" span={6}>
+                  <Form.Item
+                    label="Bonus Quantity"
+                    name="BonusQuantity">
+                    <Tag color="blue">
+                      {batchRecord.BonusQty ? batchRecord.BonusQty : 0}
+                    </Tag>
+                  </Form.Item>
+                </Col>
+              </Row>
+              {/* <Table
                 scroll={{
-                  x: 2000,
+                  x: 2500,
                 }}
                 columns={columnsModel}
                 dataSource={dataModel}
-              />
+              /> */}
+              <Table columns={columnsModel} size="small"
+                dataSource={batchRecord.ProductId
+                  ? dataModel.filter(item => item.ProductId == batchRecord.ProductId && item.ActiveFlag || item.ProductId == '' && item.ActiveFlag)
+                  : initialModelDataSource}
+                scroll={{ x: 2000 }} />
             </Form>
           </Modal>
         </ConfigProvider>
