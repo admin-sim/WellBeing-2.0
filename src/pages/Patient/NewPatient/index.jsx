@@ -483,8 +483,7 @@ const NewPatient = () => {
           ? null
           : values.permanentPinCode,
       // PhotoUrl: uploadedImage,
-      PresentCountryId:
-        values?.presentCountryId ,
+      PresentCountryId: values?.presentCountryId,
       PresentStateId: values.presentStateId,
       PresentPlaceId: values.presentPlaceId,
       PresentAreaId: values.presentAreaId,
@@ -1225,12 +1224,12 @@ const NewPatient = () => {
                       message: "Please enter your mobile number.",
                     },
                     {
-                      pattern: new RegExp(/^\d{10}$/),
-                      message: "Invalid mobile number!",
+                      pattern: /^\d{10}$/,
+                      message: "Please enter a valid 10 digit number!",
                     },
                   ]}
                 >
-                  <Input />
+                  <Input maxLength={10} />
                 </Form.Item>
               </Col>
               <Col span={6}>
