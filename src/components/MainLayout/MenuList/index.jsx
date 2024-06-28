@@ -72,7 +72,8 @@ const menuData = [
       {
         key: "Accountmanagement",
         icon: "CiSettings",
-        title: "Accountmanagement",
+
+        title: "Account Management",
         children: [
           {
             key: "ServiceClassification",
@@ -134,7 +135,7 @@ const menuData = [
             title: "ReccuringCharge",
             link: "/ReccuringCharge",
           },
-        ]
+        ],
       },
       {
         key: "MastersResourceScheduling",
@@ -179,9 +180,6 @@ const menuData = [
           },
         ],
       },
-    ],
-  },
-  
       {
         key: "Inventorymanagement",
         icon: "CiSettings",
@@ -217,7 +215,7 @@ const menuData = [
             title: "FacilityProduct PriceDefinition",
             link: "/FacilityProductPriceDefinition",
           },
-        ]
+        ],
       },
       {
         key: "LaboratoryManagement",
@@ -254,9 +252,11 @@ const menuData = [
             title: "LabReport Definitions",
             link: "/LabReportDefinitions",
           },
-        ]
-     
+        ],
+      },
+    ],
   },
+
   {
     key: "idManagement",
     icon: "FaUserFriends",
@@ -269,7 +269,7 @@ const menuData = [
         link: "/Patient",
       },
 
-       {
+      {
         key: "Queue-Mgmt",
         title: "Queue Management",
         icon: "FaPersonWalkingArrowRight",
@@ -479,5 +479,5 @@ const menuData = [
         link: "/StockExpiry",
       },
     ],
-  },  
+  },
 ];

@@ -20,7 +20,7 @@ import {
   Row,
   AutoComplete,
   message,
-  Button
+  Button,
 } from "antd";
 import Input from "antd/es/input";
 import Form from "antd/es/form";
@@ -38,6 +38,7 @@ import { Table, InputNumber } from "antd";
 import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import customAxios from "../../components/customAxios/customAxios";
+import { FaPlusCircle } from "react-icons/fa";
 
 const CreatePurchaseOrder = () => {
   const [DropDown, setDropDown] = useState({
@@ -46,7 +47,7 @@ const CreatePurchaseOrder = () => {
     SupplierList: [],
     UOM: [],
     TaxType: [],
-    DateFormat: []
+    DateFormat: [],
   });
   const location = useLocation();
   const PoHeaderId = location.state.PoHeaderId;
@@ -60,7 +61,7 @@ const CreatePurchaseOrder = () => {
 
   const [counter, setCounter] = useState(2);
   const [counterDelivery, setCounterDelivery] = useState(2);
-  const [buttonTitle, setButtonTitle] = useState('Save');
+  const [buttonTitle, setButtonTitle] = useState("Save");
   const [productOptions, setProductOptions] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [deliveryDate, setDeliveryDate] = useState(dayjs());
@@ -102,17 +103,17 @@ const CreatePurchaseOrder = () => {
   const initialDeliveryDataSource =
     PoHeaderId === 0
       ? [
-        {
-          key: 1,
-          ProductId: "",
-          UomId: '',
-          PoDeliveryId: 0,
-          DeliveryQuantity: "",
-          DeliveryDate: "",
-          DeliveryLocation: "",
-          ActiveFlag: true,
-        },
-      ]
+          {
+            key: 1,
+            ProductId: "",
+            UomId: "",
+            PoDeliveryId: 0,
+            DeliveryQuantity: "",
+            DeliveryDate: "",
+            DeliveryLocation: "",
+            ActiveFlag: true,
+          },
+        ]
       : [];
 
   const [schedule, setSchedule] = useState(initialDeliveryDataSource);
@@ -128,7 +129,7 @@ const CreatePurchaseOrder = () => {
     debugger;
     const fetchData = async () => {
       if (PoHeaderId > 0) {
-        setButtonTitle('Update')
+        setButtonTitle("Update");
         try {
           const response = await customAxios.get(
             `${urlEditPurchaseOrder}?Id=${PoHeaderId}`
@@ -152,26 +153,32 @@ const CreatePurchaseOrder = () => {
               totalpoAmount: formdata.PoTotalAmount,
             });
             setCounter(products.length + 1);
-            const delivery = editeddata.DeliveryDetails.map(
-              (item, index) => ({
-                ...item,
-                key: index + 1,
-              })
-            );
-            setCounterDelivery(editeddata.DeliveryDetails.length + 1)
-            const updatedSchedule = delivery.map(item => {
+            const delivery = editeddata.DeliveryDetails.map((item, index) => ({
+              ...item,
+              key: index + 1,
+            }));
+            setCounterDelivery(editeddata.DeliveryDetails.length + 1);
+            const updatedSchedule = delivery.map((item) => {
               const key = item.key;
-              const prod = editeddata.PurchaseOrderDetails.filter(item1 => item1.PoLineId === item.PoLineId)
+              const prod = editeddata.PurchaseOrderDetails.filter(
+                (item1) => item1.PoLineId === item.PoLineId
+              );
               if (delivery[key - 1] != undefined) {
-                if (delivery[key - 1].DeliveryQuantity || delivery[key - 1].DeliveryDate || delivery[key - 1].DeliveryLocation) {
+                if (
+                  delivery[key - 1].DeliveryQuantity ||
+                  delivery[key - 1].DeliveryDate ||
+                  delivery[key - 1].DeliveryLocation
+                ) {
                   return {
                     ...item,
                     ProductId: prod[0].ProductId,
                     DeliveryQuantity: delivery[key - 1].DeliveryQuantity,
-                    DeliveryDate: DateBindtoDatepicker(delivery[key - 1].DeliveryDate),
+                    DeliveryDate: DateBindtoDatepicker(
+                      delivery[key - 1].DeliveryDate
+                    ),
                     DeliveryLocation: delivery[key - 1].DeliveryLocation,
                     UomId: prod[0].UomId,
-                    Uom: prod[0].Uom
+                    Uom: prod[0].Uom,
                   };
                 }
                 return item;
@@ -189,19 +196,19 @@ const CreatePurchaseOrder = () => {
   }, []);
 
   const handleCancel = () => {
-    const url = '/purchaseOrder';
+    const url = "/purchaseOrder";
     navigate(url);
   };
 
   const DateBindtoDatepicker = (value) => {
     const isoDateString = value;
     const dateValue = new Date(isoDateString);
-    const formattedDate = dayjs(dateValue).format('DD-MM-YYYY');
-    return dayjs(formattedDate, 'DD-MM-YYYY');
-  }
+    const formattedDate = dayjs(dateValue).format("DD-MM-YYYY");
+    return dayjs(formattedDate, "DD-MM-YYYY");
+  };
 
   const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
+    console.log("Failed:", errorInfo);
   };
   const handleOnFinish = async (values) => {
     debugger;
@@ -253,7 +260,10 @@ const CreatePurchaseOrder = () => {
     const postData = {
       newPurchaseOrderModel: purchaseOrder,
       PurchaseOrderDetails: products,
-      Delivery: activeData.length > 0 && activeData[0].ProductId === '' ? [] : activeData,
+      Delivery:
+        activeData.length > 0 && activeData[0].ProductId === ""
+          ? []
+          : activeData,
     };
     if (PoHeaderId == 0) {
       const response = await customAxios.post(
@@ -301,7 +311,7 @@ const CreatePurchaseOrder = () => {
       ...data,
       {
         key: counter,
-        ProductName: '',
+        ProductName: "",
         // ProductId: 0,
         PoLineId: 0,
         UomId: "",
@@ -313,7 +323,7 @@ const CreatePurchaseOrder = () => {
         MrpExpected: '',
         TaxType1: '',
         TaxAmount1: 0,
-        TaxType2: '',
+        TaxType2: "",
         TaxAmount2: 0,
         LineAmount: 0,
         LineAmount: 0,
@@ -333,7 +343,7 @@ const CreatePurchaseOrder = () => {
       {
         key: counterDelivery,
         ProductId: "",
-        UomId: '',
+        UomId: "",
         PoDeliveryId: 0,
         DeliveryQuantity: "",
         DeliveryDate: "",
@@ -345,7 +355,7 @@ const CreatePurchaseOrder = () => {
   };
 
   const handleSearch = async (searchText) => {
-    debugger
+    debugger;
     if (searchText) {
       const response = await customAxios.get(
         `${urlAutocompleteProduct}?Product=${searchText}`
@@ -361,7 +371,7 @@ const CreatePurchaseOrder = () => {
   };
 
   function calculateTotalAmount(data) {
-    debugger
+    debugger;
     let LineAmount = 0;
     data.forEach((item) => {
       if (
@@ -422,7 +432,9 @@ const CreatePurchaseOrder = () => {
           updatedItem.LineAmount = amount;
           updatedItem.LineAmount = amount;
 
-          form1.setFieldsValue({ [record.key]: { DiscountAmount: discountAmount } });
+          form1.setFieldsValue({
+            [record.key]: { DiscountAmount: discountAmount },
+          });
           form1.setFieldsValue({ [record.key]: { LineAmount: amount } });
           form1.setFieldsValue({ [record.key]: { LineAmount: amount } });
 
@@ -454,7 +466,11 @@ const CreatePurchaseOrder = () => {
     debugger;
     const newData = data.map((item) => {
       if (item.key === record.key) {
-        const updatedItem = { ...item, [column]: option.value, Uom: option.children };
+        const updatedItem = {
+          ...item,
+          [column]: option.value,
+          Uom: option.children,
+        };
         return updatedItem;
       }
       return item;
@@ -478,7 +494,7 @@ const CreatePurchaseOrder = () => {
       }
       return item;
     });
-    setSchedule(newSchedule)
+    setSchedule(newSchedule);
     const totalAmount = calculateTotalAmount(newData);
 
     form1.setFieldsValue({
@@ -487,9 +503,7 @@ const CreatePurchaseOrder = () => {
     });
   };
 
-  const onFinishModel = async (values) => {
-
-  };
+  const onFinishModel = async (values) => {};
 
   const handleOpenModal = async (record) => {
     debugger;
@@ -500,14 +514,14 @@ const CreatePurchaseOrder = () => {
   };
 
   const handleCloseModal = () => {
-    debugger
+    debugger;
     const newData = schedule.map((item) => {
-      if (item.ProductId === '') {
+      if (item.ProductId === "") {
         return { ...item, ActiveFlag: false };
       }
       return item;
     });
-    setSchedule(newData)
+    setSchedule(newData);
     setModalVisible(false);
     form2.resetFields();
   };
@@ -517,19 +531,26 @@ const CreatePurchaseOrder = () => {
     await form2.validateFields();
     const values = form2.getFieldsValue();
     const valuesArray = Object.values(values);
-    const qty = valuesArray.reduce((total, item) => total + (item.DeliveryQuantity || 0), 0);
+    const qty = valuesArray.reduce(
+      (total, item) => total + (item.DeliveryQuantity || 0),
+      0
+    );
     if (qty <= deliveryRecord.PoQuantity) {
-      const updatedSchedule = schedule.map(item => {
+      const updatedSchedule = schedule.map((item) => {
         const key = item.key;
         if (values[key] != undefined) {
-          if (values[key].DeliveryQuantity || values[key].DeliveryDate || values[key].DeliveryLocation) {
+          if (
+            values[key].DeliveryQuantity ||
+            values[key].DeliveryDate ||
+            values[key].DeliveryLocation
+          ) {
             return {
               ...item,
               ProductId: deliveryRecord.ProductId,
               DeliveryQuantity: values[key].DeliveryQuantity,
               DeliveryDate: values[key].DeliveryDate,
               DeliveryLocation: values[key].DeliveryLocation,
-              UomId: deliveryRecord.UomId
+              UomId: deliveryRecord.UomId,
             };
           }
           return item;
@@ -539,12 +560,12 @@ const CreatePurchaseOrder = () => {
       setSchedule(updatedSchedule);
       setModalVisible(false);
     } else {
-      message.warning('Quantity must not be Greater than PO Quantity')
+      message.warning("Quantity must not be Greater than PO Quantity");
     }
   };
 
   const ModelDelete = (record) => {
-    debugger
+    debugger;
     const newData = schedule.map((item) => {
       if (item.key === record.key) {
         return { ...item, ActiveFlag: false };
@@ -570,15 +591,12 @@ const CreatePurchaseOrder = () => {
       key: "DeliveryQuantity",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'DeliveryQuantity']}
+          name={[record.key, "DeliveryQuantity"]}
           rules={[{ required: true, message: "Required" }]}
           style={{ width: "100%" }}
           initialValue={record.DeliveryQuantity}
         >
-          <InputNumber
-            min={0}
-            defaultValue={text}
-          />
+          <InputNumber min={0} defaultValue={text} />
         </Form.Item>
       ),
     },
@@ -600,7 +618,7 @@ const CreatePurchaseOrder = () => {
       render: (text, record, index) => (
         <Form.Item
           style={{ width: 200 }}
-          name={[record.key, 'DeliveryDate']}
+          name={[record.key, "DeliveryDate"]}
           initialValue={record.DeliveryDate}
         >
           <DatePicker value={deliveryDate} disabledDate={disabledDeliveryDate} onChange={handleDeliveryDateChange}
@@ -617,14 +635,11 @@ const CreatePurchaseOrder = () => {
       key: "DeliveryLocation",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'DeliveryLocation']}
+          name={[record.key, "DeliveryLocation"]}
           initialValue={record.DeliveryLocation}
           style={{ width: 200 }}
         >
-          <Input
-            style={{ width: "150%" }}
-            allowClear
-          />
+          <Input style={{ width: "150%" }} allowClear />
         </Form.Item>
       ),
     },
@@ -660,9 +675,13 @@ const CreatePurchaseOrder = () => {
       render: (text, record, index) => (
         <>
           <Form.Item
-            name={[record.key, 'ProductName']}
+            name={[record.key, "ProductName"]}
             rules={[{ required: true, message: "Required" }]}
-            initialValue={record.LongName == undefined ? record.ProductName : record.LongName}
+            initialValue={
+              record.LongName == undefined
+                ? record.ProductName
+                : record.LongName
+            }
           >
             <AutoComplete
               options={productOptions}
@@ -681,8 +700,20 @@ const CreatePurchaseOrder = () => {
               disabled={!!record.PoLineId}
             />
           </Form.Item>
-          <Form.Item name={[record.key, 'ProductId']} hidden initialValue={record.ProductId}><Input defaultValue={record.ProductId}></Input></Form.Item>
-          <Form.Item name={[record.key, 'PoLineId']} hidden initialValue={record.PoLineId}><Input></Input></Form.Item>
+          <Form.Item
+            name={[record.key, "ProductId"]}
+            hidden
+            initialValue={record.ProductId}
+          >
+            <Input defaultValue={record.ProductId}></Input>
+          </Form.Item>
+          <Form.Item
+            name={[record.key, "PoLineId"]}
+            hidden
+            initialValue={record.PoLineId}
+          >
+            <Input></Input>
+          </Form.Item>
         </>
       ),
     },
@@ -693,11 +724,12 @@ const CreatePurchaseOrder = () => {
       width: 150,
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'UomId']}
+          name={[record.key, "UomId"]}
           rules={[{ required: true, message: "Required" }]}
           initialValue={record.UomId}
         >
-          <Select defaultValue={text}
+          <Select
+            defaultValue={text}
             onChange={(value, option) =>
               handleUomChange(option, "UomId", index, record)
             }
@@ -709,7 +741,7 @@ const CreatePurchaseOrder = () => {
             ))}
           </Select>
         </Form.Item>
-      )
+      ),
     },
 
     {
@@ -719,13 +751,12 @@ const CreatePurchaseOrder = () => {
       key: "PoQuantity",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'PoQuantity']}
+          name={[record.key, "PoQuantity"]}
           rules={[
             {
               required: true,
               message: "Required",
             },
-
           ]}
           style={{ width: "100%" }}
           initialValue={record.PoQuantity}
@@ -743,7 +774,7 @@ const CreatePurchaseOrder = () => {
             }}
           />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "BonusQty",
@@ -752,7 +783,7 @@ const CreatePurchaseOrder = () => {
       key: "BonusQuantity",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'BonusQuantity']}
+          name={[record.key, "BonusQuantity"]}
           // name={["BonusQuantity", record.key]}
           style={{ width: "100%" }}
           initialValue={record.BonusQuantity}
@@ -770,7 +801,7 @@ const CreatePurchaseOrder = () => {
             }
           />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "PoRate",
@@ -796,7 +827,7 @@ const CreatePurchaseOrder = () => {
             }}
           />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "Discount %",
@@ -805,7 +836,7 @@ const CreatePurchaseOrder = () => {
       key: "DiscountRate",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'DiscountRate']}
+          name={[record.key, "DiscountRate"]}
           // name={["DiscountRate", record.key]}
           style={{ width: "100%" }}
           initialValue={record.DiscountRate}
@@ -823,7 +854,7 @@ const CreatePurchaseOrder = () => {
             }}
           />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "DiscountAmount",
@@ -832,16 +863,15 @@ const CreatePurchaseOrder = () => {
       key: "DiscountAmount",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'DiscountAmount']}
+          name={[record.key, "DiscountAmount"]}
           // name={[`DiscountAmount`, record.key]}
           style={{ width: "100%" }}
           initialValue={record.DiscountAmount}
         >
           <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
-      )
+      ),
     },
-
 
     {
       title: "ExpectedMRP",
@@ -850,7 +880,7 @@ const CreatePurchaseOrder = () => {
       key: "MrpExpected",
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'MrpExpected']}
+          name={[record.key, "MrpExpected"]}
           // name={["MrpExpected", record.key]}
           style={{ width: "100%" }}
           initialValue={record.MrpExpected}
@@ -868,7 +898,7 @@ const CreatePurchaseOrder = () => {
             }
           />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "CGST",
@@ -877,8 +907,8 @@ const CreatePurchaseOrder = () => {
       width: 100,
       render: (text, record, index) => (
         <Form.Item
-          name={[record.key, 'TaxType1']}
-        // name={["TaxType1", record.key]} 
+          name={[record.key, "TaxType1"]}
+          // name={["TaxType1", record.key]}
         >
           <Select
             defaultValue={text}
@@ -900,7 +930,7 @@ const CreatePurchaseOrder = () => {
             ))}
           </Select>
         </Form.Item>
-      )
+      ),
     },
     {
       title: "CGSTAmount",
@@ -911,7 +941,7 @@ const CreatePurchaseOrder = () => {
         <Form.Item name={[record.key, 'TaxAmount1']} style={{ width: "100%" }} initialValue={text}>
           <InputNumber min={0} disabled />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "SGST",
@@ -930,7 +960,7 @@ const CreatePurchaseOrder = () => {
             ))}
           </Select>
         </Form.Item>
-      )
+      ),
     },
     {
       title: "SGSTAmount",
@@ -941,7 +971,7 @@ const CreatePurchaseOrder = () => {
         <Form.Item name={[record.key, 'TaxAmount2']} style={{ width: "100%" }} initialValue={text}>
           <InputNumber disabled min={0} />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "Amount",
@@ -954,10 +984,9 @@ const CreatePurchaseOrder = () => {
           style={{ width: "100%" }}
           initialValue={record.LineAmount}
         >
-          <InputNumber disabled min={0} defaultValue={text}
-          />
+          <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "TotalAmount",
@@ -972,7 +1001,7 @@ const CreatePurchaseOrder = () => {
         >
           <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "AvlQty",
@@ -982,13 +1011,13 @@ const CreatePurchaseOrder = () => {
       render: (text, record, index) => (
         <Form.Item
           // name={["AvailableQuantity", record.key]}
-          name={[record.key, 'AvailableQuantity']}
+          name={[record.key, "AvailableQuantity"]}
           style={{ width: "100%" }}
           initialValue={record.AvailableQuantity}
         >
           <InputNumber disabled min={0} defaultValue={text} />
         </Form.Item>
-      )
+      ),
     },
     {
       title: "Delivery Schedule",
@@ -1037,12 +1066,24 @@ const CreatePurchaseOrder = () => {
       <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
         <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px' }}>
           <Col span={16}>
-            <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
+            <Title
+              level={4}
+              style={{
+                color: "white",
+                fontWeight: 500,
+                margin: 0,
+                paddingTop: 0,
+              }}
+            >
               Create Purchase Order
             </Title>
           </Col>
           <Col offset={6} span={2}>
-            <Button icon={<LeftOutlined />} style={{ marginBottom: 0 }} onClick={handleToPurchaseOrder}>
+            <Button
+              icon={<LeftOutlined />}
+              style={{ marginBottom: 0 }}
+              onClick={handleToPurchaseOrder}
+            >
               Back
             </Button>
           </Col>
@@ -1262,6 +1303,6 @@ const CreatePurchaseOrder = () => {
       </Modal>
     </Layout >
   );
-}
+};
 
 export default CreatePurchaseOrder;

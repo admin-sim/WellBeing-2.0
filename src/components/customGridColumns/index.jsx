@@ -1,7 +1,7 @@
 import { Col as AntdCol, Col } from "antd";
 
 const ColWithThreeSpan = ({ children, ...props }) => (
-  <AntdCol xl={2} lg={3} md={3} sm={4} xs={8} span={12} {...props}>
+  <AntdCol xl={3} lg={3} md={3} sm={4} xs={8} span={12} {...props}>
     {children}
   </AntdCol>
 );

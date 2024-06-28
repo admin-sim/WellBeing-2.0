@@ -1,13 +1,24 @@
+import { urlSearchUHID, urlGetAllVisitsForPatientId } from "../../../endpoints";
+import customAxios from "../../components/customAxios/customAxios";
+import React, { useEffect, useState } from "react";
 
-
-import { urlSearchUHID, urlGetAllVisitsForPatientId} from '../../../endpoints';
-import customAxios from '../../components/customAxios/customAxios';
-import React, { useEffect, useState } from 'react';
-
-import { useNavigate } from 'react-router';
-import { Form, Row, Col, AutoComplete, Input, Select, Button, Layout } from 'antd';
-import Title from 'antd/es/typography/Title';
-import { Table, Tabs } from 'antd';
+import { useNavigate } from "react-router";
+import {
+  Form,
+  Row,
+  Col,
+  AutoComplete,
+  Input,
+  Select,
+  Button,
+  Layout,
+} from "antd";
+import Title from "antd/es/typography/Title";
+import { Table, Tabs } from "antd";
+import {
+  ColWithSixSpan,
+  ColWithThreeSpan,
+} from "../../components/customGridColumns";
 
 function Billing() {
   const [form] = Form.useForm();
@@ -23,8 +34,8 @@ function Billing() {
   const [options, setOptions] = useState([]);
   const [visits, setVisits] = useState([]);
   const [initialFormState, setInitialFormState] = useState({
-    PatientName: '',
-    visit: ''
+    PatientName: "",
+    visit: "",
   });
   const [selectedPatient, setSelectedPatient] = useState(null);
 
@@ -45,14 +56,14 @@ function Billing() {
       // const firstEncounter = visits.length > 0 ? visits[0] : null;
 
       form.setFieldsValue({
-        PatientName: selectedOption.PatientFirstName
+        PatientName: selectedOption.PatientFirstName,
         // EncounterID: firstEncounter ? firstEncounter.EncounterId : ''
       });
     } else {
       setVisits([]);
       setInitialFormState({
-        PatientName: '',
-        visit: ''
+        PatientName: "",
+        visit: "",
       });
     }
   };
@@ -74,30 +85,37 @@ function Billing() {
   const getencounters = async (patientid) => {
     debugger;
     try {
-      const visitsResponse = await customAxios.get(`${urlGetAllVisitsForPatientId}?PatientId=${patientid}`);
-      if (visitsResponse.data && Array.isArray(visitsResponse.data.data.EncounterModellist)) {
+      const visitsResponse = await customAxios.get(
+        `${urlGetAllVisitsForPatientId}?PatientId=${patientid}`
+      );
+      if (
+        visitsResponse.data &&
+        Array.isArray(visitsResponse.data.data.EncounterModellist)
+      ) {
         setVisits(visitsResponse.data.data.EncounterModellist);
         const firstEncounter =
-          visitsResponse.data.data.EncounterModellist.length > 0 ? visitsResponse.data.data.EncounterModellist[0] : null;
+          visitsResponse.data.data.EncounterModellist.length > 0
+            ? visitsResponse.data.data.EncounterModellist[0]
+            : null;
         form.setFieldsValue({
-          Encounter: firstEncounter ? firstEncounter.EncounterId : ''
+          Encounter: firstEncounter ? firstEncounter.EncounterId : "",
         });
         setGeneratedEncounter(firstEncounter?.GeneratedEncounterId);
       } else {
         setVisits([]);
       }
     } catch (error) {
-      console.error('Error fetching visits data:', error);
+      console.error("Error fetching visits data:", error);
       setVisits([]);
     }
   };
 
   const handleOnSubmit = (values) => {
     debugger;
-    console.log('Form submitted with values:', values);
-    const uhid = selectedPatient ? selectedPatient.UhId : '';
-    const patientId = selectedPatient ? selectedPatient.PatientId : '';
-    const PatientName = selectedPatient ? selectedPatient.PatientFirstName : '';
+    console.log("Form submitted with values:", values);
+    const uhid = selectedPatient ? selectedPatient.UhId : "";
+    const patientId = selectedPatient ? selectedPatient.PatientId : "";
+    const PatientName = selectedPatient ? selectedPatient.PatientFirstName : "";
     const encounterId = values.Encounter;
 
     const url = `/CreateBilling`;
@@ -107,8 +125,8 @@ function Billing() {
       state: {
         patientId: patientId,
         encounterId: encounterId,
-        encounter:generatedEncounter
-      }
+        encounter: generatedEncounter,
+      },
     });
   };
 
@@ -119,103 +137,131 @@ function Billing() {
   const fetchOptionsCallback = async (inputValue) => {
     debugger;
     try {
-      const response = await customAxios.get(`${urlSearchUHID}?Uhid=${inputValue}`);
+      const response = await customAxios.get(
+        `${urlSearchUHID}?Uhid=${inputValue}`
+      );
       if (response.data && Array.isArray(response.data.data)) {
         setOptions(response.data.data);
       } else {
         setOptions([]);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
       setOptions([]);
     }
   };
 
   return (
-    <Layout style={{ zIndex: '999999999' }}>
-      <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-        <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
-          <Col span={16}>
-            <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
-              Billing Management System
-            </Title>
-          </Col>
-        </Row>
+    <div
+      style={{
+        width: "100%",
+        backgroundColor: "white",
+        minHeight: "max-content",
+        borderRadius: "10px",
+      }}
+    >
+      <Row
+        style={{
+          padding: "0.5rem 2rem 0.5rem 2rem",
+          backgroundColor: "#40A2E3",
+          borderRadius: "10px 10px 0px 0px ",
+        }}
+      >
+        <Col span={16}>
+          <Title
+            level={4}
+            style={{
+              color: "white",
+              fontWeight: 500,
+              margin: 0,
+              paddingTop: 0,
+            }}
+          >
+            Billing Management System
+          </Title>
+        </Col>
+      </Row>
+      <div style={{ padding: "0 1rem" }}>
         <Form
           layout="vertical"
           onFinish={handleOnSubmit}
           variant="outlined"
-          size="medium"
-          /* style={{
-            maxWidth: 1500
-          }} */
           form={form}
         >
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            <Col className="gutter-row" span={6} offset={1} style={{ marginLeft: '30px' }}>
+          <Row gutter={32}>
+            <ColWithSixSpan>
               <Form.Item
                 label="UHID"
                 name="Uhid"
                 rules={[
                   {
                     required: true,
-                    message: 'Please add Last Name'
-                  }
+                    message: "Please enter UHID",
+                  },
                 ]}
               >
                 <AutoComplete
-                  id="uhid-autocomplete"
-                  options={options.map((option) => ({ value: option.UhId, key: option.PatientId }))}
+                  options={options.map((option) => ({
+                    value: option.UhId,
+                    key: option.PatientId,
+                  }))}
                   onSearch={fetchOptionsCallback} // Call fetchOptionsCallback when the user searches
                   onChange={handleAutocompleteChange} // Call handleAutocompleteChange when the input field changes
                   onSelect={handleSelect}
                   value={selectedUhId}
-                  filterOption={(inputValue, option) => option.value.toUpperCase().includes(inputValue.toUpperCase())}
+                  filterOption={(inputValue, option) =>
+                    option.value
+                      .toUpperCase()
+                      .includes(inputValue.toUpperCase())
+                  }
                   allowClear
                 />
               </Form.Item>
-            </Col>
+            </ColWithSixSpan>
 
-            <Col className="gutter-row" span={6}>
+            <ColWithSixSpan>
               <Form.Item
                 label="PatientName"
                 name="PatientName"
                 rules={[
                   {
                     required: true,
-                    message: 'Please add Last Name'
-                  }
+                    message: "Please add Last Name",
+                  },
                 ]}
               >
                 <Input />
               </Form.Item>
-            </Col>
+            </ColWithSixSpan>
 
-            <Col className="gutter-row" span={6}>
+            <ColWithSixSpan>
               <Form.Item
                 label="EncounterID"
                 name="Encounter"
                 rules={[
                   {
                     required: true,
-                    message: 'Please add Last Name'
-                  }
+                    message: "Please add Last Name",
+                  },
                 ]}
               >
                 <Select value={initialFormState.visit} disabled>
                   {visits.map((option) => (
-                    <Select.Option key={option.EncounterId} value={option.EncounterId}>
+                    <Select.Option
+                      key={option.EncounterId}
+                      value={option.EncounterId}
+                    >
                       {option.GeneratedEncounterId}
                     </Select.Option>
                   ))}
                 </Select>
               </Form.Item>
-            </Col>
+            </ColWithSixSpan>
           </Row>
 
           <Row justify="end">
-            <Col style={{ marginRight: '10px' }}>
-              <Form.Item>
+            <Col>
+              <Form.Item style={{ marginRight: "10px" }}>
                 <Button type="primary" htmlType="submit">
                   Submit
                 </Button>
@@ -223,7 +269,7 @@ function Billing() {
             </Col>
             <Col>
               <Form.Item>
-                <Button type="primary" onClick={handleReset}>
+                <Button type="default" danger onClick={handleReset}>
                   Clear
                 </Button>
               </Form.Item>
@@ -231,7 +277,7 @@ function Billing() {
           </Row>
         </Form>
       </div>
-    </Layout>
+    </div>
   );
 }
 
