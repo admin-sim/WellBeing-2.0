@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
 import { urlCreatePurchaseOrder, urlAutocompleteProduct, urlGetProductDetailsById, urlAddNewIndent, urlEditIndent, urlUpdateIndent } from '../../../endpoints.js';
 import Select from 'antd/es/select';
-import { ConfigProvider, message, Typography, Checkbox, Tag, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
+import { ConfigProvider, message, Typography, Checkbox, Tooltip, Modal, Card, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
 import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
@@ -14,7 +14,6 @@ import { Table, InputNumber } from 'antd';
 import { LeftOutlined, CloseSquareFilled, DeleteOutlined, PlusOutlined, } from '@ant-design/icons';
 import { useLocation } from "react-router-dom";
 import dayjs from 'dayjs';
-//import { useParams } from 'react-router-dom';
 
 const CreateIndent = () => {
     const [DropDown, setDropDown] = useState({
@@ -38,19 +37,16 @@ const CreateIndent = () => {
     const navigate = useNavigate();
     const [selectedProductId, setSelectedProductId] = useState({});
     //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');    
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [data, setData] = useState([]);
-    const [productIds, setProductIds] = useState({});
-    const [selectedUom, setSelectedUom] = useState({});
-    const [selectedUomId, setSelectedUomId] = useState({});
-    const [selectedUomText, setSelectedUomText] = useState({});
-    const [selectedSupplier, setSelectedSupplier] = useState(null);
+    const [isProductAdded, setIsProductAdded] = useState(false);
     const [istablevisible, setIstablevisible] = useState(false);
     const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
     const fields = form1.getFieldsValue();
     const location = useLocation();
-    const [indentId, setIndentId] = useState(location.state.IndentId);
+    const indentId = location.state.IndentId;
     const [buttonTitle, setButtonTitle] = useState('Save');
+    const [indentStatus, setIndentStatus] = useState(false)
+    const [isIssueQtyAvailable, setIsIssueQtyAvailable] = useState(false)
+    const [data, setData] = useState([]);
 
     useEffect(() => {
         debugger;
@@ -62,50 +58,34 @@ const CreateIndent = () => {
             setButtonTitle('Update');
             customAxios.get(`${urlEditIndent}?IndentId=${indentId}`).then((response) => {
                 const apiData = response.data.data;
-                if (apiData.newIndentModel !== null) {
-                    setIstablevisible(true);
-                    const isoDateString = apiData.newIndentModel.IndentDate;
-
-                    const dateValue = new Date(isoDateString);
-
-                    const formattedDate = dayjs(dateValue).format('DD-MM-YYYY');
-
-                    const dateForDatePicker = dayjs(formattedDate, 'DD-MM-YYYY');
-                    form1.setFieldsValue({ IndentId: indentId });
-                    form1.setFieldsValue({ IndentDate: dateForDatePicker });
-                    form1.setFieldsValue({ RequestingStore: apiData.newIndentModel.RequestingStoreId });
-                    form1.setFieldsValue({ IssuingStore: apiData.newIndentModel.IssueingStoreId });
-                    form1.setFieldsValue({ Remarks: apiData.newIndentModel.Remarks });
-                    form1.setFieldsValue({ IndentTemplate: apiData.newIndentModel.IndentTemplateId === 0 ? '' : apiData.newIndentModel.IndentTemplateId });
-                    form1.setFieldsValue({ IndentType: apiData.newIndentModel.IndentType });
-                    form1.setFieldsValue({ IndentId: apiData.newIndentModel.IndentId });
-                }
-                // <Select disabled>
-                //     {DropDown.UOM.map((option) => (
-                //         <Select.Option key={option.UomId} value={option.UomId}>
-                //             {option.FullName}
-                //         </Select.Option>
-                //     ))}
-                // </Select>
-                for (let i = counter; i < apiData.IndentDetails.length; i++) {
-                    AddProduct();
-                }
-                if (apiData.IndentDetails !== null) {
-                    for (let i = counter; i <= apiData.IndentDetails.length; i++) {
-                        form1.setFieldsValue({ [i]: { ProductId: apiData.IndentDetails[i].ProductName } });
-                        form1.setFieldsValue({ [i]: { UomId: apiData.IndentDetails[i].UomId } });
-                        form1.setFieldsValue({ [i]: { RequestingQty: apiData.IndentDetails[i].RequestQty } });
-                        form1.setFieldsValue({ [i]: { RequestingStoreStock: apiData.IndentDetails[i].AvlReqQuantity } });
-                        form1.setFieldsValue({ [i]: { RequestingStoreStock: apiData.IndentDetails[i].AvlReqQuantity } });
-                        form1.setFieldsValue({ [i]: { IssuingStoreStock: apiData.IndentDetails[i].AvlIssueQuantity === null ? 0 : apiData.IndentDetails[i].AvlIssueQuantity } });
-                        form1.setFieldsValue({ [i]: { fav: apiData.IndentDetails[i].Favourite === "N" ? false : true } });
-                        form1.setFieldsValue({ [i]: { productId: apiData.IndentDetails[i].ProductId } });
-                        form1.setFieldsValue({ [i]: { uomId: apiData.IndentDetails[i].UomId } });
-                        form1.setFieldsValue({ [i]: { IndentLineId: apiData.IndentDetails[i].IndentLineId } });
-                    }
-                }
+                const products = apiData.IndentDetails.map(
+                    (item, index) => ({
+                        ...item,
+                        key: index + 1,
+                        RequestingStoreStock: apiData.IndentDetails[index].AvlReqQuantity,
+                        IssuingStoreStock: apiData.IndentDetails[index].AvlIssueQuantity,
+                        RequestingQty: apiData.IndentDetails[index].RequestQty,
+                        Favourite: apiData.IndentDetails[index].Favourite === 'Y' ? true : false
+                    })
+                );
+                setIstablevisible(true)
+                setProductcount(apiData.IndentDetails.length)
+                setData(products);
+                const formdata = apiData.newIndentModel;
+                form1.setFieldsValue({
+                    RequestingStoreId: formdata.RequestingStoreId,
+                    IndentNumber: formdata.IndentNumber,
+                    IndentDate: DateBindtoDatepicker(formdata.IndentDate),
+                    IssueingStoreId: formdata.IssueingStoreId,
+                    ReceivingDate: DateBindtoDatepicker(formdata.ReceivingDate),
+                    IndentType: formdata.IndentType,
+                    IndentCategory: formdata.IndentCategory,
+                    Remarks: formdata.Remarks,
+                    IndentStatus: formdata.IndentStatus === 'Created' ? '' : formdata.IndentStatus,
+                    IndentId: formdata.IndentId,
+                    IndentTemplateId: formdata.IndentTemplateId
+                });
             });
-            setIndentId(0);
         }
     }, []);
 
@@ -114,44 +94,59 @@ const CreateIndent = () => {
         navigate(url);
     }
 
-    // const getPanelValue = async (searchText, key) => {
-    //     debugger;
-    //     if (searchText === "") {
-    //         form1.setFieldsValue({ [key]: { uom: undefined } });
-    //         form1.setFieldsValue({ [key]: { RequestingQty: undefined } });
-    //         form1.setFieldsValue({ [key]: { RequestingStoreStock: undefined } });
-    //         form1.setFieldsValue({ [key]: { IssuingStoreStock: undefined } });
-    //         form1.setFieldsValue({ [key]: { product: undefined } });
-    //     }
-    //     try {
-    //         customAxios.get(`${urlAutocompleteProduct}?Product=${searchText}`).then((response) => {
-    //             const apiData = response.data.data;
-    //             const newOptions = apiData.map(item => ({ value: item.LongName, key: item.ProductDefinitionId, UomId: item.UOMPrimaryUOM }));
-    //             setAutoCompleteOptions(newOptions);
-    //         });
-    //     } catch (error) {
-    //         // Handle the error as needed
-    //     }
-    // }
+    const DateBindtoDatepicker = (value) => {
+        const isoDateString = value;
+        const dateValue = new Date(isoDateString);
+        const formattedDate = dayjs(dateValue).format('DD-MM-YYYY');
+        return dayjs(formattedDate, 'DD-MM-YYYY');
+    }
 
     const handleDelete = (record) => {
         debugger;
-        const newData = data.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
-        Object.keys(fields).forEach(fieldName => {
-            if (fieldName.startsWith(`${record.key}.`)) {
-                form1.resetFields([fieldName]);
+        const newData = data.map((item) => {
+            if (item.key === record.key) {
+                return { ...item, ActiveFlag: false };
             }
+            return item;
         });
         setData(newData);
-        setProductcount(newData.length);
     };
 
-    const handleSelect = (value, option, column, record) => {
-        debugger;
-
+    const handleSelectProduct = (value, option, column, record) => {
+        debugger
         const va = form1.getFieldsValue()
-        if (va.RequestingStore !== undefined && va.IssuingStore != undefined) {
-            if (va.RequestingStore !== va.IssuingStore) {
+        customAxios.get(`${urlGetProductDetailsById}?ProductId=${option.key}`).then((response) => {
+            debugger;
+            const apiData = response.data.data;
+            const issqty = apiData.Stock.filter((item) => item.StoreId == va.IssueingStoreId)
+            const reqqty = apiData.Stock.filter((item) => item.StoreId == va.RequestingStoreId)
+            const IsstotalQuantity = issqty.reduce((sum, element) => sum + element.Quantity, 0);
+            const ReqtotalQuantity = reqqty.reduce((sum, element) => sum + element.Quantity, 0);
+            const newData = data.map((item) => {
+                if (item.key === record.key) {
+                    const updatedItem = {
+                        ...item, [column]: option.key, ProductName: option.value,
+                        ProductId: option.key,
+                        UomId: option.UomId,
+                        IssuingStoreStock: IsstotalQuantity,
+                        RequestingStoreStock: ReqtotalQuantity
+                    };
+                    return updatedItem;
+                }
+                return item;
+            });
+            setData(newData);
+            form1.setFieldsValue({ [record.key]: { IssuingStoreStock: IsstotalQuantity } })
+            form1.setFieldsValue({ [record.key]: { RequestingStoreStock: ReqtotalQuantity } })
+            form1.setFieldsValue({ [record.key]: { UomId: option.UomId } })
+        })
+        form1.setFieldsValue({ [record.key]: { ProductId: option.key } })
+    }
+
+    const handleSelect = (value, option, column, record) => {
+        const va = form1.getFieldsValue()
+        if (va.RequestingStoreId !== undefined && va.IssueingStoreId != undefined) {
+            if (va.RequestingStoreId !== va.IssueingStoreId) {
                 setIstablevisible(true);
             } else {
                 form1.resetFields();
@@ -162,24 +157,9 @@ const CreateIndent = () => {
             setData([]);
             setIstablevisible(false);
         }
-        customAxios.get(`${urlGetProductDetailsById}?ProductId=${option.ProductId}`).then((response) => {
-            debugger;
-            const apiData = response.data.data;
-            const newData = data.map((item) => {
-                if (item.key === record.key) {
-                    const updatedItem = { ...item, [column]: option.key, LongName: option.value, ProductId: option.ProductId, UomId: option.UomId, Quantity: apiData.Stock[0].Quantity };
-                    return updatedItem;
-                }
-                return item;
-            });
-            form1.setFieldsValue({ [record.key]: { productId: option.ProductId } })
-            // form1.setFieldValue({ [record.key]: newData.UomId })
-            setData(newData);
-        })
     };
 
     const handleUomChange = (option, column, index, record) => {
-        debugger;
         const newData = data.map((item) => {
             if (item.key === record.key) {
                 const updatedItem = { ...item, [column]: option.value, ShortName: option.children };
@@ -190,75 +170,7 @@ const CreateIndent = () => {
         setData(newData);
     };
 
-    // const handleSelect = (value, option, key) => {
-    //     debugger;
-    //     customAxios.get(`${urlGetProductDetailsById}?ProductId=${option.key}`).then((response) => {
-    //         debugger;
-    //         const apiData = response.data.data;
-    //         form1.setFieldsValue({ [productCount - 1]: { uom: apiData.UOMPrimaryUOM } });
-    //         form1.setFieldsValue({ [productCount - 1]: { productId: apiData.ProductDefinitionId } });
-    //         if (apiData.PORate != null) {
-    //             form1.setFieldsValue({ [productCount - 1]: { IndentLineId: apiData.PORate.PoLineId } });
-    //             form1.setFieldsValue({ [key]: { poRate: apiData.PORate.PoRate } });
-    //         }
-    //         let reqstr = form1.getFieldValue('RequestingStore');
-    //         let issstr = form1.getFieldValue('IssuingStore');
-    //         let qty = 0, reqqty = 0;
-
-    //         apiData.Stock.forEach(value => {
-    //             if (apiData.Stock.length > 0 && apiData.Stock[0].StoreId === reqstr) {
-    //                 reqqty += value.Quantity;
-    //             }
-    //             if (apiData.Stock.length > 0 && apiData.Stock[0].StoreId === issstr) {
-    //                 qty += value.Quantity;
-    //             }
-    //         })
-    //         if (qty !== 0) {
-    //             form1.setFieldsValue({ [key]: { IssuingStoreStock: qty } });
-    //             form1.setFieldsValue({ [key]: { RequestingStoreStock: reqqty } });
-    //         } else {
-    //             getPanelValue('', key);
-    //             message.warning('Issue Store stock is empty! Please select other Product')
-    //         }
-    //     });
-
-    // form1.setFieldsValue({ [key]: { product: value } });
-    // setProductIds((prevState) => ({ ...prevState, [key]: option.key }));
-    // setSelectedProductId((prevState) => {
-    //     const newState = { ...prevState, [key]: option.key };
-    //     return newState;
-    // })
-
-    // const matchingUom = DropDown.UOM.find((uomOption) => uomOption.UomId === option.UomId);
-    // setSelectedUomText((prevState) => {
-    //     const newState = { ...prevState, [key]: matchingUom.LongName };
-    //     return newState;
-    // });
-    // setSelectedUomId((prevState) => {
-    //     const newState = { ...prevState, [key]: matchingUom.UomId };
-    //     console.log(selectedUomId);
-    //     return newState;
-    // });
-    // if (matchingUom) {
-    //     setSelectedUom((prevState) => {
-    //         const newState = { ...prevState, [key]: matchingUom.UomId };
-    //         console.log(newState); // Log the new state
-    //         return newState;
-    //     });
-
-    //     form1.setFieldsValue({ [key]: { uom: matchingUom.UomId } });
-    // } else {
-    //     setSelectedUom((prevState) => {
-    //         const newState = { ...prevState, [key]: null };
-    //         console.log(newState); // Log the new state
-    //         return newState;
-    //     });
-    //     form1.setFieldsValue({ [key]: { uom: null } });
-    // }
-    // };
     const handleSearch = async (searchText) => {
-        debugger
-        // Call your API here. This is just a placeholder.
         if (searchText) {
             const response = await customAxios.get(
                 `${urlAutocompleteProduct}?Product=${searchText}`
@@ -266,9 +178,8 @@ const CreateIndent = () => {
             const apiData = response.data.data;
             const newOptions = apiData.map((item) => ({
                 value: item.LongName,
-                key: item.ProductDefinitionId,
-                UomId: item.UOMPrimaryUOM,
-                ProductId: item.ProductDefinitionId
+                key: item.ProductId,
+                UomId: item.UOMPrimaryUOM
             }));
             setAutoCompleteOptions(newOptions);
         }
@@ -276,44 +187,61 @@ const CreateIndent = () => {
 
     const AddProduct = async () => {
         setAutoCompleteOptions([]);
-        await form1.validateFields();
+        await form1.validateFields()
         setData([
             ...data,
             {
                 key: productCount,
-                ProductId: '',
-                uom: '',
+                ProductName: '',
+                // ProductId: '',
+                UomId: '',
                 RequestingQty: '',
                 RequestingStoreStock: '',
                 IssuingStoreStock: '',
-                fav: '',
+                Favourite: false,
                 ActiveFlag: true,
             },
         ]);
         setProductcount(productCount + 1);
+        setIsProductAdded(false)
     }
+
+    const validateEqualValue = (record, value) => {
+        const va = form1.getFieldsValue()
+        if (value <= record.IssuingStoreStock) {
+            const newdata = data.map((item) => {
+                if (item.ProductId === record.ProductId) {
+                    const updated = { ...item, RequestingQty: value }
+                    return updated
+                }
+                return item
+            })
+            setData(newdata)
+            return Promise.resolve();
+        }
+        return Promise.reject(new Error('Must less than Store Stock Qty!'));
+    };
 
     const columns = [
         {
             title: "Product",
-            dataIndex: "ProductId",
+            dataIndex: "ProductName",
             fixed: "left",
-            key: "ProductId",
-            width: 350,
+            key: "ProductName",
+            width: 450,
             render: (text, record, index) => (
                 <>
                     <Form.Item
-                        name={[record.key, 'ProductId']}
-                        // name={["ProductId", record.key]}
+                        name={[record.key, 'ProductName']}
                         rules={[{ required: true, message: "Required" }]}
-                        initialValue={record.LongName}
+                        initialValue={record.ProductName}
                     >
                         <AutoComplete
-                            defaultValue={record.ProductId}
+                            defaultValue={record.ProductName}
                             options={autoCompleteOptions}
                             onSearch={handleSearch}
                             onSelect={(value, option) =>
-                                handleSelect(value, option, "ProductId", record)
+                                handleSelectProduct(value, option, "ProductName", record)
                             }
                             onChange={(value) => {
                                 if (!value) {
@@ -323,11 +251,11 @@ const CreateIndent = () => {
                             allowClear={{
                                 clearIcon: <CloseSquareFilled />,
                             }}
-                            disabled={!!form1.getFieldValue('IndentId')}
+                            disabled={!!indentId}
                         />
                     </Form.Item>
-                    <Form.Item name={[record.key, 'productId']} hidden ><Input></Input></Form.Item>
-                    <Form.Item name={[record.key, 'IndentLineId']} hidden ><Input></Input></Form.Item>
+                    <Form.Item name={[record.key, 'ProductId']} initialValue={record.ProductId} hidden ><Input></Input></Form.Item>
+                    <Form.Item name={[record.key, 'IndentLineId']} initialValue={record.IndentLineId} hidden ><Input></Input></Form.Item>
                 </>
             ),
         },
@@ -335,14 +263,13 @@ const CreateIndent = () => {
             title: "UOM",
             dataIndex: "UomId",
             key: "UomId",
-            width: 150,
+            width: 200,
             render: (text, record, index) => (
                 <>
                     <Form.Item
                         name={[record.key, 'UomId']}
-                        // name={["UomId", record.key]}
                         rules={[{ required: true, message: "Required" }]} initialValue={record.UomId}>
-                        <Select defaultValue={record.UomId} disabled={!!form1.getFieldValue('IndentId')}
+                        <Select defaultValue={record.UomId} disabled={!!indentId}
                             onChange={(value, option) =>
                                 handleUomChange(option, "UomId", index, record)
                             }
@@ -354,7 +281,6 @@ const CreateIndent = () => {
                             ))}
                         </Select>
                     </Form.Item>
-                    {/* <Form.Item name={[record.key, 'uom']} hidden><Input></Input></Form.Item> */}
                 </>
             ),
         },
@@ -362,19 +288,22 @@ const CreateIndent = () => {
             title: 'Requesting Qty',
             dataIndex: 'RequestingQty',
             key: 'RequestingQty',
+            width: 200,
             render: (text, record) => (
                 <Form.Item
                     name={[record.key, 'RequestingQty']}
-                    // name={["RequestingQty", record.key]}
-                    style={{ width: '100%' }}
                     rules={[
                         {
                             required: true,
                             message: 'Please input!'
+                        },
+                        {
+                            validator: (_, value) => validateEqualValue(record, value)
                         }
                     ]}
+                    initialValue={record.RequestingQty}
                 >
-                    <InputNumber min={0} />
+                    <InputNumber min={0} style={{ width: '100%' }} />
                 </Form.Item>
             )
         },
@@ -382,12 +311,10 @@ const CreateIndent = () => {
             title: 'Requesting Store Stock',
             dataIndex: 'RequestingStoreStock',
             key: 'RequestingStoreStock',
+            width: 200,
             render: (text, record) => (
-                <Form.Item
-                    name={[record.key, 'RequestingStoreStock']}
-                    // name={["RequestingStoreStock", record.key]}
-                    style={{ width: '100%' }}>
-                    <InputNumber min={0} disabled />
+                <Form.Item initialValue={record.RequestingStoreStock} name={[record.key, 'RequestingStoreStock']}>
+                    <InputNumber min={0} style={{ width: '100%' }} defaultValue={record.RequestingQty} disabled />
                 </Form.Item>
             )
         },
@@ -396,30 +323,27 @@ const CreateIndent = () => {
             dataIndex: 'IssuingStoreStock',
             key: 'IssuingStoreStock',
             render: (text, record) => (
-                <Form.Item
-                    name={[record.key, 'IssuingStoreStock']}
-                    // name={["IssuingStoreStock", record.key]}
-                    initialValue={record.Quantity}
-                >
-                    <InputNumber min={0} disabled defaultValue={text} />
+                <Form.Item name={[record.key, 'IssuingStoreStock']} initialValue={record.IssuingStoreStock}>
+                    <InputNumber min={0} disabled style={{ width: '100%' }} defaultValue={text} />
                 </Form.Item>
             )
         },
         {
             title: 'Fav',
-            dataIndex: 'fav',
-            key: 'fav',
+            dataIndex: 'Favourite',
+            key: 'Favourite',
             render: (text, record) => (
-                <Form.Item
-                    name={[record.key, 'fav']}
-                    // name={["fav", record.key]}
+                <Form.Item initialValue={record.Favourite}
+                    name={[record.key, 'Favourite']}
                     style={{ width: 100 }} valuePropName="checked">
                     <Checkbox></Checkbox>
                 </Form.Item>
             )
         },
         {
-            title: <Button type="primary" icon={<PlusOutlined />} onClick={AddProduct}></Button>,
+            title: (<Tooltip title="Please Add Product!" open={isProductAdded}>
+                <Button type="primary" icon={<PlusOutlined />} onClick={AddProduct}></Button>
+            </Tooltip>),
             dataIndex: 'add',
             key: 'add',
             width: 50,
@@ -434,63 +358,69 @@ const CreateIndent = () => {
 
     const handleOnFinish = async (values) => {
         debugger;
+        const va = form1.getFieldsValue()
+        data
         const products = [];
         for (let i = 0; i <= productCount; i++) {
-            if (values[i] !== undefined) {
+            if (data[i] !== undefined) {
                 const product = {
-                    ProductId: values[i].productId === undefined ? selectedProductId[i] : values[i].productId,
-                    UomId: values[i].UomId,
-                    RequestQty: values[i].RequestingQty,
-                    Favourite: values[i].fav === false || values[i].fav === undefined ? "N" : "Y",
-                    IssuingStoreStock: values[i].IssuingStoreStock,
-                    RequestingStoreStock: values[i].RequestingStoreStock,
-                    QuantityTobeIssued: values[i].IssuingStoreStock,
-                    IndentLineId: values[i].IndentLineId === undefined ? 0 : values[i].IndentLineId
+                    ProductId: data[i].ProductId,
+                    UomId: data[i].UomId,
+                    RequestQty: values[i] != undefined ? values[i].RequestingQty : 0,
+                    Favourite: data[i].Favourite === true ? "Y" : "N",
+                    IssuingStoreStock: data[i].IssuingStoreStock,
+                    RequestingStoreStock: data[i].RequestingStoreStock,
+                    QuantityTobeIssued: data[i].IssuingStoreStock,
+                    IndentLineId: data[i].IndentLineId === undefined ? 0 : values[i].IndentLineId,
+                    ActiveFlag: data[i].ActiveFlag
                 }
                 products.push(product);
             }
         }
-        if (products.length > 0) {
-            const Indent = {
-                IndentDate: values.IndentDate,
-                IndentId: values.IndentId === undefined ? 0 : values.IndentId,
-                RequestingStoreId: values.RequestingStore,
-                IssueingStoreId: values.IssuingStore,
-                IndentTemplateId: values.IndentTemplate === undefined || values.IndentTemplate === "" ? 0 : values.IndentTemplate,
-                IndentType: values.IndentType,
-                Remarks: values.Remarks === undefined ? null : values.Remarks,
-                IndentStatus: values.IndentStatus === undefined ? 'Created' : values.IndentStatus,
-                IndentCategory: "StoreIndent",
+        if (products.length == 0) {
+            setIsProductAdded(true)
+            return false
+        }
+        const Indent = {
+            IndentDate: values.IndentDate,
+            IndentId: values.IndentId === undefined ? 0 : values.IndentId,
+            RequestingStoreId: values.RequestingStoreId,
+            IssueingStoreId: values.IssueingStoreId,
+            IndentTemplateId: values.IndentTemplateId === undefined ? 0 : values.IndentTemplateId,
+            IndentType: values.IndentType,
+            Remarks: values.Remarks === undefined ? null : values.Remarks,
+            IndentStatus: !indentStatus ? 'Created' : values.IndentStatus,
+            IndentCategory: "StoreIndent",
+        }
+        const postData = {
+            newIndentModel: Indent,
+            IndentDetails: products,
+        }
+        try {
+            if (indentId > 0) {
+                const response = await customAxios.post(urlUpdateIndent, postData, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                message.success('Indent Updated!')
+            } else {
+                // const response = await customAxios.post(urlAddNewIndent, postData, {
+                //     headers: {
+                //         'Content-Type': 'application/json'
+                //     }
+                // });
+                message.success('Indent Created!')
             }
-            const postData = {
-                newIndentModel: Indent,
-                IndentDetails: products,
-            }
-            try {
-                if (values.IndentId > 0) {
-                    const response = await customAxios.post(urlUpdateIndent, postData, {
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    handleCancel();
-                } else {
-                    const response = await customAxios.post(urlAddNewIndent, postData, {
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    handleCancel();
-                }
-                // form1.resetFields();
-            } catch (error) {
-                // Handle error      
-            }
-            // setIsSearchLoading(false);
-        } else {
-            message.warning('Please add Product Details');
+            handleCancel();
+        } catch (error) {
+            // Handle error      
         }
     };
+
+    const SubmitCheck = (event) => {
+        setIndentStatus(event.target.checked)
+    }
 
     return (
         <Layout style={{ zIndex: '999999999' }}>
@@ -507,177 +437,150 @@ const CreateIndent = () => {
                         </Button>
                     </Col>
                 </Row>
-                <Form
-                    layout="vertical"
-                    onFinish={handleOnFinish}
-                    variant="outlined"
-                    size="default"
-                    style={{
-                        maxWidth: 1500
-                    }}
-                    name="trigger"
-                    form={form1}
-                    initialValues={{
-                        IndentDate: dayjs(),
-                    }}
-                // onValuesChange={(changedValues, allValues) => {
-                //     debugger;
-                //     if (allValues.RequestingStore !== undefined && allValues.IssuingStore !== undefined) {
-                //         if (allValues.RequestingStore !== allValues.IssuingStore) {
-                //             setIstablevisible(true);
-                //         } else {
-                //             form1.resetFields();
-                //             setIstablevisible(false);
-                //             message.warning('Please select Different Stores');
-                //         }
-                //     } else {
-                //         setData([]);
-                //         setIstablevisible(false);
-                //     }
-                //     if (allValues[productCount - 1].RequestingQty !== undefined) {
-                //         if (allValues[productCount - 1].IssuingStoreStock >= allValues[productCount - 1].RequestingQty) {
-
-                //         }
-                //         else {
-                //             form1.setFieldsValue({ [productCount - 1]: { RequestingQty: undefined } })
-                //             message.warning('Requested Quanttity must less than Issue Store Stock');
-                //         }
-                //     }
-                // }}
-                >
-                    <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Indent Date" name="IndentDate"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input!'
-                                    }
-                                ]}
-                            >
-                                <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" disabled={!!form1.getFieldValue('IndentId')} />
-                            </Form.Item>
-                            <Form.Item name="IndentId" hidden>
-                                <Input></Input>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Requesting Store" name="RequestingStore"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input!'
-                                    }
-                                ]}
-                            >
-                                <Select allowClear placeholder='Select Value' onChange={handleSelect} disabled={!!form1.getFieldValue('IndentId')} >
-                                    {DropDown.StoreDetails.map((option) => (
-                                        <Select.Option key={option.StoreId} value={option.StoreId}>
-                                            {option.LongName}
-                                        </Select.Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Issuing Store" name="IssuingStore"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input!'
-                                    }
-                                ]}
-                            >
-                                <Select allowClear placeholder='Select Value' onChange={handleSelect} disabled={!!form1.getFieldValue('IndentId')}>
-                                    {DropDown.StoreDetails.map((option) => (
-                                        <Select.Option key={option.StoreId} value={option.StoreId}>
-                                            {option.LongName}
-                                        </Select.Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
+                <Card>
+                    <Form
+                        layout="vertical"
+                        onFinish={handleOnFinish}
+                        variant="outlined"
+                        size="default"
+                        style={{
+                            maxWidth: 1500
+                        }}
+                        name="trigger"
+                        form={form1}
+                        initialValues={{
+                            IndentDate: dayjs(),
+                        }}
+                    >
+                        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
+                            <Col className="gutter-row" span={6}>
+                                <Form.Item label="Indent Date" name="IndentDate"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Please input!'
+                                        }
+                                    ]}
+                                >
+                                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" disabled={!!form1.getFieldValue('IndentId')} />
+                                </Form.Item>
+                                <Form.Item name="IndentId" hidden>
+                                    <Input></Input>
+                                </Form.Item>
+                            </Col>
+                            <Col className="gutter-row" span={6}>
+                                <Form.Item label="Requesting Store" name="RequestingStoreId"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Please input!'
+                                        }
+                                    ]}
+                                >
+                                    <Select allowClear placeholder='Select Value' onChange={handleSelect} disabled={!!form1.getFieldValue('IndentId')} >
+                                        {DropDown.StoreDetails.map((option) => (
+                                            <Select.Option key={option.StoreId} value={option.StoreId}>
+                                                {option.LongName}
+                                            </Select.Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col className="gutter-row" span={6}>
+                                <Form.Item label="Issuing Store" name="IssueingStoreId"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Please input!'
+                                        }
+                                    ]}
+                                >
+                                    <Select allowClear placeholder='Select Value' onChange={handleSelect} disabled={!!form1.getFieldValue('IndentId')}>
+                                        {DropDown.StoreDetails.map((option) => (
+                                            <Select.Option key={option.StoreId} value={option.StoreId}>
+                                                {option.LongName}
+                                            </Select.Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col className="gutter-row" span={6}>
+                                <div>
+                                    <Form.Item label="Remarks" name="Remarks">
+                                        <TextArea autoSize allowClear />
+                                    </Form.Item>
+                                </div>
+                            </Col>
+                            <Col className="gutter-row" span={6}>
+                                <Form.Item label="Indent Template" name="IndentTemplateId">
+                                    <Select allowClear placeholder='Select Value'>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col className="gutter-row" span={6}>
+                                <Form.Item label="Indent Type" name="IndentType"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Please input!'
+                                        }
+                                    ]}
+                                >
+                                    <Select allowClear placeholder='Select Value'>
+                                        <Select.Option key='Effective' value='Effective'></Select.Option>
+                                        <Select.Option key='Consumption Based' value='Consumption Based'></Select.Option>
+                                        <Select.Option key='Urgent' value='Urgent'></Select.Option>
+                                        <Select.Option key='Reorder level Based' value='Reorder level Based'></Select.Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col className="gutter-row" span={3}>
+                                <Form.Item label="Indent Status" name="IndentStatus"
+                                    rules={[
+                                        {
+                                            required: indentStatus,
+                                            message: 'Please input!'
+                                        }
+                                    ]}
+                                >
+                                    <Select allowClear placeholder='Select Value'>
+                                        <Option value="Draft">Draft</Option>
+                                        <Option value="Pending">Finalize</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col className="gutter-row" span={3} >
+                                <Form.Item name="SubmitCheck" style={{ paddingTop: 30 }} valuePropName="checked">
+                                    <Checkbox onChange={SubmitCheck}>Submit</Checkbox>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Row justify="end" style={{ padding: '0rem 1rem' }}>
+                            <Col style={{ marginRight: '10px' }}>
+                                <Form.Item>
+                                    <Button type="primary" htmlType="submit">
+                                        {buttonTitle}
+                                    </Button>
+                                </Form.Item>
+                            </Col>
+                            <Col>
+                                <Form.Item>
+                                    <Button type="primary" onClick={handleCancel}>
+                                        Cancel
+                                    </Button>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Divider style={{ marginTop: '0' }}></Divider>
+                        {istablevisible ? (
                             <div>
-                                <Form.Item label="Remarks" name="Remarks">
-                                    <TextArea autoSize allowClear />
-                                </Form.Item>
+                                <Table columns={columns}
+                                    dataSource={data.filter((item) => item.ActiveFlag !== false)}
+                                    size="small" scroll={{ x: 0 }} bordered />
                             </div>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Indent Template" name="IndentTemplate">
-                                <Select allowClear placeholder='Select Value'>
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Indent Type" name="IndentType"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input!'
-                                    }
-                                ]}
-                            >
-                                <Select allowClear placeholder='Select Value'>
-                                    <Select.Option key='Effective' value='Effective'></Select.Option>
-                                    <Select.Option key='Consumption Based' value='Consumption Based'></Select.Option>
-                                    <Select.Option key='Urgent' value='Urgent'></Select.Option>
-                                    <Select.Option key='Reorder level Based' value='Reorder level Based'></Select.Option>
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={3}>
-                            <Form.Item label="Indent Status" name="IndentStatus">
-                                <Select allowClear placeholder='Select Value'>
-                                    <Option value="Draft">Draft</Option>
-                                    <Option value="Pending">Finalize</Option>
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={3} >
-                            <Form.Item name="SubmitCheck" style={{ paddingTop: 30 }} valuePropName="checked">
-                                <Checkbox>Submit</Checkbox>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row justify="end" style={{ padding: '0rem 1rem' }}>
-                        <Col style={{ marginRight: '10px' }}>
-                            <Form.Item>
-                                <Button type="primary" htmlType="submit">
-                                    {buttonTitle}
-                                </Button>
-                            </Form.Item>
-                        </Col>
-                        <Col>
-                            <Form.Item>
-                                <Button type="primary" onClick={handleCancel}>
-                                    Cancel
-                                </Button>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Divider style={{ marginTop: '0' }}></Divider>
-                    {istablevisible ? (
-                        <div>
-                            <Table columns={columns} dataSource={data} scroll={{ x: 0 }} />
-                            {/* <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px', float: 'right' }}>
-                                <Form.Item label="Amount" name='TotalAmount' style={{ marginRight: '16px', width: 100 }} >
-                                    <InputNumber min={0} disabled />
-                                </Form.Item>
-                                <Form.Item label="Tax" name='Tax' style={{ marginRight: '16px', width: 100 }} >
-                                    <InputNumber min={0} disabled />
-                                </Form.Item>
-                                <Form.Item label="Round Off" name='RoundOff' style={{ marginRight: '16px', width: 100 }}>
-                                    <InputNumber min={0} disabled />
-                                </Form.Item>
-                                <Form.Item label="Total PO Amount" name='totalpoAmount' style={{ width: 150 }}>
-                                    <InputNumber min={0} disabled />
-                                </Form.Item>
-                            </div> */}
-                        </div>
-                    ) : null}
-                </Form>
+                        ) : null}
+                    </Form>
+                </Card>
             </div>
         </Layout >
     );

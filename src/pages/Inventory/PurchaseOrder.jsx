@@ -45,6 +45,9 @@ const PurchaseOrder = () => {
   const [loading, setLoading] = useState(false);
   const [isTableHasValues, setIsTableHasValues] = useState(false);
   const { Title } = Typography;
+  const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
+  const [toDate, setToDate] = useState(dayjs());
+
   useEffect(() => {
     try {
       customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
@@ -60,6 +63,25 @@ const PurchaseOrder = () => {
 
   const navigate = useNavigate();
 
+  const handleFromDateChange = (date) => {
+    setFromDate(date);
+    if (toDate && date && date.isAfter(toDate)) {
+      setToDate(null);
+    }
+  };
+
+  const handleToDateChange = (date) => {
+    setToDate(date);
+  };
+
+  const disabledFromDate = (current) => {
+    return current && current.isAfter(dayjs().endOf('day'));
+  };
+
+  const disabledToDate = (current) => {
+    return current && (current.isBefore(fromDate, 'day') || current.isAfter(dayjs().endOf('day')));
+  };
+
   const colorMapping = {
     Created: "blue",
     Draft: "geekblue",
@@ -68,7 +90,7 @@ const PurchaseOrder = () => {
     Finalize: "green",
   };
 
-  const GetPobyId = (PoHeaderId) => {    
+  const GetPobyId = (PoHeaderId) => {
     navigate("/CreatePurchaseOrder", { state: { PoHeaderId } });
   };
   const columns = [
@@ -208,12 +230,12 @@ const PurchaseOrder = () => {
     }
     return inputDate; // Return as is if not in the expected format
   }
-  const onFinish = async (values) => {    
+  const onFinish = async (values) => {
     setIsSearchLoading(true);
     setLoading(true);
     try {
       const postData1 = {
-        DocumentType: values.DocumentType ,
+        DocumentType: values.DocumentType,
         Supplier: values.Supplier,
         ProcurementStore: values.ProcurementStore,
         POStatus: values.POStatus === "" ? null : values.POStatus,
@@ -234,7 +256,7 @@ const PurchaseOrder = () => {
             },
           }
         )
-        .then((response) => {          
+        .then((response) => {
           setFilteredData(response.data.data.PurchaseOrderDetails);
           response.data.data.PurchaseOrderDetails.PoHeaderId
           if (response.data.data.PurchaseOrderDetails.length > 0) {
@@ -319,12 +341,12 @@ const PurchaseOrder = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="FromDate" label="From Date">
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker value={fromDate} style={{ width: "100%" }} onChange={handleFromDateChange} disabledDate={disabledFromDate} format="DD-MM-YYYY" />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="ToDate" label="To Date">
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker value={toDate} style={{ width: "100%" }} onChange={handleToDateChange} disabledDate={disabledToDate} format="DD-MM-YYYY" />
                 </Form.Item>
               </Col>
             </Row>
@@ -376,39 +398,27 @@ const PurchaseOrder = () => {
               </Col>
             </Row>
           </Form>
+          {isTableHasValues && (
+            <Table
+              dataSource={filteredData}
+              columns={columns}
+              pagination={{
+                onChange: (current, pageSize) => {
+                  setPage(current);
+                  setPaginationSize(pageSize);
+                },
+                defaultPageSize: 5,
+                hideOnSinglePage: true,
+                showSizeChanger: true,
+                showTotal: (total, range) =>
+                  `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+              }}
+              rowKey={(row) => row.AppUserId}
+              size="small"
+              bordered
+            />
+          )}
         </Card>
-        {isTableHasValues && (          
-          <Table
-            dataSource={filteredData}
-            columns={columns}
-            pagination={{
-              onChange: (current, pageSize) => {
-                setPage(current);
-                setPaginationSize(pageSize);
-              },
-              defaultPageSize: 5,
-              hideOnSinglePage: true,
-              showSizeChanger: true,
-              showTotal: (total, range) =>
-                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-            }}
-            rowKey={(row) => row.AppUserId}
-            size="small"
-            bordered
-          />
-        )}
-        {/* {loading ? (
-          <Skeleton active />
-        ) : (
-          // <Spin tip="Loading" size="large">
-          //   <div className="content" />
-          // </Spin>
-          // <div>
-          //   {isTable && (
-              
-          //   )}
-          // </div>
-        )} */}
       </div>
     </Layout>
   );
