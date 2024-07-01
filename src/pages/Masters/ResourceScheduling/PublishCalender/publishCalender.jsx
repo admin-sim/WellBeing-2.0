@@ -23,6 +23,8 @@ import Input from "antd/es/input/Input";
 import Title from "antd/es/typography/Title";
 import React, { useState, useEffect } from "react";
 import customAxios from "../../../../components/customAxios/customAxios";
+import moment from "moment/moment";
+// import dayjs from "dayjs";
 
 import {
   urlGetAllCalenderPublished,
@@ -39,13 +41,15 @@ function PublishCalender() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [calenderData, setCalenderData] = useState();
-  const [DateFormat, setDateFormat] = useState("DD-MM-YYYY");
+  const [disabledToFromDate, setDisabledToFromDate] = useState(null);
   const [FromDate, setFromDate] = useState();
   const [ToDate, setToDate] = useState();
   const [Dropdown, setDropdown] = useState({
     Providers: [],
   });
   const [isEditing, setIsEditing] = useState(false);
+  // const today = moment(); // Get today's date
+  // const lastDate = moment().add(3, "months"); // Get the date three months from now
 
   useEffect(() => {
     fetchData();
@@ -56,16 +60,19 @@ function PublishCalender() {
     setLoading(true);
     try {
       const response = await customAxios.get(`${urlGetAllCalenderPublished}`);
-      const newColumnData =
-        response.data.data.ScheduleAvailabilityCalenderModels.map(
-          (obj, index) => {
-            return { ...obj, key: index + 1 };
-          }
-        );
-      setColumnData(newColumnData);
-      setDropdown(response.data.data);
+      if (response.data != null) {
+        const newColumnData =
+          response.data.data.ScheduleAvailabilityCalenderModels.map(
+            (obj, index) => {
+              return { ...obj, key: index + 1 };
+            }
+          );
+        setColumnData(newColumnData);
+        setDropdown(response.data.data);
+      }
+
       //   setDateFormat(response.data.DateFormat);
-      console.log("data", newColumnData);
+      // console.log("data", newColumnData);
     } catch (error) {
       console.error(error);
     }
@@ -75,12 +82,12 @@ function PublishCalender() {
   const handleAddAreaShowModal = () => {
     setIsModalOpen(true);
     setIsEditing(false);
+    setDisabledToFromDate(null);
     form.resetFields();
   };
 
   const handleFromDateChange = (date, dateString) => {
     debugger;
-
     setFromDate(dateString);
   };
 
@@ -88,10 +95,41 @@ function PublishCalender() {
     setToDate(dateString);
   };
 
-  //   const disabledDate = (current) => {
-  //     // Disable dates that are in the future
-  //     return current && current > new Date();
-  //   };
+  const disabledFromDate = (current) => {
+    const today = moment().startOf("day");
+    const maxDate = moment().add(3, "months").endOf("day");
+    return current && (current < today || current > maxDate);
+  };
+
+  const disabledToDate = (current) => {
+    debugger;
+    if (!disabledToFromDate) {
+      const today = dayjs().startOf("day");
+      const maxDate = dayjs().add(3, "months").endOf("day");
+      return current && (current < today || current > maxDate);
+    }
+    const minDate = dayjs(disabledToFromDate).startOf("day");
+    const maxDate = dayjs().add(3, "months").endOf("day");
+    return current && (current < minDate || current > maxDate);
+  };
+
+  const validateFromDate = (_, value) => {
+    const toDate = form.getFieldValue("ToDate");
+    if (value && toDate && value.isAfter(toDate)) {
+      return Promise.reject(new Error("From Date must be less than To Date"));
+    }
+    return Promise.resolve();
+  };
+
+  const validateToDate = (_, value) => {
+    const fromDate = form.getFieldValue("FromDate");
+    if (value && fromDate && value.isBefore(fromDate)) {
+      return Promise.reject(
+        new Error("To Date must be greater than From Date")
+      );
+    }
+    return Promise.resolve();
+  };
 
   const handleEditModal = (record) => {
     debugger;
@@ -113,6 +151,7 @@ function PublishCalender() {
             ToDate: parsedEndDate,
           });
           setFromDate(calenderData.StartDate);
+          setDisabledToFromDate(parsedEndDate);
           setLoading(false);
         }
       });
@@ -120,6 +159,7 @@ function PublishCalender() {
 
   const handleAreaModalCancel = () => {
     setIsModalOpen(false);
+    setDisabledToFromDate(null);
     form.resetFields();
   };
 
@@ -169,9 +209,14 @@ function PublishCalender() {
         }
       );
 
-      if (response.data.data !== null) {
-        if (response.data.data.ScheduleAvailabilityCalenderModels !== null) {
-          setIsModalOpen(false);
+      if (response.data !== null) {
+        if (response.data === "Create") {
+          notification.warning({
+            message: "Create schedule Template for the provider",
+          });
+        } else if (
+          response.data.data.ScheduleAvailabilityCalenderModels !== null
+        ) {
           const newColumnData =
             response.data.data.ScheduleAvailabilityCalenderModels.map(
               (obj, index) => {
@@ -179,10 +224,17 @@ function PublishCalender() {
               }
             );
           setColumnData(newColumnData);
+          setDisabledToFromDate(null);
           form.resetFields();
-          notification.success({
-            message: "Published Calender successfully",
-          });
+          if (isEditing) {
+            notification.success({
+              message: "Updated calender successfully",
+            });
+          } else {
+            notification.success({
+              message: "Published calender successfully",
+            });
+          }
         } else {
           notification.error({
             message: "Publishing calender was unsuccessful",
@@ -191,9 +243,13 @@ function PublishCalender() {
       }
     } catch (error) {
       console.error("Failed to send data to server: ", error);
-      notification.warning({
-        message: "Create schedule Template for the provider",
+      notification.error({
+        message: "Publishing calender was unsuccessful",
       });
+    } finally {
+      setIsModalOpen(false);
+      setDisabledToFromDate(null);
+      form.resetFields();
     }
   };
 
@@ -211,12 +267,12 @@ function PublishCalender() {
     {
       title: "From Date",
       dataIndex: "StartDate",
-      key: "StartDate",
+      key: "StartDateTime",
     },
     {
       title: "To Date",
       dataIndex: "EndDate",
-      key: "EndDate",
+      key: "EndDateTime",
     },
   ];
 
@@ -324,6 +380,9 @@ function PublishCalender() {
                     required: true,
                     message: "Please select From Date",
                   },
+                  {
+                    validator: validateFromDate,
+                  },
                 ]}
               >
                 <DatePicker
@@ -331,6 +390,7 @@ function PublishCalender() {
                   onChange={handleFromDateChange}
                   style={{ width: "100%" }}
                   disabled={isEditing}
+                  disabledDate={disabledFromDate}
                 ></DatePicker>
               </Form.Item>
               <Form.Item
@@ -341,12 +401,16 @@ function PublishCalender() {
                     required: true,
                     message: "Please enter From Date",
                   },
+                  {
+                    validator: validateToDate,
+                  },
                 ]}
               >
                 <DatePicker
                   format={"DD-MM-YYYY"}
                   onChange={handleToDateChange}
                   style={{ width: "100%" }}
+                  disabledDate={disabledToDate}
                 ></DatePicker>
               </Form.Item>
               <Row gutter={32} style={{ height: "1.8rem" }}>

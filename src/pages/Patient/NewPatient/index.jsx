@@ -877,7 +877,15 @@ const NewPatient = () => {
                   <Col span={7}>
                     <Row gutter={14}>
                       <Col span={8}>
-                        <Form.Item label="Years">
+                        <Form.Item
+                          label="Years"
+                          rules={[
+                            {
+                              pattern: /^\d{2,3}$/,
+                              message: "Please enter valid input for years",
+                            },
+                          ]}
+                        >
                           <Input
                             style={{ width: "100%" }}
                             max={120}
@@ -973,7 +981,7 @@ const NewPatient = () => {
                           label="Weight"
                           rules={[
                             {
-                              pattern: /^\d{2,3}$/,
+                              pattern: /^\d{1,3}$/,
                               message: "Please enter valid input for weight",
                             },
                           ]}
@@ -1238,12 +1246,12 @@ const NewPatient = () => {
                   label="Landline Number"
                   rules={[
                     {
-                      pattern: new RegExp(/^\d{6,10}$/),
-                      message: "Invalid Landline Number",
+                      pattern: /^\d{10}$/,
+                      message: "Please enter a valid 10 digit number!",
                     },
                   ]}
                 >
-                  <Input />
+                  <Input maxLength={10} />
                 </Form.Item>
               </Col>
               <Col span={6}>
