@@ -26,7 +26,7 @@ const ScheduleTemplateEdit = () => {
   const [form] = Form.useForm();
   const [NumOfForms, setNumOfForms] = useState();
   const [templateData, setTemplateData] = useState();
-  const [formData, setFormData] = useState();
+  const [formData, setFormData] = useState({});
   const [Loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -74,6 +74,7 @@ const ScheduleTemplateEdit = () => {
             })
           ),
         };
+        console.log("Updated formData:", formData);
         setLoading(false);
         setFormData(formData);
       }
@@ -112,8 +113,8 @@ const ScheduleTemplateEdit = () => {
           ...obj,
           TemplateSessionId: formData.sessions[index].TemplateSessionId,
           SessionNo: formData.sessions[index].SessionNo,
-          StartTime: values.sessions[index].StartTime.format("hh:mm:ss"),
-          EndTime: values.sessions[index].EndTime.format("hh:mm:ss"),
+          StartTime: values.sessions[index].StartTime.format("HH:mm:ss"),
+          EndTime: values.sessions[index].EndTime.format("HH:mm:ss"),
         };
       });
 
@@ -154,9 +155,9 @@ const ScheduleTemplateEdit = () => {
     }
   };
 
-  useEffect(() => {
-    form.setFieldsValue(formData);
-  }, [NumOfForms, formData]);
+  // useEffect(() => {
+  //   form.setFieldsValue(formData);
+  // }, [NumOfForms, formData]);
 
   const handleBack = () => {
     form.resetFields();
@@ -222,6 +223,8 @@ const ScheduleTemplateEdit = () => {
                 <SessionsForms
                   numForms={NumOfForms}
                   form={form}
+                  formData={formData}
+                  // setFormData={setFormData}
                 ></SessionsForms>
               </Col>
             </Row>
@@ -235,11 +238,7 @@ const ScheduleTemplateEdit = () => {
             >
               <Col offset={20} span={2}>
                 <Form.Item>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                   
-                  >
+                  <Button type="primary" htmlType="submit">
                     Update
                   </Button>
                 </Form.Item>

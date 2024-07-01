@@ -26,6 +26,19 @@ function ScheduleCreateOrUpdate() {
   const [addSession, setAddSessions] = useState();
   const [Loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    sessions: [
+      {
+        StartTime: "",
+        EndTime: "",
+        SlotDuration: "",
+        PatientsInSlot: "",
+        OverbookingSlots: "",
+        OverbookingEndSlots: "",
+        PatientsMaxSlot: "",
+      },
+    ],
+  });
 
   const handleSessionsForms = (values) => {
     debugger;
@@ -182,6 +195,8 @@ function ScheduleCreateOrUpdate() {
                   <SessionsForms
                     numForms={NumOfForms}
                     form={form}
+                    formData={formData}
+                    // setFormData={setFormData}
                   ></SessionsForms>
                 </Col>
               </Row>
