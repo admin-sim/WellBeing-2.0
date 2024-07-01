@@ -268,3 +268,5 @@ export const urlAddNewGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/AddNewGRNAgain
 export const urlEditGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/EditGRNAgainstPO`;
 export const urlUpdateGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/UpdateGRNAgainstPO`;
 export const urlGetEncounterDetails = `${baseURL}/api/Encounter/GetEncounterDetails`;
+export const urlDeletePriceTariffChargeParameter = `${baseURL}/api/PriceTariff/DeletePriceTariffChargeParameter`;
+

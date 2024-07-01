@@ -25,6 +25,7 @@ import {
   urlSaveNewPriceTariffChargeParameter,
   urlEditPriceTariff,
   urlUpdatePriceTariff,
+  urlDeletePriceTariffChargeParameter,
 } from "../../../../../endpoints";
 import PriceChargeModal from "./PriceChargeModal";
 import EditPriceChargeModal from "./EditPriceChargeModal";
@@ -112,24 +113,23 @@ function CreatePriceTariff() {
     }
   };
 
-  // const handleDelete = async (record) => {
-  //   try {
-  //     const response = await customAxios.get(
-  //       `${urlEditPriceTariffChargeParameter}?PriceTariffLine=${record.PriceTariffLineId}`
-  //     );
-  //     if (response.status === 200 && response.data.data != null) {
-  //       const editpricechargeparameteres = response.data.data;
-  //       setEditPriceariffDropdown(editpricechargeparameteres);
-  //       setLinedata(editpricechargeparameteres.AddNewBillTariffLineModel);
-  //       setEditedPriceTariffLineId(record.PriceTariffLineId);
-  //       setEditModalOpen(true);
-  //     } else {
-  //       console.error("Failed to fetch patient details");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
-  //   }
-  // };
+  const handleDelete = async (record) => {
+    debugger;
+    try {
+      const response = await customAxios.delete(
+        `${urlDeletePriceTariffChargeParameter}?priceTariffLineId=${record.PriceTariffLineId}&priceTariffId=${record.PriceTariffId}`
+      );
+      if (response.status === 200 && response.data.data != null) {
+        setColumnData(response.data.data.BillTariffLineModels);
+        message.success("Deleted Sucessfully..");
+      
+      } else {
+        console.error("Failed to fetch patient details");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
 
   useEffect(() => {
@@ -334,6 +334,12 @@ function CreatePriceTariff() {
       dataIndex: "IndicatorName",
       key: "IndicatorName",
     },
+    {
+      title: "Description",
+      dataIndex: "IndicatorDescriptionName",
+      key: "IndicatorDescriptionName",
+    },
+
     {
       title: "Tariff Line Indicator",
       dataIndex: "TariffLineIndicator",
@@ -609,7 +615,7 @@ function CreatePriceTariff() {
                       actionColumn={true}
                       isFilter={true}
                       onEdit={handleEdit}
-                      //onDelete={handleDelete}
+                      onDelete={handleDelete}
                       rowKey={(row) => row.PriceTariffLineId}
                     />
                   </Spin>
