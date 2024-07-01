@@ -4,6 +4,7 @@ import {
   PlusCircleFilled,
   PlusCircleOutlined,
   PlusOutlined,
+  PlusSquareFilled,
   SearchOutlined,
 } from "@ant-design/icons";
 import {
@@ -19,7 +20,7 @@ import {
   Collapse,
   notification,
   Modal,
-  Table
+  Table,
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import Title from "antd/es/typography/Title";
@@ -34,6 +35,8 @@ import {
 } from "../../../../../endpoints";
 import customAxios from "../../../../components/customAxios/customAxios";
 import OrderingAttributeModal from "./OrderingAttributeModal";
+import MedicalCodeModal from "./MedicalCodeModal";
+import TurnAroundTimeTableModal from "./TurnAroundTimeTableModal";
 const { Panel } = Collapse;
 function CreateService() {
   const [form] = Form.useForm();
@@ -47,19 +50,21 @@ function CreateService() {
   );
   const [testresulttypes, setTestResultTypes] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isMedicalModalVisible, setIsMedicalModalVisible] = useState(false);
+  const [isTurnAroundTimeModalVisible, setIsTurnAroundTimeModalVisible] = useState(false);
   const [orderAtributeDropdown, setOrderAtributeDropDown] = useState([]);
   console.log("Serviceclassificationid", Serviceclassificationid);
   const [ageGenderRestriction, setAgeGenderRestriction] = useState([]);
+  const [turnAroundTime, setTurnAroundTime] = useState([]);
+  const [medicalCode, setMedicalCode] = useState([]);
   const [keyCounter, setKeyCounter] = useState(0);
+  const [keyCounterTAT, setKeyCounterTAT] = useState(0);
+  const [keyCounterMED, setKeyCounterMED] = useState(0);
   const [serviceDropDown, setServiceDropDown] = useState({
-
     Genders: [],
     Uoms: [],
- 
+    MedicalCodeTypes: [],
   });
-
-
-
 
   const navigate = useNavigate();
 
@@ -72,7 +77,7 @@ function CreateService() {
         );
         if (response.status === 200 && response.data.data != null) {
           const data = response.data.data;
-          console.log('dataaaaa',data);
+          console.log("dataaaaa", data);
           setTestResultTypes(data.TestResultTypes);
           setUom(data.Uoms);
           setCategory(data.Category);
@@ -135,31 +140,73 @@ function CreateService() {
     setIsModalVisible(true);
   };
 
-  const handleOk = () => {
-    setIsModalVisible(false);
+  const showMedicalCodeModel = () => {
+    setIsMedicalModalVisible(true);
+  };
+  const showTurnArountTimeModel = () => {
+    setIsTurnAroundTimeModalVisible(true);
   };
 
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
+
   const handleSubmit = (values) => {
     debugger;
     console.log(values);
-  // Ensure values is an array
-  const valuesArray = Array.isArray(values) ? values : [values];
+    // Ensure values is an array
+    const valuesArray = Array.isArray(values) ? values : [values];
 
-  // Map the incoming values and add a key to each
-  const valuesWithKeys = valuesArray.map((value, index) => ({
-    ...value,
-    key: keyCounter + index,
-  }));
+    // Map the incoming values and add a key to each
+    const valuesWithKeys = valuesArray.map((value, index) => ({
+      ...value,
+      key: keyCounter + index,
+    }));
 
-  // Increment the key counter
-  setKeyCounter(keyCounter + valuesArray.length);
+    // Increment the key counter
+    setKeyCounter(keyCounter + valuesArray.length);
 
-  // Update the state with the new values with keys
-  setAgeGenderRestriction(prev => [...prev, ...valuesWithKeys]);
+    // Update the state with the new values with keys
+    setAgeGenderRestriction((prev) => [...prev, ...valuesWithKeys]);
   };
+
+  
+  const handleMedicalCodeSubmit = (values) => {
+    debugger;
+    console.log(values);
+   
+   // Ensure values is an array
+    const valuesArray = Array.isArray(values) ? values : [values];
+
+    // Map the incoming values and add a key to each
+    const valuesWithKeys = valuesArray.map((value, index) => ({
+      ...value,
+      key: keyCounterMED + index,
+    }));
+
+    // Increment the key counter
+    setKeyCounterMED(keyCounterMED + valuesArray.length);
+
+    // Update the state with the new values with keys
+    setMedicalCode((prev) => [...prev, ...valuesWithKeys]);
+  };
+  const handleTurnAroundTimeSubmit = (values) => {
+    debugger;
+
+    
+   
+    const valuesArray = Array.isArray(values) ? values : [values];
+
+    // Map the incoming values and add a key to each
+    const valuesWithKeys = valuesArray.map((value, index) => ({
+      ...value,
+      key: keyCounterTAT + index,
+    }));
+
+    // Increment the key counter
+    setKeyCounterTAT(keyCounterTAT + valuesArray.length);
+
+    // Update the state with the new values with keys
+    setTurnAroundTime((prev) => [...prev, ...valuesWithKeys]);
+  };
+
 
   const columns = [
     {
@@ -168,26 +215,77 @@ function CreateService() {
       key: "GenderType",
     },
     {
-      title: "StartAge",
+      title: "Start Age",
       dataIndex: "StartAge",
       key: "StartAge",
     },
     {
-      title: "AgeUnit",
+      title: "Age Unit",
       dataIndex: "StartAgeUnitShortName",
       key: "StartAgeUnitShortName",
     },
     {
-      title: "EndAge",
+      title: "End Age",
       dataIndex: "EndAge",
       key: "EndAge",
     },
     {
-      title: "AgeUnit",
+      title: "Age Unit",
       dataIndex: "EndAgeUnitShortName",
       key: "EndAgeUnitShortName",
     },
   ];
+  const columnsTurnAroundTime = [
+    {
+      title: "Order Priority",
+      dataIndex: "OrderPriorityId",
+      key: "OrderPriorityId",
+    },
+    {
+      title: "Tat Value",
+      dataIndex: "TatValue",
+      key: "TatValue",
+    },
+    {
+      title: "Tat UOM",
+      dataIndex: "UOM",
+      key: "UOM",
+    },
+    
+  ];
+  const columnMedicalCode = [
+    {
+      title: "Medical Code Type",
+      dataIndex: "MedicalCodeTypeName",
+      key: "MedicalCodeTypeName",
+    },
+    {
+      title: "Version",
+      dataIndex: "Version",
+      key: "Version",
+    },
+    {
+      title: "Medical CodeType Description",
+      dataIndex: "MedicalCodeTypeDescription",
+      key: "MedicalCodeTypeDescription",
+    },
+    {
+      title: "Status",
+      dataIndex: "Status",
+      key: "Status",
+    },
+    {
+      title: "Action",
+      dataIndex: "Action",
+      key: "Action",
+    },
+  ];
+
+  const handleClick = () => {
+    // Your handle click logic here
+
+    console.log("Plus icon clicked");
+  };
 
   return (
     <>
@@ -544,19 +642,172 @@ function CreateService() {
                   // style={{ padding: '0rem 2rem' }}
                   dataSource={ageGenderRestriction}
                   columns={columns}
+                  pagination={false}
                   //rowKey={(row) => row.ChargeID} // Specify the custom id property here
-                  size="small"
                   locale={{
                     emptyText: (
                       <span style={{ color: "" }}>No data available</span>
                     ),
                   }}
                   bordered
-                  
                 ></Table>
               </Panel>
             </Collapse>
 
+            <Collapse accordion style={{ marginTop: "0.5rem" }}>
+              <Panel header="Execution Attributes" key="3">
+                <Row gutter={16}>
+                  <Col span={5}>
+                    <Form.Item
+                      label="Schedule Applicable"
+                      name="Schedule Applicable"
+                      valuePropName="checked"
+                    >
+                      <Checkbox> Result Applicable </Checkbox>
+                    </Form.Item>
+                  </Col>
+                  <Col span={5}>
+                    <Form.Item label="Result Template" name="Result Template">
+                      <input type="text" disabled />
+                    </Form.Item>
+                  </Col>
+                  <Col span={5}>
+                    <Form.Item
+                      label="Anesthetist Required"
+                      name="Anesthetist Required"
+                      valuePropName="checked"
+                    >
+                      <Checkbox>Anesthetist Required</Checkbox>
+                    </Form.Item>
+                  </Col>
+                  <Divider orientation="left">
+                    Estimated Service Duration
+                  </Divider>
+                </Row>
+                <Row gutter={16}>
+                  <Col span={5}>
+                    <Form.Item label="Min." name="Min">
+                      <Input style={{ width: "100%" }} disabled />
+                    </Form.Item>
+                  </Col>
+                  <Col span={5}>
+                    <Form.Item label="Standard" name="Standard">
+                      <Input style={{ width: "100%" }} disabled />
+                    </Form.Item>
+                  </Col>
+                  <Col span={5}>
+                    <Form.Item label="Max." name="Max.">
+                      <Input style={{ width: "100%" }} disabled />
+                    </Form.Item>
+                  </Col>
+                  <Col span={5}>
+                    <Form.Item label="Uom" name="UomEx">
+                      <Select
+                        style={{ width: "100%" }}
+                        placeholder="SelectUom"
+                        allowClear
+                      >
+                        {uom.map((option) => (
+                          <Select.Option
+                            key={option.UomId}
+                            value={option.UomId}
+                          >
+                            {option.ShortName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Panel>
+            </Collapse>
+            <Collapse accordion style={{ marginTop: "0.5rem" }}>
+              <Panel
+                header={
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span>Turn Around Time</span>
+                    <Button
+                      type="text"
+                      icon={<PlusCircleOutlined />}
+                      onClick={showTurnArountTimeModel}
+                    />
+                  </div>
+                }
+                key="4"
+              >
+                <Table
+                  // style={{ padding: '0rem 2rem' }}
+                  dataSource={turnAroundTime}
+                  columns={columnsTurnAroundTime}
+                  pagination={false}
+                  //rowKey={(row) => row.ChargeID} // Specify the custom id property here
+                  locale={{
+                    emptyText: (
+                      <span style={{ color: "" }}>No data available</span>
+                    ),
+                  }}
+                  bordered
+                ></Table>
+                <TurnAroundTimeTableModal
+                  options={serviceDropDown}
+                  open={isTurnAroundTimeModalVisible}
+                  handleClose={() => setIsTurnAroundTimeModalVisible(false)}
+                  handleSubmit={handleTurnAroundTimeSubmit}
+              
+                  // discountDetails={discountDetails}
+                  // setCharges={setCharges}
+                />
+              </Panel>
+            </Collapse>
+            <Collapse accordion style={{ marginTop: "0.5rem" }}>
+              <Panel
+                header={
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span>Medical Codes</span>
+                    <Button
+                      type="text"
+                      icon={<PlusCircleOutlined />}
+                      onClick={showMedicalCodeModel}
+                    />
+                  </div>
+                }
+                key="5"
+              >
+                <Table
+                  // style={{ padding: '0rem 2rem' }}
+                  dataSource={medicalCode}
+                  columns={columnMedicalCode}
+                  //rowKey={(row) => row.ChargeID} // Specify the custom id property here
+                  locale={{
+                    emptyText: (
+                      <span style={{ color: "" }}>No data available</span>
+                    ),
+                  }}
+                  bordered
+                  pagination={false}
+                ></Table>
+                <MedicalCodeModal
+                  options={serviceDropDown}
+                  open={isMedicalModalVisible}
+                  handleClose={() => setIsMedicalModalVisible(false)}
+                  handleSubmit={handleMedicalCodeSubmit}
+                  // discountDetails={discountDetails}
+                  // setCharges={setCharges}
+                />
+              </Panel>
+            </Collapse>
             <Row gutter={32} style={{ marginTop: "1.5rem" }}>
               {" "}
               {/* Added this line */}

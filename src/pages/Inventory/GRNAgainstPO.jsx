@@ -27,6 +27,8 @@ const GRNAgainstPO = () => {
     const [loading, setLoading] = useState(false);
     const [isTableHasValue, setIsTableHasValue] = useState(false);
     const { Title } = Typography;
+    const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
+    const [toDate, setToDate] = useState(dayjs());
 
     useEffect(() => {
         try {
@@ -39,6 +41,25 @@ const GRNAgainstPO = () => {
         }
         form.submit();
     }, []);
+
+    const handleFromDateChange = (date) => {
+        setFromDate(date);
+        if (toDate && date && date.isAfter(toDate)) {
+            setToDate(null);
+        }
+    };
+
+    const handleToDateChange = (date) => {
+        setToDate(date);
+    };
+
+    const disabledFromDate = (current) => {
+        return current && current.isAfter(dayjs().endOf('day'));
+    };
+
+    const disabledToDate = (current) => {
+        return current && (current.isBefore(fromDate, 'day') || current.isAfter(dayjs().endOf('day')));
+    };
 
     const navigate = useNavigate();
 
@@ -252,12 +273,12 @@ const GRNAgainstPO = () => {
                             </Col>
                             <Col className="gutter-row" span={6}>
                                 <Form.Item name="FromDate" label="From Date">
-                                    <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' allowClear />
+                                    <DatePicker value={fromDate} style={{ width: '100%' }} onChange={handleFromDateChange} disabledDate={disabledFromDate} format='DD-MM-YYYY' allowClear />
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
                                 <Form.Item name="ToDate" label="To Date">
-                                    <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' allowClear />
+                                    <DatePicker value={toDate} style={{ width: '100%' }} onChange={handleToDateChange} disabledDate={disabledToDate} format='DD-MM-YYYY' allowClear />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -311,26 +332,26 @@ const GRNAgainstPO = () => {
                             </Col>
                         </Row>
                     </Form>
+                    {isTableHasValue && (
+                        <Table
+                            dataSource={filteredData}
+                            columns={columns}
+                            pagination={{
+                                onChange: (current, pageSize) => {
+                                    setPage(current);
+                                    setPaginationSize(pageSize);
+                                },
+                                defaultPageSize: 5,
+                                hideOnSinglePage: true,
+                                showSizeChanger: true,
+                                showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                            }}
+                            rowKey={(row) => row.AppUserId}
+                            size="small"
+                            bordered
+                        />
+                    )}
                 </Card>
-                {isTableHasValue && (
-                    <Table
-                        dataSource={filteredData}
-                        columns={columns}
-                        pagination={{
-                            onChange: (current, pageSize) => {
-                                setPage(current);
-                                setPaginationSize(pageSize);
-                            },
-                            defaultPageSize: 5,
-                            hideOnSinglePage: true,
-                            showSizeChanger: true,
-                            showTotal: (total, range) => `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                        }}
-                        rowKey={(row) => row.AppUserId}
-                        size="small"
-                        bordered
-                    />
-                )}
             </div>
         </Layout>
     );
