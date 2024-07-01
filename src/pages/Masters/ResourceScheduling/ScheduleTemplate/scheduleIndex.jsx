@@ -109,7 +109,7 @@ function ScheduleIndex() {
             );
             setColumnData(tempData);
 
-            notification.error({
+            notification.success({
               message: "Deleted Successfully",
             });
           }

@@ -226,7 +226,7 @@ export const urlGetAllEncounterByUhid = `${baseURL}/api/Purchaseorder/GetAllEnco
 export const urlSearchIndent = `${baseURL}/api/Purchaseorder/SearchIndent`;
 export const urlSearchIndentIssue = `${baseURL}/api/Purchaseorder/SearchIndentIssue`;
 export const urlAddNewPurchaseOrder = `${baseURL}/api/Purchaseorder/AddNewPurchaseOrder`;
-export const urlAddNewGRNDirect = `${baseURL}/api/Purchaseorder/AddNewGRNDirect`;
+export const urlAddNewGRNDirect = `${baseURL}/api/GRNDirect/AddNewGRNDirect`;
 export const urlAddNewIndent = `${baseURL}/api/Indent/AddNewIndent`;
 export const urlEditIndent = `${baseURL}/api/Indent/EditIndent`;
 export const urlUpdateIndent = `${baseURL}/api/Indent/UpdateIndent`;
@@ -268,3 +268,5 @@ export const urlAddNewGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/AddNewGRNAgain
 export const urlEditGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/EditGRNAgainstPO`;
 export const urlUpdateGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/UpdateGRNAgainstPO`;
 export const urlGetEncounterDetails = `${baseURL}/api/Encounter/GetEncounterDetails`;
+export const urlDeletePriceTariffChargeParameter = `${baseURL}/api/PriceTariff/DeletePriceTariffChargeParameter`;
+

@@ -24,7 +24,8 @@ import {
   urlGetDropDownsForPricetariif,
   urlSaveNewPriceTariffChargeParameter,
   urlEditPriceTariff,
-  urlUpdatePriceTariff
+  urlUpdatePriceTariff,
+  urlDeletePriceTariffChargeParameter,
 } from "../../../../../endpoints";
 import PriceChargeModal from "./PriceChargeModal";
 import EditPriceChargeModal from "./EditPriceChargeModal";
@@ -32,6 +33,7 @@ import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import { Transfer } from "antd";
 import CustomTable from "../../../../components/customTable";
+import dayjs from "dayjs";
 
 const { TextArea } = Input;
 
@@ -66,14 +68,12 @@ function CreatePriceTariff() {
     Indicators: [],
     WardType: [],
     Provider: [],
-    PatientTypeFlag:(false),
-    NationalityFlag:(false),
-    GenderFlag:(false),
-    WardTypeFlag:(false),
-    FamilyIncomeFlag:(false),
-    ProviderFlag:(false),
-
-
+    PatientTypeFlag: false,
+    NationalityFlag: false,
+    GenderFlag: false,
+    WardTypeFlag: false,
+    FamilyIncomeFlag: false,
+    ProviderFlag: false,
   });
   const [editpricetariffDropdown, setEditPriceariffDropdown] = useState({
     PatientType: [],
@@ -82,15 +82,13 @@ function CreatePriceTariff() {
     Indicators: [],
     WardType: [],
     Provider: [],
-    PatientTypeFlag:(false),
-    NationalityFlag:(false),
-    GenderFlag:(false),
-    WardTypeFlag:(false),
-    FamilyIncomeFlag:(false),
-    ProviderFlag:(false),
-
+    PatientTypeFlag: false,
+    NationalityFlag: false,
+    GenderFlag: false,
+    WardTypeFlag: false,
+    FamilyIncomeFlag: false,
+    ProviderFlag: false,
   });
-
 
   const handleCancel = () => {
     navigate("/PriceTariff");
@@ -114,13 +112,24 @@ function CreatePriceTariff() {
       console.error("Error fetching data:", error);
     }
   };
-  const handleEfeectiveFrom = (date, dateString) => {
-    setEffectiveFromDate(dateString);
-  };
-  const handleEfeectiveTo = (date, dateString) => {
-    setEffectiveToDate(dateString);
-  };
 
+  const handleDelete = async (record) => {
+    debugger;
+    try {
+      const response = await customAxios.delete(
+        `${urlDeletePriceTariffChargeParameter}?priceTariffLineId=${record.PriceTariffLineId}&priceTariffId=${record.PriceTariffId}`
+      );
+      if (response.status === 200 && response.data.data != null) {
+        setColumnData(response.data.data.BillTariffLineModels);
+        message.success("Deleted Sucessfully..");
+      
+      } else {
+        console.error("Failed to fetch patient details");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
 
   useEffect(() => {
@@ -147,6 +156,20 @@ function CreatePriceTariff() {
               Remarks: editpricetariffdetail.AddNewBillTariff.Remarks,
               FacilityId: editpricetariffdetail.AddNewBillTariff.FacilityId,
               Status: editpricetariffdetail.AddNewBillTariff.Status,
+              EffectiveFrom: editpricetariffdetail.AddNewBillTariff
+                .EffectiveFromDate
+                ? dayjs(
+                    editpricetariffdetail.AddNewBillTariff.EffectiveFromDate,
+                    "DD-MM-YYYY"
+                  )
+                : null,
+              EffectiveTo: editpricetariffdetail.AddNewBillTariff
+                .EffectiveToDate
+                ? dayjs(
+                    editpricetariffdetail.AddNewBillTariff.EffectiveToDate,
+                    "DD-MM-YYYY"
+                  )
+                : null,
             });
             const filteredtransData =
               editpricetariffdetail.SelectedChargeParameters.map((item) => ({
@@ -198,10 +221,15 @@ function CreatePriceTariff() {
   const onFinish = async (values) => {
     debugger;
     setLoading(true);
-    values.EffectiveFromDate = effectiveFromDate;
-    values.EffectiveToDate = effectiveToDate;
-    if(EditedPricetariffId>0){
-      values.PriceTariffId=EditedPricetariffId;
+
+    values.EffectiveFromDate = values.EffectiveFrom
+      ? values.EffectiveFrom.format("DD-MM-YYYY")
+      : "";
+    values.EffectiveToDate = values.EffectiveTo
+      ? values.EffectiveTo.format("DD-MM-YYYY")
+      : "";
+    if (EditedPricetariffId > 0) {
+      values.PriceTariffId = EditedPricetariffId;
 
       try {
         const response = await customAxios.post(urlUpdatePriceTariff, values, {
@@ -223,8 +251,7 @@ function CreatePriceTariff() {
         console.error(error);
         setLoading(false);
       }
-    }
-    else{
+    } else {
       try {
         const response = await customAxios.post(urlSaveNewPriceTariff, values, {
           headers: {
@@ -246,8 +273,6 @@ function CreatePriceTariff() {
       }
     }
 
-
-   
     setLoading(false);
   };
 
@@ -260,7 +285,6 @@ function CreatePriceTariff() {
 
     setTransferError(false); // Reset the error state
 
- 
     try {
       if (targetKeys.length > 0) {
         // Check if targetKeys has elements
@@ -299,8 +323,6 @@ function CreatePriceTariff() {
     }
   };
 
-
-
   const columns = [
     {
       title: "ChargeParameter",
@@ -312,6 +334,12 @@ function CreatePriceTariff() {
       dataIndex: "IndicatorName",
       key: "IndicatorName",
     },
+    {
+      title: "Description",
+      dataIndex: "IndicatorDescriptionName",
+      key: "IndicatorDescriptionName",
+    },
+
     {
       title: "Tariff Line Indicator",
       dataIndex: "TariffLineIndicator",
@@ -375,7 +403,6 @@ function CreatePriceTariff() {
                 PriceTariff
               </Title>
             </Col>
-           
           </Row>
           <Card>
             <Form
@@ -445,7 +472,7 @@ function CreatePriceTariff() {
                   <Form.Item label="EffectiveFrom" name="EffectiveFrom">
                     <DatePicker
                       style={{ width: "100%" }}
-                      onChange={handleEfeectiveFrom}
+                      // onChange={handleEfeectiveFrom}
                       format="DD-MM-YYYY"
                     />
                   </Form.Item>
@@ -454,7 +481,7 @@ function CreatePriceTariff() {
                   <Form.Item label="EffectiveTo" name="EffectiveTo">
                     <DatePicker
                       style={{ width: "100%" }}
-                      onChange={handleEfeectiveTo}
+                      // onChange={handleEfeectiveTo}
                       format="DD-MM-YYYY"
                     />
                   </Form.Item>
@@ -490,7 +517,7 @@ function CreatePriceTariff() {
                   <Form.Item
                     style={{
                       display:
-                      EditedPricetariffId > 0 ? "inline-block" : "none",
+                        EditedPricetariffId > 0 ? "inline-block" : "none",
                     }}
                   >
                     <Button
@@ -498,7 +525,7 @@ function CreatePriceTariff() {
                       htmlType="submit"
                       style={{
                         display:
-                        EditedPricetariffId > 0 ? "inline-block" : "none",
+                          EditedPricetariffId > 0 ? "inline-block" : "none",
                       }}
                     >
                       Update
@@ -588,6 +615,7 @@ function CreatePriceTariff() {
                       actionColumn={true}
                       isFilter={true}
                       onEdit={handleEdit}
+                      onDelete={handleDelete}
                       rowKey={(row) => row.PriceTariffLineId}
                     />
                   </Spin>

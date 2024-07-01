@@ -52,6 +52,8 @@ const DirectGRN = () => {
   const [isTable, setIsTable] = useState(false);
   const { Title } = Typography;
   const [isTableHasValues, setIsTableHasValues] = useState(false);
+  const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
+  const [toDate, setToDate] = useState(dayjs());
 
   useEffect(() => {
     try {
@@ -67,8 +69,27 @@ const DirectGRN = () => {
   }, []);
 
   const navigate = useNavigate();
-  const handleAddTemplate = (GRNHeaderId) => {    
+  const handleAddTemplate = (GRNHeaderId) => {
     navigate("/CreateDirectGRN", { state: { GRNHeaderId } });
+  };
+
+  const handleFromDateChange = (date) => {
+    setFromDate(date);
+    if (toDate && date && date.isAfter(toDate)) {
+      setToDate(null);
+    }
+  };
+
+  const handleToDateChange = (date) => {
+    setToDate(date);
+  };
+
+  const disabledFromDate = (current) => {
+    return current && current.isAfter(dayjs().endOf('day'));
+  };
+
+  const disabledToDate = (current) => {
+    return current && (current.isBefore(fromDate, 'day') || current.isAfter(dayjs().endOf('day')));
   };
 
   const colorMapping = {
@@ -303,7 +324,7 @@ const DirectGRN = () => {
             <Button
               icon={<PlusCircleOutlined />}
               style={{ marginRight: 0 }}
-              onClick={()=>handleAddTemplate(0)}
+              onClick={() => handleAddTemplate(0)}
             >
               Add Direct GRN
             </Button>
@@ -361,12 +382,12 @@ const DirectGRN = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="FromDate" label="From Date">
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker value={fromDate} style={{ width: "100%" }} onChange={handleFromDateChange} disabledDate={disabledFromDate} format="DD-MM-YYYY" />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="ToDate" label="To Date">
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker value={toDate} style={{ width: "100%" }} onChange={handleToDateChange} disabledDate={disabledToDate} format="DD-MM-YYYY" />
                 </Form.Item>
               </Col>
             </Row>
@@ -387,16 +408,6 @@ const DirectGRN = () => {
                       }
                       return null;
                     })}
-                    {/* {DirectGRNDropdown.StoreDetails.map((option) => {
-                                            debugger;
-                                            if (option.StoreId === 1) {                                                
-                                                render(
-                                                    <Select.Option key={option.StoreId} value={option.StoreId}>
-                                                        {option.LongName}
-                                                    </Select.Option>
-                                                )
-                                            }
-                                        })} */}
                   </Select>
                 </Form.Item>
               </Col>

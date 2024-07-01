@@ -131,9 +131,8 @@ const CreateGRNAgainstPO = () => {
                         );
                         setData(products);
                         const formdata = editeddata.newGRNAgainstPOModel;
-
                         form1.setFieldsValue({
-                            SupplierId: formdata.SupplierId,
+                            SupplierId: formdata.VendorId,
                             StoreId: formdata.StoreId,
                             DocumentType: formdata.DocumentType,
                             TotalAmount: formdata.TotalPoAmount,
@@ -375,8 +374,8 @@ const CreateGRNAgainstPO = () => {
             key: 'ProductName',
             render: (_, record) => (
                 <>
-                    <Form.Item name={[record.key, 'ProductName']} initialValue={record.ProductName}>
-                        <Input style={{ width: 100 }} disabled value={record.ProductName} />
+                    <Form.Item name={[record.key, 'ProductName']} initialValue={record.ProductName == null ? record.LongName : record.ProductName}>
+                        <Input style={{ width: 100 }} disabled />
                     </Form.Item>
                     <Form.Item name={[record.key, 'ProductId']} hidden initialValue={record.ProductId}><Input /></Form.Item>
                     <Form.Item name={[record.key, 'PoLineId']} hidden initialValue={record.PoLineId}><Input /></Form.Item>

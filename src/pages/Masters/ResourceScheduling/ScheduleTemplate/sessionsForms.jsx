@@ -1,27 +1,41 @@
-import React from "react";
-import {
-  Layout,
-  Row,
-  Col,
-  Form,
-  Button,
-  Input,
-  Select,
-  TimePicker,
-} from "antd";
-import Title from "antd/es/typography/Title";
-import { useEffect } from "react";
-//import { useForm } from "antd/es/form/Form";
+import React, { useEffect, useState } from "react";
+import { Row, Col, Form, Input, TimePicker } from "antd";
+import PropTypes from "prop-types";
+import moment from "moment";
 
-const SessionsForms = ({ numForms, form }) => {
+const SessionsForms = ({ numForms, form, formData }) => {
+  debugger;
+
   const numberPattern = /^\d*$/;
-  //const [form] = useForm();
 
-  // useEffect(() => {
-  //   if (form) {
-  //     form.setFieldsValue(formData);
-  //   }
-  // }, [form, formData]);
+  // Use useEffect to set initial form values when formData changes
+  useEffect(() => {
+    debugger;
+    if (form && formData) {
+      form.setFieldsValue(formData);
+    }
+  }, [form, formData]);
+
+  const onChange = (time, timeString, sessionIndex, isStartTime) => {
+    if (formData !== undefined) {
+      const updatedSessions = [...formData.sessions];
+
+      // Validate sessionIndex
+      if (sessionIndex >= 0 && sessionIndex < updatedSessions.length) {
+        if (isStartTime) {
+          updatedSessions[sessionIndex].StartTime = time; // Update the StartTime field
+        } else {
+          updatedSessions[sessionIndex].EndTime = time; // Update the EndTime field
+        }
+        // Similarly, update other fields (SlotDuration, PatientsInSlot) as needed
+        const updatedFormData = { ...formData, sessions: updatedSessions };
+
+        form.setFieldsValue(updatedFormData);
+      } else {
+        console.error("Invalid session index:", sessionIndex);
+      }
+    }
+  };
 
   let forms = [];
   for (let i = 0; i < numForms; i++) {
@@ -40,7 +54,7 @@ const SessionsForms = ({ numForms, form }) => {
                 { required: true, message: "Select the Start Time" },
                 ({ getFieldValue }) => ({
                   validator(_, value) {
-                    if (i === 0) return Promise.resolve(); // No previous session for the first one
+                    if (i === 0) return Promise.resolve();
                     const prevEndTime = getFieldValue([
                       "sessions",
                       i - 1,
@@ -60,8 +74,12 @@ const SessionsForms = ({ numForms, form }) => {
             >
               <TimePicker
                 style={{ width: "100%" }}
+                onChange={(time, timeString) =>
+                  onChange(time, timeString, i, true)
+                }
                 changeOnScroll
                 needConfirm={false}
+                format="HH:mm:ss"
               />
             </Form.Item>
           </Col>
@@ -90,8 +108,12 @@ const SessionsForms = ({ numForms, form }) => {
             >
               <TimePicker
                 style={{ width: "100%" }}
+                onChange={(time, timeString) =>
+                  onChange(time, timeString, i, false)
+                }
                 changeOnScroll
                 needConfirm={false}
+                format="HH:mm:ss"
               />
             </Form.Item>
           </Col>
@@ -129,6 +151,7 @@ const SessionsForms = ({ numForms, form }) => {
               name={["sessions", i, "OverbookingSlots"]}
               label="Overbooking slots(begin)"
               rules={[
+                { required: true, message: "Enter No. of patient" },
                 { pattern: numberPattern, message: "Enter a valid number" },
               ]}
             >
@@ -140,6 +163,7 @@ const SessionsForms = ({ numForms, form }) => {
               name={["sessions", i, "OverbookingEndSlots"]}
               label="Overbooking slots(end)"
               rules={[
+                { required: true, message: "Enter Overbooking slots" },
                 { pattern: numberPattern, message: "Enter a valid number" },
               ]}
             >
@@ -163,6 +187,12 @@ const SessionsForms = ({ numForms, form }) => {
     );
   }
   return <>{forms}</>;
+};
+
+SessionsForms.propTypes = {
+  numForms: PropTypes.number,
+  form: PropTypes.object.isRequired,
+  formData: PropTypes.object,
 };
 
 export default SessionsForms;
