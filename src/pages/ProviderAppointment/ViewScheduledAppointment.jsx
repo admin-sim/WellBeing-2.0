@@ -10,7 +10,7 @@ function ViewScheduledAppointment({
   calendarData,
 }) {
   const [form3] = Form.useForm();
-
+console.log(calendarData);
   return (
     <Modal
       width={"40%"}
