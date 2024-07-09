@@ -50,8 +50,8 @@ const PurchaseOrder = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const { Title } = Typography;
-  const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
-  const [toDate, setToDate] = useState(dayjs());
+  const [fromDate, setFromDate] = useState();
+  const [toDate, setToDate] = useState();
 
   useEffect(() => {
     try {
@@ -430,7 +430,6 @@ const PurchaseOrder = () => {
               dataSource={filteredData}
               columns={columns}
               isFilter={true}
-              size="small"
               bordered
             />
             </Spin>
