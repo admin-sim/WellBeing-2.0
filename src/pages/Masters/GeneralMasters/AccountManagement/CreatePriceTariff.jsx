@@ -37,7 +37,7 @@ const { TextArea } = Input;
 
 function CreatePriceTariff() {
   const [form] = Form.useForm();
-  const [form1] = Form.useForm();
+
   const [facilities, setFacilities] = useState([]);
   const location = useLocation();
   const EditedPricetariffId = location.state?.PriceTariffId;

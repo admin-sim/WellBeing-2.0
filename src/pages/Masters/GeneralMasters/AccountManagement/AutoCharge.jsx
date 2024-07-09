@@ -10,7 +10,7 @@ import { EditOutlined,DeleteOutlined } from "@ant-design/icons";
 
 function AutoCharge() {
   const [columnData, setColumnData] = useState();
-  const [form] = Form.useForm();
+
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 

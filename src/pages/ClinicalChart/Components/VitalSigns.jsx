@@ -20,7 +20,7 @@ function VitalSigns() {
             className="dfja"
             type="primary"
             size="middle"
-            onClick={()=>setShowCaptureVitalsModal(true)}
+            onClick={() => setShowCaptureVitalsModal(true)}
           >
             <PlusCircleOutlined
               className="dfja"
@@ -30,7 +30,7 @@ function VitalSigns() {
           </Button>
         </Col>
         <Col span={6}>
-          <Button size="middle">
+          <Button size="middle" disabled>
             Previous Vital Details
             <FaHistory style={{ marginLeft: "0.5rem" }} />
           </Button>

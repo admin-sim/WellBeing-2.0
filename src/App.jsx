@@ -102,6 +102,7 @@ import AutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/AutoCha
 import CreateAutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAutoCharge";
 import BillAggrement from "./pages/Masters/GeneralMasters/AccountManagement/BillAggrement";
 import CreateBillAgrement from "./pages/Masters/GeneralMasters/AccountManagement/CreateBillAgrement";
+import ShowCreateEditDefinition from "./pages/Masters/InventoryManagement/ShowCreateEditDefinition";
 
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
@@ -818,6 +819,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProductDefinition />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ProductDefinition/ShowCreateEditDefinition"
+            element={
+              <ProtectedRoute>
+                <ShowCreateEditDefinition />
               </ProtectedRoute>
             }
           />

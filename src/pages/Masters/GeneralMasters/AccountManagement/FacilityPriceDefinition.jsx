@@ -15,7 +15,7 @@ const FacilityPriceDefinition = () => {
 
 
   const [form] = Form.useForm();
-  const [form1] = Form.useForm();
+
   const navigate = useNavigate();
  
 

@@ -1,7 +1,7 @@
-import { Button, Col, Form, Input, Modal, Row, Select } from "antd";
+import { Button, Col, Divider, Form, Input, Modal, Row, Select } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import moment from "moment";
-import React from "react";
+import React, { useEffect } from "react";
 
 function ViewScheduledAppointment({
   open,
@@ -10,6 +10,24 @@ function ViewScheduledAppointment({
   calendarData,
 }) {
   const [form3] = Form.useForm();
+  console.log("viewModalCalendarData", calendarData);
+  console.log("selectedSlot", selectedSlot);
+
+  function handleCancel() {
+    onCancel();
+    // form3.resetFields();
+  }
+
+  useEffect(() => {
+    form3.setFieldsValue({
+      reason: calendarData[0]?.extendedProps?.AppointmentReasonName,
+      // ? calendarData[0]?.extendedProps?.AppointmentReasonName
+      // : " - ",
+      remarks: calendarData[0]?.extendedProps?.Remarks,
+      // ? calendarData[0]?.extendedProps?.Remarks
+      // : " - ",
+    });
+  }, [calendarData]);
 
   return (
     <Modal
@@ -22,21 +40,21 @@ function ViewScheduledAppointment({
       open={open}
       maskClosable={false}
       footer={null}
-      onCancel={onCancel}
+      onCancel={handleCancel}
     >
       <Row>
         <Col span={8}>
           <Col span={24}>
             <b>Provider Name:</b>
           </Col>
-          <Col span={24}>{calendarData[0]?.ProviderName}</Col>
+          <Col span={24}>{calendarData[0]?.extendedProps?.ProviderName}</Col>
         </Col>
         <Col span={8}>
           <Col span={24}>
             <b>Date:</b>
           </Col>
           <Col span={24}>
-            {moment(calendarData[0]?.AppointmentDate).format("DD/MM/YYYY")}
+            {moment(calendarData[0]?.start).format("DD/MM/YYYY")}
           </Col>
         </Col>
         <Col span={8}>
@@ -53,21 +71,19 @@ function ViewScheduledAppointment({
           <Col span={24}>
             <b>Patient Name:</b>
           </Col>
-          <Col span={24}>{calendarData[0]?.PatientName}</Col>
+          <Col span={24}>{calendarData[0]?.extendedProps?.PatientName}</Col>
         </Col>
         <Col span={8}>
           <Col span={24}>
             <b>UHID:</b>
           </Col>
-          <Col span={24}>{calendarData[0]?.PatientUHID}</Col>
+          <Col span={24}>{calendarData[0]?.extendedProps?.UHID}</Col>
         </Col>
         <Col span={8}>
           <Col span={24}>
             <b>Age:</b>
           </Col>
-          <Col span={24}>
-            {calendarData[0]?.Age == 0 ? "-" : calendarData[0]?.Age}
-          </Col>
+          <Col span={24}>{calendarData[0]?.extendedProps?.Age || "-"}</Col>
         </Col>
       </Row>
 
@@ -78,20 +94,12 @@ function ViewScheduledAppointment({
       >
         <Row style={{ marginTop: "1rem" }} gutter={32}>
           <Col span={12}>
-            <Form.Item
-              name="reason"
-              label="Reason"
-              initialValue={calendarData[0]?.AppointmentReasonName}
-            >
+            <Form.Item name="reason" label="Reason">
               <Input style={{ width: "100%" }} disabled />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item
-              name="remarks"
-              label="Remarks"
-              initialValue={calendarData[0]?.Remarks}
-            >
+            <Form.Item name="remarks" label="Remarks">
               <TextArea rows={1} style={{ width: "100%" }} disabled />
             </Form.Item>
           </Col>
@@ -103,7 +111,7 @@ function ViewScheduledAppointment({
                 style={{ width: "100%" }}
                 danger
                 type="default"
-                onClick={onCancel}
+                onClick={handleCancel}
               >
                 Cancel
               </Button>

@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
-import Layout from 'antd/es/layout/layout';
-import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import dayjs from 'dayjs';
+import Layout from "antd/es/layout/layout";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
+import dayjs from "dayjs";
 import {
   Spin,
   Skeleton,
@@ -32,7 +36,7 @@ const AcknowledageReturn = () => {
     DocumentType: [],
     StoreDetails: [],
     SupplierList: [],
-    DateFormat: []
+    DateFormat: [],
   });
   const [paginationSize, setPaginationSize] = useState(5);
   const [filteredData, setFilteredData] = useState([]);
@@ -125,7 +129,8 @@ const AcknowledageReturn = () => {
       title: "PO Raised By",
       dataIndex: "PORaisedBy",
       key: "PORaisedBy",
-      sorter: (a, b) => a.AcknowledageReturnId.localeCompare(b.AcknowledageReturnId),
+      sorter: (a, b) =>
+        a.AcknowledageReturnId.localeCompare(b.AcknowledageReturnId),
       sortDirections: ["descend", "ascend"],
     },
     {
@@ -221,22 +226,22 @@ const AcknowledageReturn = () => {
           values.FromDate === undefined || values.FromDate === null
             ? ""
             : (
-              values.FromDate.$D.toString().padStart(2, "0") +
-              "-" +
-              (values.FromDate.$M + 1).toString().padStart(2, "0") +
-              "-" +
-              values.FromDate.$y
-            ).toString(),
+                values.FromDate.$D.toString().padStart(2, "0") +
+                "-" +
+                (values.FromDate.$M + 1).toString().padStart(2, "0") +
+                "-" +
+                values.FromDate.$y
+              ).toString(),
         ToDate:
           values.ToDate === undefined || values.ToDate === null
             ? ""
             : (
-              values.ToDate.$D.toString().padStart(2, "0") +
-              "-" +
-              (values.ToDate.$M + 1).toString().padStart(2, "0") +
-              "-" +
-              values.ToDate.$y
-            ).toString(), // A sample value
+                values.ToDate.$D.toString().padStart(2, "0") +
+                "-" +
+                (values.ToDate.$M + 1).toString().padStart(2, "0") +
+                "-" +
+                values.ToDate.$y
+              ).toString(), // A sample value
         PONumber: values.PONumber === undefined ? "" : values.PONumber, // A sample value
       };
       customAxios
@@ -271,11 +276,32 @@ const AcknowledageReturn = () => {
   };
 
   return (
-    <Layout style={{ zIndex: '999999999' }}>
-      <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-        <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
+    <Layout style={{ zIndex: "999999999" }}>
+      <div
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <Row
+          style={{
+            padding: "0.5rem 2rem 0.5rem 2rem",
+            backgroundColor: "#40A2E3",
+            borderRadius: "10px 10px 0px 0px ",
+          }}
+        >
           <Col span={16}>
-            <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
+            <Title
+              level={4}
+              style={{
+                color: "white",
+                fontWeight: 500,
+                margin: 0,
+                paddingTop: 0,
+              }}
+            >
               Acknowledge Return
             </Title>
           </Col>
@@ -291,21 +317,21 @@ const AcknowledageReturn = () => {
               maxWidth: 1500,
             }}
             initialValues={{
-              FromDate: dayjs().subtract(1, 'day'),
+              FromDate: dayjs().subtract(1, "day"),
               ToDate: dayjs(),
-              AcknowledageStatus: 0,                            
+              AcknowledageStatus: 0,
             }}
             onFinish={onFinish}
           >
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={8}>
                 <Form.Item label="Return ID" name="ReturnID">
-                  <Input style={{ width: '100%' }} allowClear />
+                  <Input style={{ width: "100%" }} allowClear />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={4}>
                 <Form.Item name="FormDate" label="Form Date">
-                  <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' />
+                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={4}>
@@ -315,9 +341,12 @@ const AcknowledageReturn = () => {
               </Col>
               <Col className="gutter-row" span={8}>
                 <Form.Item name="ReturnedStore" label="Returned Store">
-                  <Select allowClear placeholder='Select Value'>
+                  <Select allowClear placeholder="Select Value">
                     {Dropdown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                      <Select.Option
+                        key={option.StoreId}
+                        value={option.StoreId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -327,10 +356,16 @@ const AcknowledageReturn = () => {
             </Row>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={8}>
-                <Form.Item name="AcknowledagingStore" label="Acknowledaging Store">
-                  <Select allowClear placeholder='Select Value'>
+                <Form.Item
+                  name="AcknowledagingStore"
+                  label="Acknowledaging Store"
+                >
+                  <Select allowClear placeholder="Select Value">
                     {Dropdown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                      <Select.Option
+                        key={option.StoreId}
+                        value={option.StoreId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -338,22 +373,41 @@ const AcknowledageReturn = () => {
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
-                <Form.Item label="Acknowledage Status" name="AcknowledageStatus">
+                <Form.Item
+                  label="Acknowledage Status"
+                  name="AcknowledageStatus"
+                >
                   <Select>
-                    <Select.Option key={0} value={0}>All</Select.Option>
-                    <Select.Option key='Created' value='Created'></Select.Option>
-                    <Select.Option key='Draft' value='Draft'></Select.Option>
-                    <Select.Option key='Finalize' value='Finalize'></Select.Option>
+                    <Select.Option key={0} value={0}>
+                      All
+                    </Select.Option>
+                    <Select.Option
+                      key="Created"
+                      value="Created"
+                    ></Select.Option>
+                    <Select.Option key="Draft" value="Draft"></Select.Option>
+                    <Select.Option
+                      key="Finalize"
+                      value="Finalize"
+                    ></Select.Option>
                   </Select>
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
                 <Form.Item label="Returning Status" name="ReturningStatus">
                   <Select>
-                    <Select.Option key={0} value={0}>All</Select.Option>
-                    <Select.Option key='Created' value='Created'></Select.Option>
-                    <Select.Option key='Draft' value='Draft'></Select.Option>
-                    <Select.Option key='Finalize' value='Finalize'></Select.Option>
+                    <Select.Option key={0} value={0}>
+                      All
+                    </Select.Option>
+                    <Select.Option
+                      key="Created"
+                      value="Created"
+                    ></Select.Option>
+                    <Select.Option key="Draft" value="Draft"></Select.Option>
+                    <Select.Option
+                      key="Finalize"
+                      value="Finalize"
+                    ></Select.Option>
                   </Select>
                 </Form.Item>
               </Col>
@@ -361,7 +415,11 @@ const AcknowledageReturn = () => {
             <Row justify="end">
               <Col>
                 <Form.Item>
-                  <Button type="primary" loading={isSearchLoading} htmlType="submit">
+                  <Button
+                    type="primary"
+                    loading={isSearchLoading}
+                    htmlType="submit"
+                  >
                     Search
                   </Button>
                 </Form.Item>
@@ -376,7 +434,8 @@ const AcknowledageReturn = () => {
             </Row>
           </Form>
         </Card>
-        <Table display={setIsTable}
+        <Table
+          display={setIsTable}
           dataSource={filteredData}
           columns={columns}
           pagination={{
@@ -384,7 +443,7 @@ const AcknowledageReturn = () => {
               setPage(current);
               setPaginationSize(pageSize);
             },
-            defaultPageSize: 5, 
+            defaultPageSize: 5,
             hideOnSinglePage: true,
             showSizeChanger: true,
             showTotal: (total, range) =>

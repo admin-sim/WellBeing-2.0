@@ -39,7 +39,7 @@ import TextArea from "antd/es/input/TextArea";
 import WebcamImage from "../../../components/WebCam/index.jsx";
 import dayjs from "dayjs";
 import { DateTime } from "luxon";
-import PageHeader from "../../../components/pageHeader.jsx/index.jsx";
+import PageHeader from "../../../components/PageHeader/index.jsx";
 
 const NewPatient = () => {
   const [patientDropdown, setPatientDropdown] = useState({

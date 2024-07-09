@@ -34,7 +34,7 @@ const CreatePatientIndent = () => {
     //const { PoHeaderId, SupplierId, StoreId } = useParams();
     const [form1] = Form.useForm();
     const [form2] = Form.useForm();
-    const [form3] = Form.useForm();
+  
     const { Title } = Typography;
     const { TextArea } = Input;
     const { Option } = Select;

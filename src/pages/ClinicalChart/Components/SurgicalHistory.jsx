@@ -95,9 +95,7 @@ function SurgicalHistory() {
       ),
     },
   ];
-  useEffect(() => {
-    console.log("selectedMedicalHistoryDetails", selectedMedicalHistoryDetails);
-  }, [selectedMedicalHistoryDetails]);
+
   return (
     <>
       <Row>

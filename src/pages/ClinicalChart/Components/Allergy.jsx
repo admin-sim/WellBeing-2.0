@@ -265,7 +265,7 @@ function Allergy() {
             </ColWithSixSpan>
             <Col span={24}>
               <Form.Item name="remarks" label="Remarks">
-                <TextArea rows={2} placeholder="Enter Remarks here"/>
+                <TextArea rows={2} placeholder="Enter Remarks here" />
               </Form.Item>
             </Col>
           </Row>
