@@ -11,10 +11,16 @@ import {
   Typography,
   message,
 } from "antd";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 const { Text } = Typography;
 import customAxios from "../../../../components/customAxios/customAxios";
-import { urlSaveNewPriceTariffChargeParameter } from "../../../../../endpoints";
+import {
+  urlSaveNewPriceTariffChargeParameter,
+  urlPackageDescriptionServiceForInsurance,
+  urlPackageDescriptionServiceGroup,
+  urlPackageDescriptionServiceClassification,
+} from "../../../../../endpoints";
+import { debounce } from "lodash";
 
 function PriceChargeModal({
   options,
@@ -28,9 +34,45 @@ function PriceChargeModal({
   // const [effectiveToDatemodal, setEffectiveToDateModal] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const [url, setUrl] = useState();
+
   const handleCancel = () => {
     form.resetFields();
+    setData([]);
+    setUrl(undefined);
     handleClose();
+  };
+  const [data, setData] = useState([]);
+  const [value, setValue] = useState(undefined);
+  const [fetching, setFetching] = useState(false);
+  const [descriptionDisabled, setDescriptionDisabled] = useState(true);
+
+  const IndicatorOnchange = (value, option) => {
+    console.log("Selected value:", value);
+    console.log("Selected option:", option);
+    form.setFieldsValue({ IndicatorDescriptionId: undefined });
+    setData([]);
+  
+    form.resetFields(['IndicatorDescriptionId']); // Corrected to use an array
+    // Update the URL based on the selected option
+    if (option.children !== "All") {
+      setDescriptionDisabled(false);
+      switch (option.children) {
+        case "Service Group":
+          setUrl(urlPackageDescriptionServiceGroup);
+          break;
+        case "Service Classification":
+          setUrl(urlPackageDescriptionServiceClassification);
+          break;
+        default:
+          setUrl(urlPackageDescriptionServiceForInsurance);
+          break;
+      }
+    }
+    else{
+      setDescriptionDisabled(true);
+    }
+    
   };
 
   const onFinishForAddChargeParameters = async (values) => {
@@ -72,6 +114,29 @@ function PriceChargeModal({
   };
 
 
+  const fetchOptions = async (value) => {
+    debugger;
+    if (!url || !value) {
+      setData([]);
+      //message.warning('Please Select Indicator First..')
+      return;
+    }
+    setFetching(true);
+    if(value){
+      try {
+        const response = await customAxios.get(`${url}?Description=${value}`);
+        setData(response.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+    else{
+      setData([]);
+    }
+    setFetching(false);
+  };
+
+  const debounceFetchOptions = useCallback(debounce(fetchOptions, 800), [url]);
 
   return (
     <div>
@@ -114,7 +179,7 @@ function PriceChargeModal({
                   </Form.Item>
                 </Col>
               )}
-               {options.PatientTypeFlag && (
+              {options.PatientTypeFlag && (
                 <Col className="gutter-row" span={8}>
                   <Form.Item
                     name="PatientTypeId"
@@ -136,7 +201,7 @@ function PriceChargeModal({
                   </Form.Item>
                 </Col>
               )}
-               {options.GenderFlag && (
+              {options.GenderFlag && (
                 <Col className="gutter-row" span={8}>
                   <Form.Item
                     name="Gender"
@@ -158,7 +223,7 @@ function PriceChargeModal({
                   </Form.Item>
                 </Col>
               )}
-                 {options.WardTypeFlag && (
+              {options.WardTypeFlag && (
                 <Col className="gutter-row" span={8}>
                   <Form.Item
                     name="WardType"
@@ -180,7 +245,7 @@ function PriceChargeModal({
                   </Form.Item>
                 </Col>
               )}
-               {options.ProviderFlag && (
+              {options.ProviderFlag && (
                 <Col className="gutter-row" span={8}>
                   <Form.Item
                     name="Provider"
@@ -202,7 +267,7 @@ function PriceChargeModal({
                   </Form.Item>
                 </Col>
               )}
-                 {options.FamilyIncomeFlag && (
+              {options.FamilyIncomeFlag && (
                 <Col className="gutter-row" span={8}>
                   <Form.Item
                     name="IncomeLimit"
@@ -223,7 +288,7 @@ function PriceChargeModal({
                     { required: true, message: "Please select Indicator" },
                   ]}
                 >
-                  <Select>
+                  <Select onChange={IndicatorOnchange}>
                     {options.Indicators?.map((option) => (
                       <Select.Option
                         key={option.LookupID}
@@ -236,8 +301,26 @@ function PriceChargeModal({
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
-                <Form.Item name="Description" label="Description">
-                  <Input style={{ width: "100%" }} />
+                <Form.Item name="IndicatorDescriptionId" label="Description">
+                  {/* <Input style={{ width: "100%" }} /> */}
+                  <Select
+                    showSearch
+                    value={value}
+                    allowClear
+                    placeholder="Select an option"
+                    notFoundContent={fetching ? <Spin size="small" /> : null}
+                    filterOption={false}
+                    onSearch={debounceFetchOptions}
+                    onChange={(newValue) => setValue(newValue)}
+                    disabled={descriptionDisabled}
+                    style={{ width: "100%" }}
+                  >
+                    {data.map((item) => (
+                      <Option key={item.Id} value={item.Id}>
+                        {item.Name}
+                      </Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </Col>
             </Row>
@@ -304,28 +387,24 @@ function PriceChargeModal({
                 <Form.Item label="EffectiveTo" name="EffectiveTo">
                   <DatePicker
                     style={{ width: "100%" }}
-                   // onChange={handleEfeectiveToModal}
+                    // onChange={handleEfeectiveToModal}
                     format="DD-MM-YYYY"
                   />
                 </Form.Item>
               </Col>
             </Row>
-            <Row gutter={32} style={{ height: "1.8rem" }}>
-              <Col offset={12} span={6}>
-                <Form.Item>
-                  <Button type="primary" htmlType="submit">
-                    Submit
-                  </Button>
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item>
-                  <Button type="default" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                </Form.Item>
-              </Col>
-            </Row>
+            <Row gutter={16} justify="end">
+            <Col>
+              <Form.Item>
+              <Button type="primary" htmlType="submit" style={{ marginRight: '8px' }}>
+                  Submit
+                </Button>
+                <Button type="default" onClick={handleCancel} >
+                  Cancel
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
           </Form>
         </Modal>
       </Spin>

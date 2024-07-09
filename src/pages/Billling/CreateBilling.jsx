@@ -50,6 +50,7 @@ import { useLocation } from "react-router-dom";
 import PatientHeader from "../../components/PatientHeader";
 import { CiDiscount1 } from "react-icons/ci";
 import dayjs from "dayjs";
+import { debounce } from "lodash";
 
 const CreateBilling = () => {
   const location = useLocation();
@@ -211,6 +212,11 @@ const CreateBilling = () => {
     setLoading(false); // Stop loading
   };
 
+  const debouncedHandleAutoCompleteChangeService = debounce(
+    handleAutoCompleteChange,
+    300
+  );
+
   const handleSelect = async (value, option) => {
     debugger;
     setSelectedServiceId(option.key);
@@ -282,6 +288,11 @@ const CreateBilling = () => {
     }
     setLoading(false); // Stop loading
   };
+
+  const debouncedHandleAutoCompleteChange = debounce(
+    handleproviderAutoCompleteChange,
+    300
+  );
 
   const handleProviderSelect = async (value, option) => {
     setSelectedProviderId(option.key);
@@ -838,7 +849,9 @@ const CreateBilling = () => {
                 >
                   <AutoComplete
                     options={services}
-                    onSearch={handleAutoCompleteChange}
+                    //onSearch={handleAutoCompleteChange}
+                    onSearch={debouncedHandleAutoCompleteChangeService}
+                    
                     onSelect={handleSelect}
                     onChange={(value) => {
                       if (!value) {
@@ -886,7 +899,8 @@ const CreateBilling = () => {
                 >
                   <AutoComplete
                     options={providers}
-                    onSearch={handleproviderAutoCompleteChange}
+                    //onSearch={handleproviderAutoCompleteChange}
+                    onSearch={debouncedHandleAutoCompleteChange}
                     onSelect={handleProviderSelect}
                     onChange={(value) => {
                       if (!value) {

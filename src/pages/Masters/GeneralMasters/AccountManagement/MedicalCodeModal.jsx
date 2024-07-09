@@ -119,11 +119,11 @@ function MedicalCodeModal({ options, open, handleClose, handleSubmit }) {
             <Row gutter={16} justify="end">
             <Col>
               <Form.Item>
-                <Button type="default" onClick={handleCancel} style={{ marginRight: '8px' }}>
-                  Cancel
-                </Button>
-                <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" style={{ marginRight: '8px' }}>
                   Submit
+                </Button>
+                <Button type="default" onClick={handleCancel} >
+                  Cancel
                 </Button>
               </Form.Item>
             </Col>

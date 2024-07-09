@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import dayjs from 'dayjs';
-import Layout from 'antd/es/layout/layout';
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
+import dayjs from "dayjs";
+import Layout from "antd/es/layout/layout";
 import {
   Spin,
   Skeleton,
@@ -22,10 +26,14 @@ import {
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
 
-import { urlGetPurshaseOrderDetails, urlSearchPurchaseOrder } from "../../../endpoints.js";
+import {
+  urlGetPurshaseOrderDetails,
+  urlSearchPurchaseOrder,
+} from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
 import { render } from "react-dom";
 import FormItem from "antd/es/form/FormItem/index.js";
+import CustomTable from "../../components/customTable/index.jsx";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -34,16 +42,13 @@ const PurchaseOrder = () => {
     DocumentType: [],
     StoreDetails: [],
     SupplierList: [],
-    DateFormat: []
+    DateFormat: [],
   });
-  const [paginationSize, setPaginationSize] = useState(5);
+ 
   const [filteredData, setFilteredData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
-  const [page, setPage] = useState(1);
+  const [dropDownLoad, setDropDownLoading] = useState(true);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [isTableHasValues, setIsTableHasValues] = useState(false);
   const { Title } = Typography;
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
   const [toDate, setToDate] = useState(dayjs());
@@ -53,34 +58,20 @@ const PurchaseOrder = () => {
       customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
         const apiData = response.data.data;
         setPurchaseOrderDropDown(apiData);
-        setIsLoading(false);
       });
+      
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
+    setDropDownLoading(false);
+
     form.submit();
   }, []);
 
+
   const navigate = useNavigate();
 
-  const handleFromDateChange = (date) => {
-    setFromDate(date);
-    if (toDate && date && date.isAfter(toDate)) {
-      setToDate(null);
-    }
-  };
-
-  const handleToDateChange = (date) => {
-    setToDate(date);
-  };
-
-  const disabledFromDate = (current) => {
-    return current && current.isAfter(dayjs().endOf('day'));
-  };
-
-  const disabledToDate = (current) => {
-    return current && (current.isBefore(fromDate, 'day') || current.isAfter(dayjs().endOf('day')));
-  };
+  
 
   const colorMapping = {
     Created: "blue",
@@ -95,9 +86,9 @@ const PurchaseOrder = () => {
   };
   const columns = [
     {
-      title: "Sl No",
-      key: "index",
-      render: (text, record, index) => index + 1,
+      title: "Sl. No.",
+      dataIndex: "key",
+      key: "key",
     },
     {
       title: "PO Number",
@@ -107,12 +98,13 @@ const PurchaseOrder = () => {
       sortDirections: ["descend", "ascend"],
       render: (text, record, index) => {
         if (record.PoStatus === "Created" || record.PoStatus === "Draft") {
-          return (<Button type="link" onClick={() => GetPobyId(record.PoHeaderId)}>
-            {text}
-          </Button>
-          )
+          return (
+            <Button type="link" onClick={() => GetPobyId(record.PoHeaderId)}>
+              {text}
+            </Button>
+          );
         }
-        return (<Tag style={{ marginLeft: '15px' }}>{text}</Tag>);
+        return <Tag style={{ marginLeft: "15px" }}>{text}</Tag>;
       },
     },
     {
@@ -129,7 +121,7 @@ const PurchaseOrder = () => {
       sorter: (a, b) => new Date(a.PoDate) - new Date(b.PoDate),
       sortDirections: ["descend", "ascend"],
       render: (text) => {
-        const dateParts = text.split('T')[0].split('-');
+        const dateParts = text.split("T")[0].split("-");
         const year = dateParts[0];
         const month = dateParts[1];
         const day = dateParts[2];
@@ -173,81 +165,41 @@ const PurchaseOrder = () => {
       },
     },
     {
-      render: (_, row) => (
-        <Button type="link">Report</Button>
-      )
-    }
-    // {
-    //   title: "Actions",
-    //   dataIndex: "actions",
-    //   key: "actions",
-    //   render: (_, row) => (
-    //     <>
-    //       <Tooltip title="Edit">
-    //         <Button icon={<EditOutlined />} onClick={() => handleEdit(row)} />
-    //       </Tooltip>
-    //       <Tooltip title="Delete">
-    //         <Button
-    //           icon={<DeleteOutlined />}
-    //           onClick={() => handleDelete(row)}
-    //         />
-    //       </Tooltip>
-    //     </>
-    //   ),
-    // },
+      render: (_, row) => <Button type="link">Report</Button>,
+    },
   ];
-  // const handleSearch = (value) => {
-  //   setSearchText(value);
-  //   if (value === '') {
-  //     setFilteredData(loadUsers);
-  //   } else {
-  //     const filtered = loadUsers.filter(entry =>
-  //       Object.values(entry).some(val =>
-  //         val && val.toString().toLowerCase().includes(value.toLowerCase())
-  //       )
-  //     );
-  //     setFilteredData(filtered);
-  //   }
-  // };
 
-  /* const validateUserRole = (rule, value) => {
-     if (value) {
-       const existsInOptions = originalOptions.some(option => option.LookupDescription === value);
-       if (!existsInOptions) {
-         return Promise.reject('Please select a valid UserRole from the list.');
-       }
-     }
-     return Promise.resolve();
-   };*/
+  const disableFromDate = (current) => {
+    // Disable dates that are after today
+    return current && current.isAfter(dayjs().endOf("day"));
+  };
 
-  const [formatedFromDate, setFormatedFromDate] = useState();
-  const [formatedToDate, setFormatedToDate] = useState();
-  function formatDate(inputDate) {
-    const dateParts = inputDate.split("/");
-    if (dateParts.length === 3) {
-      const [year, month, day] = dateParts;
-      return `${day}-${month}-${year}`;
-    }
-    return inputDate; // Return as is if not in the expected format
-  }
+  const disableToDate = (current) => {
+    // Disable dates that are before the selected fromDate or after today
+    return (
+      current &&
+      (current.isBefore(fromDate, "day") ||
+        current.isAfter(dayjs().endOf("day")))
+    );
+  };
   const onFinish = async (values) => {
-    setIsSearchLoading(true);
+    debugger;
     setLoading(true);
     try {
       const postData1 = {
-        DocumentType: values.DocumentType,
-        Supplier: values.Supplier,
-        ProcurementStore: values.ProcurementStore,
-        POStatus: values.POStatus === "" ? null : values.POStatus,
-        FromDate: values.FromDate,
-        ToDate: values.ToDate,
-        // FromDate: values.FromDate.$D.toString().padStart(2, "0") + "-" + (values.FromDate.$M + 1).toString().padStart(2, "0") + "-" + values.FromDate.$y,
-        // ToDate: values.ToDate.$D.toString().padStart(2, "0") + "-" + (values.ToDate.$M + 1).toString().padStart(2, "0") + "-" + values.ToDate.$y,
-        PONumber: values.PONumber === undefined ? null : values.PONumber, // A sample value
+        DocumentType: values.DocumentType ? values.DocumentType : "",
+        Supplier: values.Supplier ? values.Supplier : "",
+        ProcurementStore: values.ProcurementStore
+          ? values.ProcurementStore
+          : "",
+        DocumentStatus: values.DocumentStatus ? values.DocumentStatus : "",
+        FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : "",
+        ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
+        PONumber: values.PONumber ? values.PONumber : "",
       };
       customAxios
         .get(
-          `${urlSearchPurchaseOrder}?DocumentType=${postData1.DocumentType}&Supplier=${postData1.Supplier}&ProcurementStore=${postData1.ProcurementStore}&DocumentStatus=${postData1.POStatus}&FromDate=${postData1.FromDate}&ToDate=${postData1.ToDate}&PoNumber=${postData1.PONumber}`,
+          `${urlSearchPurchaseOrder}?DocumentType=${postData1.DocumentType}&Supplier=${postData1.Supplier}&ProcurementStore=${postData1.ProcurementStore}&DocumentStatus=${postData1.DocumentStatus}&FromDate=${postData1.FromDate}&ToDate=${postData1.ToDate}&PoNumber=${postData1.PONumber}`,
           null,
           {
             params: postData1,
@@ -257,11 +209,11 @@ const PurchaseOrder = () => {
           }
         )
         .then((response) => {
-          setFilteredData(response.data.data.PurchaseOrderDetails);
-          response.data.data.PurchaseOrderDetails.PoHeaderId
-          if (response.data.data.PurchaseOrderDetails.length > 0) {
-            setIsTableHasValues(true);
-          }
+          
+          const newColumnData = response.data.data.PurchaseOrderDetails.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          });
+          setFilteredData(newColumnData);
           // setCurrentPage1(1);
         })
         .finally(() => {
@@ -271,25 +223,51 @@ const PurchaseOrder = () => {
       // Handle any errors here
       console.error("Error:", error);
     }
-    setIsSearchLoading(false);
+    
   };
+  
 
   const onReset = () => {
-    setIsTableHasValues(false);
+    
     form.resetFields();
   };
 
   return (
-    <Layout style={{ zIndex: '999999999' }}>
-      <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-        <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
+    <Layout style={{ zIndex: "999999999" }}>
+      <div
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <Row
+          style={{
+            padding: "0.5rem 2rem 0.5rem 2rem",
+            backgroundColor: "#40A2E3",
+            borderRadius: "10px 10px 0px 0px ",
+          }}
+        >
           <Col span={16}>
-            <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
+            <Title
+              level={4}
+              style={{
+                color: "white",
+                fontWeight: 500,
+                margin: 0,
+                paddingTop: 0,
+              }}
+            >
               Purchase Order
             </Title>
           </Col>
           <Col offset={5} span={2}>
-            <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={() => GetPobyId(0)}>
+            <Button
+              icon={<PlusCircleOutlined />}
+              style={{ marginRight: 0 }}
+              onClick={() => GetPobyId(0)}
+            >
               Add Purchase Order
             </Button>
           </Col>
@@ -305,22 +283,27 @@ const PurchaseOrder = () => {
               maxWidth: 1500,
             }}
             initialValues={{
-              FromDate: dayjs().subtract(1, 'day'),
+              FromDate: dayjs().subtract(1, "day"),
               ToDate: dayjs(),
               DocumentType: 0,
               Supplier: 0,
               ProcurementStore: 0,
-              POStatus: '',
+              DocumentStatus: "",
             }}
             onFinish={onFinish}
           >
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={6}>
                 <Form.Item label="DocumentType" name="DocumentType">
-                  <Select>
-                    <Select.Option key={0} value={0}>All</Select.Option>
+                  <Select loading={dropDownLoad}>
+                    <Select.Option key={0} value={0}>
+                      All
+                    </Select.Option>
                     {purchaseOrderDropdown.DocumentType.map((option) => (
-                      <Select.Option key={option.LookupID} value={option.LookupID}>
+                      <Select.Option
+                        key={option.LookupID}
+                        value={option.LookupID}
+                      >
                         {option.LookupDescription}
                       </Select.Option>
                     ))}
@@ -329,10 +312,15 @@ const PurchaseOrder = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="Supplier" label="Supplier">
-                  <Select>
-                    <Select.Option key={0} value={0}>All</Select.Option>
+                  <Select loading={dropDownLoad}>
+                    <Select.Option key={0} value={0}>
+                      All
+                    </Select.Option>
                     {purchaseOrderDropdown.SupplierList.map((option) => (
-                      <Select.Option key={option.VendorId} value={option.VendorId}>
+                      <Select.Option
+                        key={option.VendorId}
+                        value={option.VendorId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -341,22 +329,43 @@ const PurchaseOrder = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="FromDate" label="From Date">
-                  <DatePicker value={fromDate} style={{ width: "100%" }} onChange={handleFromDateChange} disabledDate={disabledFromDate} format="DD-MM-YYYY" />
+                  <DatePicker
+                    value={fromDate}
+                    onChange={(date) => setFromDate(date)}
+                    disabledDate={disableFromDate}
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                  />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="ToDate" label="To Date">
-                  <DatePicker value={toDate} style={{ width: "100%" }} onChange={handleToDateChange} disabledDate={disabledToDate} format="DD-MM-YYYY" />
+                  <DatePicker
+                    value={toDate}
+                    onChange={(date) => setToDate(date)}
+                    disabledDate={disableToDate}
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                  />
                 </Form.Item>
               </Col>
             </Row>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={6}>
-                <Form.Item name="ProcurementStore" label="Procurement Store" rules={[{ required: false }]}>
-                  <Select>
-                    <Select.Option key={0} value={0}>All</Select.Option>
+                <Form.Item
+                  name="ProcurementStore"
+                  label="Procurement Store"
+                  rules={[{ required: false }]}
+                >
+                  <Select loading={dropDownLoad}>
+                    <Select.Option key={0} value={0}>
+                      All
+                    </Select.Option>
                     {purchaseOrderDropdown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                      <Select.Option
+                        key={option.StoreId}
+                        value={option.StoreId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -365,18 +374,32 @@ const PurchaseOrder = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item label="PO Number" name="PONumber">
-                  <Input allowClear style={{ width: '100%' }} />
+                  <Input allowClear style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
-                <Form.Item label="PO Status" name="POStatus">
+                <Form.Item label="PO Status" name="DocumentStatus">
                   <Select>
-                    <Select.Option key='' value=''>All</Select.Option>
-                    <Select.Option key="Created" value="Created"></Select.Option>
+                    <Select.Option key="" value="">
+                      All
+                    </Select.Option>
+                    <Select.Option
+                      key="Created"
+                      value="Created"
+                    ></Select.Option>
                     <Select.Option key="Draft" value="Draft"></Select.Option>
-                    <Select.Option key="Pending" value="Pending"></Select.Option>
-                    <Select.Option key="Partially Pending" value="Partially Pending"></Select.Option>
-                    <Select.Option key="Completed" value="Completed"></Select.Option>
+                    <Select.Option
+                      key="Pending"
+                      value="Pending"
+                    ></Select.Option>
+                    <Select.Option
+                      key="Partially Pending"
+                      value="Partially Pending"
+                    ></Select.Option>
+                    <Select.Option
+                      key="Completed"
+                      value="Completed"
+                    ></Select.Option>
                   </Select>
                 </Form.Item>
               </Col>
@@ -384,7 +407,11 @@ const PurchaseOrder = () => {
             <Row justify="end">
               <Col>
                 <Form.Item>
-                  <Button type="primary" loading={isSearchLoading} htmlType="submit">
+                  <Button
+                    type="primary"
+                 
+                    htmlType="submit"
+                  >
                     Search
                   </Button>
                 </Form.Item>
@@ -398,26 +425,15 @@ const PurchaseOrder = () => {
               </Col>
             </Row>
           </Form>
-          {isTableHasValues && (
-            <Table
+          <Spin spinning={loading}>
+            <CustomTable
               dataSource={filteredData}
               columns={columns}
-              pagination={{
-                onChange: (current, pageSize) => {
-                  setPage(current);
-                  setPaginationSize(pageSize);
-                },
-                defaultPageSize: 5,
-                hideOnSinglePage: true,
-                showSizeChanger: true,
-                showTotal: (total, range) =>
-                  `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-              }}
-              rowKey={(row) => row.AppUserId}
+              isFilter={true}
               size="small"
               bordered
             />
-          )}
+            </Spin>
         </Card>
       </div>
     </Layout>
