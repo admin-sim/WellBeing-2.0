@@ -501,7 +501,16 @@ const VisitModal = (
                   {showWard && (
                     <>
                       <Col span={12}>
-                        <Form.Item name="WardCategory" label="Ward Category">
+                        <Form.Item
+                          name="WardCategory"
+                          label="Ward Category"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please select ward category ",
+                            },
+                          ]}
+                        >
                           <Select
                             allowClear
                             disabled={details.isCancelOrEditVisit}
@@ -519,7 +528,16 @@ const VisitModal = (
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name="Ward" label="Ward">
+                        <Form.Item
+                          name="Ward"
+                          label="Ward"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please select ward ",
+                            },
+                          ]}
+                        >
                           {details.isCancelOrEditVisit ? (
                             <Select
                               allowClear
