@@ -277,4 +277,5 @@ export const urlAddNewItemReceipt = `${baseURL}/api/ItemReceipt/AddNewItemReceip
 export const urlUpdatePatientIndent = `${baseURL}/api/PatientIndent/UpdatePatientIndent`;
 export const urlAddNewPatientIndent = `${baseURL}/api/PatientIndent/AddNewPatientIndent`;
 export const urlEditPatientIndent = `${baseURL}/api/PatientIndent/EditPatientIndent`;
-
+export const urlGetProductClassificationList = `${baseURL}/api/ProductDefinition/GetList`;
+export const urlShowCreateDefinition = `${baseURL}/api/ProductDefinition/ShowCreateDefinition`;
