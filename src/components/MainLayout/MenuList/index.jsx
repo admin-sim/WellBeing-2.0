@@ -290,7 +290,7 @@ const menuData = [
   {
     key: "Account",
     icon: "ExperimentOutlined",
-    title: "AccountManagement",
+    title: "Account Management",
     children: [
       {
         key: "Billing",

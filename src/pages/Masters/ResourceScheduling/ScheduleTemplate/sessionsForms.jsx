@@ -49,7 +49,7 @@ const SessionsForms = ({ numForms, form, formData }) => {
           <Col span={6}>
             <Form.Item
               name={["sessions", i, "StartTime"]}
-              label="Start Time"
+              label="Start Time (24 H)"
               rules={[
                 { required: true, message: "Select the Start Time" },
                 ({ getFieldValue }) => ({
@@ -86,7 +86,7 @@ const SessionsForms = ({ numForms, form, formData }) => {
           <Col span={6}>
             <Form.Item
               name={["sessions", i, "EndTime"]}
-              label="End Time"
+              label="End Time (24 H)"
               rules={[
                 { required: true, message: "Select the End Time" },
                 ({ getFieldValue }) => ({
@@ -120,7 +120,7 @@ const SessionsForms = ({ numForms, form, formData }) => {
           <Col span={6}>
             <Form.Item
               name={["sessions", i, "SlotDuration"]}
-              label="Slot Duration"
+              label="Slot Duration (in Minutes)"
               rules={[
                 { required: true, message: "Enter Slot Duration" },
                 { pattern: numberPattern, message: "Enter a valid number" },
@@ -138,7 +138,7 @@ const SessionsForms = ({ numForms, form, formData }) => {
                 { pattern: numberPattern, message: "Enter a valid number" },
               ]}
             >
-              <Input style={{ width: "100%" }} />
+              <Input style={{ width: "100%" }} maxLength={1} />
             </Form.Item>
           </Col>
         </Row>
@@ -149,25 +149,25 @@ const SessionsForms = ({ numForms, form, formData }) => {
           <Col span={6}>
             <Form.Item
               name={["sessions", i, "OverbookingSlots"]}
-              label="Overbooking slots(begin)"
-              rules={[
-                { required: true, message: "Enter No. of patient" },
-                { pattern: numberPattern, message: "Enter a valid number" },
-              ]}
-            >
-              <Input style={{ width: "100%" }} />
-            </Form.Item>
-          </Col>
-          <Col span={6}>
-            <Form.Item
-              name={["sessions", i, "OverbookingEndSlots"]}
-              label="Overbooking slots(end)"
+              label="Overbooking slots (begin)"
               rules={[
                 { required: true, message: "Enter Overbooking slots" },
                 { pattern: numberPattern, message: "Enter a valid number" },
               ]}
             >
-              <Input style={{ width: "100%" }} />
+              <Input style={{ width: "100%" }} maxLength={1} />
+            </Form.Item>
+          </Col>
+          <Col span={6}>
+            <Form.Item
+              name={["sessions", i, "OverbookingEndSlots"]}
+              label="Overbooking slots (end)"
+              rules={[
+                { required: true, message: "Enter Overbooking slots" },
+                { pattern: numberPattern, message: "Enter a valid number" },
+              ]}
+            >
+              <Input style={{ width: "100%" }} maxLength={1} />
             </Form.Item>
           </Col>
           <Col span={6}>

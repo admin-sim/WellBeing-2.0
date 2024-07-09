@@ -626,11 +626,15 @@ function ScheduleAppointmentModal({
                       rules={[
                         {
                           required: true,
-                          message: "Mobile Number is Required.",
+                          message: "Please enter your mobile number.",
+                        },
+                        {
+                          pattern: /^\d{10}$/,
+                          message: "Please enter a valid 10 digit number!",
                         },
                       ]}
                     >
-                      <Input style={{ width: "100%" }} />
+                      <Input maxLength={10} style={{ width: "100%" }} />
                     </Form.Item>
                   </Col>
                   <Col span={6}>
