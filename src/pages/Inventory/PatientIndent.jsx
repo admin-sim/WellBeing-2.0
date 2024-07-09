@@ -43,11 +43,12 @@ const PatientIndent = () => {
     const [loading, setLoading] = useState(false);
     const [isTable, setIsTable] = useState(false);
     const { Title } = Typography;
+    const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
+    const [toDate, setToDate] = useState(dayjs());
 
     useEffect(() => {
         try {
             customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-                debugger;
                 const apiData = response.data.data;
                 setPatientIndentDropDown(apiData);
             });
@@ -59,6 +60,25 @@ const PatientIndent = () => {
 
     const navigate = useNavigate();
 
+    const handleFromDateChange = (date) => {
+        setFromDate(date);
+        if (toDate && date && date.isAfter(toDate)) {
+            setToDate(null);
+        }
+    };
+
+    const handleToDateChange = (date) => {
+        setToDate(date);
+    };
+
+    const disabledFromDate = (current) => {
+        return current && current.isAfter(dayjs().endOf('day'));
+    };
+
+    const disabledToDate = (current) => {
+        return current && (current.isBefore(fromDate, 'day') || current.isAfter(dayjs().endOf('day')));
+    };
+
     const colorMapping = {
         Created: "blue",
         Draft: "geekblue",
@@ -68,7 +88,6 @@ const PatientIndent = () => {
     };
 
     const GetIndentById = (IndentId) => {
-        debugger;
         navigate("/CreatePatientIndent", { state: { IndentId } });
     };
 
@@ -232,30 +251,27 @@ const PatientIndent = () => {
         return inputDate; // Return as is if not in the expected format
     }
     const onFinish = async (values) => {
-        debugger;
         try {
             const postData1 = {
                 IndentType: values.IndentType === 0 ? null : values.IndentType,
-                // IndentStatus: values.IndentStatus,
+                IndentStatus: values.IndentStatus ? values.IndentStatus : null,
                 IssuingStoreId: values.IssuingStore === undefined ? 0 : values.IssuingStore,
-                IndentStatus: values.POStatus === undefined ? null : values.POStatus,
-                FromDate: values.FromDate,
-                ToDate: values.ToDate,
-                IndentNumber: values.PONumber === undefined ? null : values.PONumber,
+                FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : "",
+                ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
+                IndentNumber: values.IndentNumber ? values.IndentNumber : null,
             };
             customAxios
                 .get(
-                    `${urlSearchPatientIndent}?IndentType=${postData1.IndentType}&IndentStatus=${postData1.IndentStatus}&IssuingStoreId=${postData1.IssuingStoreId}&FromDate=${postData1.FromDate}&ToDate=${postData1.ToDate}&IndentNumber=${postData1.IndentNumber}`,
+                    `${urlSearchPatientIndent}?IndentType=${postData1.IndentType}&IndentStatus=${postData1.IndentStatus}&IssuingStoreId=${postData1.IssuingStoreId}&FromDateString=${postData1.FromDate}&ToDateString=${postData1.ToDate}&IndentNumber=${postData1.IndentNumber}`,
                     null,
                     {
                         params: postData1,
                         headers: {
-                            "Content-Type": "application/json", // Replace with the appropriate content type if needed
+                            "Content-Type": "application/json", 
                         },
                     }
                 )
                 .then((response) => {
-                    debugger;
                     setFilteredData(response.data.data.IndentDetails);
                 })
                 .finally(() => {
@@ -272,6 +288,10 @@ const PatientIndent = () => {
         setFilteredData([]);
         form.resetFields();
     };
+
+    const handleStoreChange = () => {
+        debugger
+    }
 
     return (
         <Layout style={{ zIndex: '999999999' }}>
@@ -325,17 +345,17 @@ const PatientIndent = () => {
                             </Col>
                             <Col className="gutter-row" span={6}>
                                 <Form.Item name="FromDate" label="From Date">
-                                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                                    <DatePicker value={fromDate} style={{ width: "100%" }} onChange={handleFromDateChange} disabledDate={disabledFromDate} format="DD-MM-YYYY" />
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
                                 <Form.Item name="ToDate" label="To Date">
-                                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                                    <DatePicker value={toDate} style={{ width: "100%" }} onChange={handleToDateChange} disabledDate={disabledToDate} format="DD-MM-YYYY" />
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
                                 <Form.Item label="Issuing Store" name="IssuingStore">
-                                    <Select allowClear placeholder='Select Value'>
+                                    <Select allowClear placeholder='Select Value' onChange={handleStoreChange}>
                                         {PatientIndentDropdown.StoreDetails.map((option) => (
                                             <Select.Option key={option.StoreId} value={option.StoreId}>
                                                 {option.LongName}
@@ -373,25 +393,25 @@ const PatientIndent = () => {
                             </Col>
                         </Row>
                     </Form>
+                    <Table display={setIsTable}
+                        dataSource={filteredData}
+                        columns={columns}
+                        pagination={{
+                            onChange: (current, pageSize) => {
+                                setPage(current);
+                                setPaginationSize(pageSize);
+                            },
+                            defaultPageSize: 5,
+                            hideOnSinglePage: true,
+                            showSizeChanger: true,
+                            showTotal: (total, range) =>
+                                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                        }}
+                        rowKey={(row) => row.AppUserId}
+                        size="small"
+                        bordered
+                    />
                 </Card>
-                <Table display={setIsTable}
-                    dataSource={filteredData}
-                    columns={columns}
-                    pagination={{
-                        onChange: (current, pageSize) => {
-                            setPage(current);
-                            setPaginationSize(pageSize);
-                        },
-                        defaultPageSize: 5,
-                        hideOnSinglePage: true,
-                        showSizeChanger: true,
-                        showTotal: (total, range) =>
-                            `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                    }}
-                    rowKey={(row) => row.AppUserId}
-                    size="small"
-                    bordered
-                />
             </div>
         </Layout>
     );
