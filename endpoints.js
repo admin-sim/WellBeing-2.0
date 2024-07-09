@@ -267,4 +267,6 @@ export const urlTestMethodIndex = `${baseURL}/api/LabTestMaster/TestMethodIndex`
 export const urlAddNewGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/AddNewGRNAgainstPO`;
 export const urlEditGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/EditGRNAgainstPO`;
 export const urlUpdateGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/UpdateGRNAgainstPO`;
+export const urlGetEditOrCancelEncounterDetails = `${baseURL}/api/Encounter/GetEditOrCancelEncounterDetails`;
 export const urlGetEncounterDetails = `${baseURL}/api/Encounter/GetEncounterDetails`;
+export const urlGetPatientHeaderDetails = `${baseURL}/api/Patient/GetPatientHeaderDetails`;

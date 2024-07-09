@@ -699,6 +699,7 @@ const NewPatient = () => {
   ];
 
   const handleAddressClick = () => {
+   
     const presentAddressFields = form.getFieldsValue([
       "presentAddress1",
       "presentCountryId",
@@ -891,6 +892,7 @@ const NewPatient = () => {
                             max={120}
                             value={age?.years}
                             onChange={handleYearsChange}
+                            maxLength={3}
                           />
                         </Form.Item>
                       </Col>

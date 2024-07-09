@@ -16,6 +16,7 @@ import {
   Spin,
   Layout,
   notification,
+  message,
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import Input from "antd/es/input/Input";
@@ -44,7 +45,10 @@ function Places() {
   });
   const [States, setStates] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [stateLoader, setStateLoader] = useState(false);
   const [selectedCountryValue, setSelectedCountryValue] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [IsSubmitClicked, setIsSubmitClicked] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -97,6 +101,8 @@ function Places() {
 
   const handlePlaceModalCancel = () => {
     setIsModalOpen(false);
+    setIsEditing(false);
+    setIsSubmitClicked(false);
     form.resetFields();
   };
 
@@ -129,68 +135,85 @@ function Places() {
   const handleSubmit = async () => {
     debugger;
     form.validateFields();
+    setIsSubmitClicked(true);
     const values = form.getFieldsValue();
     console.log("state Edit Modal Submit", values);
-    // UpdateState(int StateId, string Name, string StateCode, int CountryId)
-    // SaveNewState(int CountryId, string StateCode, string StateName)
-
-    const place = isEditing
-      ? {
-          PlaceId: placeData.PlaceId,
-          StateId: placeData.StateID,
-          PlaceName: values.PlaceName,
-        }
-      : {
-          PlaceId: 0,
-          StateId: values.State,
-          CountryId: values.Country,
-          PlaceName: values.PlaceName,
-        };
-
-    try {
-      // Send a POST request to the server
-      const response = await customAxios.post(urlAddAndUpdatePlace, place, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.data.data !== null) {
-        setIsModalOpen(false);
-        const placeDetails = response.data.data.PlaceModels.map(
-          (obj, index) => {
-            return { ...obj, key: index + 1 };
+    if (
+      values.State !== undefined &&
+      values.Country !== undefined &&
+      values.PlaceName !== undefined
+    ) {
+      const place = isEditing
+        ? {
+            PlaceId: placeData.PlaceId,
+            StateId: placeData.StateID,
+            PlaceName: values.PlaceName,
           }
-        );
-        setColumnData(placeDetails);
-        form.resetFields();
-        {
-          isEditing
-            ? notification.success({
-                message: "Place details updated Successfully",
-              })
-            : notification.success({
-                message: "Place details added Successfully",
-              });
-        }
-      }
-    } catch (error) {
-      console.error("Failed to send data to server: ", error);
+        : {
+            PlaceId: 0,
+            StateId: values.State,
+            CountryId: values.Country,
+            PlaceName: values.PlaceName,
+          };
 
-      {
-        isEditing
-          ? notification.error({
-              message: "Edited Place  details UnSuccessful",
-            })
-          : notification.error({
-              message: "Adding Place details UnSuccessful",
+      try {
+        // Send a POST request to the server
+        const response = await customAxios.post(urlAddAndUpdatePlace, place, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.data !== null) {
+          if (response.data === "Already Exists") {
+            // setIsModalOpen(false);
+            setIsSubmitClicked(false);
+            messageApi.warning({
+              // type: "warning",
+              content: `Place already exists`,
             });
+          } else if (response.data.data !== null) {
+            setIsSubmitClicked(false);
+            setIsModalOpen(false);
+            const placeDetails = response.data.data.PlaceModels.map(
+              (obj, index) => {
+                return { ...obj, key: index + 1 };
+              }
+            );
+            setColumnData(placeDetails);
+            form.resetFields();
+            {
+              isEditing
+                ? notification.success({
+                    message: "Place details updated Successfully",
+                  })
+                : notification.success({
+                    message: "Place details added Successfully",
+                  });
+            }
+          } else {
+            {
+              isEditing
+                ? notification.error({
+                    message: "Edited Place  details UnSuccessful",
+                  })
+                : notification.error({
+                    message: "Adding Place details UnSuccessful",
+                  });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Failed to send data to server: ", error);
       }
+    } else {
+      setIsSubmitClicked(false);
     }
   };
 
   const handleCountryChange = async (value) => {
     setSelectedCountryValue(value);
+    setStateLoader(true);
     debugger;
     try {
       // Update the options for the second select based on the value of the first select
@@ -200,12 +223,9 @@ function Places() {
         );
 
         if (response.status === 200) {
+          setStateLoader(false);
           const states = response.data.data.States;
-          // const states = response.data.data.States.map((option) => (
-          //   <Select.Option key={option.StateID} value={option.StateID}>
-          //     {option.StateName}
-          //   </Select.Option>
-          // ));
+
           setStates(states);
         } else {
           // Handle other response statuses if needed
@@ -296,11 +316,25 @@ function Places() {
               onDelete={handleDelete}
             />
           </Spin>
+          {contextHolder}
           <Modal
-            title="Add New Place"
+            title={isEditing ? "Update place Details" : "Add New Place"}
             open={isModalOpen}
             maskClosable={false}
-            footer={null}
+            footer={[
+              <Button
+                key="submit"
+                type="primary"
+                loading={IsSubmitClicked}
+                onClick={handleSubmit}
+              >
+                {/* {IsSubmitClicked ? "Submitting" : "Submit"} */}
+                {isEditing ? "Update" : "Submit"}
+              </Button>,
+              <Button key="back" onClick={handlePlaceModalCancel}>
+                Cancel
+              </Button>,
+            ]}
             onCancel={handlePlaceModalCancel}
           >
             <Form
@@ -384,22 +418,6 @@ function Places() {
               >
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-              <Row gutter={32} style={{ height: "1.8rem" }}>
-                <Col offset={12} span={6}>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                      Submit
-                    </Button>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item>
-                    <Button type="default" onClick={handlePlaceModalCancel}>
-                      Cancel
-                    </Button>
-                  </Form.Item>
-                </Col>
-              </Row>
             </Form>
           </Modal>
         </div>

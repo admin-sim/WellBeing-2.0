@@ -15,7 +15,9 @@ import { DollarTwoTone, FolderOpenTwoTone } from "@ant-design/icons";
 const { Text } = Typography;
 import male from "../../assets/m.png";
 
-function PatientHeader({ patient }) {
+function PatientHeader({ patient, encounterId }) {
+  debugger;
+  const displayEncounterId = patient?.GeneratedEncounterId || encounterId;
   return (
     <Row
       style={{
@@ -57,10 +59,32 @@ function PatientHeader({ patient }) {
                 <span>{patient?.PatientGender}</span>
               </Col>
               <Col span={24}>
-                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
+                {/* <span style={{ fontWeight: "bold", marginRight: "8px" }}>
                   VisitId&nbsp;:
                 </span>
-                {/* <span>{patient.id}</span> */}
+                <span>{patient?.GeneratedEncounterId}</span> */}
+
+                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
+                  {/* {displayEncounterId ? "Encounter" : ""}&nbsp;: */}
+                  Encounter&nbsp;:{" "}
+                </span>
+                {displayEncounterId && (
+                  <span
+                    style={{
+                      backgroundColor:
+                        encounterId && !patient?.GeneratedEncounterId
+                          ? "green"
+                          : "inherit",
+                      padding: "0 4px",
+                      color:
+                        encounterId && !patient?.GeneratedEncounterId
+                          ? "White"
+                          : "inherit",
+                    }}
+                  >
+                    {displayEncounterId}
+                  </span>
+                )}
               </Col>
             </Row>
           </Col>
@@ -70,13 +94,13 @@ function PatientHeader({ patient }) {
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
                   Age&nbsp;:
                 </span>
-                {/* <span>{patient.age}</span> */}
+                <span>{patient?.Age}</span>
               </Col>
               <Col span={24}>
                 <span style={{ fontWeight: "bold", marginRight: "8px" }}>
                   Dob&nbsp;:
                 </span>
-                <span>27/09/1995</span>
+                <span>{patient?.DateOfBirthstring}</span>
               </Col>
             </Row>
           </Col>
