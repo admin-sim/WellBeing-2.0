@@ -15,6 +15,7 @@ import React, { useState } from "react";
 const { Text } = Typography;
 import customAxios from "../../../../components/customAxios/customAxios";
 import { urlUpdatePriceTariffChargeParameter } from "../../../../../endpoints";
+import dayjs from "dayjs";
 
 function EditPriceChargeModal({
   options,
@@ -25,8 +26,8 @@ function EditPriceChargeModal({
   linedata,
 }) {
   const [form] = Form.useForm();
-  const [effectiveFromDatemodal, setEffectiveFromDateModal] = useState(null);
-  const [effectiveToDatemodal, setEffectiveToDateModal] = useState(null);
+  // const [effectiveFromDatemodal, setEffectiveFromDateModal] = useState(null);
+  // const [effectiveToDatemodal, setEffectiveToDateModal] = useState(null);
   const [loading, setLoading] = useState(false);
 
   if (linedata) {
@@ -42,7 +43,19 @@ function EditPriceChargeModal({
       Gender: linedata.Gender,
       WardType: linedata.WardType,
       Provider: linedata.Provider,
-      IncomeLimit:linedata.IncomeLimit
+      IncomeLimit: linedata.IncomeLimit,
+      EffectiveFrom: linedata.EffectiveFromDate
+        ? dayjs(
+          linedata.EffectiveFromDate,
+            "DD-MM-YYYY"
+          )
+        : null,
+      EffectiveTo:linedata.EffectiveToDate
+        ? dayjs(
+          linedata.EffectiveToDate,
+            "DD-MM-YYYY"
+          )
+        : null,
     });
   }
 
@@ -53,8 +66,14 @@ function EditPriceChargeModal({
 
   const onFinishForUpdateChargeParameters = async (values) => {
     setLoading(true);
-    values.EffectiveFromDate = effectiveFromDatemodal;
-    values.EffectiveToDate = effectiveToDatemodal;
+    // values.EffectiveFromDate = effectiveFromDatemodal;
+    // values.EffectiveToDate = effectiveToDatemodal;
+    values.EffectiveFromDate = values.EffectiveFrom
+      ? values.EffectiveFrom.format("DD-MM-YYYY")
+      : "";
+    values.EffectiveToDate = values.EffectiveTo
+      ? values.EffectiveTo.format("DD-MM-YYYY")
+      : "";
     values.PriceTariffId = linedata.PriceTariffId;
     values.PriceTariffLineId = editedpriceTarifflineId;
     values.RevisionNo = 0;

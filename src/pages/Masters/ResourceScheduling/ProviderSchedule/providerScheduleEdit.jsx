@@ -16,6 +16,7 @@ import {
   Card,
   Table,
   Modal,
+  Spin,
 } from "antd";
 import Title from "antd/es/typography/Title";
 import { useForm } from "antd/es/form/Form";
@@ -94,6 +95,7 @@ function ProviderScheduleEdit() {
       typeId = 3;
       setScheduleTypeId(typeId);
     }
+
     getProviders();
     fetchData(providerId, typeId);
   }, []);
@@ -141,13 +143,13 @@ function ProviderScheduleEdit() {
                 FacilityId: schedule.FacilityId,
               };
             });
-
+            setLoading(false);
             setWeeklyView(true);
             setTemplateWeeklyDetails(providerSchedule);
             setTemplateSessions(response.data.data.Templates);
             setWeeks(response.data.data.Weeks);
             setWeekProviderSchedule(extractedData);
-            form.setFieldsValue({ Provider: providerSchedule[0].ProviderId });
+            form.setFieldsValue({ Provider: providerId });
           } else if (TypeId === 2) {
             const dayOptions = response.data.data.Days.map((day) => ({
               label: `Day ${day}`,
@@ -158,6 +160,7 @@ function ProviderScheduleEdit() {
                 return { ...record, key: index + 1 };
               }
             );
+            setLoading(false);
             setDays(dayOptions);
             setTemplateDayDetails(templateData);
             setTemplateSessions(response.data.data.Templates);
@@ -165,13 +168,14 @@ function ProviderScheduleEdit() {
             setWeeklyView(false);
             setWeekDayView(false);
             setSelectedScheduleType("Days");
-            form.setFieldsValue({ Provider: templateData[0].ProviderId });
+            form.setFieldsValue({ Provider: providerId });
           } else {
             const templateData = response.data.data.ProviderSchedules.map(
               (record, index) => {
                 return { ...record, key: index + 1 };
               }
             );
+            setLoading(false);
             setTemplateWeekDayDetails(templateData);
             setTemplateSessions(response.data.data.Templates);
             setWeeks(response.data.data.Weeks);
@@ -180,7 +184,7 @@ function ProviderScheduleEdit() {
             setDailyView(false);
             setWeeklyView(false);
             setSelectedScheduleType("WeekDays");
-            form.setFieldsValue({ Provider: templateData[0].ProviderId });
+            form.setFieldsValue({ Provider: providerId });
           }
         }
       } catch (error) {
@@ -291,7 +295,7 @@ function ProviderScheduleEdit() {
       setIsEditingDayModal(false);
     } else {
       setIsWeekDayTemplateModalOpen(true);
-      setIsEditingDayModal(false);
+      setIsEditingWeekDayModal(false);
     }
   };
 
@@ -312,13 +316,14 @@ function ProviderScheduleEdit() {
     setLoading(true);
     try {
       if (weeklyView) {
-        const providerSchedules = WeekProviderSchedule.map((schedule) => {
-          // Find the updated value for this schedule
+        // Step 1: Update provider schedules with selected sessions
+        let providerSchedules = WeekProviderSchedule.map((schedule) => {
+          // Find the updated session for the current schedule
           const updatedSession = selectedSessions.find(
-            (value) => value.WeekdayId === schedule.WeekdayId
+            (session) => session.WeekdayId === schedule.WeekdayId
           );
 
-          // If an updated value was found and it has a different TemplateId, update the schedule
+          // If an updated session is found and its TemplateId is different, update the schedule
           if (
             updatedSession &&
             updatedSession.TemplateId !== schedule.TemplateId
@@ -329,6 +334,49 @@ function ProviderScheduleEdit() {
           // Otherwise, return the schedule unchanged
           return schedule;
         });
+
+        // Step 2: Add any selected sessions that don't match an existing WeekdayId in providerSchedules
+        selectedSessions.forEach((session) => {
+          const existingSchedule = providerSchedules.find(
+            (schedule) => schedule.WeekdayId === session.WeekdayId
+          );
+
+          // If no existing schedule is found for the session's WeekdayId, add a new schedule
+          if (!existingSchedule) {
+            providerSchedules.push({
+              WeekdayId: session.WeekdayId,
+              TemplateId:
+                session.TemplateId !== undefined ? session.TemplateId : 0,
+              FacilityId: 1,
+              ProviderId: values.Provider,
+              ScheduleType: selectedScheduleType,
+            });
+          }
+        });
+
+        const existingWeekdayIds = new Set(
+          providerSchedules.map((session) => session.WeekdayId)
+        );
+
+        weeks.forEach((week) => {
+          if (!existingWeekdayIds.has(week.LookupID)) {
+            providerSchedules.push({
+              WeekdayId: week.LookupID,
+              TemplateId: 0, // or any default value you want to set
+              ProviderId: values.Provider,
+              ScheduleType: selectedScheduleType,
+              FacilityId: 1,
+            });
+            existingWeekdayIds.add(week.WeekdayId); // add the WeekdayId to the set
+          }
+        });
+
+        // Ensure no undefined TemplateId
+        providerSchedules = providerSchedules.map((schedule) => ({
+          ...schedule,
+          TemplateId:
+            schedule.TemplateId !== undefined ? schedule.TemplateId : 0,
+        }));
 
         const ProviderId = values.Provider; // Assuming values.Provider is your ProviderId
 
@@ -473,7 +521,6 @@ function ProviderScheduleEdit() {
 
           if (response.data !== null) {
             if (response.data.data !== undefined) {
-             
               const templateData = response.data.data.ProviderSchedules.map(
                 (record, index) => {
                   return { ...record, key: index + 1 };
@@ -674,7 +721,6 @@ function ProviderScheduleEdit() {
                 >
                   <Select
                     showSearch
-                    placeholder="Select the provider"
                     style={{ width: "100%" }}
                     optionFilterProp="children"
                     filterOption={(input, option) =>
@@ -687,6 +733,7 @@ function ProviderScheduleEdit() {
                         .toLowerCase()
                         .localeCompare(optionB.children.toLowerCase())
                     }
+                    loading={Loading}
                     disabled
                     allowClear
                   >
@@ -770,64 +817,67 @@ function ProviderScheduleEdit() {
             )}
 
             {dailyView && (
-              <Row style={{ paddingLeft: "30px", paddingRight: "30px" }}>
-                <Col span={24}>
-                  <Table
-                    pagination={false}
-                    title={() => (
-                      <>
-                        <Row
-                          style={{
-                            backgroundColor: "#40A2E3",
-                            padding: "0.3rem 0rem 0.3rem 1.5rem",
-                            color: "white",
-                            borderRadius: "5px",
-                          }}
-                        >
-                          <Col
-                            span={5}
+              <>
+                <Row style={{ paddingLeft: "30px", paddingRight: "30px" }}>
+                  <Col span={24}>
+                    <Table
+                      pagination={false}
+                      title={() => (
+                        <>
+                          <Row
                             style={{
-                              fontWeight: 500,
-                              letterSpacing: "0.5px",
-                              fontSize: "1.2rem",
+                              backgroundColor: "#40A2E3",
+                              padding: "0.3rem 0rem 0.3rem 1.5rem",
+                              color: "white",
+                              borderRadius: "5px",
                             }}
                           >
-                            Day Schedule
-                          </Col>
-                          <Col
-                            offset={15}
-                            span={4}
-                            style={{
-                              fontWeight: 500,
-                              letterSpacing: "0.5px",
-                              fontSize: "1.2rem",
-                              // marginLeft:"0px"
-                            }}
-                          >
-                            <Button onClick={handleAddTemplate}>
-                              <PlusCircleOutlined />
-                              Add Template
-                            </Button>
-                          </Col>
-                        </Row>
-                      </>
-                    )}
-                    columns={DailyTemplateColumns}
-                    bordered
-                    dataSource={templateDayDetails}
-                    // rowKey={(row) => row.ProviderIdentityId}
-                    size="small"
-                    className="vitals-table"
-                    style={{
-                      margin: "0 0 1.5rem 0",
-                      boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
-                    }}
-                    locale={{
-                      emptyText: "There is no Provider credentials  to show",
-                    }}
-                  />
-                </Col>
-              </Row>
+                            <Col
+                              span={5}
+                              style={{
+                                fontWeight: 500,
+                                letterSpacing: "0.5px",
+                                fontSize: "1.2rem",
+                              }}
+                            >
+                              Day Schedule
+                            </Col>
+                            <Col
+                              offset={15}
+                              span={4}
+                              style={{
+                                fontWeight: 500,
+                                letterSpacing: "0.5px",
+                                fontSize: "1.2rem",
+                                // marginLeft:"0px"
+                              }}
+                            >
+                              <Button onClick={handleAddTemplate}>
+                                <PlusCircleOutlined />
+                                Add Template
+                              </Button>
+                            </Col>
+                          </Row>
+                        </>
+                      )}
+                      columns={DailyTemplateColumns}
+                      bordered
+                      dataSource={templateDayDetails}
+                      // rowKey={(row) => row.ProviderIdentityId}
+                      size="small"
+                      className="vitals-table"
+                      style={{
+                        margin: "0 0 1.5rem 0",
+                        boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
+                      }}
+                      locale={{
+                        emptyText:
+                          "There is no Daily template sessions to show",
+                      }}
+                    />
+                  </Col>
+                </Row>
+              </>
             )}
             {weekDayView && (
               <Row style={{ paddingLeft: "30px", paddingRight: "30px" }}>
@@ -883,7 +933,8 @@ function ProviderScheduleEdit() {
                       boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
                     }}
                     locale={{
-                      emptyText: "There is no Provider credentials  to show",
+                      emptyText:
+                        "There is no week day template sessions to show",
                     }}
                   />
                 </Col>
@@ -930,7 +981,7 @@ function ProviderScheduleEdit() {
               allowClear
               placeholder="Select a type"
               options={days}
-              disabled = {isEditingDayModal}
+              disabled={isEditingDayModal}
             ></Select>
           </Form.Item>
 
@@ -940,11 +991,11 @@ function ProviderScheduleEdit() {
             rules={[
               {
                 required: true,
-                message: "Please select State",
+                message: "Please select session",
               },
             ]}
           >
-            <Select allowClear placeholder="Select a type">
+            <Select allowClear placeholder="Select a session">
               {templateSessions.map((option) => (
                 <Select.Option
                   key={option.TemplateId}
@@ -997,7 +1048,11 @@ function ProviderScheduleEdit() {
               },
             ]}
           >
-            <Select allowClear placeholder="Select a type" disabled = {isEditingWeekDayModal}>
+            <Select
+              allowClear
+              placeholder="Select a type"
+              disabled={isEditingWeekDayModal}
+            >
               {weekDays.map((option) => (
                 <Select.Option key={option.LookupID} value={option.LookupID}>
                   {option.LookupDescription}
@@ -1015,7 +1070,11 @@ function ProviderScheduleEdit() {
               },
             ]}
           >
-            <Select allowClear placeholder="Select a type" disabled = {isEditingWeekDayModal}>
+            <Select
+              allowClear
+              placeholder="Select a type"
+              disabled={isEditingWeekDayModal}
+            >
               {weeks.map((option) => (
                 <Select.Option key={option.LookupID} value={option.LookupID}>
                   {option.LookupDescription}

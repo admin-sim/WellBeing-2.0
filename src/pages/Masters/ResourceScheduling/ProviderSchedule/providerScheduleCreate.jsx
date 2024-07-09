@@ -175,11 +175,11 @@ function ProviderScheduleCreate() {
   const onEditTemplate = (record) => {
     console.log("edit values ", record);
     if (selectedScheduleType === "Days") {
-      setIsDailyTemplateModalOpen(true);
       setIsEditingDayModal(true);
+      setIsDailyTemplateModalOpen(true);
     } else {
-      setIsWeekDayTemplateModalOpen(true);
       setIsEditingWeekDayModal(true);
+      setIsWeekDayTemplateModalOpen(true);
     }
 
     customAxios
@@ -262,8 +262,10 @@ function ProviderScheduleCreate() {
   const handleAddTemplate = () => {
     if (selectedScheduleType === "Days") {
       setIsDailyTemplateModalOpen(true);
+      setIsEditingDayModal(false);
       form.resetFields(["Day", "TemplateSession"]);
     } else {
+      setIsEditingWeekDayModal(false);
       setIsWeekDayTemplateModalOpen(true);
       form.resetFields(["FrequencyDay", "Day", "TemplateSession"]);
     }
@@ -271,9 +273,11 @@ function ProviderScheduleCreate() {
 
   const handleCloseDayTemplateModal = () => {
     setIsDailyTemplateModalOpen(false);
+    setIsEditingDayModal(false);
     form.resetFields(["Day", "TemplateSession"]);
   };
   const handleCloseWeekDayTemplateModal = () => {
+    setIsEditingWeekDayModal(false);
     setIsWeekDayTemplateModalOpen(false);
     form.resetFields(["FrequencyDay", "Day", "TemplateSession"]);
   };
@@ -283,34 +287,54 @@ function ProviderScheduleCreate() {
     const values = await form.validateFields();
     console.log("Form Values:", values, selectedSessions);
     setLoading(true);
+
     try {
       if (weeklyView) {
-        const scheduleProviderWeek = selectedSessions.map((session) => ({
-          ...session,
-          ProviderId: values.Provider,
-          ScheduleType: selectedScheduleType,
-          FacilityId: 1,
-        }));
+        if (values) {
+          let scheduleProviderWeek = selectedSessions.map((session) => ({
+            ...session,
+            ProviderId: values.Provider,
+            ScheduleType: selectedScheduleType,
+            FacilityId: 1,
+          }));
 
-        const response = await customAxios.post(
-          urlAddNewProviderScheduleOfTypeWeek,
-          scheduleProviderWeek
-        );
+          const existingWeekdayIds = new Set(
+            scheduleProviderWeek.map((session) => session.WeekdayId)
+          );
 
-        if (response.data !== null) {
-          if (response.data === "Success") {
-            // Display success notification
-            notification.success({
-              message: "Schedule Template details added Successfully",
-            });
-            handleBack();
-            form.resetFields();
-          } else if (response.data === "AlreadyExists") {
-            notification.warning({
-              message: "Schedule Template already exists",
-            });
-            // handleBack();
-            form.resetFields();
+          // Step 3: Iterate over the weeks to add any missing entries
+          weeks.forEach((week) => {
+            if (!existingWeekdayIds.has(week.LookupID)) {
+              scheduleProviderWeek.push({
+                WeekdayId: week.LookupID,
+                TemplateId: 0, // or any default value you want to set
+                ProviderId: values.Provider,
+                ScheduleType: selectedScheduleType,
+                FacilityId: 1,
+              });
+              existingWeekdayIds.add(week.WeekdayId); // add the WeekdayId to the set
+            }
+          });
+          const response = await customAxios.post(
+            urlAddNewProviderScheduleOfTypeWeek,
+            scheduleProviderWeek
+          );
+
+          if (response.data !== null) {
+            if (response.data === "Success") {
+              // Display success notification
+              notification.success({
+                message: "Schedule Template details added Successfully",
+              });
+              handleBack();
+              form.resetFields();
+            } else if (response.data === "AlreadyExists") {
+              notification.warning({
+                message: "Schedule Template already exists",
+              });
+              // handleBack();
+              form.resetFields();
+            }
           }
         }
       }
@@ -651,6 +675,7 @@ function ProviderScheduleCreate() {
                         .toLowerCase()
                         .localeCompare(optionB.children.toLowerCase())
                     }
+                    loading={Loading}
                   >
                     {providersData.map((response) => (
                       <Select.Option
@@ -971,7 +996,11 @@ function ProviderScheduleCreate() {
               },
             ]}
           >
-            <Select allowClear placeholder="Select a type" disabled={isEditingWeekDayModal}>
+            <Select
+              allowClear
+              placeholder="Select a type"
+              disabled={isEditingWeekDayModal}
+            >
               {weekDays.map((option) => (
                 <Select.Option key={option.LookupID} value={option.LookupID}>
                   {option.LookupDescription}
@@ -989,7 +1018,11 @@ function ProviderScheduleCreate() {
               },
             ]}
           >
-            <Select allowClear placeholder="Select a type" disabled={isEditingWeekDayModal}>
+            <Select
+              allowClear
+              placeholder="Select a type"
+              disabled={isEditingWeekDayModal}
+            >
               {weeks.map((option) => (
                 <Select.Option key={option.LookupID} value={option.LookupID}>
                   {option.LookupDescription}

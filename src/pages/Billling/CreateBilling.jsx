@@ -49,8 +49,8 @@ import Title from "antd/es/typography/Title";
 import { useLocation } from "react-router-dom";
 import PatientHeader from "../../components/PatientHeader";
 import { CiDiscount1 } from "react-icons/ci";
-
 import dayjs from "dayjs";
+
 const CreateBilling = () => {
   const location = useLocation();
   const PatientId = location.state.patientId;
@@ -170,7 +170,10 @@ const CreateBilling = () => {
     setCounter(counter + 1); // increment counter
   };
 
-  const handleCreateService = async () => {};
+  const handleCreateService = async () => {
+
+    navigate('/Billing')
+  };
 
   const handleAutoCompleteChange = async (value) => {
     debugger;
@@ -245,6 +248,7 @@ const CreateBilling = () => {
   };
 
   const handleproviderAutoCompleteChange = async (value) => {
+    debugger;
     setLoading(true); // Start loading
     try {
       if (!value.trim()) {
@@ -255,7 +259,7 @@ const CreateBilling = () => {
       const response = await customAxios.get(
         `${urlGetAllProviders}?providerName=${value}`
       );
-      const responseData = response.data.ProviderModel || [];
+      const responseData = response.data.data.Providers || [];
       // Ensure responseData is an array and has the expected structure
       if (
         Array.isArray(responseData) &&

@@ -39,7 +39,7 @@ function Holiday() {
   const [columnData, setColumnData] = useState();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [calenderData, setCalenderData] = useState();
+  const [calendarData, setCalendarData] = useState();
   const [DateFormat, setDateFormat] = useState("DD-MM-YYYY");
   const [FromDate, setFromDate] = useState();
   const [ToDate, setToDate] = useState();
@@ -90,29 +90,50 @@ function Holiday() {
     setToDate(formattedToDate);
   };
 
-  //   const disabledDate = (current) => {
-  //     // Disable dates that are in the future
-  //     return current && current > new Date();
-  //   };
+  const disabledDate = (current) => {
+    // Can not select days before today and today
+    return current && current < dayjs().endOf("day");
+  };
+
+  const validateFromDate = (_, value) => {
+    const toDate = form.getFieldValue("ToDate");
+    if (value && toDate && value.isAfter(toDate)) {
+      return Promise.reject(
+        new Error("From Date must be less than or equal to To Date")
+      );
+    }
+    return Promise.resolve();
+  };
+
+  const validateToDate = (_, value) => {
+    const fromDate = form.getFieldValue("FromDate");
+    if (value && fromDate && value.isBefore(fromDate)) {
+      return Promise.reject(
+        new Error("To Date must be greater than or equal to From Date")
+      );
+    }
+    return Promise.resolve();
+  };
 
   const handleEditModal = (record) => {
     debugger;
-    setCalenderData(record);
+    setCalendarData(record);
     setLoading(true);
     setIsEditing(true);
     customAxios
       .get(`${urlGetHolidayDetails}?Id=${record.HolidayId}`)
       .then((response) => {
         if (response.data !== null) {
-          const calenderData = response.data.data.NewHolidayModel;
-          setCalenderData(calenderData);
+          const calendarData = response.data.data.NewHolidayModel;
+          setCalendarData(calendarData);
           setIsModalOpen(true);
-          const parsedStartDate = dayjs(calenderData.StartDate);
-          const parsedEndDate = dayjs(calenderData.EndDate);
-          handleFromDateChange(calenderData.StartDate);
-          handleToDateChange(calenderData.EndDate);
+          const parsedStartDate = dayjs(calendarData.StartDate);
+          const parsedEndDate = dayjs(calendarData.EndDate);
+          handleFromDateChange(calendarData.StartDate);
+          handleToDateChange(calendarData.EndDate);
           form.setFieldsValue({
-            HolidayName: calenderData.HolidayName,
+            HolidayName: calendarData.HolidayName,
+            // FromDateToDate: [parsedStartDate, parsedEndDate],
             FromDate: parsedStartDate,
             ToDate: parsedEndDate,
           });
@@ -129,7 +150,7 @@ function Holiday() {
   const handleDelete = (record) => {
     debugger;
     //Deleting an State from the Table
-    setCalenderData(record);
+    setCalendarData(record);
     try {
       customAxios
         .delete(`${urlDeleteHoliday}?Id=${record.HolidayId}`)
@@ -163,7 +184,7 @@ function Holiday() {
     try {
       if (isEditing) {
         const response = await customAxios.post(
-          `${urlUpdateHoliday}?HolidayId=${calenderData.HolidayId}&EditHolidayName=${values.HolidayName}&EditStartDate=${FromDate}&EditEndDate=${ToDate}`,
+          `${urlUpdateHoliday}?HolidayId=${calendarData.HolidayId}&EditHolidayName=${values.HolidayName}&EditStartDate=${FromDate}&EditEndDate=${ToDate}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -258,13 +279,13 @@ function Holiday() {
 
     {
       title: "From Date",
-      dataIndex: "StartDate",
-      key: "StartDate",
+      dataIndex: "startDateTime",
+      key: "startDateTime",
     },
     {
       title: "To Date",
-      dataIndex: "EndDate",
-      key: "EndDate",
+      dataIndex: "endDateTime",
+      key: "endDateTime",
     },
   ];
 
@@ -353,12 +374,16 @@ function Holiday() {
                     required: true,
                     message: "Please select the start Date",
                   },
+                  {
+                    validator: validateFromDate,
+                  },
                 ]}
               >
                 <DatePicker
                   format={"DD-MM-YYYY"}
                   onChange={handleFromDateChange}
                   style={{ width: "100%" }}
+                  disabledDate={disabledDate}
                 ></DatePicker>
               </Form.Item>
               <Form.Item
@@ -369,11 +394,15 @@ function Holiday() {
                     required: true,
                     message: "Please select the end Date",
                   },
+                  {
+                    validator: validateToDate,
+                  },
                 ]}
               >
                 <DatePicker
                   format={"DD-MM-YYYY"}
                   onChange={handleToDateChange}
+                  disabledDate={disabledDate}
                   style={{ width: "100%" }}
                 ></DatePicker>
               </Form.Item>

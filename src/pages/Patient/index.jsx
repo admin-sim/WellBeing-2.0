@@ -655,7 +655,7 @@ const Patient = () => {
                       },
                     ]}
                   >
-                    <Select allowClear>
+                    <Select allowClear disabled>
                       {patientDropdown.PatientType.map((option) => (
                         <Select.Option
                           key={option.LookupID}
@@ -713,7 +713,7 @@ const Patient = () => {
                       },
                     ]}
                   >
-                    <Select allowClear>
+                    <Select allowClear disabled>
                       {patientDropdown.Departments.map((option) => (
                         <Select.Option
                           key={option.DepartmentId}
@@ -757,7 +757,7 @@ const Patient = () => {
                       },
                     ]}
                   >
-                    <Select allowClear>
+                    <Select allowClear disabled>
                       {patientDropdown.Providers.map((option) => (
                         <Select.Option
                           key={option.ProviderId}
@@ -817,7 +817,7 @@ const Patient = () => {
                       },
                     ]}
                   >
-                    <Select allowClear>
+                    <Select allowClear disabled>
                       {patientDropdown.ServiceLocations.map((option) => (
                         <Select.Option
                           key={option.FacilityDepartmentServiceLocationId}

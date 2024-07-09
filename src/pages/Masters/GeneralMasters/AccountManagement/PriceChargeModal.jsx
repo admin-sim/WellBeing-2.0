@@ -24,8 +24,8 @@ function PriceChargeModal({
   setColumnData,
 }) {
   const [form] = Form.useForm();
-  const [effectiveFromDatemodal, setEffectiveFromDateModal] = useState(null);
-  const [effectiveToDatemodal, setEffectiveToDateModal] = useState(null);
+  // const [effectiveFromDatemodal, setEffectiveFromDateModal] = useState(null);
+  // const [effectiveToDatemodal, setEffectiveToDateModal] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleCancel = () => {
@@ -35,8 +35,14 @@ function PriceChargeModal({
 
   const onFinishForAddChargeParameters = async (values) => {
     setLoading(true);
-    values.EffectiveFromDate = effectiveFromDatemodal;
-    values.EffectiveToDate = effectiveToDatemodal;
+    // values.EffectiveFromDate = effectiveFromDatemodal;
+    // values.EffectiveToDate = effectiveToDatemodal;
+    values.EffectiveFromDate = values.EffectiveFrom
+      ? values.EffectiveFrom.format("DD-MM-YYYY")
+      : "";
+    values.EffectiveToDate = values.EffectiveTo
+      ? values.EffectiveTo.format("DD-MM-YYYY")
+      : "";
     values.PriceTariffId = priceTariffId;
     try {
       const response = await customAxios.post(
@@ -65,12 +71,7 @@ function PriceChargeModal({
     setLoading(false);
   };
 
-  const handleEfeectiveFromModal = (date, dateString) => {
-    setEffectiveFromDateModal(dateString);
-  };
-  const handleEfeectiveToModal = (date, dateString) => {
-    setEffectiveToDateModal(dateString);
-  };
+
 
   return (
     <div>
@@ -294,7 +295,7 @@ function PriceChargeModal({
                 <Form.Item label="EffectiveFrom" name="EffectiveFrom">
                   <DatePicker
                     style={{ width: "100%" }}
-                    onChange={handleEfeectiveFromModal}
+                    //onChange={handleEfeectiveFromModal}
                     format="DD-MM-YYYY"
                   />
                 </Form.Item>
@@ -303,7 +304,7 @@ function PriceChargeModal({
                 <Form.Item label="EffectiveTo" name="EffectiveTo">
                   <DatePicker
                     style={{ width: "100%" }}
-                    onChange={handleEfeectiveToModal}
+                   // onChange={handleEfeectiveToModal}
                     format="DD-MM-YYYY"
                   />
                 </Form.Item>

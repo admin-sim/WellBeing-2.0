@@ -268,9 +268,5 @@ export const urlAddNewGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/AddNewGRNAgain
 export const urlEditGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/EditGRNAgainstPO`;
 export const urlUpdateGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/UpdateGRNAgainstPO`;
 export const urlGetEncounterDetails = `${baseURL}/api/Encounter/GetEncounterDetails`;
-export const urlEditItemReceipt = `${baseURL}/api/ItemReceipt/EditItemReceipt`;
-export const urlAddNewItemReceipt = `${baseURL}/api/ItemReceipt/AddNewItemReceipt`;
-export const urlUpdatePatientIndent = `${baseURL}/api/PatientIndent/UpdatePatientIndent`;
-export const urlAddNewPatientIndent = `${baseURL}/api/PatientIndent/AddNewPatientIndent`;
-export const urlEditPatientIndent = `${baseURL}/api/PatientIndent/EditPatientIndent`;
+export const urlDeletePriceTariffChargeParameter = `${baseURL}/api/PriceTariff/DeletePriceTariffChargeParameter`;
 
