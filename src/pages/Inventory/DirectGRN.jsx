@@ -31,7 +31,7 @@ import {
   urlSearchGRN,
 } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
-import { render } from "react-dom";
+import CustomTable from "../../components/customTable/index.jsx";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -42,20 +42,19 @@ const DirectGRN = () => {
     SupplierList: [],
     DateFormat: [],
   });
-  const [paginationSize, setPaginationSize] = useState(5);
+ 
   const [filteredData, setFilteredData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
-  const [page, setPage] = useState(1);
+
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [isTable, setIsTable] = useState(false);
+  const [dropDownLoad, setDropDownLoading] = useState(true);
   const { Title } = Typography;
-  const [isTableHasValues, setIsTableHasValues] = useState(false);
+
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
   const [toDate, setToDate] = useState(dayjs());
 
   useEffect(() => {
+    
     try {
       customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
         debugger;
@@ -65,7 +64,9 @@ const DirectGRN = () => {
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
+
     form.submit();
+    setDropDownLoading(false);
   }, []);
 
   const navigate = useNavigate();
@@ -73,23 +74,18 @@ const DirectGRN = () => {
     navigate("/CreateDirectGRN", { state: { GRNHeaderId } });
   };
 
-  const handleFromDateChange = (date) => {
-    setFromDate(date);
-    if (toDate && date && date.isAfter(toDate)) {
-      setToDate(null);
-    }
+  const disableFromDate = (current) => {
+    // Disable dates that are after today
+    return current && current.isAfter(dayjs().endOf("day"));
   };
 
-  const handleToDateChange = (date) => {
-    setToDate(date);
-  };
-
-  const disabledFromDate = (current) => {
-    return current && current.isAfter(dayjs().endOf('day'));
-  };
-
-  const disabledToDate = (current) => {
-    return current && (current.isBefore(fromDate, 'day') || current.isAfter(dayjs().endOf('day')));
+  const disableToDate = (current) => {
+    // Disable dates that are before the selected fromDate or after today
+    return (
+      current &&
+      (current.isBefore(fromDate, "day") ||
+        current.isAfter(dayjs().endOf("day")))
+    );
   };
 
   const colorMapping = {
@@ -102,9 +98,9 @@ const DirectGRN = () => {
 
   const columns = [
     {
-      title: "Sl No",
-      key: "index",
-      render: (text, record, index) => index + 1,
+      title: "Sl. No.",
+      dataIndex: "key",
+      key: "key",
     },
     {
       title: "GRN Number",
@@ -197,62 +193,22 @@ const DirectGRN = () => {
       render: (_, row) => <Button type="link">Report</Button>,
     },
   ];
-  // const handleSearch = (value) => {
-  //   setSearchText(value);
-  //   if (value === '') {
-  //     setFilteredData(loadUsers);
-  //   } else {
-  //     const filtered = loadUsers.filter(entry =>
-  //       Object.values(entry).some(val =>
-  //         val && val.toString().toLowerCase().includes(value.toLowerCase())
-  //       )
-  //     );
-  //     setFilteredData(filtered);
-  //   }
-  // };
+  
 
-  /* const validateUserRole = (rule, value) => {
-       if (value) {
-         const existsInOptions = originalOptions.some(option => option.LookupDescription === value);
-         if (!existsInOptions) {
-           return Promise.reject('Please select a valid UserRole from the list.');
-         }
-       }
-       return Promise.resolve();
-     };*/
+ 
 
-  const handleSubmit = (values) => {
-    // Handle form submission logic here
-    console.log("Form submitted with values:", values);
-
-    console.log("Form Values:", values);
-    //const uhid = selectedUhId ? selectedUhId.UhId : '';
-
-    // ... Repeat for other parameters
-  };
-  const [formatedFromDate, setFormatedFromDate] = useState();
-  const [formatedToDate, setFormatedToDate] = useState();
-  function formatDate(inputDate) {
-    const dateParts = inputDate.split("/");
-    if (dateParts.length === 3) {
-      const [year, month, day] = dateParts;
-      return `${day}-${month}-${year}`;
-    }
-    return inputDate; // Return as is if not in the expected format
-  }
   const onFinish = async (values) => {
-    setIsSearchLoading(true);
+    
     setLoading(true);
     try {
       const postData1 = {
-        DocumentType: values.DocumentType,
-        Supplier: values.Supplier === undefined ? 0 : values.Supplier,
-        ReceivingStore:
-          values.ProcurementStore === undefined ? 0 : values.ProcurementStore,
-        GRNStatus: values.GRNStatus === 0 ? null : values.GRNStatus,
-        FromDate: values.FromDate,
-        ToDate: values.ToDate,
-        GRNNumber: values.GRNNumber === undefined ? null : values.GRNNumber,
+        DocumentType: values.DocumentType ? values.DocumentType : "",
+        Supplier: values.Supplier ? values.Supplier : "",
+        ReceivingStore: values.ReceivingStore ? values.ReceivingStore : "",
+        GRNStatus: values.GRNStatus ? values.GRNStatus : "",
+        FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : "",
+        ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
+        GRNNumber: values.GRNNumber ? values.GRNNumber : "",
         GrnType: "Direct GRN",
       };
       customAxios
@@ -268,12 +224,13 @@ const DirectGRN = () => {
         )
         .then((response) => {
           debugger;
-          setFilteredData(response.data.data.GRNAgainstPODetails);
-          if (response.data.data.GRNAgainstPODetails.length > 0) {
-            setIsTableHasValues(true);
-          } else {
-            setIsTableHasValues(false);
-          }
+    
+
+          const newColumnData = response.data.data.GRNAgainstPODetails.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          });
+          setFilteredData(newColumnData);
+
         })
         .finally(() => {
           setLoading(false);
@@ -282,11 +239,11 @@ const DirectGRN = () => {
       // Handle any errors here
       console.error("Error:", error);
     }
-    setIsSearchLoading(false);
+ 
   };
 
   const onReset = () => {
-    setIsTableHasValues(false);
+   
     form.resetFields();
   };
 
@@ -336,7 +293,6 @@ const DirectGRN = () => {
             name="control-hooks"
             layout="vertical"
             variant="outlined"
-            size="Default"
             style={{
               maxWidth: 1500,
             }}
@@ -344,14 +300,14 @@ const DirectGRN = () => {
               FromDate: dayjs().subtract(1, "day"),
               ToDate: dayjs(),
               DocumentType: 0,
-              GRNStatus: 0,
+              GRNStatus: '',
             }}
             onFinish={onFinish}
           >
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={6}>
                 <Form.Item label="DocumentType" name="DocumentType">
-                  <Select>
+                  <Select loading={dropDownLoad}>
                     <Select.Option key={0} value={0}>
                       All
                     </Select.Option>
@@ -368,7 +324,7 @@ const DirectGRN = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="Supplier" label="Supplier">
-                  <Select placeholder="Select Value" allowClear>
+                  <Select loading={dropDownLoad} placeholder="Select Value" allowClear>
                     {DirectGRNDropdown.SupplierList.map((option) => (
                       <Select.Option
                         key={option.VendorId}
@@ -382,19 +338,31 @@ const DirectGRN = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="FromDate" label="From Date">
-                  <DatePicker value={fromDate} style={{ width: "100%" }} onChange={handleFromDateChange} disabledDate={disabledFromDate} format="DD-MM-YYYY" />
+                  <DatePicker
+                    value={fromDate}
+                    onChange={(date) => setFromDate(date)}
+                    disabledDate={disableFromDate}
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                  />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="ToDate" label="To Date">
-                  <DatePicker value={toDate} style={{ width: "100%" }} onChange={handleToDateChange} disabledDate={disabledToDate} format="DD-MM-YYYY" />
+                  <DatePicker
+                    value={toDate}
+                    onChange={(date) => setToDate(date)}
+                    disabledDate={disableToDate}
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                  />
                 </Form.Item>
               </Col>
             </Row>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={6}>
-                <Form.Item name="ProcurementStore" label="Receiving Store">
-                  <Select placeholder="Select Value" allowClear>
+                <Form.Item name="ReceivingStore" label="Receiving Store">
+                  <Select loading={dropDownLoad} placeholder="Select Value" allowClear>
                     {DirectGRNDropdown.StoreDetails.map((option) => {
                       if (option.StoreId === 1) {
                         return (
@@ -419,7 +387,7 @@ const DirectGRN = () => {
               <Col className="gutter-row" span={6}>
                 <Form.Item label="GRN Status" name="GRNStatus">
                   <Select>
-                    <Select.Option key={0} value={0}>
+                    <Select.Option key="" value="">
                       All
                     </Select.Option>
                     <Select.Option
@@ -440,7 +408,6 @@ const DirectGRN = () => {
                 <Form.Item>
                   <Button
                     type="primary"
-                    loading={isSearchLoading}
                     htmlType="submit"
                   >
                     Search
@@ -455,28 +422,14 @@ const DirectGRN = () => {
                 </Form.Item>
               </Col>
             </Row>
-            {isTableHasValues && (
-              <Table
-                display={setIsTable}
+            <Spin spinning={loading}>
+              <CustomTable
                 dataSource={filteredData}
-                scroll={"auto"}
                 columns={columns}
-                pagination={{
-                  onChange: (current, pageSize) => {
-                    setPage(current);
-                    setPaginationSize(pageSize);
-                  },
-                  defaultPageSize: 5,
-                  hideOnSinglePage: true,
-                  showSizeChanger: true,
-                  showTotal: (total, range) =>
-                    `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                }}
-                rowKey={(row) => row.AppUserId}
-                size="small"
-                bordered
+                isFilter={true}
+              bordered
               />
-            )}
+              </Spin>
           </Form>
         </Card>
       </div>

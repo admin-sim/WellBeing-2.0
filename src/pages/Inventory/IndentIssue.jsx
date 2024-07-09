@@ -44,6 +44,8 @@ const IndentIssue = () => {
     const [isTable, setIsTable] = useState(false);
     const { Title } = Typography;
     const navigate = useNavigate();
+    const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
+    const [toDate, setToDate] = useState(dayjs());
 
     useEffect(() => {
         try {
@@ -65,8 +67,33 @@ const IndentIssue = () => {
         Completed: "green",
     };
 
-    const GetIndentById = (IndentId) => {
-        navigate("/UpdateIndentIssue", { state: { IndentId } });
+    const GetIndentById = (record) => {
+        const IndentId = record.IndentId
+        if (record.Exists == 'Exists') {
+            alert('Indent Issue with same Indent Number already exists!!Please finalize previous Indent Issue.')
+        }
+        else {
+            navigate("/UpdateIndentIssue", { state: { IndentId } });
+        }
+    };
+
+    const handleFromDateChange = (date) => {
+        setFromDate(date);
+        if (toDate && date && date.isAfter(toDate)) {
+            setToDate(null);
+        }
+    };
+
+    const handleToDateChange = (date) => {
+        setToDate(date);
+    };
+
+    const disabledFromDate = (current) => {
+        return current && current.isAfter(dayjs().endOf('day'));
+    };
+
+    const disabledToDate = (current) => {
+        return current && (current.isBefore(fromDate, 'day') || current.isAfter(dayjs().endOf('day')));
     };
 
     const columns = [
@@ -96,8 +123,8 @@ const IndentIssue = () => {
             sorter: (a, b) => new Date(a.IndentNumber) - new Date(b.IndentNumber),
             sortDirections: ["descend", "ascend"],
             render: (text, record, index) => {
-                if (record.IndentStatus === "Pending" || record.IndentStatus == "Created") {
-                    return (<Button type="link" onClick={() => GetIndentById(record.IndentId)}>
+                if (record.IssueStatus !== 'Finalize') {
+                    return (<Button type="link" onClick={() => GetIndentById(record)}>
                         {text}
                     </Button>
                     )
@@ -230,7 +257,9 @@ const IndentIssue = () => {
         }
         return inputDate; // Return as is if not in the expected format
     }
+
     const onFinish = async (values) => {
+        debugger
         setIsSearchLoading(true);
         setLoading(true);
         try {
@@ -239,15 +268,15 @@ const IndentIssue = () => {
                 IndentType: values.IndentType === 0 ? null : values.IndentType,
                 RequestingStoreId: values.RequestingStore === undefined ? 0 : values.RequestingStore,
                 IssuingStoreId: values.IssuingStore === undefined ? 0 : values.IssuingStore,
-                FromDate: values.FromDate,
-                ToDate: values.ToDate,
+                FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : "",
+                ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
                 IndentStatus: values.IndentStatus === 0 ? null : values.IndentStatus,
                 IndentOwner: values.IndentOwner === undefined ? null : values.IndentOwner,
                 IssueStatus: values.IndentStatus === 0 ? null : values.IndentStatus
             };
             customAxios
                 .get(
-                    `${urlSearchIndentIssue}?IndentNumber=${postData1.IndentNumber}&IndentType=${postData1.IndentType}&RequestingStoreId=${postData1.RequestingStoreId}&IssuingStoreId=${postData1.IssuingStoreId}&FromDate=${postData1.FromDate}&ToDate=${postData1.ToDate}&IndentStatus=${postData1.IndentStatus}&IndentOwner=${postData1.IndentOwner}&IssueStatus=${postData1.IssueStatus}`,
+                    `${urlSearchIndentIssue}?IndentNumber=${postData1.IndentNumber}&IndentType=${postData1.IndentType}&RequestingStoreId=${postData1.RequestingStoreId}&IssuingStoreId=${postData1.IssuingStoreId}&FromDateString=${postData1.FromDate}&ToDateString=${postData1.ToDate}&IndentStatus=${postData1.IndentStatus}&IndentOwner=${postData1.IndentOwner}&IssueStatus=${postData1.IssueStatus}`,
                     null,
                     {
                         params: postData1,
@@ -257,8 +286,11 @@ const IndentIssue = () => {
                     }
                 )
                 .then((response) => {
-                    debugger;
-                    setFilteredData(response.data.data.IndentDetails);
+                    // setFilteredData(response.data.data.IndentDetails);
+                    // filteredData.map((item) => {
+
+                    // })
+                    setFilteredData(response.data.data.newIndentIssueModel);
                 })
                 .finally(() => {
                     setLoading(false);
@@ -323,13 +355,15 @@ const IndentIssue = () => {
                             </Col>
                             <Col className="gutter-row" span={4}>
                                 <Form.Item name="FromDate" label="From Date">
-                                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                                        value={fromDate} onChange={handleFromDateChange} disabledDate={disabledFromDate} />
                                 </Form.Item>
                             </Col>
 
                             <Col className="gutter-row" span={4}>
                                 <Form.Item name="ToDate" label="To Date">
-                                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                                        value={toDate} disabledDate={disabledToDate} onChange={handleToDateChange} />
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={4}>
@@ -399,25 +433,25 @@ const IndentIssue = () => {
                             </Col>
                         </Row>
                     </Form>
+                    <Table display={setIsTable}
+                        dataSource={filteredData}
+                        columns={columns}
+                        pagination={{
+                            onChange: (current, pageSize) => {
+                                setPage(current);
+                                setPaginationSize(pageSize);
+                            },
+                            defaultPageSize: 5, 
+                            hideOnSinglePage: true,
+                            showSizeChanger: true,
+                            showTotal: (total, range) =>
+                                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                        }}
+                        rowKey={(row) => row.AppUserId} 
+                        size="small"
+                        bordered
+                    />
                 </Card>
-                <Table display={setIsTable}
-                    dataSource={filteredData}
-                    columns={columns}
-                    pagination={{
-                        onChange: (current, pageSize) => {
-                            setPage(current);
-                            setPaginationSize(pageSize);
-                        },
-                        defaultPageSize: 5, // Set your default pagination size
-                        hideOnSinglePage: true,
-                        showSizeChanger: true,
-                        showTotal: (total, range) =>
-                            `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                    }}
-                    rowKey={(row) => row.AppUserId} // Specify the custom id property here
-                    size="small"
-                    bordered
-                />
             </div>
         </Layout>
     );

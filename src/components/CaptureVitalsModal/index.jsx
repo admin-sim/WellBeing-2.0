@@ -1,4 +1,14 @@
-import { Col, Form, Input, Modal, Radio, Row, Select, Switch } from "antd";
+import {
+  Button,
+  Col,
+  Form,
+  Input,
+  Modal,
+  Radio,
+  Row,
+  Select,
+  Switch,
+} from "antd";
 import { useForm } from "antd/es/form/Form";
 import { MdAirlineSeatReclineNormal } from "react-icons/md";
 import React, { useState } from "react";
@@ -151,11 +161,21 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
         width="70%"
         title="CAPTURE VITALS"
         open={open}
-        onOk={onSubmit}
         onCancel={handleCancel}
-        okText="Save"
-        cancelText="Cancel"
         maskClosable={false}
+        footer={[
+          <Button
+            key="submit"
+            size="middle"
+            type="primary"
+            onClick={() => form.submit()}
+          >
+            Save
+          </Button>,
+          <Button danger size="middle" onClick={handleCancel}>
+            Cancel
+          </Button>,
+        ]}
       >
         <div>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
@@ -163,16 +183,16 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
               <div
                 style={{
                   backgroundColor: "#d6e4ff",
-                  padding: "10px",
-                  borderRadius: "5px",
-                  marginBottom: "10px",
+                  padding: "0.6rem",
+                  borderRadius: "0.5rem",
+                  margin: "0.5rem 0",
                   display: "flex",
                   alignItems: "center",
                 }}
               >
                 You are capturing vitals for the above patient on &nbsp;
                 <IoCalendarOutline /> &nbsp;
-                {currentTimeString}
+                <span style={{ fontWeight: 500 }}> {currentTimeString}</span>
                 <FaRegClock style={{ marginLeft: "5px" }} />
               </div>
             </Col>
@@ -325,27 +345,23 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                 </Form.Item>
               </ColWithSixSpan>
               <ColWithSixSpan>
-                <p style={{ margin: "2px" }}>Position</p>
-                <div
-                  style={{
-                    // border: "1px solid #d6e4ff",
-                    padding: "10px 10px",
-                  }}
-                >
-                  <Form.Item name="position">
-                    <Radio.Group>
-                      <Radio value="sitting">
-                        <MdAirlineSeatReclineNormal style={{ fontSize: 18 }} />
-                      </Radio>
-                      <Radio value="supine">
-                        <FaBed style={{ fontSize: 18 }} />
-                      </Radio>
-                      <Radio value="standing">
-                        <BsPersonStanding style={{ fontSize: 18 }} />
-                      </Radio>
-                    </Radio.Group>
-                  </Form.Item>
-                </div>
+                <Form.Item name="position" label="Position">
+                  <Radio.Group
+                    style={{ display: "flex", alignItems: "center" }}
+                  >
+                    <Radio value="sitting">
+                      <MdAirlineSeatReclineNormal
+                        style={{ fontSize: "1.5rem" }}
+                      />
+                    </Radio>
+                    <Radio value="supine">
+                      <FaBed style={{ fontSize: "1.5rem" }} />
+                    </Radio>
+                    <Radio value="standing">
+                      <BsPersonStanding style={{ fontSize: "1.5rem" }} />
+                    </Radio>
+                  </Radio.Group>
+                </Form.Item>
               </ColWithSixSpan>
             </Row>
             <Row
@@ -381,25 +397,19 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                 </Form.Item>
               </ColWithSixSpan>
               <ColWithThreeSpan>
-                <div style={{ marginLeft: "10px" }}>
-                  <p>Oedema</p>
-                  <Form.Item name="oedema">
-                    <Switch size="large" style={{ margin: "0px 5px" }}></Switch>
-                  </Form.Item>
-                </div>
+                <Form.Item name="oedema" label="Oedema">
+                  <Switch size="default" style={{ margin: "0px 5px" }}></Switch>
+                </Form.Item>
               </ColWithThreeSpan>
               <ColWithThreeSpan>
-                <div>
-                  <p>Pallor</p>
-                  <Form.Item name="pallor" style={{ margin: "0px 0px" }}>
-                    <Switch size="large"></Switch>
-                  </Form.Item>
-                </div>
+                <Form.Item name="pallor" label="Pallor">
+                  <Switch size="default"></Switch>
+                </Form.Item>
               </ColWithThreeSpan>
             </Row>
             <Row
               gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              // style={{ margin: "0px 10px" }}
+              style={{ margin: "0px 10px" }}
             >
               <Col span={24}>
                 <Form.Item name="otherComments" label="Other Comments (if any)">

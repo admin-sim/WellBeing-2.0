@@ -66,7 +66,10 @@ function MainLayout() {
   function getSessionTimeRemaining() {
     const token = Cookies.get("authToken");
 
-    if (!token) return "Session expired";
+    if (!token) {
+      navigate("/login");
+      return "Session expired";
+    }
 
     const decodedToken = jwtDecode(token);
     const currentTime = Date.now() / 1000;

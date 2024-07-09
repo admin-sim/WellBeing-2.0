@@ -175,17 +175,17 @@ const Indent = () => {
     const onFinish = async (values) => {
         try {
             const postData1 = {
-                IndentNumber: values.DocumentType === undefined ? null : values.DocumentType,
+                IndentNumber: values.IndentNumber === undefined ? null : values.IndentNumber,
                 IndentType: values.IndentType === 0 ? null : values.IndentType,
                 RequestingStoreId: values.RequestingStore === undefined ? 0 : values.RequestingStore,
                 IssuingStoreId: values.IssuingStore === undefined ? 0 : values.IssuingStore,
-                FromDate: values.FromDate,
-                ToDate: values.ToDate,
+                FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : "",
+                ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
                 IndentStatus: values.IndentStatus === 0 ? null : values.IndentStatus,
             };
             customAxios
                 .get(
-                    `${urlSearchIndent}?IndentNumber=${postData1.IndentNumber}&IndentType=${postData1.IndentType}&RequestingStoreId=${postData1.RequestingStoreId}&IssuingStoreId=${postData1.IssuingStoreId}&FromDate=${postData1.FromDate}&ToDate=${postData1.ToDate}&IndentStatus=${postData1.IndentStatus}`,
+                    `${urlSearchIndent}?IndentNumber=${postData1.IndentNumber}&IndentType=${postData1.IndentType}&RequestingStoreId=${postData1.RequestingStoreId}&IssuingStoreId=${postData1.IssuingStoreId}&FromDateString=${postData1.FromDate}&ToDateString=${postData1.ToDate}&IndentStatus=${postData1.IndentStatus}`,
                     null,
                     {
                         params: postData1,

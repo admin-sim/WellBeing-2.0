@@ -79,7 +79,7 @@ const Vendor = () => {
             });
         }
         setVendorId(0);
-    });
+    },[]);
 
     const DateBindtoDatepicker = (value) => {
         const isoDateString = value;

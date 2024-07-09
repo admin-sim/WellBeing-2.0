@@ -36,8 +36,10 @@ const MyCalendar = ({}) => {
   const [calendarData, setCalendarData] = useState(null);
   const [slotDuration, setSlotDuration] = useState("00:30:00");
   const [viewScheduledModal, setViewScheduledModal] = useState(false);
+  const [providerAbsences, setProviderAbsences] = useState();
 
   const [form] = Form.useForm();
+
   const handleSelect = (arg) => {
     // Handle slot selection if needed
   };
@@ -87,6 +89,10 @@ const MyCalendar = ({}) => {
               extendedProps: {
                 UHID: appointment.PatientUHID,
                 PatientName: appointment.PatientName,
+                Age: appointment.Age,
+                ProviderName: appointment.ProviderName,
+                AppointmentReasonName: appointment.AppointmentReasonName,
+                Remarks: appointment.Remarks,
               },
             })
           );
@@ -157,6 +163,28 @@ const MyCalendar = ({}) => {
     }
   };
 
+  const isSlotInAbsencePeriod = (start, end) => {
+    return calendarData?.ProviderAbsences?.some((absence) => {
+      const absenceStart = moment(absence.StartDate);
+      const absenceEnd = moment(absence.EndDate).endOf("day");
+      return (
+        moment(start).isBetween(absenceStart, absenceEnd, null, "[]") ||
+        moment(end).isBetween(absenceStart, absenceEnd, null, "[]")
+      );
+    });
+  };
+
+  const isSlotInSpecialEventsPeriod = (start, end) => {
+    return calendarData?.SpecialEvents?.some((absence) => {
+      const absenceStart = moment(absence.StartDate);
+      const absenceEnd = moment(absence.EndDate).endOf("day");
+      return (
+        moment(start).isBetween(absenceStart, absenceEnd, null, "[]") ||
+        moment(end).isBetween(absenceStart, absenceEnd, null, "[]")
+      );
+    });
+  };
+
   const generateAvailableSlots = (calendarData) => {
     const availableSlots = [];
     let minSlotDuration = 30;
@@ -197,7 +225,12 @@ const MyCalendar = ({}) => {
           ) {
             break; // Prevent overbooking to previous day or past time
           }
-          if (!isSlotBooked(overbookedTimeStart, overbookedTimeEnd)) {
+
+          if (
+            !isSlotBooked(overbookedTimeStart, overbookedTimeEnd) &&
+            !isSlotInAbsencePeriod(overbookedTimeStart, overbookedTimeEnd) &&
+            !isSlotInSpecialEventsPeriod(overbookedTimeStart, overbookedTimeEnd)
+          ) {
             availableSlots.push({
               title: "Overbooking",
               start: overbookedTimeStart.toISOString(),
@@ -216,7 +249,11 @@ const MyCalendar = ({}) => {
         ) {
           if (time.isBefore(now)) continue; // Skip past slots
           const slotEnd = time.clone().add(slotDuration, "milliseconds");
-          if (!isSlotBooked(time, slotEnd)) {
+          if (
+            !isSlotBooked(time, slotEnd) &&
+            !isSlotInAbsencePeriod(time, slotEnd) &&
+            !isSlotInSpecialEventsPeriod(time, slotEnd)
+          ) {
             availableSlots.push({
               title: "Available",
               start: time.toISOString(),
@@ -237,6 +274,11 @@ const MyCalendar = ({}) => {
             .add(slotDuration, "milliseconds");
           if (
             !isSlotBooked(overbookedTimeStart, overbookedTimeEnd) &&
+            !isSlotInAbsencePeriod(overbookedTimeStart, overbookedTimeEnd) &&
+            !isSlotInSpecialEventsPeriod(
+              overbookedTimeStart,
+              overbookedTimeEnd
+            ) &&
             !overbookedTimeStart.isBefore(now)
           ) {
             availableSlots.push({
@@ -269,19 +311,24 @@ const MyCalendar = ({}) => {
     }
 
     setAvailableSlots([...availableSlots]);
-    eventData.backgroundColor = "#fea010";
+
+    eventData = {
+      ...eventData,
+      start: moment(eventData.start).format("YYYY-MM-DDTHH:mm:ss"),
+      end: moment(eventData.end).format("YYYY-MM-DDTHH:mm:ss"),
+      backgroundColor: "#fea010",
+    };
+
     const newEvent = [eventData];
     setEvents([...events, ...newEvent]);
     setModalVisible(false);
   };
 
   useEffect(() => {
-  
     const { availableSlots, minSlotDuration } =
       generateAvailableSlots(calendarData);
     setAvailableSlots(availableSlots);
     setSlotDuration(`00:${String(minSlotDuration).padStart(2, "0")}:00`);
-   
   }, [calendarData]);
 
   const calendarRef = useRef(null);
@@ -298,6 +345,8 @@ const MyCalendar = ({}) => {
       }
     }
   };
+
+  console.log("events", events);
 
   return (
     <Layout>
@@ -391,6 +440,7 @@ const MyCalendar = ({}) => {
                 <Form.Item name="Provider" label="Provider">
                   <Select
                     loading={providerLoading}
+                    allowClear
                     showSearch
                     placeholder="Select the provider"
                     style={{ width: "100%" }}
@@ -532,7 +582,7 @@ const MyCalendar = ({}) => {
               }}
               titleFormat={{ year: "numeric", month: "long", day: "numeric" }}
               allDayText=""
-            //  slotMinTime="04:00:00"
+              //  slotMinTime="04:00:00"
               navLinks={true}
               nowIndicator={true}
               themeSystem="bootstrap"
@@ -553,23 +603,39 @@ const MyCalendar = ({}) => {
               open={viewScheduledModal}
               onCancel={() => setViewScheduledModal(false)}
               selectedSlot={selectedSlot}
-              calendarData={calendarData?.ScheduleProviderAppointments?.filter(
-                (appointment) => {
-                  // Extract time parts from selectedSlot's start and end
-                  const selectedSlotStart = moment(selectedSlot?.start).format(
-                    "HH:mm:ss"
-                  );
-                  const selectedSlotEnd = moment(selectedSlot?.end).format(
-                    "HH:mm:ss"
-                  );
+              // calendarData={calendarData?.ScheduleProviderAppointments?.filter(
+              //   (appointment) => {
+              //     // Extract time parts from selectedSlot's start and end
+              //     const selectedSlotStart = moment(selectedSlot?.start).format(
+              //       "HH:mm:ss"
+              //     );
+              //     const selectedSlotEnd = moment(selectedSlot?.end).format(
+              //       "HH:mm:ss"
+              //     );
 
-                  // Compare the times
-                  return (
-                    appointment?.FromTime === selectedSlotStart &&
-                    appointment?.ToTime === selectedSlotEnd
-                  );
-                }
-              )}
+              //     // Compare the times
+              //     return (
+              //       appointment?.FromTime === selectedSlotStart &&
+              //       appointment?.ToTime === selectedSlotEnd
+              //     );
+              //   }
+              // )}
+              calendarData={events?.filter((appointment) => {
+                // Extract time parts from selectedSlot's start and end
+                const selectedSlotStart = moment(selectedSlot?.start).format(
+                  "YYYY-MM-DDTHH:mm:ss"
+                );
+                const selectedSlotEnd = moment(selectedSlot?.end).format(
+                  "YYYY-MM-DDTHH:mm:ss"
+                );
+
+                // Compare the times
+                return (
+                  appointment?.start === selectedSlotStart &&
+                  appointment?.end === selectedSlotEnd
+                );
+              })}
+              // calendarData={events}
             />
           </div>
         )}

@@ -1,7 +1,6 @@
 import {
   AutoComplete,
   Button,
-  Checkbox,
   Col,
   DatePicker,
   Divider,
@@ -11,9 +10,7 @@ import {
   Radio,
   Row,
   Select,
-  Space,
   Spin,
-  Typography,
   message,
 } from "antd";
 import TextArea from "antd/es/input/TextArea";
@@ -24,12 +21,11 @@ import {
   urlPatientAppointmentExist,
   urlSearchPatientRecord,
   urlSearchUHID,
-} from "../../../endpoints";
-import customAxios from "../../components/customAxios/customAxios";
-import CustomTable from "../../components/customTable/index";
+} from "../../../endpoints.js";
+import customAxios from "../../components/customAxios/customAxios.jsx";
+import CustomTable from "../../components/customTable/index.jsx";
 import moment from "moment";
-
-const { Text } = Typography;
+import dayjs from "dayjs";
 
 function ScheduleAppointmentModal({
   open,
@@ -43,6 +39,7 @@ function ScheduleAppointmentModal({
   const [form1] = Form.useForm();
   const [form2] = Form.useForm();
   const [form3] = Form.useForm();
+
   const handleCancel = () => {
     setValue(null);
     form1.resetFields();
@@ -52,7 +49,6 @@ function ScheduleAppointmentModal({
     onCancel();
   };
   const [value, setValue] = useState(null);
-  const [title, setTitle] = useState("");
   const [options, setOptions] = useState([]);
   const [selectedUhId, setSelectedUhId] = useState(null);
   const [patients, setPatients] = useState([]);
@@ -60,17 +56,14 @@ function ScheduleAppointmentModal({
   const [CountryId, setCountryId] = useState(0);
   const [StateId, setStateId] = useState(0);
   const [PlaceId, setPlaceId] = useState(0);
-  const [AreaId, setAreaId] = useState(0);
   const [patientSearchLoading, setPatientSearchLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
 
   const handleCountryChange = (value) => {
-    debugger;
     setCountryId(value);
   };
 
   const handleStateChange = (value) => {
-    debugger;
     setStateId(value);
   };
 
@@ -102,18 +95,15 @@ function ScheduleAppointmentModal({
 
   function formatDate(dateString) {
     const date = new Date(dateString);
-
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
-
     return `${day}-${month}-${year}`;
   }
 
   function formatTimeSlot(startTimeString, endTimeString) {
     const startTime = new Date(startTimeString);
     const endTime = new Date(endTimeString);
-
     const formatTime = (date) => {
       let hours = date.getHours();
       const minutes = String(date.getMinutes()).padStart(2, "0");
@@ -138,9 +128,18 @@ function ScheduleAppointmentModal({
       start: selectedSlot?.start,
       end: selectedSlot?.end,
       type: "Booked",
+      backgroundColor: "#fea010",
       extendedProps: {
         UHID: values.PatientUHID,
         PatientName: values.PatientName,
+        ProviderName: providerDetails?.ProviderName,
+        Age: selecetedPatient?.Age,
+        AppointmentReasonName: calendarData?.AppointmentReason?.find(
+          (reason) => reason.LookupID === form2.getFieldValue("reason")
+        )?.LookupDescription,
+        Remarks: form3.getFieldValue("Remarks")
+          ? form3.getFieldValue("Remarks")
+          : form2.getFieldValue("remarks"),
       },
       content: `Appointment Booked for UHID ${values.PatientUHID} & Patient Name ${values.PatientName}`,
     };
@@ -190,11 +189,12 @@ function ScheduleAppointmentModal({
 
   const handleSelect = (value, option) => {
     console.log("UhId", value);
+    setOptions([]);
     setSelectedUhId(option.value);
   };
 
   const handleOnSearch = (values) => {
-    setPatientSearchLoading(true);
+    // setPatientSearchLoading(true);
     try {
       const postData1 = {
         Uhid: values?.Uhid ? values.Uhid : '""',
@@ -224,7 +224,7 @@ function ScheduleAppointmentModal({
     } catch (error) {
       console.error("Error:", error);
     } finally {
-      setPatientSearchLoading(false);
+      // setPatientSearchLoading(false);
     }
   };
 
@@ -317,24 +317,27 @@ function ScheduleAppointmentModal({
 
         {value === "ExistingPatient" ? (
           <>
-            <Spin spinning={saveLoading}>
-              <Form
-                style={{ margin: "1rem 0 0 0", width: "100%" }}
-                layout="vertical"
-                form={form1}
-                onFinish={(values) => {
-                  // handleSubmit();
-                  // form1.resetFields();
-                  // handleClose();
+            <Form
+              style={{ margin: "1rem 0 0 0", width: "100%" }}
+              layout="vertical"
+              form={form1}
+              onFinish={(values) => {
+                // handleSubmit();
 
-                  handleOnSearch(values);
-                }}
-              >
+                // handleClose();
+                setPatientSearchLoading(true);
+                handleOnSearch(values);
+                setPatientSearchLoading(false);
+              }}
+            >
+              <Spin spinning={patientSearchLoading}>
                 <Row gutter={16}>
                   <Col span={8}>
                     <Form.Item label="UHID" name="Uhid">
-                      <AutoComplete
-                        id="uhid-autocomplete"
+                      <Select
+                        showSearch
+                        placeholder="Search Patients"
+                        notFoundContent="Enter Uhid To Search"
                         options={options}
                         onSearch={handleAutoCompleteChange}
                         onSelect={handleSelect}
@@ -359,6 +362,7 @@ function ScheduleAppointmentModal({
                         style={{ width: "100%" }}
                         type="primary"
                         htmlType="submit"
+                        loading={patientSearchLoading}
                       >
                         Search
                       </Button>
@@ -381,8 +385,9 @@ function ScheduleAppointmentModal({
                     </Form.Item>
                   </Col>
                 </Row>
-              </Form>
-            </Spin>
+              </Spin>
+            </Form>
+
             <Form
               style={{ margin: "1rem 0 0 0", width: "100%" }}
               layout="vertical"
@@ -394,6 +399,7 @@ function ScheduleAppointmentModal({
                 remarks: "",
               }}
               onFinish={(values) => {
+                console.log("Save Log", selecetedPatient);
                 setSaveLoading(true);
                 try {
                   const postData = {
@@ -445,71 +451,66 @@ function ScheduleAppointmentModal({
                 }
               }}
             >
-              <Spin spinning={patientSearchLoading}>
-                <Divider style={{ margin: 0 }} />
-              </Spin>
-              {patients.length > 0 && (
-                <>
-                  <Row gutter={32}>
-                    <Col span={24}>
-                      <CustomTable
-                        columns={columns}
-                        dataSource={patients}
-                        actionColumn={false}
-                        isFilter={true}
-                        rowkey={"PatientId"}
-                        rowSelection={{
-                          type: "radio",
-                          ...rowSelection,
-                        }}
-                      />
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="reason" label="Reason">
-                        <Select
-                          style={{ width: "100%" }}
-                          options={calendarData?.AppointmentReason.map(
-                            (reason) => ({
-                              value: reason.LookupID,
-                              label: reason.LookupDescription,
-                              key: reason.LookupID,
-                            })
-                          )}
-                        />
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="remarks" label="Remarks">
-                        <TextArea rows={2} style={{ width: "100%" }} />
-                      </Form.Item>
-                    </Col>
-                    {/* <Divider style={{ marginTop: "0" }} /> */}
-                    <Col offset={16} span={4}>
-                      <Form.Item>
-                        <Button
-                          style={{ width: "100%" }}
-                          type="primary"
-                          htmlType="submit"
-                        >
-                          Save
-                        </Button>
-                      </Form.Item>
-                    </Col>
-                    <Col span={4}>
-                      <Form.Item>
-                        <Button
-                          style={{ width: "100%" }}
-                          danger
-                          type="default"
-                          onClick={handleCancel}
-                        >
-                          Cancel
-                        </Button>
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </>
-              )}
+              <Divider style={{ margin: 0 }} />
+
+              <Row gutter={32}>
+                <Col span={24}>
+                  <CustomTable
+                    columns={columns}
+                    dataSource={patients}
+                    actionColumn={false}
+                    isFilter={true}
+                    rowkey={"PatientId"}
+                    rowSelection={{
+                      type: "radio",
+                      ...rowSelection,
+                    }}
+                  />
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="reason" label="Reason">
+                    <Select
+                      style={{ width: "100%" }}
+                      options={calendarData?.AppointmentReason.map(
+                        (reason) => ({
+                          value: reason.LookupID,
+                          label: reason.LookupDescription,
+                          key: reason.LookupID,
+                        })
+                      )}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="remarks" label="Remarks">
+                    <TextArea rows={2} style={{ width: "100%" }} />
+                  </Form.Item>
+                </Col>
+                {/* <Divider style={{ marginTop: "0" }} /> */}
+                <Col offset={16} span={4}>
+                  <Form.Item>
+                    <Button
+                      style={{ width: "100%" }}
+                      type="primary"
+                      htmlType="submit"
+                    >
+                      Save
+                    </Button>
+                  </Form.Item>
+                </Col>
+                <Col span={4}>
+                  <Form.Item>
+                    <Button
+                      style={{ width: "100%" }}
+                      danger
+                      type="default"
+                      onClick={handleCancel}
+                    >
+                      Cancel
+                    </Button>
+                  </Form.Item>
+                </Col>
+              </Row>
             </Form>
           </>
         ) : (
@@ -536,7 +537,16 @@ function ScheduleAppointmentModal({
                       ? values.PresentAreaId
                       : "",
                   };
+                  form3.resetFields();
                   console.log("Submit Values", values);
+                  // if (
+                  //   moment(values.Dob, "DD-MM-YYYY").isAfter(
+                  //     moment().endOf("day")
+                  //   )
+                  // ) {
+                  //   message.error("Date of Birth cannot be a future date.");
+                  //   return;
+                  // }
                   try {
                     customAxios
                       .post(
@@ -547,6 +557,7 @@ function ScheduleAppointmentModal({
                       .then((response) => {
                         console.log(response.data);
                         handleSubmit(response.data);
+                        form3.resetFields();
                       });
                   } catch (error) {
                     console.log(error);
@@ -615,11 +626,15 @@ function ScheduleAppointmentModal({
                       rules={[
                         {
                           required: true,
-                          message: "Mobile Number is Required.",
+                          message: "Please enter your mobile number.",
+                        },
+                        {
+                          pattern: /^\d{10}$/,
+                          message: "Please enter a valid 10 digit number!",
                         },
                       ]}
                     >
-                      <Input style={{ width: "100%" }} />
+                      <Input maxLength={10} style={{ width: "100%" }} />
                     </Form.Item>
                   </Col>
                   <Col span={6}>
@@ -634,6 +649,7 @@ function ScheduleAppointmentModal({
                       ]}
                     >
                       <DatePicker
+                        maxDate={dayjs().endOf("day")}
                         placeholder="DD-MM-YYYY"
                         format={"DD-MM-YYYY"}
                         style={{ width: "100%" }}
