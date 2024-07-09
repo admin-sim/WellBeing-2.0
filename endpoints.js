@@ -4,8 +4,6 @@ const baseURL = config.baseUrl;
 // const baseURL = process.env.REACT_APP_API_URL;
 export const urlAddNewVisit1 = `${baseURL}/api/Encounter/SaveNewEncounter1`;
 
-export const urlGetPatientDetails = `${baseURL}/api/Patient/GetPatientDetails`;
-
 export const urlGetServiceCharge = `${baseURL}/api/Billing/GetServiceCharge`;
 
 export const urlBillingCreate = `${baseURL}/api/Billing/Create`;
