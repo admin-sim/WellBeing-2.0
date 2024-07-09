@@ -30,8 +30,8 @@ function DiscountModal({
     if (discountDetails) {
       form.setFieldsValue({
         ServiceCatalogue: discountDetails.ServiceName,
-        PatientChargeAmount: discountDetails.ServiceChargeAmountIncludingPriceTariff,
-       
+        PatientChargeAmount:
+          discountDetails.ServiceChargeAmountIncludingPriceTariff,
       });
     }
   }, [discountDetails]);
@@ -45,39 +45,30 @@ function DiscountModal({
 
   const onFinishForAddChargeParameters = async (values) => {
     debugger;
-      values.ChargeID=discountDetails.ChargeID;
-      values.ServiceId=discountDetails.ServiceId;
-      values.PatientId=discountDetails.PatientId;
-      values.EncounterId=discountDetails.EncounterId;
+    values.ChargeID = discountDetails.ChargeID;
+    values.ServiceId = discountDetails.ServiceId;
+    values.PatientId = discountDetails.PatientId;
+    values.EncounterId = discountDetails.EncounterId;
 
-      try {
-        const response = await customAxios.post(
-          urlUpdateDiscount,
-          values,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-    
-          if (response.status === 200 && response.data.data!=null) {
-          
-            setCharges(response.data.data.PatientAccountCharges);
-           message.success("Discount Applied");
-            handleCancel();
-            
-          } else {
-            message.error("Something Went Wrong");
-          }
-        
-      } catch (error) {
-        message.error("Something went wrong");
-        console.error(error);
+    try {
+      const response = await customAxios.post(urlUpdateDiscount, values, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.status === 200 && response.data.data != null) {
+        setCharges(response.data.data.PatientAccountCharges);
+        message.success("Discount Applied");
+        handleCancel();
+      } else {
+        message.error("Something Went Wrong");
       }
-
-
-  }
+    } catch (error) {
+      message.error("Something went wrong");
+      console.error(error);
+    }
+  };
   const handleDiscountRateChange = (disc) => {
     debugger;
     // Check if disc is not null, undefined, or NaN
@@ -90,12 +81,12 @@ function DiscountModal({
       });
       return; // Exit the function early
     }
-  
-     // Ensure discountrate does not exceed 100
-  if (disc > 100) {
-    disc = 100; // Convert to 100 if above 100
-  }
-    const main = form.getFieldValue('PatientChargeAmount');
+
+    // Ensure discountrate does not exceed 100
+    if (disc > 100) {
+      disc = 100; // Convert to 100 if above 100
+    }
+    const main = form.getFieldValue("PatientChargeAmount");
     if (main) {
       const dec = (disc / 100).toFixed(2); // convert rate into decimal
       const mult = main * dec; // value to subtract from main value
@@ -107,12 +98,12 @@ function DiscountModal({
       });
     }
   };
-  
+
   return (
     <div>
       <Spin spinning={loading}>
         <Modal
-          title="Add New General Lookup"
+          title="Discount Modal"
           open={open}
           maskClosable={false}
           footer={null}
@@ -132,17 +123,16 @@ function DiscountModal({
             // }}
           >
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col className="gutter-row" span={10}>
+              <Col span={12}>
                 <Form.Item
                   name="ServiceCatalogue"
                   label="Service/Catalogue"
                   rules={[{ required: true }]}
-                  
                 >
                   <Input disabled style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
-              <Col className="gutter-row" span={10}>
+              <Col span={12}>
                 <Form.Item
                   name="PatientChargeAmount"
                   label="ChargeAmount"
@@ -155,19 +145,25 @@ function DiscountModal({
               </Col>
             </Row>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col className="gutter-row" span={10}>
+              <Col span={12}>
                 <Form.Item
                   name="PatientDiscountRate"
                   label="DiscountRate"
                   rules={[
-                  
-                    { pattern: /^[0-9]*$/, message: "Discount Rate must be a number" },
+                    {
+                      pattern: /^[0-9]*$/,
+                      message: "Discount Rate must be a number",
+                    },
                   ]}
                 >
-                  <InputNumber min={0}   style={{ width: "100%" }} onChange={handleDiscountRateChange} />
+                  <InputNumber
+                    min={0}
+                    style={{ width: "100%" }}
+                    onChange={handleDiscountRateChange}
+                  />
                 </Form.Item>
               </Col>
-              <Col className="gutter-row" span={10}>
+              <Col span={12}>
                 <Form.Item
                   name="PatientDiscountAmount"
                   label="DiscountAmount"
@@ -180,7 +176,7 @@ function DiscountModal({
               </Col>
             </Row>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col className="gutter-row" span={10}>
+              <Col span={12}>
                 <Form.Item
                   name="PatientNetAmount"
                   label="NetAmount"
@@ -191,7 +187,7 @@ function DiscountModal({
                   <Input disabled style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
-              <Col className="gutter-row" span={10}>
+              <Col span={12}>
                 <Form.Item
                   name="DiscountReasonId"
                   label="DiscountReason"
@@ -212,15 +208,15 @@ function DiscountModal({
                 </Form.Item>
               </Col>
             </Row>
-            <Row gutter={32} style={{ height: "1.8rem" }}>
-              <Col offset={12} span={6}>
+            <Row gutter={16} justify="end" style={{ marginTop: "1rem" }}>
+              <Col>
                 <Form.Item>
                   <Button type="primary" htmlType="submit">
                     Submit
                   </Button>
                 </Form.Item>
               </Col>
-              <Col span={6}>
+              <Col>
                 <Form.Item>
                   <Button type="default" onClick={handleCancel}>
                     Cancel

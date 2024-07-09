@@ -33,6 +33,7 @@ import {
 } from "../../../../../endpoints";
 import CustomTable from "../../../../components/customTable/index";
 import dayjs from "dayjs";
+import moment from "moment/moment";
 const { RangePicker } = DatePicker;
 
 function ProviderAbsence() {
@@ -40,7 +41,7 @@ function ProviderAbsence() {
   const [columnData, setColumnData] = useState();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [calenderData, setCalenderData] = useState();
+  const [calendarData, setCalendarData] = useState({});
   const [DateFormat, setDateFormat] = useState("DD-MM-YYYY");
   const [FromDate, setFromDate] = useState();
   const [ToDate, setToDate] = useState();
@@ -79,44 +80,27 @@ function ProviderAbsence() {
     form.resetFields();
   };
 
-  const handleFromDateChange = (date, dateString) => {
-    debugger;
-    const formattedFromDate = dayjs(date).format("DD-MM-YYYY hh:mm:ss A");
-    setFromDate(formattedFromDate);
-  };
-
-  const handleToDateChange = (date, dateString) => {
-    debugger;
-    const formattedToDate = dayjs(date).format("DD-MM-YYYY hh:mm:ss A");
-    setToDate(formattedToDate);
-  };
-
-  //   const disabledDate = (current) => {
-  //     // Disable dates that are in the future
-  //     return current && current > new Date();
-  //   };
-
   const handleEditModal = (record) => {
     debugger;
-    setCalenderData(record);
+    setCalendarData(record);
     setLoading(true);
     setIsEditing(true);
     customAxios
       .get(`${urlGetProviderAbsenceDetails}?Id=${record.AbsenceId}`)
       .then((response) => {
         if (response.data !== null) {
-          const calenderData = response.data.data.NewProviderAbsenceModel;
-          setCalenderData(calenderData);
+          const calendarData = response.data.data.NewProviderAbsenceModel;
+          setCalendarData(calendarData);
           setIsModalOpen(true);
-          const parsedStartDate = dayjs(calenderData.StartDate);
-          const parsedEndDate = dayjs(calenderData.EndDate);
-          handleFromDateChange(calenderData.StartDate);
-          handleToDateChange(calenderData.EndDate);
+          const parsedStartDate = dayjs(calendarData.StartDate);
+          const parsedEndDate = dayjs(calendarData.EndDate);
+          handleFromDateChange(calendarData.StartDate);
+          handleToDateChange(calendarData.EndDate);
           form.setFieldsValue({
-            Provider: calenderData.ProviderId,
-            FromDate: parsedStartDate,
-            ToDate: parsedEndDate,
-            Reason: calenderData.AbsenceReason,
+            Provider: calendarData.ProviderId,
+            FromDateToDate: [parsedStartDate, parsedEndDate],
+            // ToDate: parsedEndDate,
+            Reason: calendarData.AbsenceReason,
           });
 
           setLoading(false);
@@ -129,21 +113,95 @@ function ProviderAbsence() {
     form.resetFields();
   };
 
+  const handleFromDateChange = (date, dateString) => {
+    debugger;
+    const formattedFromDate = dayjs(date).format("DD-MM-YYYY hh:mm:ss A");
+    setFromDate(formattedFromDate);
+  };
+
+  const handleToDateChange = (date, dateString) => {
+    debugger;
+    const formattedToDate = dayjs(date).format("DD-MM-YYYY hh:mm:ss A");
+    setToDate(formattedToDate);
+  };
+
+  const disabledDate = (current) => {
+    if (isEditing && calendarData) {
+      const startDate = dayjs(calendarData.StartDate);
+      return current && current < startDate.startOf("day");
+    } else {
+      return current && current < dayjs().startOf("day");
+    }
+  };
+
+  const disabledRangeTime = (_, type) => {
+    if (isEditing && calendarData) {
+      const startDate = dayjs(calendarData.StartDate);
+      return {
+        disabledHours: () => {
+          const hours = [];
+          const currentHour = dayjs().hour();
+          if (dayjs(startDate).isSame(_, "day")) {
+            for (let i = 0; i < currentHour; i++) {
+              hours.push(i);
+            }
+          }
+          return hours;
+        },
+        disabledMinutes: (selectedHour) => {
+          const minutes = [];
+          const currentMinute = dayjs().minute();
+          if (
+            dayjs(startDate).isSame(_, "day") &&
+            selectedHour === dayjs().hour()
+          ) {
+            for (let i = 0; i <= currentMinute; i++) {
+              minutes.push(i);
+            }
+          }
+          return minutes;
+        },
+      };
+    } else {
+      return {
+        disabledHours: () => {
+          const hours = [];
+          const currentHour = dayjs().hour();
+          if (dayjs().isSame(_, "day")) {
+            for (let i = 0; i < currentHour; i++) {
+              hours.push(i);
+            }
+          }
+          return hours;
+        },
+        disabledMinutes: (selectedHour) => {
+          const minutes = [];
+          const currentMinute = dayjs().minute();
+          if (dayjs().isSame(_, "day") && selectedHour === dayjs().hour()) {
+            for (let i = 0; i <= currentMinute; i++) {
+              minutes.push(i);
+            }
+          }
+          return minutes;
+        },
+      };
+    }
+  };
+
   const handleDelete = (record) => {
     debugger;
     //Deleting an State from the Table
-    setCalenderData(record);
+    setCalendarData(record);
     try {
       customAxios
         .delete(`${urlDeleteProviderAbsence}?Id=${record.AbsenceId}`)
         .then((response) => {
           if (response.data.data !== null) {
-            const newColumnData =
-              response.data.data.ProviderAbsenceModel.map(
-                (obj, index) => {
-                  return { ...obj, key: index + 1 };
-                }
-              );
+            const newColumnData = response.data.data.ProviderAbsenceModel.map(
+              (obj, index) => {
+                return { ...obj, key: index + 1 };
+              }
+            );
             setColumnData(newColumnData);
             setDropdown(response.data.data);
             notification.success({
@@ -158,16 +216,33 @@ function ProviderAbsence() {
     }
   };
 
+  // const handleRangeChange = (dates, dateStrings) => {
+  //   debugger;
+  //   if (dates) {
+  //     const formattedFromDate = dates[0].format("DD-MM-YYYY HH:mm:ss A");
+  //     const formattedToDate = dates[1].format("DD-MM-YYYY HH:mm:ss A");
+  //     console.log("Formatted Dates:", formattedFromDate, formattedToDate);
+  //   } else {
+  //     form.setFieldsValue({ FromDateToDate: [] });
+  //   }
+  // };
+
   const handleSubmit = async () => {
     debugger;
     form.validateFields();
     const values = form.getFieldsValue();
     console.log("state Edit Modal Submit", values);
+    const formattedFromDate = values.FromDateToDate[0].format(
+      "DD-MM-YYYY hh:mm:ss A"
+    );
+    const formattedToDate = values.FromDateToDate[1].format(
+      "DD-MM-YYYY hh:mm:ss A"
+    );
 
     try {
       if (isEditing) {
         const response = await customAxios.post(
-          `${urlUpdateProviderAbsence}?AbsenceId=${calenderData.AbsenceId}&ProviderId=${values.Provider}&EditStartDate=${FromDate}&EditEndDate=${ToDate}&EditAbsenceReason=${values.Reason}`,
+          `${urlUpdateProviderAbsence}?AbsenceId=${calendarData.AbsenceId}&ProviderId=${values.Provider}&EditStartDate=${formattedFromDate}&EditEndDate=${formattedToDate}&EditAbsenceReason=${values.Reason}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -189,13 +264,14 @@ function ProviderAbsence() {
             setToDate(null);
 
             notification.success({
-              message: "Provider leave Noted",
+              message: "Provider Absence added successfully",
             });
           }
         } else {
           if (response.data === "Failure") {
+            form.resetFields();
             notification.warning({
-              message: "Provider leave already Not Noted",
+              message: "Provider absence already exists in record",
             });
           }
           notification.error({
@@ -205,7 +281,7 @@ function ProviderAbsence() {
       } else {
         // Send a POST request to the server
         const response = await customAxios.post(
-          `${urlAddProviderAbsence}?ProviderId=${values.Provider}&StartDate=${FromDate}&EndDate=${ToDate}&AbsenceReason=${values.Reason}`,
+          `${urlAddProviderAbsence}?ProviderId=${values.Provider}&StartDate=${formattedFromDate}&EndDate=${formattedToDate}&AbsenceReason=${values.Reason}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -226,12 +302,13 @@ function ProviderAbsence() {
             setFromDate(null);
             setToDate(null);
             notification.success({
-              message: "Provider leave Noted",
+              message: "Provider absence added successfully",
             });
           } else {
             if (response.data === "Failure") {
+              form.resetFields();
               notification.warning({
-                message: "Provider leave already Not Noted",
+                message: "Provider absence already exists in record",
               });
             }
             notification.error({
@@ -242,8 +319,8 @@ function ProviderAbsence() {
       }
     } catch (error) {
       console.error("Failed to send data to server: ", error);
-      notification.warning({
-        message: "Create schedule Template for the provider",
+      notification.error({
+        message: "Something went wrong ,Try Again!",
       });
     }
   };
@@ -266,13 +343,13 @@ function ProviderAbsence() {
     },
     {
       title: "From Date",
-      dataIndex: "StartDate",
-      key: "StartDate",
+      dataIndex: "StartDateTime",
+      key: "StartDateTime",
     },
     {
       title: "To Date",
-      dataIndex: "EndDate",
-      key: "EndDate",
+      dataIndex: "EndDateTime",
+      key: "EndDateTime",
     },
   ];
 
@@ -339,6 +416,7 @@ function ProviderAbsence() {
               layout="vertical"
               form={form}
               onFinish={handleSubmit}
+              initialValues={{ FromDateToDate: [dayjs(), dayjs()] }}
             >
               <Form.Item
                 name="Provider"
@@ -367,37 +445,24 @@ function ProviderAbsence() {
               </Form.Item>
 
               <Form.Item
-                name="FromDate"
-                label="From Date"
+                name="FromDateToDate"
+                label="From Date - To Date"
                 rules={[
                   {
                     required: true,
-                    message: "Please select the start Date",
+                    message: "Please select the start Date and End Date",
                   },
                 ]}
               >
-                <DatePicker
-                  format={"DD-MM-YYYY"}
-                  onChange={handleFromDateChange}
+                <RangePicker
+                  format={"DD-MM-YYYY hh:mm:ss A"}
                   style={{ width: "100%" }}
-                ></DatePicker>
+                  disabledDate={disabledDate}
+                  disabledTime={disabledRangeTime}
+                  showTime
+                ></RangePicker>
               </Form.Item>
-              <Form.Item
-                name="ToDate"
-                label="To Date"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select the end Date",
-                  },
-                ]}
-              >
-                <DatePicker
-                  format={"DD-MM-YYYY"}
-                  onChange={handleToDateChange}
-                  style={{ width: "100%" }}
-                ></DatePicker>
-              </Form.Item>
+
               <Form.Item
                 name="Reason"
                 label="Leave Reason"

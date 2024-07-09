@@ -11,10 +11,14 @@ import {
   Typography,
   message,
 } from "antd";
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 const { Text } = Typography;
 import customAxios from "../../../../components/customAxios/customAxios";
-import { urlUpdatePriceTariffChargeParameter } from "../../../../../endpoints";
+import { urlUpdatePriceTariffChargeParameter, urlPackageDescriptionServiceForInsurance,
+  urlPackageDescriptionServiceGroup,
+  urlPackageDescriptionServiceClassification, } from "../../../../../endpoints";
+import dayjs from "dayjs";
+import { debounce } from "lodash";
 
 function EditPriceChargeModal({
   options,
@@ -25,39 +29,67 @@ function EditPriceChargeModal({
   linedata,
 }) {
   const [form] = Form.useForm();
-  const [effectiveFromDatemodal, setEffectiveFromDateModal] = useState(null);
-  const [effectiveToDatemodal, setEffectiveToDateModal] = useState(null);
+  // const [effectiveFromDatemodal, setEffectiveFromDateModal] = useState(null);
+  // const [effectiveToDatemodal, setEffectiveToDateModal] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [data, setData] = useState([]);
+  const [value, setValue] = useState(undefined);
+  const [fetching, setFetching] = useState(false);
+  const [descriptionDisabled, setDescriptionDisabled] = useState(false);
 
-  if (linedata) {
-    form.setFieldsValue({
-      PatientTypeId: linedata.PatientTypeId,
-      Indicator: linedata.Indicator,
-      Description: linedata.IndicatorDescriptionName,
-      TariffLineIndicator: linedata.TariffLineIndicator,
-      FactorAmount: linedata.FactorAmount,
-      TariffLineValue: linedata.TariffLineValue,
-      Status: linedata.Status,
-      Nationality: linedata.Nationality,
-      Gender: linedata.Gender,
-      WardType: linedata.WardType,
-      Provider: linedata.Provider,
-      IncomeLimit:linedata.IncomeLimit
-    });
-  }
+  //setValue(linedata?.IndicatorDescriptionId);
+  const [url, setUrl] = useState();
+  useEffect(() => {
+    if (linedata) {
+      form.setFieldsValue({
+        PatientTypeId: linedata.PatientTypeId,
+        Indicator: linedata.Indicator,
+        IndicatorDescriptionId: linedata.IndicatorDescriptionName,
+        TariffLineIndicator: linedata.TariffLineIndicator,
+        FactorAmount: linedata.FactorAmount,
+        TariffLineValue: linedata.TariffLineValue,
+        Status: linedata.Status,
+        Nationality: linedata.Nationality,
+        Gender: linedata.Gender,
+        WardType: linedata.WardType,
+        Provider: linedata.Provider,
+        IncomeLimit: linedata.IncomeLimit,
+        EffectiveFrom: linedata.EffectiveFromDate
+          ? dayjs(linedata.EffectiveFromDate, "DD-MM-YYYY")
+          : null,
+        EffectiveTo: linedata.EffectiveToDate
+          ? dayjs(linedata.EffectiveToDate, "DD-MM-YYYY")
+          : null,
+      });
+      setValue(linedata.IndicatorDescriptionId);
+      //setDescriptionName(linedata.IndicatorDescriptionName);
+    }
+  }, [linedata]);
 
   const handleCancel = () => {
     form.resetFields();
+    setData([]);
+    setValue(undefined);
+    setUrl(undefined);
     handleClose();
   };
 
   const onFinishForUpdateChargeParameters = async (values) => {
+    debugger;
+    console.log('value',value);
     setLoading(true);
-    values.EffectiveFromDate = effectiveFromDatemodal;
-    values.EffectiveToDate = effectiveToDatemodal;
+    // values.EffectiveFromDate = effectiveFromDatemodal;
+    // values.EffectiveToDate = effectiveToDatemodal;
+    values.EffectiveFromDate = values.EffectiveFrom
+      ? values.EffectiveFrom.format("DD-MM-YYYY")
+      : "";
+    values.EffectiveToDate = values.EffectiveTo
+      ? values.EffectiveTo.format("DD-MM-YYYY")
+      : "";
     values.PriceTariffId = linedata.PriceTariffId;
     values.PriceTariffLineId = editedpriceTarifflineId;
     values.RevisionNo = 0;
+    values.IndicatorDescriptionId=value;
     console.log(linedata, "linedata");
     try {
       const response = await customAxios.post(
@@ -86,11 +118,68 @@ function EditPriceChargeModal({
     setLoading(false);
   };
 
-  const handleEfeectiveFromModal = (date, dateString) => {
-    setEffectiveFromDateModal(dateString);
+
+
+
+
+  const IndicatorOnchange = (value, option) => {
+    console.log("Selected value:", value);
+    console.log("Selected option:", option);
+    form.setFieldsValue({ IndicatorDescriptionId: undefined });
+    setData([]);
+  
+    form.resetFields(['IndicatorDescriptionId']); // Corrected to use an array
+    // Update the URL based on the selected option
+    if (option.children !== "All") {
+      setDescriptionDisabled(false);
+      switch (option.children) {
+        case "Service Group":
+          setUrl(urlPackageDescriptionServiceGroup);
+          break;
+        case "Service Classification":
+          setUrl(urlPackageDescriptionServiceClassification);
+          break;
+        default:
+          setUrl(urlPackageDescriptionServiceForInsurance);
+          break;
+      }
+    }
+    else{
+      setDescriptionDisabled(true);
+    }
+    
   };
-  const handleEfeectiveToModal = (date, dateString) => {
-    setEffectiveToDateModal(dateString);
+
+  const fetchOptions = async (value) => {
+    debugger;
+    if (!url || !value) {
+      setData([]);
+      //message.warning('Please Select Indicator First..')
+      return;
+    }
+    setFetching(true);
+    if(value){
+      try {
+        const response = await customAxios.get(`${url}?Description=${value}`);
+        setData(response.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+    else{
+      setData([]);
+    }
+    setFetching(false);
+  };
+
+  const debounceFetchOptions = useCallback(debounce(fetchOptions, 800), [url]);
+
+  const handleDescription = (newValue, option) => {
+    setValue(newValue);
+    //setDescriptionName(option.children);
+    form.setFieldsValue({
+      IndicatorDescriptionId: newValue,
+    });
   };
 
   return (
@@ -243,7 +332,7 @@ function EditPriceChargeModal({
                     { required: true, message: "Please select Indicator" },
                   ]}
                 >
-                  <Select>
+                  <Select  onChange={IndicatorOnchange}>
                     {options.Indicators?.map((option) => (
                       <Select.Option
                         key={option.LookupID}
@@ -256,8 +345,26 @@ function EditPriceChargeModal({
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
-                <Form.Item name="Description" label="Description">
-                  <Input style={{ width: "100%" }} />
+                <Form.Item name="IndicatorDescriptionId" label="Description">
+                  {/* <Input style={{ width: "100%" }} /> */}
+                  <Select
+                    showSearch
+                    value={value}
+                    allowClear
+                    placeholder="Select an option"
+                    notFoundContent={fetching ? <Spin size="small" /> : null}
+                    filterOption={false}
+                    onSearch={debounceFetchOptions}
+                    onChange={handleDescription}
+                    disabled={descriptionDisabled}
+                    style={{ width: "100%" }}
+                  >
+                    {data.map((item) => (
+                      <Option key={item.Id} value={item.Id}>
+                        {item.Name}
+                      </Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </Col>
             </Row>
@@ -315,7 +422,7 @@ function EditPriceChargeModal({
                 <Form.Item label="EffectiveFrom" name="EffectiveFrom">
                   <DatePicker
                     style={{ width: "100%" }}
-                    onChange={handleEfeectiveFromModal}
+                    //onChange={handleEfeectiveFromModal}
                     format="DD-MM-YYYY"
                   />
                 </Form.Item>
@@ -324,28 +431,24 @@ function EditPriceChargeModal({
                 <Form.Item label="EffectiveTo" name="EffectiveTo">
                   <DatePicker
                     style={{ width: "100%" }}
-                    onChange={handleEfeectiveToModal}
+                  //  onChange={handleEfeectiveToModal}
                     format="DD-MM-YYYY"
                   />
                 </Form.Item>
               </Col>
             </Row>
-            <Row gutter={32} style={{ height: "1.8rem" }}>
-              <Col offset={12} span={6}>
-                <Form.Item>
-                  <Button type="primary" htmlType="submit">
-                    Submit
-                  </Button>
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item>
-                  <Button type="default" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                </Form.Item>
-              </Col>
-            </Row>
+            <Row gutter={16} justify="end">
+            <Col>
+              <Form.Item>
+              <Button type="primary" htmlType="submit" style={{ marginRight: '8px' }}>
+                  Submit
+                </Button>
+                <Button type="default" onClick={handleCancel} >
+                  Cancel
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
           </Form>
         </Modal>
       </Spin>

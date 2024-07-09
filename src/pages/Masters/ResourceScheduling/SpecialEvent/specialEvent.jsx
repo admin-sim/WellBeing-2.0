@@ -33,13 +33,14 @@ import {
   urlDeleteSpecialEvents,
 } from "../../../../../endpoints";
 import CustomTable from "../../../../components/customTable";
+const { RangePicker } = DatePicker;
 
 function SpecialEvent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [columnData, setColumnData] = useState();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [calenderData, setCalenderData] = useState();
+  const [calendarData, setCalendarData] = useState();
   const [DateFormat, setDateFormat] = useState("DD-MM-YYYY");
   const [FromDate, setFromDate] = useState();
   const [ToDate, setToDate] = useState();
@@ -86,33 +87,91 @@ function SpecialEvent() {
     setToDate(formattedToDate);
   };
 
-  //   const disabledDate = (current) => {
-  //     // Disable dates that are in the future
-  //     return current && current > new Date();
-  //   };
+  const disabledDate = (current) => {
+    if (isEditing && calendarData) {
+      const startDate = dayjs(calendarData.StartDate);
+      return current && current < startDate.startOf("day");
+    } else {
+      return current && current < dayjs().startOf("day");
+    }
+  };
+
+  const disabledRangeTime = (_, type) => {
+    if (isEditing && calendarData) {
+      const startDate = dayjs(calendarData.StartDate);
+      return {
+        disabledHours: () => {
+          const hours = [];
+          const currentHour = dayjs().hour();
+          if (dayjs(startDate).isSame(_, "day")) {
+            for (let i = 0; i < currentHour; i++) {
+              hours.push(i);
+            }
+          }
+          return hours;
+        },
+        disabledMinutes: (selectedHour) => {
+          const minutes = [];
+          const currentMinute = dayjs().minute();
+          if (
+            dayjs(startDate).isSame(_, "day") &&
+            selectedHour === dayjs().hour()
+          ) {
+            for (let i = 0; i <= currentMinute; i++) {
+              minutes.push(i);
+            }
+          }
+          return minutes;
+        },
+      };
+    } else {
+      return {
+        disabledHours: () => {
+          const hours = [];
+          const currentHour = dayjs().hour();
+          if (dayjs().isSame(_, "day")) {
+            for (let i = 0; i < currentHour; i++) {
+              hours.push(i);
+            }
+          }
+          return hours;
+        },
+        disabledMinutes: (selectedHour) => {
+          const minutes = [];
+          const currentMinute = dayjs().minute();
+          if (dayjs().isSame(_, "day") && selectedHour === dayjs().hour()) {
+            for (let i = 0; i <= currentMinute; i++) {
+              minutes.push(i);
+            }
+          }
+          return minutes;
+        },
+      };
+    }
+  };
 
   const handleEditModal = (record) => {
     debugger;
-    setCalenderData(record);
+    setCalendarData(record);
     setLoading(true);
     setIsEditing(true);
     customAxios
       .get(`${urlGetSpecialEventsDetails}?Id=${record.SpecialEventsId}`)
       .then((response) => {
         if (response.data !== null) {
-          const calenderData = response.data.data.NewSpecialEventModel;
-          setCalenderData(calenderData);
+          const calendarData = response.data.data.NewSpecialEventModel;
+          setCalendarData(calendarData);
           setIsModalOpen(true);
-          const parsedStartDate = dayjs(calenderData.StartDate);
-          const parsedEndDate = dayjs(calenderData.EndDate);
-          handleFromDateChange(calenderData.StartDate);
-          handleToDateChange(calenderData.EndDate);
+          const parsedStartDate = dayjs(calendarData.StartDate);
+          const parsedEndDate = dayjs(calendarData.EndDate);
+          handleFromDateChange(calendarData.StartDate);
+          handleToDateChange(calendarData.EndDate);
           form.setFieldsValue({
-            EventName: calenderData.EventName,
-            FromDate: parsedStartDate,
-            ToDate: parsedEndDate,
+            EventName: calendarData.EventName,
+            FromDateToDate: [parsedStartDate, parsedEndDate],
+            // FromDate: parsedStartDate,
+            // ToDate: parsedEndDate,
           });
-
           setLoading(false);
         }
       });
@@ -127,7 +186,7 @@ function SpecialEvent() {
   const handleDelete = (record) => {
     debugger;
     //Deleting an State from the Table
-    setCalenderData(record);
+    setCalendarData(record);
     try {
       customAxios
         .delete(`${urlDeleteSpecialEvents}?Id=${record.SpecialEventsId}`)
@@ -157,11 +216,17 @@ function SpecialEvent() {
     form.validateFields();
     const values = form.getFieldsValue();
     console.log("state Edit Modal Submit", values);
+    const formattedFromDate = values.FromDateToDate[0].format(
+      "DD-MM-YYYY hh:mm:ss A"
+    );
+    const formattedToDate = values.FromDateToDate[1].format(
+      "DD-MM-YYYY hh:mm:ss A"
+    );
 
     try {
       if (isEditing) {
         const response = await customAxios.post(
-          `${urlUpdateSpecialEvent}?SpecialEventsId=${calenderData.SpecialEventsId}&EditEventName=${values.EventName}&EditStartDate=${FromDate}&EditEndDate=${ToDate}&EditAbsenceReason=${values.Reason}`,
+          `${urlUpdateSpecialEvent}?SpecialEventsId=${calendarData.SpecialEventsId}&EditEventName=${values.EventName}&EditStartDate=${formattedFromDate}&EditEndDate=${formattedToDate}&EditAbsenceReason=${values.Reason}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -183,13 +248,13 @@ function SpecialEvent() {
             setToDate(null);
 
             notification.success({
-              message: "Provider leave Noted",
+              message: "Special event updated successfully",
             });
           }
         } else {
           if (response.data === "Failure") {
             notification.warning({
-              message: "Provider leave already Not Noted",
+              message: "Special event already exists in records",
             });
           }
           notification.error({
@@ -199,7 +264,7 @@ function SpecialEvent() {
       } else {
         // Send a POST request to the server
         const response = await customAxios.post(
-          `${urlAddSpecialEvent}?EventName=${values.EventName}&StartDate=${FromDate}&EndDate=${ToDate}`,
+          `${urlAddSpecialEvent}?EventName=${values.EventName}&StartDate=${formattedFromDate}&EndDate=${formattedToDate}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -220,12 +285,12 @@ function SpecialEvent() {
             setFromDate(null);
             setToDate(null);
             notification.success({
-              message: "Provider leave Noted",
+              message: "Special event added successfully",
             });
           } else {
             if (response.data === "Failure") {
               notification.warning({
-                message: "Provider leave already Not Noted",
+                message: "Special event already exists in record",
               });
             }
             notification.error({
@@ -236,8 +301,8 @@ function SpecialEvent() {
       }
     } catch (error) {
       console.error("Failed to send data to server: ", error);
-      notification.warning({
-        message: "Create schedule Template for the provider",
+      notification.error({
+        message: "Something went wrong ,Try Again!",
       });
     }
   };
@@ -256,13 +321,13 @@ function SpecialEvent() {
 
     {
       title: "From Date",
-      dataIndex: "StartDate",
-      key: "StartDate",
+      dataIndex: "StartDateTime",
+      key: "StartDateTime",
     },
     {
       title: "To Date",
-      dataIndex: "EndDate",
-      key: "EndDate",
+      dataIndex: "EndDateTime",
+      key: "EndDateTime",
     },
   ];
 
@@ -329,6 +394,7 @@ function SpecialEvent() {
               layout="vertical"
               form={form}
               onFinish={handleSubmit}
+              initialValues={{ FromDateToDate: [dayjs(), dayjs()] }}
             >
               <Form.Item
                 name="EventName"
@@ -344,36 +410,24 @@ function SpecialEvent() {
               </Form.Item>
 
               <Form.Item
-                name="FromDate"
-                label="From Date"
+                name="FromDateToDate"
+                label="From Date - To Date"
                 rules={[
                   {
                     required: true,
-                    message: "Please select the start Date",
+                    message: "Please select the start Date and End Date",
                   },
                 ]}
               >
-                <DatePicker
-                  format={"DD-MM-YYYY"}
-                  onChange={handleFromDateChange}
+                <RangePicker
+                  format={"DD-MM-YYYY hh:mm:ss A"}
+                  // onChange={handleRangeChange}
                   style={{ width: "100%" }}
-                ></DatePicker>
-              </Form.Item>
-              <Form.Item
-                name="ToDate"
-                label="To Date"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select the end Date",
-                  },
-                ]}
-              >
-                <DatePicker
-                  format={"DD-MM-YYYY"}
-                  onChange={handleToDateChange}
-                  style={{ width: "100%" }}
-                ></DatePicker>
+                  disabledDate={disabledDate}
+                  disabledTime={disabledRangeTime}
+                  showTime
+                  // defaultValue={[dayjs(), dayjs()]}
+                ></RangePicker>
               </Form.Item>
 
               <Row gutter={32} style={{ height: "1.8rem" }}>

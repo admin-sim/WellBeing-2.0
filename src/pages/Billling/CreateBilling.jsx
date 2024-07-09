@@ -49,8 +49,9 @@ import Title from "antd/es/typography/Title";
 import { useLocation } from "react-router-dom";
 import PatientHeader from "../../components/PatientHeader";
 import { CiDiscount1 } from "react-icons/ci";
-
 import dayjs from "dayjs";
+import { debounce } from "lodash";
+
 const CreateBilling = () => {
   const location = useLocation();
   const PatientId = location.state.patientId;
@@ -170,7 +171,10 @@ const CreateBilling = () => {
     setCounter(counter + 1); // increment counter
   };
 
-  const handleCreateService = async () => {};
+  const handleCreateService = async () => {
+
+    navigate('/Billing')
+  };
 
   const handleAutoCompleteChange = async (value) => {
     debugger;
@@ -207,6 +211,11 @@ const CreateBilling = () => {
     }
     setLoading(false); // Stop loading
   };
+
+  const debouncedHandleAutoCompleteChangeService = debounce(
+    handleAutoCompleteChange,
+    300
+  );
 
   const handleSelect = async (value, option) => {
     debugger;
@@ -245,6 +254,7 @@ const CreateBilling = () => {
   };
 
   const handleproviderAutoCompleteChange = async (value) => {
+    debugger;
     setLoading(true); // Start loading
     try {
       if (!value.trim()) {
@@ -255,7 +265,7 @@ const CreateBilling = () => {
       const response = await customAxios.get(
         `${urlGetAllProviders}?providerName=${value}`
       );
-      const responseData = response.data.ProviderModel || [];
+      const responseData = response.data.data.Providers || [];
       // Ensure responseData is an array and has the expected structure
       if (
         Array.isArray(responseData) &&
@@ -278,6 +288,11 @@ const CreateBilling = () => {
     }
     setLoading(false); // Stop loading
   };
+
+  const debouncedHandleAutoCompleteChange = debounce(
+    handleproviderAutoCompleteChange,
+    300
+  );
 
   const handleProviderSelect = async (value, option) => {
     setSelectedProviderId(option.key);
@@ -813,7 +828,6 @@ const CreateBilling = () => {
           layout="vertical"
           onFinish={handleOnFinish}
           variant="outlined"
-          size="default"
           style={{ padding: "0rem 2rem" }}
           form={form}
           initialValues={{
@@ -835,7 +849,9 @@ const CreateBilling = () => {
                 >
                   <AutoComplete
                     options={services}
-                    onSearch={handleAutoCompleteChange}
+                    //onSearch={handleAutoCompleteChange}
+                    onSearch={debouncedHandleAutoCompleteChangeService}
+                    
                     onSelect={handleSelect}
                     onChange={(value) => {
                       if (!value) {
@@ -883,7 +899,8 @@ const CreateBilling = () => {
                 >
                   <AutoComplete
                     options={providers}
-                    onSearch={handleproviderAutoCompleteChange}
+                    //onSearch={handleproviderAutoCompleteChange}
+                    onSearch={debouncedHandleAutoCompleteChange}
                     onSelect={handleProviderSelect}
                     onChange={(value) => {
                       if (!value) {
@@ -970,7 +987,6 @@ const CreateBilling = () => {
             dataSource={charges}
             columns={columns}
             rowKey={(row) => row.ChargeID} // Specify the custom id property here
-            size="small"
             locale={{
               emptyText: <span style={{ color: "" }}>No data available</span>,
             }}
@@ -1077,7 +1093,7 @@ const CreateBilling = () => {
           layout="vertical"
           onFinish={handleSaveBill}
           variant="outlined"
-          size="default"
+        
           //style={{ padding: '0rem 2rem' }}
           form={form1}
         >

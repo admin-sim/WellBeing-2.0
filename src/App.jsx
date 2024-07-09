@@ -102,6 +102,8 @@ import AutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/AutoCha
 import CreateAutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAutoCharge";
 import BillAggrement from "./pages/Masters/GeneralMasters/AccountManagement/BillAggrement";
 import CreateBillAgrement from "./pages/Masters/GeneralMasters/AccountManagement/CreateBillAgrement";
+import UpdateItemReceipt from "./pages/Inventory/UpdateItemReceipt";
+import UpdatePatientIssue from "./pages/Inventory/UpdatePatientIssue";
 import ShowCreateEditDefinition from "./pages/Masters/InventoryManagement/ShowCreateEditDefinition";
 
 function ProtectedRoute({ children }) {
@@ -310,6 +312,22 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/UpdateItemReceipt"
+            element={
+              <ProtectedRoute>
+                <UpdateItemReceipt />
+              </ProtectedRoute>
+            }
+          />    
+           <Route
+            path="/UpdatePatientIssue"
+            element={
+              <ProtectedRoute>
+                <UpdatePatientIssue />
+              </ProtectedRoute>
+            }
+          />       
           <Route
             path="/UrgentIssue"
             element={

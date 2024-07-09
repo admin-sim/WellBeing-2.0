@@ -11,7 +11,7 @@ import {
   ConfigProvider,
   Typography,
   Checkbox,
-  Tag,
+  Card,
   Modal,
   Popconfirm,
   Spin,
@@ -39,6 +39,7 @@ import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import customAxios from "../../components/customAxios/customAxios";
 import { FaPlusCircle } from "react-icons/fa";
+import { some, sum } from "lodash";
 
 const CreatePurchaseOrder = () => {
   const [DropDown, setDropDown] = useState({
@@ -49,6 +50,9 @@ const CreatePurchaseOrder = () => {
     TaxType: [],
     DateFormat: [],
   });
+
+  const [dropDownLoad, setDropDownLoad] = useState(true);
+
   const location = useLocation();
   const PoHeaderId = location.state.PoHeaderId;
 
@@ -64,10 +68,9 @@ const CreatePurchaseOrder = () => {
   const [buttonTitle, setButtonTitle] = useState("Save");
   const [productOptions, setProductOptions] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
-
+  const [deliveryDate, setDeliveryDate] = useState(dayjs());
   const [deliveryRecord, setDeliveryRecord] = useState([]);
-
-  const [poDate, setPoDate] = useState(null);
+  const [poStatus, setPoStatus] = useState(false);
 
   const initialDataSource =
     PoHeaderId === 0
@@ -79,18 +82,17 @@ const CreatePurchaseOrder = () => {
             PoLineId: 0,
             UomId: "",
             PoQuantity: "",
-            BonusQuantity: 0,
+            BonusQuantity: "",
             PoRate: "",
-            DiscountRate: 0,
+            DiscountRate: "",
             DiscountAmount: 0,
-            MrpExpected: 0,
+            MrpExpected: "",
             TaxType1: "",
             TaxAmount1: 0,
             TaxType2: "",
             TaxAmount2: 0,
             LineAmount: 0,
-            LineAmount: 0,
-            AvailableQuantity: 0,
+            AvailableQuantity: "",
             deliverySchedule: "",
             LongName: "",
             ShortName: "",
@@ -110,7 +112,7 @@ const CreatePurchaseOrder = () => {
             UomId: "",
             PoDeliveryId: 0,
             DeliveryQuantity: "",
-            DeliveryDate: "",
+            DelDate: "",
             DeliveryLocation: "",
             ActiveFlag: true,
           },
@@ -124,6 +126,7 @@ const CreatePurchaseOrder = () => {
       const apiData = response.data.data;
       setDropDown(apiData);
     });
+    setDropDownLoad(false);
   }, []);
 
   useEffect(() => {
@@ -147,11 +150,11 @@ const CreatePurchaseOrder = () => {
             const formdata = editeddata.newPurchaseOrderModel;
 
             form1.setFieldsValue({
-              SupplierId: formdata.SupplierId,
+              SupplierId: formdata.VendorId,
               StoreId: formdata.ProcurementStoreId,
               DocumentType: formdata.DocumentType,
-              TotalAmount: formdata.PoTotalAmount,
-              totalpoAmount: formdata.PoTotalAmount,
+              TotalAmount: formdata.PoPurchaseValue,
+              TotalPoAmount: formdata.PoPurchaseValue,
             });
             setCounter(products.length + 1);
             const delivery = editeddata.DeliveryDetails.map((item, index) => ({
@@ -159,34 +162,36 @@ const CreatePurchaseOrder = () => {
               key: index + 1,
             }));
             setCounterDelivery(editeddata.DeliveryDetails.length + 1);
-            const updatedSchedule = delivery.map((item) => {
-              const key = item.key;
-              const prod = editeddata.PurchaseOrderDetails.filter(
-                (item1) => item1.PoLineId === item.PoLineId
-              );
-              if (delivery[key - 1] != undefined) {
-                if (
-                  delivery[key - 1].DeliveryQuantity ||
-                  delivery[key - 1].DeliveryDate ||
-                  delivery[key - 1].DeliveryLocation
-                ) {
-                  return {
-                    ...item,
-                    ProductId: prod[0].ProductId,
-                    DeliveryQuantity: delivery[key - 1].DeliveryQuantity,
-                    DeliveryDate: DateBindtoDatepicker(
-                      delivery[key - 1].DeliveryDate
-                    ),
-                    DeliveryLocation: delivery[key - 1].DeliveryLocation,
-                    UomId: prod[0].UomId,
-                    Uom: prod[0].Uom,
-                  };
-                }
-                return item;
-              }
-              return item;
-            });
-            setSchedule(updatedSchedule);
+            // const updatedSchedule = delivery.map((item) => {
+            //   const key = item.key;
+            //   const prod = editeddata.PurchaseOrderDetails.filter(
+            //     (item1) => item1.PoLineId === item.PoLineId
+            //   );
+            //   if (delivery[key - 1] != undefined) {
+            //     if (
+            //       delivery[key - 1].DeliveryQuantity ||
+            //       delivery[key - 1].DelDate ||
+            //       delivery[key - 1].DeliveryLocation
+            //     ) {
+            //       return {
+            //         ...item,
+            //         ProductId: prod[0].ProductId,
+            //         DeliveryQuantity: delivery[key - 1].DeliveryQuantity,
+            //         // DeliveryDate: DateBindtoDatepicker(
+            //         //   delivery[key - 1].DeliveryDate
+            //         // ),
+            //         DelDate:delivery[key-1].DelDate ? dayjs(delivery[key-1].DelDate).format("DD-MM-YYYY") : "",
+
+            //         DeliveryLocation: delivery[key - 1].DeliveryLocation,
+            //         UomId: prod[0].UomId,
+            //         Uom: prod[0].Uom,
+            //       };
+            //     }
+            //     return item;
+            //   }
+            //   return item;
+            // });
+            setSchedule(delivery);
           }
         } catch (error) {
           console.error("Error fetching data:", error);
@@ -201,12 +206,7 @@ const CreatePurchaseOrder = () => {
     navigate(url);
   };
 
-  const DateBindtoDatepicker = (value) => {
-    const isoDateString = value;
-    const dateValue = new Date(isoDateString);
-    const formattedDate = dayjs(dateValue).format("DD-MM-YYYY");
-    return dayjs(formattedDate, "DD-MM-YYYY");
-  };
+ 
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
@@ -214,30 +214,28 @@ const CreatePurchaseOrder = () => {
   const handleOnFinish = async (values) => {
     debugger;
     const products = [];
-    for (let i = 1; i <= data.length; i++) {
-      if (values[i] !== undefined) {
+    for (let i = 0; i <= data.length; i++) {
+      if (data[i] !== undefined) {
         const product = {
-          ProductId: values[i].ProductId,
-          UomId: values[i].UomId,
-          PoQuantity: values[i].PoQuantity,
-          BonusQuantity: values[i].BonusQuantity,
-          PoRate: values[i].PoRate,
-          DiscountRate: values[i].DiscountRate,
-          DiscountAmount: values[i].DiscountAmount,
-          MrpExpected: values[i].MrpExpected,
-          TaxType1: values[i].TaxType1 === undefined ? 0 : values[i].TaxType1,
-          TaxAmount1:
-            values[i].TaxAmount1 === undefined ? 0 : values[i].TaxAmount1,
-          TaxType2: values[i].TaxType2 === undefined ? 0 : values[i].TaxType2,
-          TaxAmount2:
-            values[i].TaxAmount2 === undefined ? 0 : values[i].TaxAmount2,
-          LineAmount: values[i].LineAmount,
-          PoTotalAmount: values[i].LineAmount,
+          ProductId: data[i].ProductId,
+          UomId: data[i].UomId,
+          PoQuantity: data[i].PoQuantity,
+          BonusQuantity:
+            data[i].BonusQuantity == "" ? 0 : data[i].BonusQuantity,
+          PoRate: data[i].PoRate,
+          DiscountRate: data[i].DiscountRate == "" ? 0 : data[i].DiscountRate,
+          DiscountAmount: data[i].DiscountAmount,
+          MrpExpected: data[i].MrpExpected == "" ? 0 : data[i].MrpExpected,
+          TaxType1: data[i].TaxType1 === "" ? 0 : data[i].TaxType1,
+          TaxAmount1: data[i].TaxAmount1,
+          TaxType2: data[i].TaxType2 === "" ? 0 : data[i].TaxType2,
+          TaxAmount2: data[i].TaxAmount2,
+          LineAmount: data[i].LineAmount,
+          PoTotalAmount: data[i].LineAmount,
           AvailableQuantity:
-            values[i].AvailableQuantity === undefined
-              ? 0
-              : values[i].AvailableQuantity,
-          PoLineId: values[i].PoLineId === undefined ? 0 : values[i].PoLineId,
+            data[i].AvailableQuantity === "" ? 0 : data[i].AvailableQuantity,
+          PoLineId: data[i].PoLineId,
+          ActiveFlag: data[i].ActiveFlag,
         };
         products.push(product);
       }
@@ -245,30 +243,39 @@ const CreatePurchaseOrder = () => {
 
     const purchaseOrder = {
       PoHeaderId: values.PoHeaderId,
-      SupplierId: values.SupplierId === undefined ? "" : values.SupplierId,
-      ProcurementStoreId: values.StoreId === undefined ? "" : values.StoreId,
-      DocumentType:
-        values.DocumentType === undefined ? "" : values.DocumentType,
+      SupplierId: values.SupplierId,
+      ProcurementStoreId: values.StoreId,
+      DocumentType: values.DocumentType,
       PoDate: values.PODate,
-      PoStatus: values.POStatus === undefined ? "Created" : values.POStatus,
-      Remarks: values.Remarks === undefined ? null : values.Remarks,
-      PoPurchaseValue:
-        values.TotalAmount === undefined ? 0 : values.TotalAmount,
-      PoTotalAmount:
-        values.totalpoAmount === undefined ? 0 : values.totalpoAmount,
-      PoTaxAmount: values.gstTax === undefined ? 0 : values.gstTax,
+      PoStatus: poStatus ? values.PoStatus : "Created",
+      Remarks: values.Remarks,
+      PoPurchaseValue: values.TotalAmount,
+      PoTotalAmount: values.TotalPoAmount,
+      PoTaxAmount: values.TaxAmount1 === undefined ? 0 : values.TaxAmount1,
     };
 
-    const activeData = schedule.filter(
-      (item) => item.ActiveFlag === true && item.ProductId
-    );
+    // const formattedSchedule = schedule.map((item) => {
+    //   if (item.DelDate) {
+    //     item.DelDate = item.DelDate.format("DD-MM-YYYY");
+    //   } else {
+    //     item.DelDate = null;
+    //   }
+    //   return item;
+    // });
+    
+    const activeData = schedule.filter((item) => item.ProductId);
+    
+
+    const activeProduct = products.filter((item) => item.ActiveFlag === true);
+    if (activeProduct.length == 0) {
+      message.warning("Please Add Product");
+      return false;
+    }
     const postData = {
       newPurchaseOrderModel: purchaseOrder,
       PurchaseOrderDetails: products,
       Delivery:
-        activeData.length > 0 && activeData[0].ProductId === ""
-          ? []
-          : activeData,
+        activeData ? activeData : [],
     };
     if (PoHeaderId == 0) {
       const response = await customAxios.post(
@@ -286,7 +293,8 @@ const CreatePurchaseOrder = () => {
       } else {
         message.error("Something went wrong");
       }
-    } else {
+    }
+     else {
       const response = await customAxios.post(
         urlUpdatePurchaseOrder,
         postData,
@@ -321,18 +329,17 @@ const CreatePurchaseOrder = () => {
         PoLineId: 0,
         UomId: "",
         PoQuantity: "",
-        BonusQuantity: 0,
+        BonusQuantity: "",
         PoRate: "",
-        DiscountRate: 0,
+        DiscountRate: "",
         DiscountAmount: 0,
-        MrpExpected: 0,
+        MrpExpected: "",
         TaxType1: "",
         TaxAmount1: 0,
         TaxType2: "",
         TaxAmount2: 0,
         LineAmount: 0,
-        LineAmount: 0,
-        AvailableQuantity: 0,
+        AvailableQuantity: "",
         deliverySchedule: "",
         ActiveFlag: true,
       },
@@ -341,6 +348,7 @@ const CreatePurchaseOrder = () => {
   };
 
   const handleAddDelivery = async () => {
+    debugger;
     await form2.validateFields();
     setSchedule([
       ...schedule,
@@ -350,7 +358,7 @@ const CreatePurchaseOrder = () => {
         UomId: "",
         PoDeliveryId: 0,
         DeliveryQuantity: "",
-        DeliveryDate: "",
+        DelDate: "",
         DeliveryLocation: "",
         ActiveFlag: true,
       },
@@ -361,19 +369,23 @@ const CreatePurchaseOrder = () => {
   const handleSearch = async (searchText) => {
     debugger;
     if (searchText) {
-      const response = await customAxios.get(
-        `${urlAutocompleteProduct}?Product=${searchText}`
-      );
+      const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${searchText}`);
       const apiData = response.data.data;
-      const newOptions = apiData.map((item) => ({
+  
+      // Filter apiData with productOptions
+      const filteredApiData = apiData.filter(apiItem => 
+        !data.some(option => option.ProductId === apiItem.ProductId)
+      );
+  
+      const newOptions = filteredApiData.map((item) => ({
         value: item.LongName,
-        key: item.ProductDefinitionId,
+        key: item.ProductId,
         UomId: item.UOMPrimaryUOM,
       }));
+  
       setProductOptions(newOptions);
     }
-  };
-
+  }
   function calculateTotalAmount(data) {
     debugger;
     let LineAmount = 0;
@@ -392,21 +404,27 @@ const CreatePurchaseOrder = () => {
 
   const handleSelect = (value, option, column, record) => {
     debugger;
-    form1.setFieldsValue({ [record.key]: { ProductId: option.key } });
-    const newData = data.map((item) => {
-      if (item.key === record.key) {
-        const updatedItem = {
-          ...item,
-          [column]: option.key,
-          LongName: option.value,
-          UomId: option.UomId,
-          ProductId: option.key,
-        };
-        return updatedItem;
-      }
-      return item;
-    });
-    setData(newData);
+    customAxios
+      .get(`${urlGetProductDetailsById}?ProductId=${option.key}`)
+      .then((response) => {
+        const apiData = response.data.data;
+        form1.setFieldsValue({ [record.key]: { ProductId: option.key } });
+        const newData = data.map((item) => {
+          if (item.key === record.key) {
+            const updatedItem = {
+              ...item,
+              [column]: option.key,
+              LongName: option.value,
+              UomId: option.UomId,
+              ProductId: option.key,
+              PoRate: apiData.PORate !== null ? apiData.PORate.PoRate : 0,
+            };
+            return updatedItem;
+          }
+          return item;
+        });
+        setData(newData);
+      });
   };
 
   const handleInputChange = (e, column, index, record) => {
@@ -433,13 +451,13 @@ const CreatePurchaseOrder = () => {
 
           updatedItem.DiscountAmount = discountAmount;
           updatedItem.LineAmount = amount;
-          updatedItem.LineAmount = amount;
+         // updatedItem.LineAmount = amount;
 
           form1.setFieldsValue({
             [record.key]: { DiscountAmount: discountAmount },
           });
           form1.setFieldsValue({ [record.key]: { LineAmount: amount } });
-          form1.setFieldsValue({ [record.key]: { LineAmount: amount } });
+          //form1.setFieldsValue({ [record.key]: { LineAmount: amount } });
 
           return updatedItem;
         }
@@ -459,7 +477,7 @@ const CreatePurchaseOrder = () => {
       const totalAmount = calculateTotalAmount(newData);
       form1.setFieldsValue({
         TotalAmount: totalAmount,
-        totalpoAmount: totalAmount,
+        TotalPoAmount: totalAmount,
       });
     }
     setData(newData);
@@ -467,7 +485,6 @@ const CreatePurchaseOrder = () => {
 
   const handleUomChange = (option, column, index, record) => {
     debugger;
-
     const newData = data.map((item) => {
       if (item.key === record.key) {
         const updatedItem = {
@@ -503,7 +520,7 @@ const CreatePurchaseOrder = () => {
 
     form1.setFieldsValue({
       TotalAmount: totalAmount,
-      totalpoAmount: totalAmount,
+      TotalPoAmount: totalAmount,
     });
   };
 
@@ -511,7 +528,14 @@ const CreatePurchaseOrder = () => {
 
   const handleOpenModal = async (record) => {
     debugger;
-    await form1.validateFields();
+
+    await form1.validateFields([
+      "StoreId",
+      "SupplierId",
+      "DocumentType",
+      [record.key, "UomId"],
+      [record.key, "ProductName"],
+    ]);
     setDeliveryRecord(record);
     setModalVisible(true);
   };
@@ -538,20 +562,20 @@ const CreatePurchaseOrder = () => {
       (total, item) => total + (item.DeliveryQuantity || 0),
       0
     );
-    if (qty <= deliveryRecord.PoQuantity) {
+    if (qty === deliveryRecord.PoQuantity) {
       const updatedSchedule = schedule.map((item) => {
         const key = item.key;
         if (values[key] != undefined) {
           if (
             values[key].DeliveryQuantity ||
-            values[key].DeliveryDate ||
+            values[key].DelDate ||
             values[key].DeliveryLocation
           ) {
             return {
               ...item,
               ProductId: deliveryRecord.ProductId,
               DeliveryQuantity: values[key].DeliveryQuantity,
-              DeliveryDate: values[key].DeliveryDate,
+              DelDate: values[key].DelDate ? values[key].DelDate.format("DD-MM-YYYY") : null,
               DeliveryLocation: values[key].DeliveryLocation,
               UomId: deliveryRecord.UomId,
             };
@@ -563,7 +587,7 @@ const CreatePurchaseOrder = () => {
       setSchedule(updatedSchedule);
       setModalVisible(false);
     } else {
-      message.warning("Quantity must not be Greater than PO Quantity");
+      message.warning(" Delivery Quantity must not be Greater than PO Quantity");
     }
   };
 
@@ -576,6 +600,14 @@ const CreatePurchaseOrder = () => {
       return item;
     });
     setSchedule(newData);
+  };
+
+  const handleDeliveryDateChange = (date) => {
+    setDeliveryDate(date);
+  };
+
+  const disabledDeliveryDate = (current) => {
+    return current && current.isBefore(dayjs(), "day");
   };
 
   const columnsModel = [
@@ -601,26 +633,31 @@ const CreatePurchaseOrder = () => {
       key: "UomId",
       width: 150,
       render: (text, record, index) => (
-        <Form.Item
-          name={[record.key, "UomId"]}
-          // rules={[{ required: true, message: "Required" }]}
-        >
-          {deliveryRecord.Uom === undefined ? record.Uom : deliveryRecord.Uom}
+        <Form.Item name={[record.key, "UomId"]}>
+          {deliveryRecord.Uom === null
+            ? deliveryRecord.ShortName
+            : deliveryRecord.Uom}
         </Form.Item>
       ),
     },
     {
       title: "Date of Delivery",
-      dataIndex: "DeliveryDate",
-      key: "DeliveryDate",
+      dataIndex: "DelDate",
+      key: "DelDate",
       render: (text, record, index) => (
         <Form.Item
           style={{ width: 200 }}
-          name={[record.key, "DeliveryDate"]}
-          initialValue={record.DeliveryDate}
+          name={[record.key, "DelDate"]}
+          initialValue={
+            record.DelDate
+              ? dayjs(record.DelDate, "DD-MM-YYYY") 
+              : null
+          }
+          rules={[{ required: true, message: 'Date of Delivery is required' }]}
         >
           <DatePicker
-            value={text == "" ? dayjs() : text}
+            disabledDate={disabledDeliveryDate}
+            onChange={handleDeliveryDateChange}
             style={{ width: "150%" }}
             format="DD-MM-YYYY"
           />
@@ -810,7 +847,6 @@ const CreatePurchaseOrder = () => {
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "PoRate"]}
-          // name={["PoRate", record.key]}
           rules={[
             {
               required: true,
@@ -818,7 +854,7 @@ const CreatePurchaseOrder = () => {
             },
           ]}
           style={{ width: "100%" }}
-          initialValue={record.PoRate}
+          initialValue={text}
         >
           <InputNumber
             min={0}
@@ -939,8 +975,12 @@ const CreatePurchaseOrder = () => {
       width: 100,
       key: "TaxAmount1",
       render: (text, record, index) => (
-        <Form.Item name={[record.key, "TaxAmount1"]} style={{ width: "100%" }}>
-          <InputNumber min={0} disabled defaultValue={text} />
+        <Form.Item
+          name={[record.key, "TaxAmount1"]}
+          style={{ width: "100%" }}
+          initialValue={text}
+        >
+          <InputNumber min={0} disabled />
         </Form.Item>
       ),
     },
@@ -950,22 +990,8 @@ const CreatePurchaseOrder = () => {
       key: "TaxType2",
       width: 100,
       render: (text, record, index) => (
-        <Form.Item
-          // name={["TaxType2", record.key]}
-
-          name={[record.key, "TaxType2"]}
-        >
-          <Select
-            defaultValue={text}
-            // onChange={(value) =>
-            //   handleInputChange(
-            //     { target: { value } },
-            //     "TaxType2",
-            //     index,
-            //     record
-            //   )
-            // }
-          >
+        <Form.Item name={[record.key, "TaxType2"]}>
+          <Select defaultValue={text}>
             {DropDown.TaxType.map((option) => (
               <Option key={option.LookupID} value={option.LookupID}>
                 <Option key={option.LookupID} value={option.LookupID}>
@@ -983,8 +1009,12 @@ const CreatePurchaseOrder = () => {
       width: 100,
       key: "TaxAmount2",
       render: (text, record, index) => (
-        <Form.Item name={[record.key, "TaxAmount2"]} style={{ width: "100%" }}>
-          <InputNumber disabled min={0} defaultValue={text} />
+        <Form.Item
+          name={[record.key, "TaxAmount2"]}
+          style={{ width: "100%" }}
+          initialValue={text}
+        >
+          <InputNumber disabled min={0} />
         </Form.Item>
       ),
     },
@@ -995,7 +1025,6 @@ const CreatePurchaseOrder = () => {
       key: "LineAmount",
       render: (text, record, index) => (
         <Form.Item
-          // name={[`LineAmount`, record.key]}
           name={[record.key, "LineAmount"]}
           style={{ width: "100%" }}
           initialValue={record.LineAmount}
@@ -1011,7 +1040,6 @@ const CreatePurchaseOrder = () => {
       key: "LineAmount",
       render: (text, record, index) => (
         <Form.Item
-          // name={[`totalAmount`, record.key]}
           name={[record.key, "LineAmount"]}
           style={{ width: "100%" }}
           initialValue={record.LineAmount}
@@ -1058,11 +1086,11 @@ const CreatePurchaseOrder = () => {
     },
     {
       title: (
-        <>
-          <Button ghost type="link" onClick={handleAddRow}>
-            <FaPlusCircle style={{ fontSize: "1.5rem" }} />
-          </Button>
-        </>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={handleAddRow}
+        ></Button>
       ),
       key: "action",
       render: (text, record, index) => (
@@ -1080,6 +1108,10 @@ const CreatePurchaseOrder = () => {
     },
   ];
 
+  const SubmitChanged = (event) => {
+    setPoStatus(event.target.checked);
+  };
+
   return (
     <Layout style={{ zIndex: "999999999" }}>
       <div
@@ -1094,7 +1126,7 @@ const CreatePurchaseOrder = () => {
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
+            borderRadius: "10px 10px 0px 0px",
           }}
         >
           <Col span={16}>
@@ -1120,23 +1152,21 @@ const CreatePurchaseOrder = () => {
             </Button>
           </Col>
         </Row>
-        <div style={{ padding: "0 1rem" }}>
+        <Card>
           <Form
             layout="vertical"
             onFinish={handleOnFinish}
             onFinishFailed={onFinishFailed}
             variant="outlined"
-            size="default"
+            // size="default"
             initialValues={{
               PODate: dayjs(),
+              SubmitCheck: false,
             }}
             form={form1}
           >
-            <Row
-              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              style={{ padding: "1rem 0rem" }}
-            >
-              <Col span={6}>
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} align="Bottom">
+              <Col className="gutter-row" span={6}>
                 <div>
                   <Form.Item
                     label="Supplier"
@@ -1148,7 +1178,11 @@ const CreatePurchaseOrder = () => {
                       },
                     ]}
                   >
-                    <Select allowClear placeholder="Select Value">
+                    <Select
+                      loading={dropDownLoad}
+                      allowClear
+                      placeholder="Select Value"
+                    >
                       {DropDown.SupplierList.map((option) => (
                         <Select.Option
                           key={option.VendorId}
@@ -1176,7 +1210,11 @@ const CreatePurchaseOrder = () => {
                       },
                     ]}
                   >
-                    <Select allowClear placeholder="Select Value">
+                    <Select
+                      loading={dropDownLoad}
+                      allowClear
+                      placeholder="Select Value"
+                    >
                       {/* <Option value="">Select Value</Option> */}
                       {DropDown.StoreDetails.map((option) => (
                         <Select.Option
@@ -1202,7 +1240,11 @@ const CreatePurchaseOrder = () => {
                       },
                     ]}
                   >
-                    <Select allowClear placeholder="Select Value">
+                    <Select
+                      loading={dropDownLoad}
+                      allowClear
+                      placeholder="Select Value"
+                    >
                       {DropDown.DocumentType.map((option) => (
                         <Select.Option
                           key={option.LookupID}
@@ -1217,7 +1259,14 @@ const CreatePurchaseOrder = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item label="Remarks" name="Remarks">
-                  <TextArea autoSize allowClear />
+                  <TextArea
+                    
+                    allowClear
+                    autoSize={{
+                      minRows: 2,
+                      maxRows: 3,
+                    }}
+                  />
                 </Form.Item>
               </Col>
             </Row>
@@ -1235,7 +1284,16 @@ const CreatePurchaseOrder = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <div>
-                  <Form.Item label="PO Status" name="POStatus">
+                  <Form.Item
+                    label="PO Status"
+                    name="PoStatus"
+                    rules={[
+                      {
+                        required: poStatus,
+                        message: "Please input!",
+                      },
+                    ]}
+                  >
                     <Select allowClear placeholder="Select Value">
                       <Option value="Draft">Draft</Option>
                       <Option value="Pending">Finalize</Option>
@@ -1247,9 +1305,9 @@ const CreatePurchaseOrder = () => {
                 <Form.Item
                   name="SubmitCheck"
                   style={{ marginTop: "30px" }}
-                  valuePropName="cheched"
+                  valuePropName="checked"
                 >
-                  <Checkbox>Submit</Checkbox>
+                  <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
                 </Form.Item>
               </Col>
             </Row>
@@ -1273,140 +1331,104 @@ const CreatePurchaseOrder = () => {
                 </Form.Item>
               </Col>
             </Row>
-          </Form>
-        </div>
-        <Divider style={{ marginTop: "0" }}></Divider>
-
-        <Table
-          columns={columns}
-          size="small"
-          dataSource={data.filter((item) => item.ActiveFlag !== false)}
-          locale={{ emptyText: "nodata " }}
-          scroll={{
-            x: 2000,
-          }}
-        />
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            marginBottom: "16px",
-            float: "right",
-          }}
-        >
-          {/* <Form.Item
-            label="Amount"
-            name="TotalAmount"
-            style={{ marginRight: "16px", width: 100 }}
-          >
-          </Form.Item> */}
-          {/* <Divider style={{ marginTop: "0" }}></Divider>
-          <Button
-            type="primary"
-            onClick={handleAddRow}
-            style={{ marginBottom: 16 }}
-          >
-            Add a row
-          </Button>
-          <Table
-            columns={columns}
-            size="small"
-            dataSource={data.filter((item) => item.ActiveFlag !== false)}
-            locale={{ emptyText: "nodata " }}
-            scroll={{
-              x: 2000,
-            }}
-          />
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              marginBottom: "16px",
-              float: "right",
-            }}
-          >*/}
-          <Form.Item
-            label="Amount"
-            name="TotalAmount"
-            style={{ marginRight: "16px", width: 100 }}
-          >
-            <InputNumber min={0} disabled />
-          </Form.Item>
-          <Form.Item
-            label="GST Tax"
-            name="gstTax"
-            style={{ marginRight: "16px", width: 100 }}
-          >
-            <InputNumber min={0} disabled />
-          </Form.Item>
-          <Form.Item
-            label="Total PO Amount"
-            name="totalpoAmount"
-            style={{ width: 150 }}
-          >
-            <InputNumber min={0} disabled />
-          </Form.Item>
-        </div>
-        <Modal
-          width={1000}
-          maskClosable={false}
-          title="Delivery Schedule"
-          open={modalVisible}
-          onCancel={handleCloseModal}
-          onOk={handleSaveModal}
-          okText={"Save"}
-        >
-          {/* Modal content goes here */}
-          <Form
-            name="basic"
-            labelCol={{
-              span: 8,
-            }}
-            wrapperCol={{
-              span: 16,
-            }}
-            style={{
-              width: "100%",
-            }}
-            initialValues={{
-              remember: true,
-            }}
-            onFinish={onFinishModel}
-            onFinishFailed={onFinishFailed}
-            autoComplete="off"
-            form={form2}
-            // initialValues={{
-            //   [counterDelivery - 1]: { DeliveryDate: dayjs() }
-            // }}
-          >
-            <Col className="gutter-row" span={6}>
-              <div>
-                <span>
-                  Product :{" "}
-                  <b style={{ color: "#1677ff" }}>{deliveryRecord.LongName}</b>{" "}
-                </span>
-              </div>
-            </Col>
-
+            <Divider style={{ marginTop: "0" }}></Divider>
             <Table
-              columns={columnsModel}
+              bordered
+              columns={columns}
               size="small"
-              locale={{ emptyText: "Nodata " }}
-              dataSource={
-                deliveryRecord.ProductId
-                  ? schedule.filter(
-                      (item) =>
-                        (item.ProductId === deliveryRecord.ProductId &&
-                          item.ActiveFlag) ||
-                        (item.ProductId === "" && item.ActiveFlag)
-                    )
-                  : initialDeliveryDataSource
-              }
+              dataSource={data.filter((item) => item.ActiveFlag !== false)}
+              locale={{ emptyText: "nodata " }}
+              scroll={{
+                x: 2000,
+              }}
             />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                marginBottom: "16px",
+                float: "right",
+              }}
+            >
+              <Form.Item
+                label="Amount"
+                name="TotalAmount"
+                style={{ marginRight: "16px", width: 100 }}
+              >
+                <InputNumber min={0} disabled />
+              </Form.Item>
+              <Form.Item
+                label="GST Tax"
+                name="TaxAmount1"
+                style={{ marginRight: "16px", width: 100 }}
+              >
+                <InputNumber min={0} disabled />
+              </Form.Item>
+              <Form.Item
+                label="Total PO Amount"
+                name="TotalPoAmount"
+                style={{ width: 150 }}
+              >
+                <InputNumber min={0} disabled />
+              </Form.Item>
+            </div>
           </Form>
-        </Modal>
+        </Card>
       </div>
-      {/* </div> */}
+      <Modal
+        width={1000}
+        maskClosable={false}
+        title="Delivery Schedule"
+        open={modalVisible}
+        onCancel={handleCloseModal}
+        onOk={handleSaveModal}
+        okText={"Save"}
+      >
+        {/* Modal content goes here */}
+        <Form
+          name="basic"
+          labelCol={{
+            span: 8,
+          }}
+          wrapperCol={{
+            span: 16,
+          }}
+          style={{
+            width: "100%",
+          }}
+          initialValues={{
+            remember: true,
+          }}
+          onFinish={onFinishModel}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
+          form={form2}
+        >
+          <Col className="gutter-row" span={6}>
+            <div>
+              <span>
+                Product :{" "}
+                <b style={{ color: "#1677ff" }}>{deliveryRecord.LongName}</b>{" "}
+              </span>
+            </div>
+          </Col>
+          <Table
+            columns={columnsModel}
+            size="small"
+            locale={{ emptyText: "Nodata " }}
+            dataSource={
+              deliveryRecord.ProductId
+                ? schedule.filter(
+                    (item) =>
+                      (item.ProductId === deliveryRecord.ProductId &&
+                        item.ActiveFlag) ||
+                      (item.ProductId === "" && item.ActiveFlag)
+                  )
+                : initialDeliveryDataSource
+            }
+          />
+        </Form>
+      </Modal>
     </Layout>
   );
 };

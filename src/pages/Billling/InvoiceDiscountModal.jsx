@@ -107,7 +107,7 @@ function InvoiceDiscountModal({
     <div>
       <Spin spinning={loading}>
         <Modal
-          title="Add New General Lookup"
+          title="Invoive Discount Modal"
           open={open}
           maskClosable={false}
           footer={null}
@@ -127,7 +127,7 @@ function InvoiceDiscountModal({
             // }}
           >
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col className="gutter-row" span={10}>
+              <Col   span={12}>
                 <Form.Item
                   name="ServiceCatalogue"
                   label="Service/Catalogue"
@@ -136,7 +136,7 @@ function InvoiceDiscountModal({
                   <Input disabled style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
-              <Col className="gutter-row" span={10}>
+              <Col   span={12}>
                 <Form.Item
                   name="PatientChargeAmount"
                   label="ChargeAmount"
@@ -149,7 +149,7 @@ function InvoiceDiscountModal({
               </Col>
             </Row>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col className="gutter-row" span={10}>
+              <Col   span={12}>
                 <Form.Item
                   name="PatientDiscountRate"
                   label="DiscountRate"
@@ -167,7 +167,7 @@ function InvoiceDiscountModal({
                   />
                 </Form.Item>
               </Col>
-              <Col className="gutter-row" span={10}>
+              <Col   span={12}>
                 <Form.Item
                   name="PatientDiscountAmount"
                   label="DiscountAmount"
@@ -180,7 +180,7 @@ function InvoiceDiscountModal({
               </Col>
             </Row>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col className="gutter-row" span={10}>
+              <Col   span={12}>
                 <Form.Item
                   name="PatientNetAmount"
                   label="NetAmount"
@@ -191,7 +191,7 @@ function InvoiceDiscountModal({
                   <Input disabled style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
-              <Col className="gutter-row" span={10}>
+              <Col   span={12}>
                 <Form.Item
                   name="DiscountReasonId"
                   label="DiscountReason"
@@ -212,15 +212,15 @@ function InvoiceDiscountModal({
                 </Form.Item>
               </Col>
             </Row>
-            <Row gutter={32} style={{ height: "1.8rem" }}>
-              <Col offset={12} span={6}>
+            <Row gutter={16} justify="end" style={{ marginTop: "1rem" }}>
+              <Col>
                 <Form.Item>
                   <Button type="primary" htmlType="submit">
                     Submit
                   </Button>
                 </Form.Item>
               </Col>
-              <Col span={6}>
+              <Col>
                 <Form.Item>
                   <Button type="default" onClick={handleCancel}>
                     Cancel

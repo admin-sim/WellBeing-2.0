@@ -50,6 +50,9 @@ const NewVisit = () => {
   const [loading, setLoading] = useState(false);
   const [AutoCompleteLoader, setAutomaticLoader] = useState(false);
   const [ModalLoader, setModalLoader] = useState(false);
+  const [departmentLoader, setDepartmentLoader] = useState(false);
+  const [providerLoader, setProviderLoader] = useState(false);
+  //const [serviceLocationLoader, setServiceLocationLoader] = useState(false);
 
   const [options, setOptions] = useState([]);
 
@@ -376,6 +379,7 @@ const NewVisit = () => {
 
   const handlePatientTypeChange = async (value) => {
     setpatientTypeSelectValue(value);
+
     debugger;
     try {
       // Update the options for the second select based on the value of the first select
@@ -385,17 +389,20 @@ const NewVisit = () => {
         setShowWard(false);
       }
       if (value != null) {
+        setDepartmentLoader(true);
         const response = await customAxios.get(
           `${urlGetDepartmentBasedOnPatitentType}?PatientType=${value}`
         );
 
         if (response.status === 200) {
+          setDepartmentLoader(false);
           const dept = response.data.data.Departments;
           setDepartments(dept);
         } else {
           // Handle other response statuses if needed
         }
       } else {
+        setDepartmentLoader(false);
         setDepartments([]);
         setProviders([]);
         setServiceLocations([]);
@@ -412,6 +419,7 @@ const NewVisit = () => {
     try {
       // Update the options for the second select based on the value of the first select
       if (value != null) {
+        setProviderLoader(true);
         const providerResponse = await customAxios.get(
           `${urlGetProviderBasedOnDepartment}?DepartmentId=${value}`
         );
@@ -419,6 +427,7 @@ const NewVisit = () => {
           `${urlGetServiceLocationBasedonId}?DepartmentId=${value}&patienttype=${patientTypeValue}`
         );
         if (providerResponse.status === 200) {
+          setProviderLoader(false);
           const provider = providerResponse.data.data.Providers;
           setProviders(provider);
         } else {
@@ -426,12 +435,14 @@ const NewVisit = () => {
         }
 
         if (serviceLocationResponse.status === 200) {
+          setProviderLoader(false);
           const serviceLoc = serviceLocationResponse.data.data.ServiceLocations;
           setServiceLocations(serviceLoc);
         } else {
           console.error("Failed to fetch service locations");
         }
       } else {
+        setProviderLoader(false);
         setProviders([]);
         setServiceLocations([]);
         // form1.setFieldsValue({ ProviderId: null });
@@ -984,7 +995,7 @@ const NewVisit = () => {
             </Row>
           </div>
           <div>
-            <Form form={form1} layout="vertical">
+            <Form form={form1} disabled={IsVisitCreated} layout="vertical">
               <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                 <Col span={12}>
                   <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
@@ -1036,7 +1047,11 @@ const NewVisit = () => {
                           },
                         ]}
                       >
-                        <Select onChange={handleDepartmentChange} allowClear>
+                        <Select
+                          onChange={handleDepartmentChange}
+                          loading={departmentLoader}
+                          allowClear
+                        >
                           {departments.map((option) => (
                             <Select.Option
                               key={option.DepartmentId}
@@ -1073,7 +1088,7 @@ const NewVisit = () => {
                           { required: true, message: "Please select Provider" },
                         ]}
                       >
-                        <Select allowClear>
+                        <Select allowClear loading={providerLoader}>
                           {providers.map((option) => (
                             <Select.Option
                               key={option.ProviderId}
@@ -1088,6 +1103,7 @@ const NewVisit = () => {
                     <Col span={12}>
                       <Form.Item name="admittedUnder" label="Admitted Under">
                         <Select
+                          loading={providerLoader}
                           allowClear
                           showSearch // Enable search functionality
                           filterOption={(input, option) =>
@@ -1126,6 +1142,7 @@ const NewVisit = () => {
                         <Select
                           allowClear
                           onChange={handleServiceLocationChange}
+                          loading={providerLoader}
                         >
                           {serviceLocations.map((option) => (
                             <Select.Option
