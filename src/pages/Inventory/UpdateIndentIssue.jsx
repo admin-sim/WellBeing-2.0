@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
 import { urlCreatePurchaseOrder, urlShowBatchDetails, urlEditIndentIssue, urlAddNewIndentIssue } from '../../../endpoints.js';
 import Select from 'antd/es/select';
-import { ConfigProvider, message, Typography, Checkbox, Tag, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
+import { ConfigProvider, message, Typography, Checkbox, Tag, Modal, Card, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
 import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
@@ -29,31 +29,27 @@ const UpdateIndentIssue = () => {
     });
 
     let [productCount, setProductcount] = useState(0);
-    let [batchCount, setBatchCount] = useState(0);
+    let [batchCount, setBatchCount] = useState(1);
 
-    //const { PoHeaderId, SupplierId, StoreId } = useParams();
     const [form1] = Form.useForm();
     const [form2] = Form.useForm();
     const { Title } = Typography;
     const { TextArea } = Input;
     const { Option } = Select;
     const navigate = useNavigate();
-    const [selectedProductId, setSelectedProductId] = useState({});
-    //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');    
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [data, setData] = useState([]);
     const [dataModel, setDataModel] = useState([]);
     const [batchDetails, setBatchDetails] = useState([]);
     const [batchRecord, setBatchRecord] = useState();
-    const [productDetails, setProductDetails] = useState({});
-    const [selectedUomText, setSelectedUomText] = useState({});
-    const [selectedSupplier, setSelectedSupplier] = useState(null);
+    const [productDetails, setProductDetails] = useState([]);
     const [istablevisible, setIstablevisible] = useState(false);
     const [batches, setBatches] = useState([]);
     const fields = form1.getFieldsValue();
     const location = useLocation();
-    const [shouldValidateModal, setshouldValidateModal] = useState(false);
-    const [indentId, setIndentId] = useState(location.state.IndentId);
+    const indentId = location.state.IndentId;
+    const [indentStatus, setIndentStatus] = useState(false);
+    const [isPageLoad, setIsPageLoad] = useState(true);
 
     useEffect(() => {
         customAxios.get(urlCreatePurchaseOrder).then((response) => {
@@ -61,64 +57,40 @@ const UpdateIndentIssue = () => {
             setDropDown(apiData);
         });
         if (indentId > 0) {
-            debugger;
             customAxios.get(`${urlEditIndentIssue}?IndentId=${indentId}`).then((response) => {
                 const apiData = response.data.data;
-                if (apiData.newIndentModel !== null) {
-                    setIstablevisible(true);
-                    // if (apiData.IndentDetails != null && apiData.IndentDetails.length > 0) {
-                    //     {
-                    //         apiData.IndentDetails.map((item) => {
-                    //             if (item.PendingQty === 0) {
-
-                    //             }
-                    //             else{
-
-                    //             }
-                    //         })
-                    //     }
-                    //     if (apiData.newIndentIssueModel != null && apiData.newIndentIssueModel.length > 0) {
-                    //         {
-                    //             apiData.newIndentIssueModel.map((items) => {
-                    //                 if (apiData.newIndentIssueModel.IssueStatus != 'Finalize') {
-                    //                     if (items.ProductId == item.ProductId && Model.newPatientIssueModel.IndentId == item.IndentId) {
-                    //                         form1.setFieldsValue({ IssueId: items.IssueId === null ? 0 : items.IssueId });
-                    //                     }
-                    //                 }
-                    //             })
-                    //         }
-                    //     }
-                    // }                    
-                    // form1.setFieldsValue({ IndentId: indentId });
-                    form1.setFieldsValue({ RequestingLocation: apiData.newIndentModel.RequestingStoreId });
-                    form1.setFieldsValue({ IssuingStore: apiData.newIndentModel.IssueingStoreId });
-                    form1.setFieldsValue({ Remarks: apiData.newIndentModel.Remarks });
-                    form1.setFieldsValue({ IndentNumber: apiData.newIndentModel.IndentNumber });
-                    form1.setFieldsValue({ IndentType: apiData.newIndentModel.IndentType });
-                    form1.setFieldsValue({ IndentId: apiData.newIndentModel.IndentId });
-                    form1.setFieldsValue({ IssueId: apiData.newPatientIssueModel.IssueId });
-                }
-                for (let i = productCount; i < apiData.IndentDetails.length; i++) {
-                    AddProduct();
-                }
-                if (apiData.IndentDetails !== null) {
-                    for (let i = productCount; i <= apiData.IndentDetails.length; i++) {
-                        if (apiData.IndentDetails[i] !== undefined) {
-                            form1.setFieldsValue({ [i]: { product: apiData.IndentDetails[i].ProductName } });
-                            form1.setFieldsValue({ [i]: { uom: apiData.IndentDetails[i].UomId } });
-                            form1.setFieldsValue({ [i]: { RequestedQty: apiData.IndentDetails[i].RequestQty } });
-                            form1.setFieldsValue({ [i]: { IssueQty: apiData.IndentDetails[i].IssueQty === null ? 0 : apiData.IndentDetails[i].IssueQty } });
-                            form1.setFieldsValue({ [i]: { AvgqtyatIssue: apiData.IndentDetails[i].AvlIssueQuantity === null ? 0 : apiData.IndentDetails[i].AvlIssueQuantity } });
-                            form1.setFieldsValue({ [i]: { AvgqtyatReq: apiData.IndentDetails[i].AvlReqQuantity === null ? 0 : apiData.IndentDetails[i].AvlReqQuantity } });
-                            form1.setFieldsValue({ [i]: { productId: apiData.IndentDetails[i].ProductId } });
-                            form1.setFieldsValue({ [i]: { pendingQty: apiData.IndentDetails[i].PendingQty } });
-                            form1.setFieldsValue({ [i]: { IndentLineId: apiData.IndentDetails[i].IndentLineId } });
-                            form1.setFieldsValue({ [i]: { IndentIssueLineId: apiData.newIndentIssueModel[i].IndentIssueLineId } });
-                        }
-                    }
-                }
+                const products = apiData.IndentDetails.map(
+                    (item, index) => ({
+                        ...item,
+                        key: index + 1,
+                        IssueQty: apiData.newIndentIssueModel == null ? undefined : apiData.newIndentIssueModel[index].IssueQty,
+                        IndentIssueLineId: apiData.newIndentIssueModel == null ? undefined : apiData.newIndentIssueModel[index].IndentIssueLineId
+                    })
+                );
+                setIstablevisible(true)
+                setProductcount(apiData.IndentDetails.length)
+                setData(products);
+                const formdata = apiData.newIndentModel;
+                form1.setFieldsValue({
+                    RequestingStoreId: formdata.RequestingStoreId,
+                    IndentNumber: formdata.IndentNumber,
+                    IndentDate: DateBindtoDatepicker(formdata.IndentDate),
+                    IssueingStoreId: formdata.IssueingStoreId,
+                    IndentType: formdata.IndentType,
+                    IndentCategory: formdata.IndentCategory,
+                    Remarks: formdata.Remarks,
+                    IndentStatus: formdata.IndentStatus === 'Created' ? '' : formdata.IndentStatus,
+                    IndentId: formdata.IndentId,
+                    IndentTemplateId: formdata.IndentTemplateId,
+                    IssueId: apiData.newIndentIssueModel == null ? undefined : apiData.newIndentIssueModel[0].IssueId
+                });
+                const batch = apiData.Batch.map((Item, Index) => ({
+                    ...Item,
+                    key: Index + 1,
+                }))
+                setDataModel(batch)
+                setIsPageLoad(false)
             });
-            setIndentId(0);
         }
     }, []);
 
@@ -128,91 +100,93 @@ const UpdateIndentIssue = () => {
     }
 
     const onOkModal = () => {
-        debugger;
         form2.submit();
     }
 
-    const onFinishmodal = (values) => {
+    const DateBindtoDatepicker = (value) => {
+        const isoDateString = value;
+        const dateValue = new Date(isoDateString);
+        const formattedDate = dayjs(dateValue).format("DD-MM-YYYY");
+        return dayjs(formattedDate, "DD-MM-YYYY");
+    };
+
+    const onFinishmodal = async (value) => {
         debugger;
-        for (let i = 0; i < batchCount; i++) {
-            const batch = {
-                // StockId: 1,
-                IssueQty: Number(values[i].quantity),
-                ProductId: values[i].productId,
-                BatchNo: values[i].batchNumber,
-                EXPDate: values[i].EXPDate,
-                StockId: values[i].StockId,
-                IssueRate: values[i].rate,
-                UomId: values[i].uom,
-                stockLocator: values[i].stockLocator === undefined ? 0 : values[i].stockLocator
-            }
-            batches.push(batch);
+        await form2.validateFields();
+        const values = form2.getFieldsValue();
+        const valuesArray = Object.values(values);
+        const qty = valuesArray.reduce(
+            (total, item) => total + (item.IssueQty || 0),
+            0
+        );
+        if (parseInt(qty) == productDetails.IssueQty) {
+            const updatedbatch = dataModel.map((item) => {
+                const key = item.key;
+                if (values[undefined] != undefined) {
+                    if (
+                        values[undefined].BatchNo ||
+                        values[undefined].IssueQty ||
+                        values[undefined].EXPDate
+                    ) {
+                        return {
+                            ...item,
+                            IssueQty: parseInt(values[undefined].IssueQty),
+                            IssueRate: values[undefined].IssueRate
+                        };
+                    }
+                    return item;
+                }
+                return item;
+            });
+            setDataModel(updatedbatch);
+            setIsModalOpen(false);
+        } else {
+            message.warning('Total Quantity should be equal to Issued Quantity')
         }
-        setIsModalOpen(false);
     }
 
-    const AddProduct = () => {
-        setProductcount(productCount + 1);
-        const newData = {
-            key: productCount.toString(),
-            productId: '',
-            product: '',
-            uom: '',
-            RequestedQty: '',
-            IssueQty: '',
-            AvgqtyatIssue: '',
-            AvgqtyatReq: '',
-            remarks: '',
-            BatchDetails: '',
-            Batch: '',
-            pendingQty: ''
+    const validateIssueQty = (record, value) => {
+        if (parseInt(value) <= record.PendingQty) {
+            return Promise.resolve();
         }
-        setData([...data, newData]);
-    }
+        return Promise.reject(new Error('Issue Qty must not Greater Than Pending Qty!'));
+    };
 
     const columns = [
         {
-            dataIndex: 'productId',
-            key: 'productId',
-            width: 0,
+            title: 'Product',
+            width: 350,
+            dataIndex: 'ProductName',
+            key: 'ProductName',
             render: (_, record) => (
                 <>
-                    <Form.Item name={[record.key, 'productId']} hidden>
-                        <input></input>
+                    <Form.Item name={[record.key, 'ProductName']} initialValue={record.ProductName}>
+                        <Input style={{ width: '100%' }} disabled></Input>
                     </Form.Item>
-                    <Form.Item name={[record.key, 'IndentLineId']} hidden>
+                    <Form.Item name={[record.key, 'IndentLineId']} initialValue={record.IndentLineId} hidden>
                         <Input></Input>
                     </Form.Item>
-                    <Form.Item name={[record.key, 'IndentIssueLineId']} hidden>
+                    <Form.Item name={[record.key, 'IndentIssueLineId']} initialValue={record.IndentIssueLineId} hidden>
                         <Input></Input>
                     </Form.Item>
-                    <Form.Item name={[record.key, 'StockId']} hidden>
+                    <Form.Item name={[record.key, 'ProductId']} initialValue={record.ProductId} hidden>
                         <Input></Input>
                     </Form.Item>
                 </>
             )
         },
         {
-            title: 'Product',
-            width: 250,
-            dataIndex: 'product',
-            key: 'product',
-            render: (_, record) => (
-                <Form.Item name={[record.key, 'product']}>
-                    <Input style={{ width: '100%' }} disabled></Input>
-                </Form.Item>
-            )
-        },
-        {
             title: 'UOM',
-            dataIndex: 'uom',
-            key: 'uom',
+            dataIndex: 'UomId',
+            key: 'UomId',
+            width: 150,
             render: (text, record) => (
                 <Form.Item
-                    name={[record.key, 'uom']}
+                    name={[record.key, 'UomId']}
                     style={{ width: '100%' }}
+                    initialValue={record.UomId}
                 >
-                    <Select disabled>
+                    <Select disabled defaultValue={record.UomId}>
                         {DropDown.UOM.map((option) => (
                             <Select.Option key={option.UomId} value={option.UomId}>
                                 {option.FullName}
@@ -224,11 +198,12 @@ const UpdateIndentIssue = () => {
         },
         {
             title: 'Requested Qty',
-            dataIndex: 'RequestedQty',
-            key: 'RequestedQty',
+            dataIndex: 'RequestQty',
+            key: 'RequestQty',
+            width: 150,
             render: (text, record) => (
-                <Form.Item name={[record.key, 'RequestedQty']} style={{ width: '100%' }}>
-                    <InputNumber min={0} disabled />
+                <Form.Item name={[record.key, 'RequestQty']} initialValue={record.RequestQty}>
+                    <InputNumber min={0} disabled style={{ width: '100%' }} />
                 </Form.Item>
             )
         },
@@ -236,29 +211,42 @@ const UpdateIndentIssue = () => {
             title: 'IssueQty',
             dataIndex: 'IssueQty',
             key: 'IssueQty',
+            width: 150,
             render: (text, record) => (
-                <Form.Item name={[record.key, 'IssueQty']} style={{ width: '100%' }}>
-                    <InputNumber min={0} />
+                <Form.Item name={[record.key, 'IssueQty']} initialValue={record.IssueQty}
+                    rules={[
+                        {
+                            required: true,
+                            message: "input!"
+                        },
+                        {
+                            validator: (_, value) => validateIssueQty(record, value)
+                        }
+                    ]}
+                >
+                    <InputNumber min={0} style={{ width: '100%' }} />
                 </Form.Item>
             )
         },
         {
             title: 'Avg qty at Issue',
-            dataIndex: 'AvgqtyatIssue',
-            key: 'AvgqtyatIssue',
+            dataIndex: 'AvlIssueQuantity',
+            key: 'AvlIssueQuantity',
+            width: 150,
             render: (text, record) => (
-                <Form.Item name={[record.key, 'AvgqtyatIssue']} style={{ width: '100%' }}>
-                    <InputNumber min={0} disabled />
+                <Form.Item name={[record.key, 'AvlIssueQuantity']} initialValue={record.AvlIssueQuantity}>
+                    <InputNumber min={0} disabled style={{ width: '100%' }} />
                 </Form.Item>
             )
         },
         {
             title: 'Avg qty at Req',
-            dataIndex: 'AvgqtyatReq',
-            key: 'AvgqtyatReq',
+            dataIndex: 'AvlReqQuantity',
+            key: 'AvlReqQuantity',
+            width: 150,
             render: (text, record) => (
-                <Form.Item name={[record.key, 'AvgqtyatReq']}>
-                    <InputNumber min={0} disabled />
+                <Form.Item name={[record.key, 'AvlReqQuantity']} initialValue={record.AvlReqQuantity}>
+                    <InputNumber min={0} disabled style={{ width: '100%' }} />
                 </Form.Item>
             )
         },
@@ -266,6 +254,7 @@ const UpdateIndentIssue = () => {
             title: 'Remarks',
             dataIndex: 'remarks',
             key: 'remarks',
+            width: 150,
             render: (text, record) => (
                 <Form.Item name={[record.key, 'remarks']}>
                     <Input style={{ width: '100%' }} allowClear></Input>
@@ -282,10 +271,11 @@ const UpdateIndentIssue = () => {
         },
         {
             title: 'Pending Qty',
-            dataIndex: 'pendingQty',
-            key: 'pendingQty',
+            dataIndex: 'PendingQty',
+            key: 'PendingQty',
+            width: 150,
             render: (text, record) => (
-                <Form.Item name={[record.key, 'pendingQty']}>
+                <Form.Item name={[record.key, 'PendingQty']} initialValue={record.PendingQty}>
                     <Input style={{ width: '100%' }} disabled></Input>
                 </Form.Item>
             )
@@ -294,17 +284,18 @@ const UpdateIndentIssue = () => {
 
     const OpenModel = async (record) => {
         debugger;
-        setProductDetails(form1.getFieldValue([record.key], 'IssueQty'))
+        await form1.validateFields()
+        const va = form1.getFieldsValue()
+        record.IssueQty = va[record.key].IssueQty
+        setProductDetails(record)
         const batch = {
-            IssueQty: form1.getFieldValue([record.key], 'IssueQty').IssueQty,
-            ProductId: form1.getFieldValue([record.key], 'productId').productId,
-            IssueId: 0,
-            StoreId: form1.getFieldValue('IssuingStore')
+            IssueQty: record.IssueQty,
+            ProductId: record.ProductId,
+            IssueId: record.IssueingStoreId,
+            StoreId: record.IssueingStoreId
         }
         const post1 = {
             newIndentModel: batch,
-            IndentDetails: [],
-            newIndentIssueModel: []
         }
         try {
             const response = await customAxios.post(urlShowBatchDetails, post1, {
@@ -314,8 +305,8 @@ const UpdateIndentIssue = () => {
             });
             const ApiData = response.data.data;
             setBatchRecord(ApiData);
-            form1.setFieldsValue({ [productCount - 1]: { StockId: ApiData.BatchDetails[productCount - 1].StockId } })
-            setBatchDetails(ApiData.BatchDetails);
+            // form1.setFieldsValue({ [productCount - 1]: { StockId: ApiData.BatchDetails[productCount - 1].StockId } })            
+            setBatchDetails(ApiData.BatchDetails)
         } catch (error) {
 
         }
@@ -326,101 +317,125 @@ const UpdateIndentIssue = () => {
         navigate(url);
     }
 
-    const BatchAdd = () => {
-        setBatchCount(batchCount + 1);
-        if (shouldValidateModal) {
-            form2
-                .validateFields()
-                .then(() => {
-                    const newRow = {
-                        key: batchCount.toString(),
-                        batchNumber: '',
-                        quantity: '',
-                        uom: '',
-                        expDate: '',
-                        rate: '',
-                        amount: '',
-                        stockLocator: '',
-                    };
-                    setDataModel([...dataModel, newRow]);
-                    setBatchCount(batchCount + 1);
-                })
-        } else {
-            const newRow = {
-                key: batchCount.toString(),
-                batchNumber: '',
-                quantity: '',
-                uom: '',
-                expDate: '',
-                rate: '',
+    const BatchAdd = async () => {
+        await form2.validateFields()
+        setDataModel([
+            ...dataModel,
+            {
+                key: batchCount,
+                BatchNo: '',
+                IssueQty: '',
+                BalanceQty: '',
+                Uom: '',
+                EXPDate: '',
+                IssueRate: '',
                 amount: '',
-                stockLocator: '',
-            };
-            setDataModel([...dataModel, newRow]);
-            setshouldValidateModal(true);
+                StockLocator: '',
+                ActiveFlag: true
+            }
+        ])
+        setBatchCount(batchCount + 1);
+    };
+
+    const BatchSelect = (record) => {
+        debugger
+        const IsExist = dataModel.filter((item) => item.BatchNo == record)
+        const temp = batchDetails.filter((item) => item.BatchNo === record)
+        const newdata = temp.map((item) => {
+            return {
+                ...item,
+                BalanceQty: item.BalanceQty,
+                Uom: item.Uom,
+                EXPDate: item.EXPDate,
+                IssueRate: item.IssueRate,
+                amount: 0
+            }
+        })
+        setDataModel(newdata)
+        if (IsExist.length > 0) {
+            message.warning('Same Batch No should not be selected.')
         }
+    }
+
+    const validateEqualValue = (record, value) => {
+        if (parseInt(value) == productDetails.IssueQty) {
+            return Promise.resolve();
+        }
+        return Promise.reject(new Error('Must equal to Issue Qty!'));
+    };
+
+    const validateExpiry = (record, value) => {
+        const isExpired = dayjs(record.EXPDate).isBefore(dayjs(), 'day');
+        if (!isExpired) {
+            return Promise.resolve();
+        }
+        return Promise.reject(new Error('Batch is Expired!'));
     };
 
     const Batchmodal = [
         {
             title: 'Batch Number',
-            dataIndex: 'batchNumber',
-            width: 150,
-            key: 'batchNumber',
+            dataIndex: 'BatchNo',
+            width: 100,
+            key: 'BatchNo',
             render: (_, record) => (
                 <>
-                    <Form.Item name={[record.key, 'batchNumber']} style={{ width: '150%' }}
+                    <Form.Item name={[record.key, 'BatchNo']}
                         rules={[
                             {
                                 required: true,
                                 message: "input!"
                             },
                         ]}
+                        initialValue={record.BatchNo}
                     >
-                        <Select allowClear>
+                        <Select allowClear onChange={(record) => BatchSelect(record)} style={{ width: 100 }}>
                             {batchDetails.map((option) => (
                                 <Select.Option key={option.BatchNo} value={option.BatchNo}>{option.BatchNo}</Select.Option>
                             ))}
                         </Select>
                     </Form.Item>
-                    <FormItem name={[record.key, 'productId']} hidden><Input></Input></FormItem>
                     <FormItem name={[record.key, 'StockId']} hidden><Input></Input></FormItem>
+                    <FormItem name={[record.key, 'IssueBatchId']} hidden><Input></Input></FormItem>
                 </>
             )
         },
         {
             title: 'Quantity',
-            dataIndex: 'quantity',
-            width: 110,
-            key: 'quantity',
+            dataIndex: 'IssueQty',
+            width: 100,
+            key: 'IssueQty',
             render: (text, record) => {
                 return (
-                    <Form.Item style={{ width: '150%' }} name={[record.key, 'quantity']}
+                    <Form.Item name={[record.key, 'IssueQty']} initialValue={record.IssueQty}
                         rules={[
                             {
                                 required: true,
                                 message: "input!"
+                            },
+                            {
+                                validator: (_, value) => validateEqualValue(record, value)
                             }
                         ]}
                     >
-                        <Input allowClear />
+                        <Input allowClear style={{ width: 100 }} />
                     </Form.Item>
                 );
             }
         },
         {
             title: 'Avg Quantity',
-            dataIndex: 'avgquantity',
-            key: 'avgquantity',
-            width: 140,
+            dataIndex: 'BalanceQty',
+            key: 'BalanceQty',
+            width: 100,
             render: (text, record) => {
                 return (
                     <>
-                        <Form.Item style={{ width: '130%' }} name={[record.key, 'avgquantity']}>
-                            <Input disabled />
+                        <Form.Item name={[record.key, 'BalanceQty']} initialValue={record.BalanceQty}>
+                            <Input disabled style={{ width: '100%' }} />
                         </Form.Item>
                         <Form.Item name={[record.key, 'StockId']} hidden>
-                            <Input />
+                            <Input style={{ width: '100%' }} />
                         </Form.Item>
                     </>
                 );
@@ -428,40 +443,45 @@ const UpdateIndentIssue = () => {
         },
         {
             title: 'Uom',
-            dataIndex: 'uom',
-            width: 110,
-            key: 'uom',
+            dataIndex: 'Uom',
+            width: 100,
+            key: 'Uom',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'uom']}>
-                    <Select style={{ width: '100%' }} disabled>
+                <Form.Item name={[record.key, 'Uom']}>
+                    {/* <Select style={{ width: '100%' }} disabled>
                         {DropDown.UOM.map((option) => (
                             <Select.Option key={option.UomId} value={option.UomId}>{option.FullName}</Select.Option>
                         ))}
-                    </Select>
+                    </Select> */}
+                    {record.Uom}
                 </Form.Item>
             )
         },
         {
             title: 'EXP Date',
-            dataIndex: 'expDate',
-            key: 'expDate',
+            dataIndex: 'EXPDate',
+            key: 'EXPDate',
+            width: 100,
             render: (text, record) => (
-                <>
-                    <Form.Item name={[record.key, 'expDate']}>
-                        <InputNumber min={0} style={{ width: 50 }} disabled />
-                    </Form.Item>
-                    <Form.Item name={[record.key, 'EXPDate']} hidden>
-                        <InputNumber min={0} style={{ width: 50 }} disabled />
-                    </Form.Item>
-                </>
+                <Form.Item name={[record.key, 'EXPDate']} initialValue={record.EXPDate == '' ? undefined : dayjs(record.EXPDate)}
+                    rules={[
+                        {
+                            validator: (_, value) => validateExpiry(record, value)
+                        }
+                    ]}
+                >
+                    <DatePicker format='MMMM YYYY' disabled style={{ width: '100%' }} />
+                    {/* <InputNumber min={0} style={{ width: '100%' }} disabled value={DateBindtoDatepicker(batchDetails.EXPDate)} /> */}
+                </Form.Item >
             )
         },
         {
             title: 'Rate',
-            dataIndex: 'rate',
-            key: 'rate',
+            dataIndex: 'IssueRate',
+            key: 'IssueRate',
+            width: 100,
             render: (text, record) => (
-                <Form.Item name={[record.key, 'rate']}>
+                <Form.Item name={[record.key, 'IssueRate']} initialValue={record.MRP}>
                     <Input style={{ width: '100%' }} disabled></Input>
                 </Form.Item>
             )
@@ -469,19 +489,19 @@ const UpdateIndentIssue = () => {
         {
             title: 'Amount',
             dataIndex: 'amount',
-            key: 'amount',
+            key: 'amount', width: 100,
             render: (text, record) => (
-                <Form.Item name={[record.key, 'amount']}>
+                <Form.Item name={[record.key, 'amount']} initialValue={record.amount}>
                     <Input style={{ width: '100%' }} disabled></Input>
                 </Form.Item>
             )
         },
         {
             title: 'Stock Locator',
-            dataIndex: 'stockLocator',
-            key: 'stockLocator',
+            dataIndex: 'StockLocator',
+            key: 'StockLocator', width: 100,
             render: (text, record) => (
-                <Form.Item name={[record.key, 'stockLocator']}>
+                <Form.Item name={[record.key, 'StockLocator']}>
                     <Input style={{ width: '100%' }} disabled></Input>
                 </Form.Item>
             )
@@ -492,31 +512,17 @@ const UpdateIndentIssue = () => {
             key: 'add',
             width: 50,
             render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}><DeleteOutlined /></Popconfirm>
-            //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>      
         }
     ]
 
     const onCancelmodal = () => {
         setDataModel([]);
         form2.resetFields();
-        setshouldValidateModal(false);
         setIsModalOpen(false);
-        setBatchCount(0);
+        setBatchCount(1);
     }
 
     const handleDelete = (record) => {
-        form2.setFieldsValue({
-            [record.key]: {
-                batchNumber: '',
-                quantity: '',
-                uom: '',
-                stockLocator: '',
-                amount: '',
-                rate: '',
-                expDate: '',
-                product: ''
-            }
-        });
         const newData = dataModel.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
         Object.keys(fields).forEach(fieldName => {
             if (fieldName.startsWith(`${record.key}.`)) {
@@ -533,39 +539,39 @@ const UpdateIndentIssue = () => {
         for (let i = 0; i <= productCount; i++) {
             if (values[i] !== undefined) {
                 const product = {
-                    ProductId: values[i].productId === undefined ? selectedProductId[i] : values[i].productId,
-                    UomId: values[i].uom,
-                    RequestQty: values[i].RequestedQty,
+                    ProductId: values[i].ProductId,
+                    UomId: values[i].UomId,
+                    RequestQty: values[i].RequestQty,
                     IssueQty: values[i].IssueQty,
-                    PendingQty: values[i].pendingQty,
+                    PendingQty: values[i].PendingQty,
                     IndentLineId: values[i].IndentLineId,
                     // IssuingStoreStock: values[i].IssuingStoreStock === "" ? null : values[i].IssuingStoreStock,
                     // QuantityTobeIssued: values[i].discount === "" ? 0 : values[i].RequestingStoreStock,
                     IndentIssueLineId: values[i].IndentIssueLineId === undefined ? 0 : values[i].IndentIssueLineId,
-                    StockId: values[i].StockId
+                    StockId: values[i].StockId,
+                    PendingQty: values.IssueStatus == 'Finalize' ? values[i].IssueQty - values[i].PendingQty : values[i].PendingQty,
                 }
                 products.push(product);
             }
         }
-        if (batches.length > 0) {
+        if (dataModel.length > 0) {
             const Indent = {
                 IssueDate: values.IssuingDate,
-                IndentId: values.IndentId === undefined ? 0 : values.IndentId,
-                IssueId: values.IssueId === undefined ? 0 : values.IssueId,
+                IndentId: values.IndentId,
+                IssueId: values.IssueId,
                 Remarks: values.Remarks === undefined ? null : values.Remarks,
-                RequestingStoreId: values.RequestingLocation,
-                IssueingStoreId: values.IssuingStore,
-                IssueStatus: values.IssueStatus === undefined ? 'Created' : values.IssueStatus,
+                RequestingStoreId: values.RequestingStoreId,
+                IssueingStoreId: values.IssueingStoreId,
+                IssueStatus: !indentStatus ? 'Created' : values.IssueStatus,
                 IndentCategory: "Indent Issue",
             }
             const postData = {
                 newIndentModel: Indent,
                 IndentDetails: products,
-                BatchDetails: batches,
-                Batch: []
+                Batch: dataModel
             }
             try {
-                if (values.IndentId > 0) {
+                if (indentId > 0) {
                     const response = await customAxios.post(urlAddNewIndentIssue, postData, {
                         headers: {
                             'Content-Type': 'application/json'
@@ -591,230 +597,225 @@ const UpdateIndentIssue = () => {
         }
     };
 
-    function formatDateString(dateString) {
-        debugger;
-        if (dateString !== '' && dateString !== undefined) {
-            const date = new Date(dateString);
+    // function formatDateString(dateString) {
+    //     debugger;
+    //     if (dateString !== '' && dateString !== undefined) {
+    //         const date = new Date(dateString);
 
-            const options = { month: 'long', year: 'numeric' };
+    //         const options = { month: 'long', year: 'numeric' };
 
-            const formatter = new Intl.DateTimeFormat('en-US', options);
+    //         const formatter = new Intl.DateTimeFormat('en-US', options);
 
-            return formatter.format(date);
-        }
-        return '';
+    //         return formatter.format(date);
+    //     }
+    //     return '';
+    // }
+
+    const SubmitChanged = (event) => {
+        setIndentStatus(event.target.checked)
     }
 
     return (
-        <Layout style={{ zIndex: '999999999' }}>
-            <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-                <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
-                    <Col span={16}>
-                        <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
-                            Indent Issue
-                        </Title>
-                    </Col>
-                    <Col offset={6} span={2}>
-                        <Button icon={<LeftOutlined />} style={{ marginBottom: 0 }} onClick={handleToIndent}>
-                            Back
-                        </Button>
-                    </Col>
-                </Row>
-                <Form
-                    layout="vertical"
-                    onFinish={handleOnFinish}
-                    variant="outlined"
-                    size="default"
-                    style={{
-                        maxWidth: 1500
-                    }}
-                    name="trigger"
-                    form={form1}
-                    initialValues={{
-                        IssuingDate: dayjs(),
-                    }}
-                    onValuesChange={(changedValues, allValues) => {
-                        // debugger;
-                        // if (allValues[productCount - 1].RequestingStore !== undefined && allValues[productCount - 1].ReceivingStore !== undefined) {
-                        //     if (allValues.RequestingStore !== allValues.ReceivingStore) {
-                        //         setIstablevisible(true);
-                        //     } else {
-                        //         form1.resetFields();
-                        //         setIstablevisible(false);
-                        //         message.warning('Please select Different Stores');
-                        //     }
-                        // } else {
-                        //     setData([]);
-                        //     setIstablevisible(false);
-                        // }
-                    }}
-                >
-                    <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Indent Number" name="IndentNumber">
-                                <Input style={{ width: '100%' }} disabled></Input>
-                            </Form.Item>
-                            <Form.Item name="IndentId" hidden>
-                                <Input></Input>
-                            </Form.Item>
-                            <Form.Item name="IssueId" hidden>
-                                <Input></Input>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Indent Type" name="IndentType">
-                                <Input style={{ width: '100%' }} disabled></Input>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Issuing Store" name="IssuingStore">
-                                <Select disabled>
-                                    {DropDown.StoreDetails.map((option) => (
-                                        <Select.Option key={option.StoreId} value={option.StoreId}>{option.LongName}</Select.Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Requesting Location" name="RequestingLocation">
-                                <Select disabled>
-                                    {DropDown.StoreDetails.map((option) => (
-                                        <Select.Option key={option.StoreId} value={option.StoreId}>{option.LongName}</Select.Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Issuing Date" name="IssuingDate">
-                                <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" disabled />
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Issue Owner" name="IssueOwner"
-                            // rules={[
-                            //     {
-                            //         required: true,
-                            //         message: 'Please input!'
-                            //     }
-                            // ]}
-                            >
-                                <Input style={{ width: '100%' }} allowClear ></Input>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Issue Status" name="IssueStatus">
-                                <Select allowClear placeholder='Select Value'>
-                                    <Option value="Draft">Draft</Option>
-                                    <Option value="Finalize">Finalize</Option>
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6} >
-                            <Form.Item name="SubmitCheck" style={{ paddingTop: 30 }} valuePropName="checked">
-                                <Checkbox>Submit</Checkbox>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={12} >
-                            <Form.Item label='Remarks' name="remarks">
-                                <TextArea></TextArea>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row justify="end" style={{ padding: '0rem 1rem' }}>
-                        <Col style={{ marginRight: '10px' }}>
-                            <Form.Item>
-                                <Button type="primary" htmlType="submit">
-                                    Save
+        <>
+            {isPageLoad && (
+                <div>
+                    <Spin size="large" />
+                </div>
+            )}
+            {!isPageLoad && (
+                <Layout style={{ zIndex: '999999999' }}>
+                    <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
+                        <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
+                            <Col span={16}>
+                                <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
+                                    Indent Issue
+                                </Title>
+                            </Col>
+                            <Col offset={6} span={2}>
+                                <Button icon={<LeftOutlined />} style={{ marginBottom: 0 }} onClick={handleToIndent}>
+                                    Back
                                 </Button>
-                            </Form.Item>
-                        </Col>
-                        <Col>
-                            <Form.Item>
-                                <Button type="primary" onClick={handleCancel}>
-                                    Cancel
-                                </Button>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Divider style={{ marginTop: '0' }}></Divider>
-                    {istablevisible ? (
-                        <div>
-                            <Table columns={columns} dataSource={data} scroll={{ x: 0 }} />
-                        </div>
-                    ) : null}
-                </Form>
-                <ConfigProvider
-                    theme={{
-                        token: {
-                            zIndexPopupBase: 3000
-                        }
-                    }}>
-                    <Modal
-                        title="Doctor Note"
-                        onOk={onOkModal}
-                        onCancel={onCancelmodal}
-                        width={1500}
-                        open={isModalOpen}
-                    >
+                            </Col>
+                        </Row>
                         <Form
-                            name="basic"
-                            labelCol={{
-                                span: 8,
-                            }}
-                            wrapperCol={{
-                                span: 16,
-                            }}
+                            layout="vertical"
+                            onFinish={handleOnFinish}
+                            variant="outlined"
+                            size="default"
                             style={{
-                                width: '100%',
+                                maxWidth: 1500
                             }}
+                            name="trigger"
+                            form={form1}
                             initialValues={{
-                                remember: true,
-                            }}
-                            // layout='vertical'
-                            onFinish={onFinishmodal}
-                            // onFinishFailed={onFinishFailed}
-                            autoComplete="off"
-                            form={form2}
-                            onValuesChange={(changedValues, allValues) => {
-                                debugger;
-                                if (allValues[batchCount - 1].batchNumber !== undefined) {
-                                    const temp = form1.getFieldValue([productCount - 1], 'AvgqtyatIssue');
-                                    form2.setFieldsValue({ [batchCount - 1]: { avgquantity: temp.AvgqtyatIssue } });
-                                    form2.setFieldsValue({ [batchCount - 1]: { uom: temp.uom } });
-                                    // form2.setFieldsValue({ [batchCount - 1]: { uom: temp.uom } });
-                                    const isoDateString = batchRecord.BatchDetails[batchCount - 1].EXPDate;
-
-                                    const dateValue = new Date(isoDateString);
-
-                                    const formattedDate = dayjs(dateValue).format('DD-MM-YYYY');
-
-                                    const dateForDatePicker = dayjs(formattedDate, 'DD-MM-YYYY');
-                                    form2.setFieldsValue({ [batchCount - 1]: { rate: batchRecord.BatchDetails[batchCount - 1].MRP } });
-                                    form2.setFieldsValue({ [batchCount - 1]: { expDate: formatDateString(batchRecord.BatchDetails[batchCount - 1].EXPDate) } });
-                                    form2.setFieldsValue({ [batchCount - 1]: { EXPDate: dateForDatePicker } });
-                                    form2.setFieldsValue({ [batchCount - 1]: { StockId: temp.StockId } });
-                                    form2.setFieldsValue({ [batchCount - 1]: { productId: temp.productId } });
-                                    if (allValues[batchCount - 1].quantity !== undefined && allValues[batchCount - 1].rate !== undefined) {
-                                        form2.setFieldsValue({ [batchCount - 1]: { amount: allValues[batchCount - 1].quantity * allValues[batchCount - 1].rate } });
-                                    } else {
-                                        form2.setFieldsValue({ [batchCount - 1]: { amount: 0 } });
-                                    }
-                                    const demo = Number(allValues[batchCount - 1].quantity)
-                                    if (temp.IssueQty < demo) {
-                                        form2.setFieldsValue({ [batchCount - 1]: { quantity: '' } });
-                                        message.warning('Quantity must not be greater than Issue Quantity')
-                                    }
-                                }
+                                IssuingDate: dayjs(),
+                                SubmitCheck: false
                             }}
                         >
-                            <Tag>Product: {productDetails.product}</Tag>
-                            <Tag>Issued Quantity: {productDetails.IssueQty}</Tag>
-                            <Table columns={Batchmodal} dataSource={dataModel} scroll={{ x: 0 }} />
+                            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
+                                <Col className="gutter-row" span={6}>
+                                    <Form.Item label="Indent Number" name="IndentNumber"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: "input!"
+                                            },
+                                        ]}
+                                    >
+                                        <Input style={{ width: '100%' }} disabled></Input>
+                                    </Form.Item>
+                                    <Form.Item name="IndentId" hidden>
+                                        <Input></Input>
+                                    </Form.Item>
+                                    <Form.Item name="IssueId" hidden>
+                                        <Input></Input>
+                                    </Form.Item>
+                                </Col>
+                                <Col className="gutter-row" span={6}>
+                                    <Form.Item label="Indent Type" name="IndentType"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: "input!"
+                                            },
+                                        ]}
+                                    >
+                                        <Input style={{ width: '100%' }} disabled></Input>
+                                    </Form.Item>
+                                </Col>
+                                <Col className="gutter-row" span={6}>
+                                    <Form.Item label="Issuing Store" name="IssueingStoreId"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: "input!"
+                                            },
+                                        ]}
+                                    >
+                                        <Select disabled>
+                                            {DropDown.StoreDetails.map((option) => (
+                                                <Select.Option key={option.StoreId} value={option.StoreId}>{option.LongName}</Select.Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                                <Col className="gutter-row" span={6}>
+                                    <Form.Item label="Requesting Location" name="RequestingStoreId"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: "input!"
+                                            },
+                                        ]}
+                                    >
+                                        <Select disabled>
+                                            {DropDown.StoreDetails.map((option) => (
+                                                <Select.Option key={option.StoreId} value={option.StoreId}>{option.LongName}</Select.Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                                <Col className="gutter-row" span={6}>
+                                    <Form.Item label="Issuing Date" name="IssuingDate">
+                                        <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" disabled />
+                                    </Form.Item>
+                                </Col>
+                                <Col className="gutter-row" span={6}>
+                                    <Form.Item label="Issue Owner" name="IssueOwner">
+                                        <Input style={{ width: '100%' }} allowClear ></Input>
+                                    </Form.Item>
+                                </Col>
+                                <Col className="gutter-row" span={6}>
+                                    <Form.Item label="Issue Status" name="IssueStatus"
+                                        rules={[
+                                            {
+                                                required: indentStatus,
+                                                message: 'Please input!'
+                                            }
+                                        ]}
+                                    >
+                                        <Select allowClear placeholder='Select Value'>
+                                            <Option value="Draft">Draft</Option>
+                                            <Option value="Finalize">Finalize</Option>
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                                <Col className="gutter-row" span={6} >
+                                    <Form.Item name="SubmitCheck" style={{ paddingTop: 30 }} valuePropName="checked">
+                                        <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
+                                    </Form.Item>
+                                </Col>
+                                <Col className="gutter-row" span={12} >
+                                    <Form.Item label='Remarks' name="remarks">
+                                        <TextArea></TextArea>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                            <Row justify="end" style={{ padding: '0rem 1rem' }}>
+                                <Col style={{ marginRight: '10px' }}>
+                                    <Form.Item>
+                                        <Button type="primary" htmlType="submit">
+                                            Save
+                                        </Button>
+                                    </Form.Item>
+                                </Col>
+                                <Col>
+                                    <Form.Item>
+                                        <Button type="primary" onClick={handleCancel}>
+                                            Cancel
+                                        </Button>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                            <Divider style={{ marginTop: '0' }}></Divider>
+                            {istablevisible ? (
+                                <div>
+                                    <Table columns={columns} dataSource={data} scroll={{ x: 0 }} />
+                                </div>
+                            ) : null}
                         </Form>
-                    </Modal>
-                </ConfigProvider>
-            </div>
-        </Layout >
+                        <ConfigProvider
+                            theme={{
+                                token: {
+                                    zIndexPopupBase: 3000
+                                }
+                            }}>
+                            <Modal
+                                title="Doctor Note"
+                                onOk={onOkModal}
+                                onCancel={onCancelmodal}
+                                width={1300}
+                                open={isModalOpen}
+                            >
+                                <Card>
+                                    <Form
+                                        name="basic"
+                                        labelCol={{
+                                            span: 8,
+                                        }}
+                                        wrapperCol={{
+                                            span: 16,
+                                        }}
+                                        style={{
+                                            width: '100%',
+                                        }}
+                                        layout='vertical'
+                                        onFinish={onFinishmodal}
+                                        autoComplete="off"
+                                        form={form2}
+                                    >
+                                        <Tag>Product: {productDetails.ProductName}</Tag>
+                                        <Tag>Issued Quantity: {productDetails.IssueQty}</Tag>
+                                        <Table columns={Batchmodal} dataSource={dataModel} size='small' />
+                                    </Form>
+                                </Card>
+                            </Modal>
+                        </ConfigProvider>
+                    </div>
+                </Layout >
+            )}
+        </>
+
     );
 }
 

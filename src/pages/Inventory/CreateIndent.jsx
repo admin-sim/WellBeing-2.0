@@ -186,8 +186,12 @@ const CreateIndent = () => {
     };
 
     const AddProduct = async () => {
+        debugger
         setAutoCompleteOptions([]);
-        await form1.validateFields()
+
+        const allFields = ['IndentType'];
+        const fieldsToValidate = allFields.filter(field => field !== 'IndentType');
+        await form1.validateFields(fieldsToValidate)
         setData([
             ...data,
             {
@@ -366,12 +370,12 @@ const CreateIndent = () => {
                 const product = {
                     ProductId: data[i].ProductId,
                     UomId: data[i].UomId,
-                    RequestQty: values[i] != undefined ? values[i].RequestingQty : 0,
+                    RequestQty: data[i].RequestingQty,
                     Favourite: data[i].Favourite === true ? "Y" : "N",
                     IssuingStoreStock: data[i].IssuingStoreStock,
                     RequestingStoreStock: data[i].RequestingStoreStock,
                     QuantityTobeIssued: data[i].IssuingStoreStock,
-                    IndentLineId: data[i].IndentLineId === undefined ? 0 : values[i].IndentLineId,
+                    IndentLineId: data[i].IndentLineId === undefined ? 0 : data[i].IndentLineId,
                     ActiveFlag: data[i].ActiveFlag
                 }
                 products.push(product);
@@ -405,11 +409,11 @@ const CreateIndent = () => {
                 });
                 message.success('Indent Updated!')
             } else {
-                // const response = await customAxios.post(urlAddNewIndent, postData, {
-                //     headers: {
-                //         'Content-Type': 'application/json'
-                //     }
-                // });
+                const response = await customAxios.post(urlAddNewIndent, postData, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
                 message.success('Indent Created!')
             }
             handleCancel();

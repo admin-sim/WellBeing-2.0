@@ -25,6 +25,7 @@ import { useNavigate } from "react-router";
 import { urlGetPurshaseOrderDetails, urlSearchItemReceipt } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
 import { Option } from "antd/es/mentions";
+import { render } from "react-dom";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -44,20 +45,22 @@ const ItemReceipt = () => {
     const [loading, setLoading] = useState(false);
     const [isTable, setIsTable] = useState(false);
     const { Title } = Typography;
+    const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
+    const [toDate, setToDate] = useState(dayjs());
+
     useEffect(() => {
         try {
             customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
                 const apiData = response.data.data;
+                setDropDown(apiData)
             });
         } catch (error) {
             console.error("Error fetching purchase order details:", error);
         }
+        form.submit();
     }, []);
 
     const navigate = useNavigate();
-    const handleAddTemplate = () => {
-        navigate(`/CreateItemReceipt`);
-    };
 
     const colorMapping = {
         Created: "blue",
@@ -68,9 +71,30 @@ const ItemReceipt = () => {
     };
 
     const GetModelDetails = (text, record, index) => {
-        debugger;
-        console.log("welcome");
+        const IndentReceiptId = record.IndentReceiptId ? record.IndentReceiptId : 0
+        const IssueId = record.IssueId
+        navigate("/UpdateItemReceipt", { state: { IssueId, IndentReceiptId } });
     };
+
+    const handleFromDateChange = (date) => {
+        setFromDate(date);
+        if (toDate && date && date.isAfter(toDate)) {
+            setToDate(null);
+        }
+    };
+
+    const handleToDateChange = (date) => {
+        setToDate(date);
+    };
+
+    const disabledFromDate = (current) => {
+        return current && current.isAfter(dayjs().endOf('day'));
+    };
+
+    const disabledToDate = (current) => {
+        return current && (current.isBefore(fromDate, 'day') || current.isAfter(dayjs().endOf('day')));
+    };
+
     const columns = [
         {
             title: "Sl No",
@@ -78,91 +102,121 @@ const ItemReceipt = () => {
             render: (text, record, index) => index + 1,
         },
         {
-            title: "PO Number",
-            dataIndex: "PONumber",
-            key: "PONumber",
-            sorter: (a, b) => a.PONumber - b.PONumber,
+            title: "Issue Number",
+            dataIndex: "IssueNumber",
+            key: "IssueNumber",
+            sorter: (a, b) => a.IssueNumber - b.IssueNumber,
             sortDirections: ["descend", "ascend"],
-            render: (text, record, index) => (
-                <Button
-                    type="link"
-                    onClick={() => GetModelDetails(text, record, index)}
-                >
+            render: (text, record, index) => {
+                if (record.ReceiptStatus === "Finalize" && record.IssueStatus === "Finalize") {
+                    return (<Tag style={{ marginLeft: '5px' }}>{text}</Tag>);
+                }
+                return (<Button type="link" onClick={() => GetModelDetails(text, record, index)}>
                     {text}
-                </Button>
-            ),
-        },
-        {
-            title: "Document Type",
-            dataIndex: "DocumentTypeName",
-            key: "DocumentTypeName",
-            sorter: (a, b) => a.DocumentTypeName.localeCompare(b.DocumentTypeName),
-            sortDirections: ["descend", "ascend"],
-        },
-        {
-            title: "Po Date",
-            dataIndex: "PoDate",
-            key: "PoDate",
-            sorter: (a, b) => new Date(a.PoDate) - new Date(b.PoDate),
-            sortDirections: ["descend", "ascend"],
-            render: (text) => {
-                //const poDate = new Date(text);
-                //const formattedDate = text;
-                return text;
+                </Button>)
+                // if (record.ReceiptStatus != 'Finalize') {
+                //     <Button
+                //         type="link"
+                //         onClick={() => GetModelDetails(text, record, index)}
+                //     >
+                //         {text}
+                //     </Button>
+                // }
+                // else {
+                //     <Tag>{text}</Tag>
+
+                // }
             },
         },
         {
-            title: "Supplier Name",
-            dataIndex: "SupplierName",
-            key: "SupplierName",
-            sorter: (a, b) => a.SupplierName.localeCompare(b.SupplierName),
+            title: "Indent Number",
+            dataIndex: "IndentNumber",
+            key: "IndentNumber",
+            sorter: (a, b) => a.IndentNumber.localeCompare(b.IndentNumber),
             sortDirections: ["descend", "ascend"],
         },
         {
-            title: "Store Name",
-            dataIndex: "StoreName",
-            key: "StoreName",
-            sorter: (a, b) => a.StoreName.localeCompare(b.StoreName),
+            title: "Receipt Number",
+            dataIndex: "ReceiptNumber",
+            key: "ReceiptNumber",
+            sorter: (a, b) => new Date(a.ReceiptNumber) - new Date(b.ReceiptNumber),
             sortDirections: ["descend", "ascend"],
         },
         {
-            title: "PO Raised By",
-            dataIndex: "PORaisedBy",
-            key: "PORaisedBy",
-            sorter: (a, b) => a.ItemReceiptId.localeCompare(b.ItemReceiptId),
+            title: "Indent Type",
+            dataIndex: "IndentType",
+            key: "IndentType",
+            sorter: (a, b) => a.IndentType.localeCompare(b.IndentType),
             sortDirections: ["descend", "ascend"],
         },
         {
-            title: "Po Status",
-            dataIndex: "PoStatus",
-            key: "PoStatus",
-            sorter: (a, b) => a.PoStatus.localeCompare(b.PoStatus),
+            title: "Indent Date",
+            dataIndex: "IndentDate",
+            key: "IndentDate",
+            sorter: (a, b) => a.IndentDate.localeCompare(b.IndentDate),
             sortDirections: ["descend", "ascend"],
             render: (text) => {
-                // let color = text === 'Pending' ? 'volcano' : text === 'Completed' ? 'green' : text === '';
-                return (
-                    <Tag color={colorMapping[`${text}`]} key={text}>
-                        {text.toUpperCase()}
-                    </Tag>
-                );
+                if (text != '' && text != null) {
+                    const dateParts = text.split('T')[0].split('-');
+                    const year = dateParts[0];
+                    const month = dateParts[1];
+                    const day = dateParts[2];
+
+                    return `${day}-${month}-${year}`;
+                }
+            }
+        },
+        {
+            title: "Issue Date",
+            dataIndex: "IssueDate",
+            key: "IssueDate",
+            sorter: (a, b) => a.IssueDate.localeCompare(b.IssueDate),
+            sortDirections: ["descend", "ascend"],
+            render: (text) => {
+                if (text != '' && text != null) {
+                    const dateParts = text.split('T')[0].split('-');
+                    const year = dateParts[0];
+                    const month = dateParts[1];
+                    const day = dateParts[2];
+
+                    return `${day}-${month}-${year}`;
+                }
             },
+        },
+        {
+            title: "Issueing Store",
+            dataIndex: "IssueStoreName",
+            key: "IssueStoreName",
+            sorter: (a, b) => a.IssueStoreName.localeCompare(b.IssueStoreName),
+            sortDirections: ["descend", "ascend"],
+        },
+        {
+            title: "Requesting Location",
+            dataIndex: "RequestStoreName",
+            key: "RequestStoreName",
+            sorter: (a, b) => a.RequestStoreName.localeCompare(b.RequestStoreName),
+            sortDirections: ["descend", "ascend"],
+        },
+        {
+            title: "Issue Status",
+            dataIndex: "IssueStatus",
+            key: "IssueStatus",
+            sorter: (a, b) => a.IssueStatus.localeCompare(b.IssueStatus),
+            sortDirections: ["descend", "ascend"],
+        },
+        {
+            title: "Receipt Status",
+            dataIndex: "ReceiptStatus",
+            key: "ReceiptStatus",
+            sorter: (a, b) => a.ReceiptStatus.localeCompare(b.ReceiptStatus),
+            sortDirections: ["descend", "ascend"],
         },
         {
             title: "Actions",
             dataIndex: "actions",
             key: "actions",
             render: (_, row) => (
-                <>
-                    <Tooltip title="Edit">
-                        <Button icon={<EditOutlined />} onClick={() => handleEdit(row)} />
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                        <Button
-                            icon={<DeleteOutlined />}
-                            onClick={() => handleDelete(row)}
-                        />
-                    </Tooltip>
-                </>
+                <Button type='link'>Report</Button>
             ),
         },
     ];
@@ -190,33 +244,33 @@ const ItemReceipt = () => {
        return Promise.resolve();
      };*/
 
-    const [formatedFromDate, setFormatedFromDate] = useState();
-    const [formatedToDate, setFormatedToDate] = useState();
-    function formatDate(inputDate) {
-        const dateParts = inputDate.split("/");
-        if (dateParts.length === 3) {
-            const [year, month, day] = dateParts;
-            return `${day}-${month}-${year}`;
-        }
-        return inputDate; // Return as is if not in the expected format
-    }
+    // const [formatedFromDate, setFormatedFromDate] = useState();
+    // const [formatedToDate, setFormatedToDate] = useState();
+    // function formatDate(inputDate) {
+    //     const dateParts = inputDate.split("/");
+    //     if (dateParts.length === 3) {
+    //         const [year, month, day] = dateParts;
+    //         return `${day}-${month}-${year}`;
+    //     }
+    //     return inputDate; 
+    // }
+
     const onFinish = async (values) => {
-        debugger;
         try {
             const postData1 = {
-                IndentType: values.IndentType === 0 ? null : values.IndentType,
-                IndentOwner: values.IndentOwner === undefined ? null : values.IndentOwner,
-                IndentNumber: values.IndentNumber === undefined ? null : values.IndentNumber,
-                IssueStatus: values.IssueStatus === 0 ? null : values.IssueStatus,
-                FromDate: values.FromDate,
-                ToDate: values.ToDate,
-                IssueStore: values.IssueStore === undefined ? 0 : values.IssueStore,
-                ReceiptStatus: values.ReceiptStatus === 0 ? null : values.ReceiptStatus,
-                RequestingLocation: values.RequestingLocation === undefined ? 0 : values.RequestingLocation,
+                IndentType: values.IndentType ? values.IndentType : null,
+                IndentOwner: values.IndentOwner ? values.IndentOwner : null,
+                IndentNumber: values.IndentNumber ? values.IndentNumber : null,
+                IssueStatus: values.IssueStatus ? values.IssueStatus : null,
+                FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : "",
+                ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
+                IssueStore: values.IssueStore ? values.IssueStore : 0,
+                ReceiptStatus: values.ReceiptStatus ? values.ReceiptStatus : null,
+                RequestingLocation: values.RequestingLocation ? values.RequestingLocation : 0,
             };
             customAxios
                 .get(
-                    `${urlSearchItemReceipt}?IndentType=${postData1.IndentType}&IndentOwner=${postData1.IndentOwner}&IndentNumber=${postData1.IndentNumber}&IssueStatus=${postData1.IssueStatus}&FromDate=${postData1.FromDate}&ToDate=${postData1.ToDate}&IssuingStoreId=${postData1.IssueStore}&ReceiptStatus=${postData1.ReceiptStatus}&RequestingStoreId=${postData1.RequestingLocation}`,
+                    `${urlSearchItemReceipt}?IndentType=${postData1.IndentType}&IndentOwner=${postData1.IndentOwner}&IndentNumber=${postData1.IndentNumber}&IssueStatus=${postData1.IssueStatus}&FromDateString=${postData1.FromDate}&ToDateString=${postData1.ToDate}&IssuingStoreId=${postData1.IssueStore}&ReceiptStatus=${postData1.ReceiptStatus}&RequestingStoreId=${postData1.RequestingLocation}`,
                     null,
                     {
                         params: postData1,
@@ -226,8 +280,8 @@ const ItemReceipt = () => {
                     }
                 )
                 .then((response) => {
-                    debugger;
-                    setFilteredData(response.data.data.ItemReceiptDetails);
+                    debugger
+                    setFilteredData(response.data.data.IndentReceiptList);
                 })
                 .finally(() => {
                     setLoading(false);
@@ -289,12 +343,14 @@ const ItemReceipt = () => {
                             </Col>
                             <Col className="gutter-row" span={4}>
                                 <Form.Item name="FromDate" label="From Date">
-                                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                                        value={fromDate} onChange={handleFromDateChange} disabledDate={disabledFromDate} />
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={4}>
                                 <Form.Item name="ToDate" label="To Date">
-                                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                                        value={toDate} onChange={handleToDateChange} disabledDate={disabledToDate} />
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={4}>
