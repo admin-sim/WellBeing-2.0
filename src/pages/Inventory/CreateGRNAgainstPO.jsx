@@ -38,6 +38,7 @@ import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useLocation } from "react-router-dom";
 import { MdOutlineWifiTetheringError } from "react-icons/md";
+import CustomTable from "../../components/customTable/index.jsx";
 //import { useParams } from 'react-router-dom';
 
 const CreateGRNAgainstPO = () => {
@@ -93,13 +94,13 @@ const CreateGRNAgainstPO = () => {
   
   const [selectedStore, setSelectedStore] = useState();
   const [selectedSupplier, setSelectedSupplier] = useState();
-  const [istablevisible, setIstablevisible] = useState(false);
-  const [shouldValidateModal, setshouldValidateModal] = useState(false);
+ 
+  const [loading, setLoading] = useState(false);
   const [isPoSearchTable, setIsPoSearchTable] = useState(false);
   const [mrp, setMrp] = useState();
   const [poloading, setPoloading] = useState(false);
   const [productLineId, setProductLineId] = useState(0);
-  const [selecetdUomText, setSelecetdUomText] = useState({});
+ 
   const [buttonTitle, setButtonTitle] = useState("Save");
   const [batches, setBatches] = useState([]);
   const [batchRecord, setBatchRecord] = useState([]);
@@ -151,12 +152,13 @@ const CreateGRNAgainstPO = () => {
     const fetchData = async () => {
       if (GrnHeaderId > 0) {
         setButtonTitle("Update");
+        setLoading(true);
         try {
           const response = await customAxios.get(
             `${urlEditGRNAgainstPO}?GrnHeaderId=${GrnHeaderId}`
           );
           if (response.status == 200 && response.data.data != null) {
-            setIstablevisible(true);
+        
             const editeddata = response.data.data;
             const products = editeddata.GRNAgainstPODetails.map(
               (item, index) => ({
@@ -239,12 +241,15 @@ const CreateGRNAgainstPO = () => {
             setdataBatchModal(batch);
             setCounter(editeddata.BatchDetails.length + 1);
           }
+          setLoading(false);
         } catch (error) {
           console.error("Error fetching data:", error);
         }
       }
     };
+
     fetchData();
+   // setLoading(false);
   }, []);
 
   const onOkModal = () => {
@@ -328,6 +333,8 @@ const CreateGRNAgainstPO = () => {
     setData(newData);
   };
 
+
+
   const onFinishmodal = (values) => {
     debugger;
     const va = form1.getFieldsValue();
@@ -349,11 +356,12 @@ const CreateGRNAgainstPO = () => {
           debugger;
           const apiData = response.data.data;
           setDataModal(apiData.PurchaseOrderDetails);
-          setPoloading(false);
+          
         });
     } catch (error) {
       // Handle the error as needed
     }
+    setPoloading(false);
   };
 
   const BatchmodalOpen = (record) => {
@@ -408,7 +416,7 @@ const CreateGRNAgainstPO = () => {
             // GRNStatus: formdata.PoStatus,
             PoHeaderId: formdata.PoHeaderId,
           });
-          setIstablevisible(true);
+        
           setIsModalOpen(false);
         });
     } catch (error) {
@@ -736,11 +744,12 @@ const CreateGRNAgainstPO = () => {
           setSelectedStore(selectedOptionSupplier.LongName);
         }
         setIsModalOpen(true);
-        form2.submit();
+       
       })
       .catch((error) => {
         console.log("Validation error:", error);
       });
+      form2.submit();
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -1547,9 +1556,8 @@ const CreateGRNAgainstPO = () => {
             </Col>
           </Row>
           <Divider style={{ marginTop: "0" }}></Divider>
-          {istablevisible && (
             <div>
-              <Table columns={columns} dataSource={data} scroll={{ x: 0 }} />
+              <Table  loading={loading}   columns={columns} dataSource={data} scroll={{ x: 0 }} />
               <div
                 style={{
                   display: "flex",
@@ -1588,7 +1596,6 @@ const CreateGRNAgainstPO = () => {
                 </Form.Item>
               </div>
             </div>
-          )}
         </Form>
         <ConfigProvider
           theme={{
@@ -1698,7 +1705,9 @@ const CreateGRNAgainstPO = () => {
                   </Form.Item>
                 </Col>
               </Row>
-              <Table columns={columnsmodal} dataSource={dataModal} />
+               
+              <CustomTable loading={poloading}   isFilter={true} columns={columnsmodal} dataSource={dataModal} />
+              
               {/* {isPoSearchTable && poloading ? (
                                 <Skeleton active />
                             ) : (
@@ -1714,6 +1723,7 @@ const CreateGRNAgainstPO = () => {
             },
           }}
         >
+        
           <Modal
             title="Product Batch Details"
             onOk={onOkBatchModal}
