@@ -27,7 +27,7 @@ import debounce from "lodash/debounce";
 import { EnvironmentOutlined } from "@ant-design/icons";
 import "../style.css";
 import Title from "antd/es/typography/Title.js";
-import PageHeader from "../../../components/pageHeader.jsx/index.jsx";
+import PageHeader from "../../../components/PageHeader/index.jsx";
 
 const containsDropdown = [
   { id: "1", name: "Starts With" },

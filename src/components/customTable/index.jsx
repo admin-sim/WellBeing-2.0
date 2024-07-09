@@ -23,6 +23,7 @@ const CustomTable = ({
   title,
   rowSelection,
   rowkey,
+  actionColumnName,
 }) => {
   const [searchText, setSearchText] = useState("");
 
@@ -79,12 +80,19 @@ const CustomTable = ({
 
   if (actionColumn) {
     tableColumns.push({
-      title: "Action",
+      title: (
+        <span style={{ display: "flex", justifyContent: "center" }}>
+          {actionColumnName ? actionColumnName : "Action"}
+        </span>
+      ),
       key: "action",
       fixed: "right",
       width: "4rem",
       render: (text, record) => (
-        <Space size="small">
+        <Space
+          size="small"
+          style={{ display: "flex", justifyContent: "space-evenly" }}
+        >
           {onView && (
             <Button
               size="small"
