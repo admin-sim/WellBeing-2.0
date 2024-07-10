@@ -279,3 +279,5 @@ export const urlEditPatientIndent = `${baseURL}/api/PatientIndent/EditPatientInd
 export const urlGetProductClassificationList = `${baseURL}/api/ProductDefinition/GetList`;
 export const urlShowCreateDefinition = `${baseURL}/api/ProductDefinition/ShowCreateDefinition`;
 export const urlGetPatientHeaderDetails = `${baseURL}/api/Patient/GetPatientHeaderDetails`;
+export const urlGetWardAndBannerData = `${baseURL}/api/WardManagement/GetWardAndBannerData`;
+export const urlGetWardInpatientsDetails = `${baseURL}/api/WardManagement/GetWardInpatientsDetails`;

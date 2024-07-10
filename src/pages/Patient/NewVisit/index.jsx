@@ -323,11 +323,11 @@ const NewVisit = () => {
     debugger;
     setIsSubmitLoader(true);
     try {
-      await form1.validateFields(); 
+      await form1.validateFields();
       const values = form1.getFieldsValue();
 
       setIsVisitCreated(true);
-      
+
       const postData = {
         PatientId: selectedRecord.PatientId,
         PatientType: values.PatientType,
