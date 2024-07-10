@@ -158,6 +158,42 @@ function PayerRegistration() {
     },
   ];
 
+  const disabledStartDate = (current) => {
+    const endDate = form.getFieldValue("EffectiveTo");
+    if (endDate !== undefined) {
+      return (
+        current &&
+        (current < dayjs().startOf("day") ||
+          current >= dayjs(endDate).endOf("day"))
+      );
+    }
+    return current && current < dayjs().startOf("day");
+  };
+
+  const disabledEndDate = (current) => {
+    const startDate = form.getFieldValue("EffectiveFrom");
+    if (startDate !== undefined) {
+      return (
+        current &&
+        (current < dayjs().startOf("day") ||
+          current <= dayjs(startDate).endOf("day"))
+      );
+    }
+    return current && current < dayjs().startOf("day");
+  };
+
+  const handleStartDateChange = (date) => {
+    form.setFieldsValue({ EffectiveTo: null });
+    form.validateFields(["EffectiveFrom", "EffectiveTo"]);
+  };
+
+  const handleEndDateChange = () => {
+    form.validateFields(["EffectiveFrom", "EffectiveTo"]);
+  };
+  // const handleFieldsChange = () => {
+  //   form.validateFields(["EffectiveFrom", "EffectiveTo"]);
+  // };
+
   const searchPayer = () => {
     const url = `/Payer/Search`;
     // Navigate to the new URL
@@ -278,9 +314,14 @@ function PayerRegistration() {
           EffectiveFrom:
             values.EffectiveFrom === undefined ? null : values.EffectiveFrom,
           EffectiveTo: values.EffectiveTo,
-          ContactPerson: values.ContactPerson,
+          ContactPerson:
+            values.ContactPerson === undefined || values.ContactPerson === ""
+              ? null
+              : values.ContactPerson,
+
           Tariff: values.Tariff === undefined ? "F" : "T",
-          Status: values.Status === "A" ? true : false,
+          Status:
+            values.Status === undefined || values.Status === "A" ? true : false,
           FacilityId: 1,
           AddressLine: values.Address === undefined ? null : values.Address,
           CountryId: values.Country,
@@ -291,12 +332,22 @@ function PayerRegistration() {
           Area: payerDropDown.Areas.find(
             (option) => option.AreaId === values.Area
           ).AreaName,
-          PinCode: values.Zip,
+          PinCode:
+            values.Zip === undefined || values.Zip === "" ? null : values.Zip,
+
           MobileNo: values.MobileNumber,
           LandlineNumber:
-            values.LandlineNumber === "" ? null : values.LandlineNumber,
-          EmailId: values.email === undefined ? null : values.email,
-          CreditDays: values.credit === undefined ? null : values.credit,
+            values.Zip === undefined || values.LandlineNumber === ""
+              ? null
+              : values.LandlineNumber,
+          EmailId:
+            values.email === undefined || values.email === ""
+              ? null
+              : values.email,
+          CreditDays:
+            values.credit === undefined || values.credit === ""
+              ? null
+              : values.credit,
           IsDunningApplicable: values.IsDunning === undefined ? "F" : "T",
         }
       : {
@@ -717,6 +768,7 @@ function PayerRegistration() {
             form={form}
             initialValues={{ Status: "A" }}
             onFinish={handleOnFinish}
+            // onFieldsChange={handleFieldsChange}
           >
             <Row gutter={18}>
               <ColWithSixSpan>
@@ -730,7 +782,7 @@ function PayerRegistration() {
                     },
                   ]}
                 >
-                  <Select>
+                  <Select allowClear>
                     {payerDropDown.PayerTypes.map((response) => (
                       <Select.Option
                         key={response.LookupID}
@@ -753,7 +805,7 @@ function PayerRegistration() {
                     },
                   ]}
                 >
-                  <Input style={{ width: "100%" }} />
+                  <Input style={{ width: "100%" }} allowClear />
                 </Form.Item>
               </ColWithSixSpan>
               <ColWithSixSpan>
@@ -765,9 +817,32 @@ function PayerRegistration() {
                       required: true,
                       message: "Please enter effective from date",
                     },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (
+                          !value ||
+                          !getFieldValue("EffectiveTo") ||
+                          value < getFieldValue("EffectiveTo")
+                        ) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(
+                          new Error(
+                            "Effective From date must be earlier than Effective To date"
+                          )
+                        );
+                      },
+                    }),
                   ]}
                 >
-                  <DatePicker format={"DD-MM-YYYY"} style={{ width: "100%" }} />
+                  <DatePicker
+                    format={"DD-MM-YYYY"}
+                    style={{ width: "100%" }}
+                    disabledDate={disabledStartDate}
+                    onchange={handleStartDateChange}
+                    placeholder="DD-MM-YYYY"
+                    allowClear
+                  />
                 </Form.Item>
               </ColWithSixSpan>
               <ColWithSixSpan>
@@ -779,21 +854,52 @@ function PayerRegistration() {
                       required: true,
                       message: "Please enter effective to date",
                     },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (
+                          !value ||
+                          !getFieldValue("EffectiveFrom") ||
+                          value > getFieldValue("EffectiveFrom")
+                        ) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(
+                          new Error(
+                            "Effective To date must be later than Effective From date"
+                          )
+                        );
+                      },
+                    }),
                   ]}
                 >
-                  <DatePicker format={"DD-MM-YYYY"} style={{ width: "100%" }} />
+                  <DatePicker
+                    format={"DD-MM-YYYY"}
+                    style={{ width: "100%" }}
+                    disabledDate={disabledEndDate}
+                    onchange={handleEndDateChange}
+                    placeholder="DD-MM-YYYY"
+                    allowClear
+                  />
                 </Form.Item>
               </ColWithSixSpan>
             </Row>
             <Row gutter={18}>
               <ColWithSixSpan>
-                <Form.Item name="ContactPerson" label="Contact Person">
+                <Form.Item
+                  name="ContactPerson"
+                  label="Contact Person"
+                  allowClear
+                >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
               </ColWithSixSpan>
               <ColWithSixSpan>
                 <Form.Item name="Status" label="Status">
-                  <Select options={options} style={{ width: "100%" }} />
+                  <Select
+                    options={options}
+                    style={{ width: "100%" }}
+                    allowClear
+                  />
                 </Form.Item>
               </ColWithSixSpan>
               <ColWithThreeSpan>
@@ -818,7 +924,7 @@ function PayerRegistration() {
                     },
                   ]}
                 >
-                  <TextArea style={{ width: "100%" }} autoSize />
+                  <TextArea style={{ width: "100%" }} autoSize allowClear />
                 </Form.Item>
               </ColWithSixSpan>
               <ColWithSixSpan>
@@ -862,6 +968,7 @@ function PayerRegistration() {
                   <Select
                     style={{ width: "100%" }}
                     onChange={handleStatesChange}
+                    allowClear
                   >
                     {states.map((response) => (
                       <Select.Option
@@ -888,6 +995,7 @@ function PayerRegistration() {
                   <Select
                     style={{ width: "100%" }}
                     onChange={handlePlacesChange}
+                    allowClear
                   >
                     {places.map((response) => (
                       <Select.Option
@@ -913,7 +1021,7 @@ function PayerRegistration() {
                     },
                   ]}
                 >
-                  <Select style={{ width: "100%" }}>
+                  <Select style={{ width: "100%" }} allowClear>
                     {areas.map((response) => (
                       <Select.Option
                         key={response.AreaId}
@@ -926,8 +1034,17 @@ function PayerRegistration() {
                 </Form.Item>
               </Col>
               <ColWithSixSpan>
-                <Form.Item name="Zip" label="Zip">
-                  <Input style={{ width: "100%" }} />
+                <Form.Item
+                  name="Zip"
+                  label="Zip"
+                  rules={[
+                    {
+                      pattern: new RegExp(/^\d{6}$/),
+                      message: "Invalid zip",
+                    },
+                  ]}
+                >
+                  <Input style={{ width: "100%" }} maxLength={6} allowClear />
                 </Form.Item>
               </ColWithSixSpan>
             </Row>
@@ -948,7 +1065,7 @@ function PayerRegistration() {
                     },
                   ]}
                 >
-                  <Input style={{ width: "100%" }} maxLength={10} />
+                  <Input style={{ width: "100%" }} maxLength={10} allowClear />
                 </Form.Item>
               </ColWithEightSpan>
               <ColWithEightSpan>
@@ -962,7 +1079,7 @@ function PayerRegistration() {
                     },
                   ]}
                 >
-                  <Input style={{ width: "100%" }} maxLength={10} />
+                  <Input style={{ width: "100%" }} maxLength={10} allowClear />
                 </Form.Item>
               </ColWithEightSpan>
               <ColWithEightSpan>
@@ -976,7 +1093,7 @@ function PayerRegistration() {
                     },
                   ]}
                 >
-                  <Input style={{ width: "100%" }} />
+                  <Input style={{ width: "100%" }} allowClear />
                 </Form.Item>
               </ColWithEightSpan>
             </Row>
@@ -984,7 +1101,7 @@ function PayerRegistration() {
             <Row gutter={18}>
               <ColWithEightSpan>
                 <Form.Item name="credit" label="Credit Days">
-                  <Input style={{ width: "100%" }} />
+                  <Input style={{ width: "100%" }} allowClear />
                 </Form.Item>
               </ColWithEightSpan>
               <ColWithSixSpan>
@@ -1072,7 +1189,7 @@ function PayerRegistration() {
                         },
                       ]}
                     >
-                      <Select style={{ width: "100%" }}>
+                      <Select style={{ width: "100%" }} allowClear>
                         {payerDropDown.PayerIdentificationType.map(
                           (response) => (
                             <Select.Option
@@ -1097,7 +1214,7 @@ function PayerRegistration() {
                         },
                       ]}
                     >
-                      <Input style={{ width: "100%" }} />
+                      <Input style={{ width: "100%" }} allowClear/>
                     </Form.Item>
                   </Col>
                   <Col span={12}>
@@ -1115,17 +1232,18 @@ function PayerRegistration() {
                         format={"DD-MM-YYYY"}
                         style={{ width: "100%" }}
                         onChange={handleExpiryDate}
+                        allowClear
                       />
                     </Form.Item>
                   </Col>
                   <Col span={12}>
-                    <Form.Item name="Remarks" label="Remarks">
+                    <Form.Item name="Remarks" label="Remarks" allowClear>
                       <Input style={{ width: "100%" }} />
                     </Form.Item>
                   </Col>
                   <Col span={12}>
                     <Form.Item name="Status" label="Status">
-                      <Select style={{ width: "100%" }} options={options} />
+                      <Select style={{ width: "100%" }} options={options} allowClear/>
                     </Form.Item>
                   </Col>
                 </Row>

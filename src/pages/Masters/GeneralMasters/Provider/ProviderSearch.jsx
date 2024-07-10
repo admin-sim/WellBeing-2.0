@@ -24,9 +24,6 @@ import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 
-
-
-
 const containsDropdown = [
   { id: "1", name: "Starts With" },
   { id: "2", name: "Ends With" },
@@ -51,7 +48,6 @@ function ProviderSearch() {
   const handleReset = () => {
     form.resetFields();
   };
- 
 
   const handleEditRegistrationsDetails = (record) => {
     debugger;
@@ -77,14 +73,17 @@ function ProviderSearch() {
     });
   }, []);
 
-
   const processProviderData = (providers) => {
     debugger;
-    return providers.map(provider => {
-      const combinedIdentifiers = provider.ProviderIdentifications.map((identification, index) => {
-        return `Identifier ${index + 1}: ${identification.IdentificationTypeName}`;
-      }).join(', ');
-  
+    return providers.map((provider) => {
+      const combinedIdentifiers = provider.ProviderIdentifications.map(
+        (identification, index) => {
+          return `Identifier ${index + 1}: ${
+            identification.IdentificationTypeName
+          }`;
+        }
+      ).join(", ");
+
       return {
         ...provider,
         combinedIdentifiers,
@@ -138,7 +137,7 @@ function ProviderSearch() {
             };
           }
         );
-        const finalProviderDetails = processProviderData(providerDetails)
+        const finalProviderDetails = processProviderData(providerDetails);
         setProviderSearchDetails(finalProviderDetails);
         setIsLoading(false);
         form.resetFields();
@@ -297,6 +296,7 @@ function ProviderSearch() {
                     style={{ width: "100%" }}
                     format={"DD-MM-YYYY"}
                     allowClear
+                    placeholder="DD-MM-YYYY"
                   />
                 </Form.Item>
               </Col>
@@ -392,7 +392,7 @@ function ProviderSearch() {
               <Col>
                 <Form.Item>
                   <Button type="default" danger onClick={handleReset}>
-                    Reset
+                    Clear
                   </Button>
                 </Form.Item>
               </Col>

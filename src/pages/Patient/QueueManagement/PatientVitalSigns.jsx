@@ -21,6 +21,7 @@ import Button from "antd/es/button";
 import {
   urlAddNewPatientVital,
   urlGetCapturedVitalsDetails,
+  urlGetPatientHeaderDetails,
   urlGetPatientVitalSigns,
 } from "../../../../endpoints";
 import { EditOutlined } from "@ant-design/icons";
@@ -39,6 +40,7 @@ import { Radio, message } from "antd";
 import "../style.css";
 import { useLocation } from "react-router-dom";
 import { Content } from "antd/es/layout/layout.js";
+import PatientHeader from "../../../components/PatientHeader/index.jsx";
 
 const PatientVitalSigns = () => {
   const location = useLocation();
@@ -71,6 +73,7 @@ const PatientVitalSigns = () => {
   let [selectedProvider, setSelectedProvider] = useState(0);
   const [vitalsDetails, setVitalsDetails] = useState([]);
   const [selectedTime, setSelectedTime] = useState(dayjs());
+  const [patientHeaderDetails, setPatientHeaderDetails] = useState([]);
 
   const currentDate = new Date();
   const currentTimeString = currentDate.toLocaleString("en-US", {
@@ -118,6 +121,19 @@ const PatientVitalSigns = () => {
         setLoading(false);
       });
   }, [PatientData.PatientId]);
+
+  useEffect(() => {
+    debugger;
+    setLoading(true);
+    customAxios
+      .get(
+        `${urlGetPatientHeaderDetails}?PatientId=${PatientData.PatientId}&&EncounterId=${PatientData.EncounterId}`
+      )
+      .then((response1) => {
+        setLoading(false);
+        setPatientHeaderDetails(response1.data.data.EncounterModel);
+      });
+  }, [PatientData.PatientId, PatientData.EncounterId]);
 
   function formatDate(date) {
     const day = String(date.getDate()).padStart(2, "0");
@@ -282,11 +298,10 @@ const PatientVitalSigns = () => {
   };
   const handleSaveCaptureDetails = async () => {
     debugger;
-    const values = form2.getFieldsValue();
-    // console.log("error raised here", values);
-    form2
-      .validateFields()
-      .then(async () => {
+
+    if (form2.isFieldsTouched()) {
+      const values = form2.getFieldsValue();
+      form2.validateFields().then(async () => {
         const PatientVital = isEditCaptureVitals
           ? {
               QueueId: selectedPatientRecord.QId,
@@ -296,8 +311,8 @@ const PatientVitalSigns = () => {
               PatientVitalId: selectedVitals.PatientVitalId,
               Height: values.Height,
               Weight: values.Weight,
-              BodyMassIndex: values.BodyMassIndex=== 0 ? "0":null,
-              MeanAtrialPressure: values.MeanAtrialPressure === 0 ? "0":null,
+              BodyMassIndex: values.BodyMassIndex === 0 ? "0" : null,
+              MeanAtrialPressure: values.MeanAtrialPressure === 0 ? "0" : null,
               Temperature: values.Temperature,
               HeartRate: values.HeartRate,
               SystolicBP: values.SystolicBP,
@@ -320,8 +335,8 @@ const PatientVitalSigns = () => {
               Encounterstr: selectedPatientRecord.Encounterstr,
               Height: values.Height,
               Weight: values.Weight,
-              BodyMassIndex: values.BodyMassIndex=== 0 ? "0":null,
-              MeanAtrialPressure: values.MeanAtrialPressure === 0 ? "0":null,
+              BodyMassIndex: values.BodyMassIndex === 0 ? "0" : null,
+              MeanAtrialPressure: values.MeanAtrialPressure === 0 ? "0" : null,
               Temperature: values.Temperature,
               HeartRate: values.HeartRate,
               SystolicBP: values.SystolicBP,
@@ -385,11 +400,13 @@ const PatientVitalSigns = () => {
         } catch (err) {
           console.error(err);
         }
-      })
-      .catch((err) => {
-        console.error(err);
-        // If validation fails, do nothing or handle the error as desired
       });
+    } else {
+      setIsCaptureVitalsModalVisible(false);
+      notification.warning({
+        message: "There is no changes made on form.",
+      });
+    }
   };
 
   const handleEditCaptureVitals = async (record) => {
@@ -527,7 +544,7 @@ const PatientVitalSigns = () => {
           padding: "1rem",
         }}
       >
-        <div
+        {/* <div
           style={{
             padding: "16px",
             borderRadius: "4px",
@@ -596,7 +613,8 @@ const PatientVitalSigns = () => {
               </span>
             </Col>
           </Row>
-        </div>
+        </div> */}
+        <PatientHeader patient={patientHeaderDetails}></PatientHeader>
         <Row
           gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
           style={{ margin: "15px 0px" }}

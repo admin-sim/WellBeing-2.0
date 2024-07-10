@@ -91,16 +91,16 @@ const CreateGRNAgainstPO = () => {
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [data, setData] = useState([]);
   const [dataModal, setDataModal] = useState();
-  
+
   const [selectedStore, setSelectedStore] = useState();
   const [selectedSupplier, setSelectedSupplier] = useState();
- 
+
   const [loading, setLoading] = useState(false);
   const [isPoSearchTable, setIsPoSearchTable] = useState(false);
   const [mrp, setMrp] = useState();
   const [poloading, setPoloading] = useState(false);
   const [productLineId, setProductLineId] = useState(0);
- 
+
   const [buttonTitle, setButtonTitle] = useState("Save");
   const [batches, setBatches] = useState([]);
   const [batchRecord, setBatchRecord] = useState([]);
@@ -144,8 +144,7 @@ const CreateGRNAgainstPO = () => {
         ]
       : [];
 
-
-      const [dataBatchModal, setdataBatchModal] = useState(initialModelDataSource);
+  const [dataBatchModal, setdataBatchModal] = useState(initialModelDataSource);
 
   useEffect(() => {
     debugger;
@@ -158,7 +157,6 @@ const CreateGRNAgainstPO = () => {
             `${urlEditGRNAgainstPO}?GrnHeaderId=${GrnHeaderId}`
           );
           if (response.status == 200 && response.data.data != null) {
-        
             const editeddata = response.data.data;
             const products = editeddata.GRNAgainstPODetails.map(
               (item, index) => ({
@@ -249,7 +247,7 @@ const CreateGRNAgainstPO = () => {
     };
 
     fetchData();
-   // setLoading(false);
+    // setLoading(false);
   }, []);
 
   const onOkModal = () => {
@@ -333,8 +331,6 @@ const CreateGRNAgainstPO = () => {
     setData(newData);
   };
 
-
-
   const onFinishmodal = (values) => {
     debugger;
     const va = form1.getFieldsValue();
@@ -356,7 +352,6 @@ const CreateGRNAgainstPO = () => {
           debugger;
           const apiData = response.data.data;
           setDataModal(apiData.PurchaseOrderDetails);
-          
         });
     } catch (error) {
       // Handle the error as needed
@@ -381,6 +376,7 @@ const CreateGRNAgainstPO = () => {
   };
 
   const handlePoNumber = (record) => {
+    setLoading(true);
     debugger;
     form1.resetFields();
     form3.resetFields();
@@ -416,12 +412,13 @@ const CreateGRNAgainstPO = () => {
             // GRNStatus: formdata.PoStatus,
             PoHeaderId: formdata.PoHeaderId,
           });
-        
+
           setIsModalOpen(false);
         });
     } catch (error) {
       //console.error("Error fetching purchase order details:", error);
     }
+    setLoading(false);
   };
 
   const columns = [
@@ -744,12 +741,11 @@ const CreateGRNAgainstPO = () => {
           setSelectedStore(selectedOptionSupplier.LongName);
         }
         setIsModalOpen(true);
-       
       })
       .catch((error) => {
         console.log("Validation error:", error);
       });
-      form2.submit();
+    form2.submit();
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -814,7 +810,6 @@ const CreateGRNAgainstPO = () => {
     setIsBatchModalOpen(false);
     form3.resetFields();
   };
-
 
   const checkActiveBatches = (products, batches) => {
     const allActiveProductsHaveActiveBatch = products.every((product) =>
@@ -918,19 +913,18 @@ const CreateGRNAgainstPO = () => {
     //   (item) => item.ActiveFlag === true && item.ProductId
     // );
 
-
     const result = checkActiveBatches(products, dataBatchModal);
     if (!result.allActiveProductsHaveActiveBatch) {
-      message.warning('Please Add BatchDeatils');
+      message.warning("Please Add BatchDeatils");
       return false;
     }
 
-    const filteredbatch=dataBatchModal.filter(item=>item.ProductId);
+    const filteredbatch = dataBatchModal.filter((item) => item.ProductId);
 
     const postData = {
       newGRNAgainstPOModel: GRNAgainstPO,
       GRNAgainstPODetails: products,
-      BatchDetails:filteredbatch === undefined ? [] : filteredbatch,
+      BatchDetails: filteredbatch === undefined ? [] : filteredbatch,
     };
     if (GrnHeaderId > 0) {
       const response = await customAxios.post(urlUpdateGRNAgainstPO, postData, {
@@ -1061,7 +1055,11 @@ const CreateGRNAgainstPO = () => {
             },
           ]}
         >
-          <InputNumber min={0} style={{ width: 50 }} disabled={!!GrnHeaderId && record.GrnBatchId} />
+          <InputNumber
+            min={0}
+            style={{ width: 50 }}
+            disabled={!!GrnHeaderId && record.GrnBatchId}
+          />
         </Form.Item>
       ),
     },
@@ -1411,14 +1409,16 @@ const CreateGRNAgainstPO = () => {
               </Form.Item>
             </Col>
             <Col className="gutter-row" span={2} style={{ paddingTop: 35 }}>
-              <Tooltip title="Search Pending PO">
-                <Typography.Link
-                  onClick={Searchmodal}
-                  style={{ fontWeight: "bold" }}
-                >
-                  Pending Po
-                </Typography.Link>
-              </Tooltip>
+              {GrnHeaderId <= 0 && (
+                <Tooltip title="Search Pending PO">
+                  <Typography.Link
+                    onClick={Searchmodal}
+                    style={{ fontWeight: "bold" }}
+                  >
+                    Pending Po
+                  </Typography.Link>
+                </Tooltip>
+              )}
             </Col>
             <Col className="gutter-row" span={3}>
               <Form.Item
@@ -1556,46 +1556,51 @@ const CreateGRNAgainstPO = () => {
             </Col>
           </Row>
           <Divider style={{ marginTop: "0" }}></Divider>
-            <div>
-              <Table  loading={loading}   columns={columns} dataSource={data} scroll={{ x: 0 }} />
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  marginBottom: "16px",
-                  float: "right",
-                }}
+          <div>
+            <Table
+              loading={loading}
+              columns={columns}
+              dataSource={data}
+              scroll={{ x: 0 }}
+            />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                marginBottom: "16px",
+                float: "right",
+              }}
+            >
+              <Form.Item
+                label="Amount"
+                name="TotalAmount"
+                style={{ marginRight: "16px", width: 100 }}
               >
-                <Form.Item
-                  label="Amount"
-                  name="TotalAmount"
-                  style={{ marginRight: "16px", width: 100 }}
-                >
-                  <InputNumber min={0} disabled />
-                </Form.Item>
-                <Form.Item
-                  label="Tax"
-                  name="TaxAmount"
-                  style={{ marginRight: "16px", width: 100 }}
-                >
-                  <InputNumber min={0} disabled />
-                </Form.Item>
-                <Form.Item
-                  label="Round Off"
-                  name="RoundOff"
-                  style={{ marginRight: "16px", width: 100 }}
-                >
-                  <InputNumber min={0} disabled />
-                </Form.Item>
-                <Form.Item
-                  label="Total PO Amount"
-                  name="TotalPoAmount"
-                  style={{ width: 150 }}
-                >
-                  <InputNumber min={0} disabled />
-                </Form.Item>
-              </div>
+                <InputNumber min={0} disabled />
+              </Form.Item>
+              <Form.Item
+                label="Tax"
+                name="TaxAmount"
+                style={{ marginRight: "16px", width: 100 }}
+              >
+                <InputNumber min={0} disabled />
+              </Form.Item>
+              <Form.Item
+                label="Round Off"
+                name="RoundOff"
+                style={{ marginRight: "16px", width: 100 }}
+              >
+                <InputNumber min={0} disabled />
+              </Form.Item>
+              <Form.Item
+                label="Total PO Amount"
+                name="TotalPoAmount"
+                style={{ width: 150 }}
+              >
+                <InputNumber min={0} disabled />
+              </Form.Item>
             </div>
+          </div>
         </Form>
         <ConfigProvider
           theme={{
@@ -1705,9 +1710,14 @@ const CreateGRNAgainstPO = () => {
                   </Form.Item>
                 </Col>
               </Row>
-               
-              <CustomTable loading={poloading}   isFilter={true} columns={columnsmodal} dataSource={dataModal} />
-              
+
+              <CustomTable
+                loading={poloading}
+                isFilter={true}
+                columns={columnsmodal}
+                dataSource={dataModal}
+              />
+
               {/* {isPoSearchTable && poloading ? (
                                 <Skeleton active />
                             ) : (
@@ -1723,7 +1733,6 @@ const CreateGRNAgainstPO = () => {
             },
           }}
         >
-        
           <Modal
             title="Product Batch Details"
             onOk={onOkBatchModal}

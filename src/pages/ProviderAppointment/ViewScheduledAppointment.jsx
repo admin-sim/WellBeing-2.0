@@ -10,24 +10,8 @@ function ViewScheduledAppointment({
   calendarData,
 }) {
   const [form3] = Form.useForm();
-  console.log("viewModalCalendarData", calendarData);
-  console.log("selectedSlot", selectedSlot);
 
-  function handleCancel() {
-    onCancel();
-    // form3.resetFields();
-  }
-
-  useEffect(() => {
-    form3.setFieldsValue({
-      reason: calendarData[0]?.extendedProps?.AppointmentReasonName,
-      // ? calendarData[0]?.extendedProps?.AppointmentReasonName
-      // : " - ",
-      remarks: calendarData[0]?.extendedProps?.Remarks,
-      // ? calendarData[0]?.extendedProps?.Remarks
-      // : " - ",
-    });
-  }, [calendarData]);
+console.log(calendarData);
 
   return (
     <Modal
