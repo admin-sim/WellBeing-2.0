@@ -424,6 +424,7 @@ const CreatePurchaseOrder = () => {
           return item;
         });
         setData(newData);
+        form1.setFieldsValue({ [record.key]: { UomId: option.UomId } })
       });
   };
 
@@ -763,8 +764,10 @@ const CreatePurchaseOrder = () => {
           name={[record.key, "UomId"]}
           rules={[{ required: true, message: "Required" }]}
           initialValue={record.UomId}
+        
         >
           <Select
+            disabled={true}
             defaultValue={text}
             onChange={(value, option) =>
               handleUomChange(option, "UomId", index, record)

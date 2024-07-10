@@ -547,6 +547,7 @@ const CreateDirectGRN = () => {
       return item;
     });
     setData(newData);
+    form1.setFieldsValue({ [record.key]: { UomId: option.UomId } })
   };
 
   const handleAdd = async () => {
@@ -700,6 +701,7 @@ const CreateDirectGRN = () => {
           }
         >
           <Select
+             disabled={true}
             defaultValue={record.UomId}
             onChange={(value, option) =>
               handleUomChange(option, "UomId", index, record)
