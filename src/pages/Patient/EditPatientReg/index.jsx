@@ -42,7 +42,7 @@ import TextArea from "antd/es/input/TextArea";
 import WebcamImage from "../../../components/WebCam/index.jsx";
 import dayjs from "dayjs";
 import { DateTime } from "luxon";
-import PageHeader from "../../../components/pageHeader.jsx/index.jsx";
+import PageHeader from "../../../components/PageHeader/index.jsx";
 
 const NewPatient = () => {
   const [patientDropdown, setPatientDropdown] = useState({
@@ -1125,6 +1125,7 @@ const NewPatient = () => {
                             max={120}
                             value={age?.years}
                             onChange={handleYearsChange}
+                            maxLength={3}
                           />
                         </Form.Item>
                       </Col>
@@ -1687,7 +1688,11 @@ const NewPatient = () => {
               },
             ]}
           >
-            <Select allowClear loading={isloading} disabled={IsEditingIdentifiersModal}>
+            <Select
+              allowClear
+              loading={isloading}
+              disabled={IsEditingIdentifiersModal}
+            >
               {patientDropdown.CardType.map((option) => (
                 <Select.Option key={option.LookupID} value={option.LookupID}>
                   {option.LookupDescription}

@@ -1,0 +1,4 @@
+:where(.css-dev-only-do-not-override-qhwpee).ant-form-item
+  .ant-form-item-label {
+  text-align: start !important;
+}

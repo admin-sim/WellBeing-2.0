@@ -20,6 +20,8 @@ import {
   urlAddNewVisit1,
   urlGetWardsBasedOnWardCategory,
   urlGetBedsForWard,
+  urlGetEncounterDetails,
+  urlGetPatientHeaderDetails,
 } from "../../../../endpoints.js";
 
 import debounce from "lodash/debounce";
@@ -27,7 +29,10 @@ import debounce from "lodash/debounce";
 import { EnvironmentOutlined } from "@ant-design/icons";
 import "../style.css";
 import Title from "antd/es/typography/Title.js";
-import PageHeader from "../../../components/pageHeader.jsx/index.jsx";
+import PageHeader from "../../../components/PageHeader/index.jsx";
+import PatientHeader from "../../../components/PatientHeader/index.jsx";
+import { set } from "lodash";
+import VisitModal from "./visitModal.jsx";
 
 const containsDropdown = [
   { id: "1", name: "Starts With" },
@@ -39,25 +44,30 @@ const containsDropdown = [
 const NewVisit = () => {
   const [patientDropdown, setPatientDropdown] = useState({
     Genders: [],
-    PatientType: [],
     Title: [],
-    EncounterType: [],
-    EncounterReason: [],
-    ReferredBy: [],
     CardType: [],
-    WardCategory: [],
   });
+  const [visitsDropdown, setVisitDropdown] = useState({});
+  // PatientType: [],
+  // KinTitle: [],
+  // EncounterType: [],
+  // EncounterReason: [],
+  // ReferredBy: [],
+  // WardCategory: [],
+  // });
   const [loading, setLoading] = useState(false);
   const [AutoCompleteLoader, setAutomaticLoader] = useState(false);
   const [ModalLoader, setModalLoader] = useState(false);
   const [departmentLoader, setDepartmentLoader] = useState(false);
   const [providerLoader, setProviderLoader] = useState(false);
   //const [serviceLocationLoader, setServiceLocationLoader] = useState(false);
+  const [submitLoader, setIsSubmitLoader] = useState(false);
 
   const [options, setOptions] = useState([]);
 
   const [patientsearchDetails, setPatientSearchDetails] = useState([]);
-  const [encounterId, setEncounterId] = useState(null);
+  const [patientHeaderDetails, setPatientHeaderDetails] = useState({});
+  const [encounterId, setEncounterId] = useState();
   const [selectedUhId, setSelectedUhId] = useState(null);
 
   const navigate = useNavigate();
@@ -84,9 +94,11 @@ const NewVisit = () => {
   const [showWard, setShowWard] = useState(false);
 
   const [serviceLocationId, setServiceLocationId] = useState();
-  const [wardComponentsDisabled, setWardComponentsDisabled] = useState(true);
+  const [wardsLoader, setWardsLoader] = useState(false);
+  const [BedsLoader, setBedsLoader] = useState(false);
   const [wards, setWards] = useState([]);
   const [beds, setBeds] = useState([]);
+  const [encounterTypeId, setEncounterTypeId] = useState();
 
   useEffect(() => {
     debugger;
@@ -258,13 +270,35 @@ const NewVisit = () => {
 
   const [selectedRecord, setSelectedRecord] = useState(null); // New state variable to store selected record
 
-  const handlevisitmodal = (record) => {
+  const handlevisitmodal = async (record) => {
     debugger;
-    setSelectedRecord(record); // Set the selected record when the modal is opened
-    setIsVisitModalVisible(true);
+    setSelectedRecord(record);
+
     setIsVisitCreated(false);
-    // form1.resetFields();
+    setModalLoader(true);
+    const response = await customAxios.get(
+      `${urlGetEncounterDetails}?PatientId=${
+        record.PatientId
+      }&PatientType=${0}&AppointmentId=${0}`
+    );
+    const response1 = await customAxios.get(
+      `${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}`
+    );
+
+    if (response.data !== null && response1.data !== null) {
+      setPatientHeaderDetails(response1.data.data.EncounterModel);
+      setModalLoader(false);
+      setVisitDropdown(response.data.data);
+      setEncounterTypeId(response.data.data.EncounterTypeId);
+      form1.setFieldsValue({
+        EncounterType: response.data.data.EncounterTypeId,
+      });
+      setIsVisitModalVisible(true);
+    }
   };
+
+  // console.log("This is the visit drop down", visitsDropdown);
+  // console.log("This is the patient header", patientHeaderDetails);
 
   const handleEditRegistrationsDetails = (record) => {
     debugger;
@@ -283,18 +317,17 @@ const NewVisit = () => {
     debugger;
     setSelectedRecord(record); // Set the selected record when the modal is opened
     setIsMoreModalVisible(true);
-
-    // form1.resetFields();
   };
 
   const handleOk = async () => {
     debugger;
-    setModalLoader(true);
+    setIsSubmitLoader(true);
     try {
-      await form1.validateFields(); // Trigger form validation
+      await form1.validateFields(); 
       const values = form1.getFieldsValue();
+
       setIsVisitCreated(true);
-      console.log("Selected Record:", selectedRecord);
+      
       const postData = {
         PatientId: selectedRecord.PatientId,
         PatientType: values.PatientType,
@@ -317,13 +350,13 @@ const NewVisit = () => {
       // Send a POST request to the server
       const response = await customAxios.post(urlAddNewVisit1, postData, {
         headers: {
-          "Content-Type": "application/json", // Replace with the appropriate content type if needed
+          "Content-Type": "application/json",
           // Add any other required headers here
         },
       });
 
-      // Check if the request was successful
       if (response.data != null) {
+        setIsSubmitLoader(false);
         if (response.data.EncounterResult != null) {
           messageApi.warning({
             type: "warning",
@@ -338,10 +371,12 @@ const NewVisit = () => {
           });
         }
       } else {
+        setIsSubmitLoader(false);
         messageApi.open({
           type: "error",
           content: `Visit Creation Unsuccessful`,
         });
+        form1.resetFields();
       }
 
       // setIsModalVisible(false);
@@ -352,14 +387,18 @@ const NewVisit = () => {
 
       // Additional logic after the asynchronous operation
     } catch (error) {
-      // Handle errors if needed
-      console.error("Failed to send data to server: ", error);
-      messageApi.open({
-        type: "error",
-        content: `Error creating visit for patient: ${error}.`,
-      });
-    } finally {
-      setModalLoader(false);
+      setIsSubmitLoader(false);
+      if (error.errorFields) {
+        // Highlight the fields with errors
+        form1.scrollToField(error.errorFields[0].name, {
+          behavior: "smooth",
+        });
+        message.error("Please fill all required fields.");
+      } else {
+        console.error("Failed to send data to server: ", error);
+        message.error(`Error creating visit for patient: ${error.message}.`);
+        form1.resetFields();
+      }
     }
   };
 
@@ -369,147 +408,14 @@ const NewVisit = () => {
     setDepartments([]);
     setProviders([]);
     setServiceLocations([]);
+    setPatientHeaderDetails([]);
     setEncounterId(null);
+    setShowWard(false);
     form1.resetFields();
   };
 
   const handleMoreModalCancel = () => {
     setIsMoreModalVisible(false);
-  };
-
-  const handlePatientTypeChange = async (value) => {
-    setpatientTypeSelectValue(value);
-
-    debugger;
-    try {
-      // Update the options for the second select based on the value of the first select
-      if (value === 23 || value === 24 || value === 25) {
-        setShowWard(true);
-      } else {
-        setShowWard(false);
-      }
-      if (value != null) {
-        setDepartmentLoader(true);
-        const response = await customAxios.get(
-          `${urlGetDepartmentBasedOnPatitentType}?PatientType=${value}`
-        );
-
-        if (response.status === 200) {
-          setDepartmentLoader(false);
-          const dept = response.data.data.Departments;
-          setDepartments(dept);
-        } else {
-          // Handle other response statuses if needed
-        }
-      } else {
-        setDepartmentLoader(false);
-        setDepartments([]);
-        setProviders([]);
-        setServiceLocations([]);
-        form1.resetFields();
-      }
-    } catch (error) {
-      // Handle errors (e.g., network issues)
-      console.error("Error fetching data:", error);
-    }
-  };
-
-  const handleDepartmentChange = async (value) => {
-    debugger;
-    try {
-      // Update the options for the second select based on the value of the first select
-      if (value != null) {
-        setProviderLoader(true);
-        const providerResponse = await customAxios.get(
-          `${urlGetProviderBasedOnDepartment}?DepartmentId=${value}`
-        );
-        const serviceLocationResponse = await customAxios.get(
-          `${urlGetServiceLocationBasedonId}?DepartmentId=${value}&patienttype=${patientTypeValue}`
-        );
-        if (providerResponse.status === 200) {
-          setProviderLoader(false);
-          const provider = providerResponse.data.data.Providers;
-          setProviders(provider);
-        } else {
-          console.error("Failed to fetch providers");
-        }
-
-        if (serviceLocationResponse.status === 200) {
-          setProviderLoader(false);
-          const serviceLoc = serviceLocationResponse.data.data.ServiceLocations;
-          setServiceLocations(serviceLoc);
-        } else {
-          console.error("Failed to fetch service locations");
-        }
-      } else {
-        setProviderLoader(false);
-        setProviders([]);
-        setServiceLocations([]);
-        // form1.setFieldsValue({ ProviderId: null });
-        // form1.setFieldsValue({ ServiceLocationName: null });
-        form1.resetFields(["Provider", "ServiceLocation"]);
-      }
-    } catch (error) {
-      // Handle errors (e.g., network issues)
-      console.error("Error fetching data:", error);
-    }
-  };
-
-  const handleServiceLocationChange = (value) => {
-    if (value !== undefined) {
-      setServiceLocationId(value);
-      setWardComponentsDisabled(false);
-    } else {
-      setServiceLocationId(null);
-      setWardComponentsDisabled(true);
-    }
-  };
-
-  const handleWardCategoryChange = async (value) => {
-    debugger;
-    try {
-      if (value !== undefined) {
-        const response = await customAxios.get(
-          `${urlGetWardsBasedOnWardCategory}?WardCategory=${value}&ServiceLocationId=${serviceLocationId}`
-        );
-
-        if (response.status === 200) {
-          const wardsOptions = response.data.data.Wards;
-          setWards(wardsOptions);
-        } else {
-          // Handle other response statuses if needed
-        }
-      } else {
-        setWards([]);
-        setBeds([]);
-      }
-    } catch (error) {
-      // Handle errors (e.g., network issues)
-      console.error("Error fetching data:", error);
-    }
-  };
-
-  const handleWardChange = async (value) => {
-    debugger;
-    try {
-      if (value != null) {
-        const response = await customAxios.get(
-          `${urlGetBedsForWard}?id=${value}`
-        );
-
-        if (response.status === 200) {
-          const bedsOptions = response.data.data.Beds;
-          setBeds(bedsOptions);
-        } else {
-          // Handle other response statuses if needed
-        }
-      } else {
-        setBeds([]);
-      }
-    } catch (error) {
-      // Handle errors (e.g., network issues)
-      console.error("Error fetching data:", error);
-    }
   };
 
   const columns = [
@@ -852,7 +758,7 @@ const NewVisit = () => {
             </Col>
           </Row>
         </Form>
-        <Spin spinning={loading}>
+        <Spin spinning={loading || ModalLoader}>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col span={24}>
               <Table
@@ -905,385 +811,23 @@ const NewVisit = () => {
         }}
       >
         {contextHolder}
-        <Modal
-          width={1000}
-          title="Create Visit"
-          open={isVisitModalVisible}
-          onOk={handleOk}
-          // okButtonProps={{ disabled: IsVisitCreated }}
-          //confirmLoading={ModalLoader}
-          confirmLoading={ModalLoader}
-          onCancel={handleVisitModalCancel}
-          okText="Submit"
-          maskClosable={false}
-          footer={[
-            <Button
-              key="submit"
-              type="primary"
-              loading={loading}
-              onClick={handleOk}
-              disabled={IsVisitCreated}
-            >
-              Submit
-            </Button>,
-            <Button key="back" onClick={handleVisitModalCancel}>
-              Cancel
-            </Button>,
-          ]}
-        >
-          <div
-            style={{
-              padding: "16px",
-              borderRadius: "4px",
-              margin: "10px",
-              backgroundColor: "#f9f0ff",
-              boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
-            }}
-          >
-            <Row gutter={[16, 16]}>
-              <Col span={8}>
-                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  UHID :
-                </span>
-                <span>{selectedRecord && selectedRecord.UhId}</span>
-              </Col>
-              <Col span={8}>
-                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  Name :
-                </span>
-                <span>{selectedRecord && selectedRecord.PatientName}</span>
-              </Col>
-              <Col span={8}>
-                <span style={{ fontWeight: "bold" }}>Patient Gender : </span>
-                <span>{selectedRecord && selectedRecord.PatientGender}</span>
-              </Col>
-            </Row>
-            <Row gutter={[16, 16]}>
-              <Col span={8}>
-                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  Encounter :
-                </span>
-                <span
-                  style={
-                    encounterId
-                      ? {
-                          backgroundColor: "green",
-                          color: "white",
-                          padding: "2px 4px",
-                        }
-                      : {}
-                  }
-                >
-                  {encounterId}
-                </span>
-              </Col>
-              <Col span={8}>
-                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  Age :
-                </span>
-                <span>{selectedRecord && selectedRecord.Age}</span>
-              </Col>
-              <Col span={8}>
-                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  Dob :
-                </span>
-                <span>
-                  {selectedRecord &&
-                    formatDatefortable(selectedRecord.DateOfBirth)}
-                </span>
-              </Col>
-            </Row>
-          </div>
-          <div>
-            <Form form={form1} disabled={IsVisitCreated} layout="vertical">
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col span={12}>
-                  <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                    <Col span={12}>
-                      <Form.Item
-                        name="PatientType"
-                        label="Patient Type"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please select PatientType",
-                          },
-                        ]}
-                      >
-                        <Select onChange={handlePatientTypeChange} allowClear>
-                          {patientDropdown.PatientType.map((option) => (
-                            <Select.Option
-                              key={option.LookupID}
-                              value={option.LookupID}
-                            >
-                              {option.LookupDescription}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="EncounterType" label="Encounter Type">
-                        <Select allowClear>
-                          {patientDropdown.EncounterType.map((option) => (
-                            <Select.Option
-                              key={option.LookupID}
-                              value={option.LookupID}
-                            >
-                              {option.LookupDescription}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item
-                        name="Department"
-                        label="Department"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please select Department",
-                          },
-                        ]}
-                      >
-                        <Select
-                          onChange={handleDepartmentChange}
-                          loading={departmentLoader}
-                          allowClear
-                        >
-                          {departments.map((option) => (
-                            <Select.Option
-                              key={option.DepartmentId}
-                              value={option.DepartmentId}
-                            >
-                              {option.DepartmentName}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item
-                        name="EncounterReason"
-                        label="Encounter Reason"
-                      >
-                        <Select allowClear>
-                          {patientDropdown.EncounterReason.map((option) => (
-                            <Select.Option
-                              key={option.LookupID}
-                              value={option.LookupID}
-                            >
-                              {option.LookupDescription}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item
-                        name="Provider"
-                        label="Provider"
-                        rules={[
-                          { required: true, message: "Please select Provider" },
-                        ]}
-                      >
-                        <Select allowClear loading={providerLoader}>
-                          {providers.map((option) => (
-                            <Select.Option
-                              key={option.ProviderId}
-                              value={option.ProviderId}
-                            >
-                              {option.ProviderName}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="admittedUnder" label="Admitted Under">
-                        <Select
-                          loading={providerLoader}
-                          allowClear
-                          showSearch // Enable search functionality
-                          filterOption={(input, option) =>
-                            option.children
-                              .toLowerCase()
-                              .includes(input.toLowerCase())
-                          }
-                          filterSort={(optionA, optionB) =>
-                            optionA.children
-                              .toLowerCase()
-                              .localeCompare(optionB.children.toLowerCase())
-                          } // Custom filtering logic
-                        >
-                          {providers.map((option) => (
-                            <Select.Option
-                              key={option.ProviderId}
-                              value={option.ProviderId}
-                            >
-                              {option.ProviderName}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item
-                        name="ServiceLocation"
-                        label="Service Location"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please select Service Location",
-                          },
-                        ]}
-                      >
-                        <Select
-                          allowClear
-                          onChange={handleServiceLocationChange}
-                          loading={providerLoader}
-                        >
-                          {serviceLocations.map((option) => (
-                            <Select.Option
-                              key={option.FacilityDepartmentServiceLocationId}
-                              value={option.FacilityDepartmentServiceLocationId}
-                            >
-                              {option.ServiceLocationName}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="referredBy" label="Referred By">
-                        <Select allowClear>
-                          {patientDropdown.ReferredBy.map((option) => (
-                            <Select.Option
-                              key={option.ReferrerId}
-                              value={option.ReferrerId}
-                            >
-                              {option.ReferrerType}
-                            </Select.Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    {showWard && (
-                      <>
-                        <Col span={12}>
-                          <Form.Item name="WardCategory" label="Ward Category">
-                            <Select
-                              allowClear
-                              disabled={wardComponentsDisabled}
-                              onChange={handleWardCategoryChange}
-                            >
-                              {patientDropdown.WardCategory.map((option) => (
-                                <Select.Option
-                                  key={option.LookupID}
-                                  value={option.LookupID}
-                                >
-                                  {option.LookupDescription}
-                                </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                          <Form.Item name="Ward" label="Ward">
-                            <Select
-                              allowClear
-                              disabled={wardComponentsDisabled}
-                              onChange={handleWardChange}
-                            >
-                              {wards.map((option) => (
-                                <Select.Option
-                                  key={option.WardID}
-                                  value={option.WardID}
-                                >
-                                  {option.WardName}
-                                </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                          <Form.Item name="Bed" label="Bed">
-                            <Select
-                              allowClear
-                              disabled={wardComponentsDisabled}
-                            >
-                              {beds.map((option) => (
-                                <Select.Option
-                                  key={option.BedID}
-                                  value={option.BedID}
-                                >
-                                  {option.BedNo}
-                                </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                        </Col>
-                      </>
-                    )}
-                  </Row>
-                </Col>
-                <Col span={12}>
-                  <Card
-                    title="Next of Kin Details"
-                    bordered={true}
-                    style={{ marginBottom: "24px" }}
-                    // className="Visit"
-                  >
-                    <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                      <Col span={12}>
-                        <Form.Item name="KinTitle" label="Title">
-                          <Select allowClear>
-                            {patientDropdown.Title.map((option) => (
-                              <Select.Option
-                                key={option.LookupID}
-                                value={option.LookupID}
-                              >
-                                {option.LookupDescription}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </Col>
-                      <Col span={12}>
-                        <Form.Item name="KinName" label="Next of Kin Name">
-                          <Input allowClear />
-                        </Form.Item>
-                      </Col>
-                      <Col span={12}>
-                        <Form.Item
-                          name="KinAddress"
-                          label="Next of Kin Address"
-                        >
-                          <Input allowClear />
-                        </Form.Item>
-                      </Col>
-                      <Col span={12}>
-                        <Form.Item
-                          name="KinContactNo"
-                          label="Next of Kin Contact No"
-                          rules={[
-                            {
-                              pattern: new RegExp(/^\d{6,10}$/),
-                              message: "Invalid Contact Number",
-                            },
-                          ]}
-                        >
-                          <Input allowClear />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </Card>
-                </Col>
-              </Row>
-            </Form>
-          </div>
-        </Modal>
+
+        {isVisitModalVisible && visitsDropdown.PatientType !== undefined && (
+          <VisitModal
+            open={isVisitModalVisible}
+            handleOk={handleOk}
+            ModalLoader={ModalLoader}
+            close={handleVisitModalCancel}
+            IsVisitCreated={IsVisitCreated}
+            patientHeaderDetails={patientHeaderDetails}
+            encounterId={encounterId}
+            form1={form1}
+            dropdown={visitsDropdown}
+            showWard={showWard}
+            isCancelOrEditVisit={false}
+            isCancelEncounter={false}
+          />
+        )}
       </ConfigProvider>
       <ConfigProvider
         theme={{

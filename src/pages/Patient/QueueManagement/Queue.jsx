@@ -34,6 +34,7 @@ import {
   urlCloseConsultation,
   urlRevertToMarkArrival,
   urlGetCapturedVitalsDetails,
+  urlGetPatientHeaderDetails,
 } from "../../../../endpoints";
 import {
   CalendarFilled,
@@ -54,9 +55,11 @@ import dayjs from "dayjs";
 import { MdManageSearch } from "react-icons/md";
 import { Radio, message } from "antd";
 import "../style.css";
+import PatientHeader from "../../../components/PatientHeader/index.jsx";
 
 const Queue = () => {
   const [patientDetails, setPatientDetails] = useState([]);
+  const [patientHeaderDetails, setPatientHeaderDetails] = useState([]);
   const { Title } = Typography;
   const { TextArea } = Input;
   const [isLoading, setLoading] = useState(false);
@@ -111,39 +114,12 @@ const Queue = () => {
   const [NewQueueModel, setNewQueueModel] = useState([]);
   const [encounterDetails, setEncounterDetails] = useState([]);
   const [selectedTime, setSelectedTime] = useState(dayjs());
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
-  const currentDate = new Date();
-  const currentTimeString = currentDate.toLocaleString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-    hour12: true,
-  });
-
-  const [MAPValues, setMAPValues] = useState({
-    SystolicBP: "",
-    DiastolicBP: "",
-    MeanAtrialPressure: "",
-  });
-
-  const [heightWeightValues, setHeightWeightValues] = useState({
-    Height: "",
-    Feet: "",
-    Inch: "",
-    Weight: "",
-    BMI: "",
-  });
-
-  const tempOptions = (
-    <Select defaultValue="celsius">
-      <Select.Option key="celsius">C</Select.Option>
-      <Select.Option key="fahrenheit">F</Select.Option>
-    </Select>
-  );
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPatients = patientQueueDetails.slice(startIndex, endIndex);
+  const totalPatients = patientQueueDetails.length;
 
   useEffect(() => {
     debugger;
@@ -379,8 +355,13 @@ const Queue = () => {
           }
         );
 
-        if (response.status === 200) {
+        const response1 = await customAxios.get(
+          `${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}&&EncounterId=${record.EncounterId}`
+        );
+
+        if (response.status === 200 && response1.status === 200) {
           setLoading(false);
+          setPatientHeaderDetails(response1.data.data.EncounterModel);
           setIsMarkArrivalModalVisible(true);
           const queueMarkArrivalData = response.data.data.NewQueueModel;
           setNewQueueModel(queueMarkArrivalData);
@@ -409,23 +390,55 @@ const Queue = () => {
       setLoading(false);
       setIsRevertToCheckInModalVisible(true);
     } else if (option.children === "Push Patient") {
-      setLoading(false);
-      setIsPushPatientModalVisible(true);
+      try {
+        const response = await customAxios.get(
+          `${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}&&EncounterId=${record.EncounterId}`
+        );
+        if (response.status === 200) {
+          setLoading(false);
+          const HeaderDetails = response.data.data.EncounterModel;
+          setPatientHeaderDetails(HeaderDetails);
+          setIsPushPatientModalVisible(true);
+        }
+      } catch (error) {
+        console.log("error raised here", error);
+      }
     } else if (option.children === "Start Consultation") {
       setLoading(false);
       form1.setFieldsValue({ StartConsultationTime: dayjs() });
       setIsStartConsultationModalVisible(true);
     } else if (option.children === "Close Consultation") {
-      setLoading(false);
-
-      form1.setFieldsValue({ CloseConsultationTime: dayjs() });
-      setIsCloseConsultationModalVisible(true);
+      try {
+        const response = await customAxios.get(
+          `${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}&&EncounterId=${record.EncounterId}`
+        );
+        if (response.data !== null) {
+          setLoading(false);
+          const HeaderDetails = response.data.data.EncounterModel;
+          setPatientHeaderDetails(HeaderDetails);
+          form1.setFieldsValue({ CloseConsultationTime: dayjs() });
+          setIsCloseConsultationModalVisible(true);
+        }
+      } catch (error) {
+        console.log("error raised here", error);
+      }
     } else if (option.children === "Revert to MarkArrival") {
       setLoading(false);
       setIsRevertToMarkArrivalModalVisible(true);
     } else if (option.children === "Antenatal Vitals") {
-      setLoading(false);
-      setIsAntenatalVitalsModalVisible(true);
+      try {
+        const response = await customAxios.get(
+          `${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}&&EncounterId=${record.EncounterId}`
+        );
+        if (response.data !== null) {
+          setLoading(false);
+          const HeaderDetails = response.data.data.EncounterModel;
+          setPatientHeaderDetails(HeaderDetails);
+          setIsAntenatalVitalsModalVisible(true);
+        }
+      } catch (error) {
+        console.log("error raised here", error);
+      }
     }
   };
 
@@ -498,6 +511,7 @@ const Queue = () => {
     const inputvalues = form1.getFieldsValue();
     console.log("the assign Queue values", inputvalues);
     // const fl1 = Flag === "All" ? '"All"' : Flag;
+    setFormSubmitted(true);
     setIsMarkArrivalModalVisible(false);
     try {
       const response = await customAxios.post(
@@ -511,17 +525,38 @@ const Queue = () => {
       );
 
       if (response.status === 200) {
-        const queueModel = response.data.data.QueueModel;
-        const queueAction = response.data.data.QueueAction;
-        setPatientQueueDetails(response.data.data.QueueModel);
-        const filteredQueueAction = filterQueueActions(queueModel, queueAction);
-        setIsMarkArrivalModalVisible(false);
-        setQueueActionDropdown(filteredQueueAction);
-        form3.resetFields();
-        notification.success({
-          message: "Patient Assigned into Queue",
-          // description: `The Patient with UHID ${selectedPatientRecord.UhId}  Token No is generated.`,
-        });
+        if (response.data.data.QueueMessage !== null) {
+          const queueModel = response.data.data.QueueModel;
+          const queueAction = response.data.data.QueueAction;
+          setPatientQueueDetails(response.data.data.QueueModel);
+          const filteredQueueAction = filterQueueActions(
+            queueModel,
+            queueAction
+          );
+          setIsMarkArrivalModalVisible(false);
+          setFormSubmitted(false);
+          setQueueActionDropdown(filteredQueueAction);
+          form3.resetFields();
+          notification.warning({
+            message: "Token number already exists.",
+          });
+        } else {
+          const queueModel = response.data.data.QueueModel;
+          const queueAction = response.data.data.QueueAction;
+          setPatientQueueDetails(response.data.data.QueueModel);
+          const filteredQueueAction = filterQueueActions(
+            queueModel,
+            queueAction
+          );
+          setIsMarkArrivalModalVisible(false);
+          setFormSubmitted(false);
+          setQueueActionDropdown(filteredQueueAction);
+          form3.resetFields();
+          notification.success({
+            message: "Patient Assigned into Queue",
+            // description: `The Patient with UHID ${selectedPatientRecord.UhId}  Token No is generated.`,
+          });
+        }
       } else {
         console.error("Failed to fetch providers");
       }
@@ -975,11 +1010,11 @@ const Queue = () => {
                       marginLeft: "5px", // Added margin to create space between icon and text
                     }}
                   >
-                    {patientQueueDetails.length}
+                    {patientQueueDetails?.length}
                   </div>
                 </span>
                 <span style={{ fontWeight: 500, fontSize: "12px" }}>
-                  Visits for Today
+                  List for today
                 </span>
               </div>
             </Col>
@@ -1008,8 +1043,11 @@ const Queue = () => {
           </Row>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col span={24}>
-              <Title level={4}> List of Patients in Visits</Title>
-              <Title level={5}>showing 1 of 1 Patients</Title>
+              <Title level={4}> List of Patients in queue</Title>
+              <Title level={5}>
+                Showing {startIndex + 1} to {Math.min(endIndex, totalPatients)}{" "}
+                of {totalPatients} Patients
+              </Title>
             </Col>
           </Row>
           <Spin spinning={isLoading}>
@@ -1023,9 +1061,18 @@ const Queue = () => {
                     size="small"
                     className="custom-table"
                     scroll={{ x: 1000 }}
-                    onChange={(pagination) => {
-                      setCurrentPage(pagination.current);
-                      setItemsPerPage(pagination.pageSize);
+                    // onChange={(pagination) => {
+                    //   setCurrentPage(pagination.current);
+                    //   setItemsPerPage(pagination.pageSize);
+                    // }}
+                    pagination={{
+                      current: currentPage,
+                      pageSize: itemsPerPage,
+                      total: totalPatients,
+                      onChange: (page, pageSize) => {
+                        setCurrentPage(page);
+                        setItemsPerPage(pageSize);
+                      },
                     }}
                     bordered
                   />
@@ -1144,7 +1191,7 @@ const Queue = () => {
         {/* {contextHolder} */}
         <Modal
           width={900}
-          title="MarkArrivalModal"
+          title="Mark Arrival"
           open={isMarkArrivalModalVisible}
           onCancel={handleMarkArrivalModalCancel}
           maskClosable={false}
@@ -1161,7 +1208,7 @@ const Queue = () => {
               key="ok"
               type="primary"
               onClick={handleAssignQueue}
-              // disabled={IsVisitCreated}
+              disabled={formSubmitted}
             >
               Assign Queue
             </Button>,
@@ -1171,75 +1218,12 @@ const Queue = () => {
           ]}
         >
           <div>
-            <div
-              style={{
-                padding: "16px",
-                borderRadius: "4px",
-                margin: "10px",
-                // display: "flex",
-                // border: "1px solid #d9d9d9",
-                // justifyContent: "space-between",
-                boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
-              }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    UHID:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.UhId}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Name:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.PatientName}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold" }}>PatientGender:</span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.PatientGender}
-                  </span>
-                </Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    VisitId:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.Encounterstr}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Age:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.Age}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Dob:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      formatDatefortable(selectedPatientRecord.DateOfBirth)}
-                  </span>
-                </Col>
-              </Row>
-            </div>
+            <PatientHeader patient={patientHeaderDetails}></PatientHeader>
             <Form
               key={selectedPatientRecord.QId}
               form={form1}
               layout="vertical"
+              disabled={formSubmitted}
             >
               <Row
                 style={{ margin: "24px 0px" }}
@@ -1284,8 +1268,22 @@ const Queue = () => {
                 gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
               >
                 <Col span={6}>
-                  <Form.Item name="TokenNo" label="Token no">
-                    <Input allowClear />
+                  <Form.Item
+                    name="TokenNo"
+                    label="Token no"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter a token number",
+                      },
+                      {
+                        pattern: /^[1-9]\d*$/,
+                        message:
+                          "Token number must be a positive and no special characters",
+                      },
+                    ]}
+                  >
+                    <Input allowClear maxLength={4} />
                   </Form.Item>
                 </Col>
                 <Col span={8} offset={1}>
@@ -1302,31 +1300,6 @@ const Queue = () => {
             </Form>
           </div>
         </Modal>
-      </ConfigProvider>
-      <ConfigProvider
-        theme={{
-          token: {
-            zIndexPopupBase: 3000,
-          },
-        }}
-      >
-        {/* {contextHolder} */}
-        <Modal
-          width={900}
-          title="PATIENT VITAL SIGNS"
-          open={isPatientVitalSignsModalVisible}
-          onCancel={handlePatientVitalSignsModalCancel}
-          maskClosable={false}
-          footer={[
-            <Button
-              key="cancel"
-              type="default"
-              onClick={handlePatientVitalSignsModalCancel}
-            >
-              Close
-            </Button>,
-          ]}
-        ></Modal>
       </ConfigProvider>
 
       <ConfigProvider
@@ -1389,71 +1362,7 @@ const Queue = () => {
           ]}
         >
           <div>
-            <div
-              style={{
-                padding: "16px",
-                borderRadius: "4px",
-                margin: "10px",
-                // display: "flex",
-                // border: "1px solid #d9d9d9",
-                // justifyContent: "space-between",
-                boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
-              }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    UHID:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.UhId}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Name:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.PatientName}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold" }}>PatientGender:</span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.PatientGender}
-                  </span>
-                </Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    VisitId:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.Encounterstr}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Age:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.Age}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Dob:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      formatDatefortable(selectedPatientRecord.DateOfBirth)}
-                  </span>
-                </Col>
-              </Row>
-            </div>
+            <PatientHeader patient={patientHeaderDetails}></PatientHeader>
             <Form
               key={selectedPatientRecord.QId}
               form={form1}
@@ -1491,8 +1400,21 @@ const Queue = () => {
                 gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
               >
                 <Col span={6}>
-                  <Form.Item name="PushToPosition" label="Push to Position">
-                    <Input allowClear />
+                  <Form.Item
+                    name="PushToPosition"
+                    label="Push to Position"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter a position number",
+                      },
+                      {
+                        pattern: /^[1-9]\d*$/,
+                        message: "No special characters",
+                      },
+                    ]}
+                  >
+                    <Input allowClear maxLength={2} />
                   </Form.Item>
                 </Col>
               </Row>
@@ -1565,71 +1487,7 @@ const Queue = () => {
           maskClosable={false}
         >
           <div>
-            <div
-              style={{
-                padding: "16px",
-                borderRadius: "4px",
-                margin: "10px",
-                // display: "flex",
-                // border: "1px solid #d9d9d9",
-                // justifyContent: "space-between",
-                boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
-              }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    UHID:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.UhId}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Name:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.PatientName}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold" }}>PatientGender:</span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.PatientGender}
-                  </span>
-                </Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    VisitId:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.Encounterstr}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Age:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.Age}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Dob:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      formatDatefortable(selectedPatientRecord.DateOfBirth)}
-                  </span>
-                </Col>
-              </Row>
-            </div>
+            <PatientHeader patient={patientHeaderDetails}></PatientHeader>
             <Form
               key={selectedPatientRecord.QId}
               form={form1}
@@ -1744,68 +1602,7 @@ const Queue = () => {
           maskClosable={false}
         >
           <div>
-            <div
-              style={{
-                padding: "16px",
-                borderRadius: "4px",
-                margin: "10px",
-                boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
-              }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    UHID:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.UhId}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Name:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.PatientName}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold" }}>PatientGender:</span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.PatientGender}
-                  </span>
-                </Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    VisitId:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.Encounterstr}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Age:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.Age}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Dob:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      formatDatefortable(selectedPatientRecord.DateOfBirth)}
-                  </span>
-                </Col>
-              </Row>
-            </div>
+            <PatientHeader patient={patientHeaderDetails}></PatientHeader>
           </div>
         </Modal>
       </ConfigProvider>

@@ -11,6 +11,10 @@ import SocialHistory from "./Components/SocialHistory.jsx";
 import Allergy from "./Components/Allergy.jsx";
 import PatientHeader from "../../components/PatientHeader/index.jsx";
 import VitalSigns from "./Components/VitalSigns.jsx";
+import PhysicalExamination from "./Components/PhysicalExamination.jsx";
+import ProvisionalDiagnosis from "./Components/ProvisionalDiagnosis.jsx";
+import Prescription from "./Components/Prescription.jsx";
+import Investigation from "./Components/Investigation.jsx";
 
 function ClinicalChart() {
   const clinicalHeaders = [
@@ -71,7 +75,7 @@ function ClinicalChart() {
             {
               label: `Physical Examination`,
               key: 12,
-              children: <MedicalHistory />,
+              children: <PhysicalExamination />,
             },
           ]}
         />
@@ -80,23 +84,61 @@ function ClinicalChart() {
     {
       label: `Provisional Diagnosis`,
       key: 3,
-      children: `Content 3`,
+      children: (
+        <Tabs
+          tabPosition="left"
+          items={[
+            {
+              label: `Provisional Diagnosis`,
+              key: 11,
+              children: <ProvisionalDiagnosis />,
+            },
+          ]}
+        />
+      ),
     },
     {
-      label: `Outreach Data`,
+      label: `Investigation`,
       key: 4,
-      children: `Content 4`,
+      children: (
+        <Tabs
+          tabPosition="left"
+          items={[
+            {
+              label: `Investigation`,
+              key: 11,
+              children: <Investigation />,
+            },
+          ]}
+        />
+      ),
     },
     {
-      label: `Prescription & Investigation`,
+      label: `Prescription`,
       key: 5,
-      children: `Content 5`,
+      children: (
+        <Tabs
+          tabPosition="left"
+          items={[
+            {
+              label: `Prescription`,
+              key: 11,
+              children: <Prescription />,
+            },
+          ]}
+        />
+      ),
     },
     {
       label: `Diagnosis & Discharge`,
       key: 6,
       children: `Content 6`,
     },
+    // {
+    //   label: `Diagnosis & Discharge`,
+    //   key: 7,
+    //   children: `Content 6`,
+    // },
   ];
   return (
     <div
@@ -137,7 +179,7 @@ function ClinicalChart() {
           </Button>
         </Col>
       </Row>
-      <div style={{ display: "flex", marginTop: "1.5rem" }}>
+      <div style={{ marginTop: "1.5rem" }}>
         <Tabs
           defaultActiveKey="1"
           type="card"

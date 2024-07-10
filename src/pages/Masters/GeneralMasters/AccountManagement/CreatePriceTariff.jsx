@@ -39,7 +39,7 @@ const { TextArea } = Input;
 
 function CreatePriceTariff() {
   const [form] = Form.useForm();
-  const [form1] = Form.useForm();
+
   const [facilities, setFacilities] = useState([]);
   const location = useLocation();
   const EditedPricetariffId = location.state?.PriceTariffId;
@@ -95,6 +95,7 @@ function CreatePriceTariff() {
   };
 
   const handleEdit = async (record) => {
+    debugger;
     try {
       const response = await customAxios.get(
         `${urlEditPriceTariffChargeParameter}?PriceTariffLine=${record.PriceTariffLineId}`
@@ -623,7 +624,7 @@ function CreatePriceTariff() {
                     options={pricetariffDropdown}
                     open={isModalOpen}
                     handleClose={() => setIsModalOpen(false)}
-                    priceTariffId={priceTariffId}
+                    priceTariffId={priceTariffId ? priceTariffId : EditedPricetariffId }
                     setColumnData={setColumnData}
                   />
                   <EditPriceChargeModal

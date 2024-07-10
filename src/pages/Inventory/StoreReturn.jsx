@@ -46,18 +46,18 @@ const StoreReturn = () => {
   const [loading, setLoading] = useState(false);
   const [isTable, setIsTable] = useState(false);
   const { Title } = Typography;
-  useEffect(() => {
-    // try {
-    //   customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-    //     debugger;
-    //     const apiData = response.data.data;
-    //     setStoreReturnDropDown(apiData);
-    //     setIsLoading(false);
-    //   });
-    // } catch (error) {
-    //   console.error("Error fetching purchase order details:", error);
-    // }
-  }, []);
+  // useEffect(() => {
+  //   // try {
+  //   //   customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
+  //   //     debugger;
+  //   //     const apiData = response.data.data;
+  //   //     setStoreReturnDropDown(apiData);
+  //   //     setIsLoading(false);
+  //   //   });
+  //   // } catch (error) {
+  //   //   console.error("Error fetching purchase order details:", error);
+  //   // }
+  // }, []);
 
   const navigate = useNavigate();
   const handleAddTemplate = () => {

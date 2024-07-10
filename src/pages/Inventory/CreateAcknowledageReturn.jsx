@@ -81,15 +81,15 @@ const CreateAcknowledgeReturn = () => {
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   // const tableRef = useRef(null);
 
-  useEffect(() => {
-    // customAxios.get(urlCreateAcknowledgeReturn).then((response) => {
-    //   const apiData = response.data.data;
-    //   setDropDown(apiData);
-    //   setIsLoading(false);
-    //   handleAdd();
-    //   ModelAdd();
-    // });
-  }, []);
+  // useEffect(() => {
+  //   // customAxios.get(urlCreateAcknowledgeReturn).then((response) => {
+  //   //   const apiData = response.data.data;
+  //   //   setDropDown(apiData);
+  //   //   setIsLoading(false);
+  //   //   handleAdd();
+  //   //   ModelAdd();
+  //   // });
+  // }, []);
 
   const getPanelValue = async (searchText) => {
     //     debugger;

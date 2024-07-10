@@ -40,16 +40,18 @@ import {
   urlGetAllProviders,
   urlAddNewCharge,
   urlBillingCreate,
-  urlGetPatientDetails,
+ 
   urlEditDiscount,
   urlUpdateDiscount,
   urlInvoiceDiscount,
+  urlGetPatientHeaderDetails,
 } from "../../../endpoints";
 import Title from "antd/es/typography/Title";
 import { useLocation } from "react-router-dom";
 import PatientHeader from "../../components/PatientHeader";
 import { CiDiscount1 } from "react-icons/ci";
 import dayjs from "dayjs";
+import { debounce } from "lodash";
 
 const CreateBilling = () => {
   const location = useLocation();
@@ -87,11 +89,11 @@ const CreateBilling = () => {
     const fetchDataHeader = async () => {
       try {
         const response = await customAxios.get(
-          `${urlGetPatientDetails}?PatientId=${PatientId}&Encounter=${Encounter}&EncounterId=${EncounterId}`
+          `${urlGetPatientHeaderDetails}?PatientId=${PatientId}&EncounterId=${EncounterId}`
         );
         if (response.status === 200 && response.data.data != null) {
-          const detailsheader = response.data.data;
-          setPatientData(detailsheader.PatientDetail);
+          const detailsheader = response.data.data.EncounterModel;
+          setPatientData(detailsheader);
           console.log("headerdata", detailsheader.PatientDetail);
         } else {
           console.error("Failed to fetch patient details");
@@ -171,8 +173,7 @@ const CreateBilling = () => {
   };
 
   const handleCreateService = async () => {
-
-    navigate('/Billing')
+    navigate("/Billing");
   };
 
   const handleAutoCompleteChange = async (value) => {
@@ -210,6 +211,11 @@ const CreateBilling = () => {
     }
     setLoading(false); // Stop loading
   };
+
+  const debouncedHandleAutoCompleteChangeService = debounce(
+    handleAutoCompleteChange,
+    300
+  );
 
   const handleSelect = async (value, option) => {
     debugger;
@@ -283,6 +289,11 @@ const CreateBilling = () => {
     setLoading(false); // Stop loading
   };
 
+  const debouncedHandleAutoCompleteChange = debounce(
+    handleproviderAutoCompleteChange,
+    300
+  );
+
   const handleProviderSelect = async (value, option) => {
     setSelectedProviderId(option.key);
   };
@@ -300,12 +311,11 @@ const CreateBilling = () => {
   };
   const handleInvoiceDiscount = async (row) => {
     debugger;
-    const Flag="";
+    const Flag = "";
     const response = await customAxios.get(
       `${urlInvoiceDiscount}?PatientId=${PatientId}&EncounterId=${EncounterId}&Flag=${Flag}`
     );
-    if(response.status===200 && response.data.data!=null){
-
+    if (response.status === 200 && response.data.data != null) {
       setInvoiceDiscountReason(response.data.data.DiscountReasons);
       setInvoiceDiscountDetails(response.data.data.InvoiceDetailModel);
       setIsInvoiceModalOpen(true);
@@ -838,7 +848,8 @@ const CreateBilling = () => {
                 >
                   <AutoComplete
                     options={services}
-                    onSearch={handleAutoCompleteChange}
+                    //onSearch={handleAutoCompleteChange}
+                    onSearch={debouncedHandleAutoCompleteChangeService}
                     onSelect={handleSelect}
                     onChange={(value) => {
                       if (!value) {
@@ -886,7 +897,8 @@ const CreateBilling = () => {
                 >
                   <AutoComplete
                     options={providers}
-                    onSearch={handleproviderAutoCompleteChange}
+                    //onSearch={handleproviderAutoCompleteChange}
+                    onSearch={debouncedHandleAutoCompleteChange}
                     onSelect={handleProviderSelect}
                     onChange={(value) => {
                       if (!value) {
@@ -1079,7 +1091,6 @@ const CreateBilling = () => {
           layout="vertical"
           onFinish={handleSaveBill}
           variant="outlined"
-        
           //style={{ padding: '0rem 2rem' }}
           form={form1}
         >

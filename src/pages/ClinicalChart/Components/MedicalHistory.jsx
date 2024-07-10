@@ -82,12 +82,12 @@ function MedicalHistory() {
   }));
 
   const columns = [
-    { title: "Sl. No.", dataIndex: "SlNo", key: "SlNo",width:100 },
+    { title: "Sl. No.", dataIndex: "SlNo", key: "SlNo", width: 100 },
     { title: "Name", dataIndex: "name", key: "name" },
     {
       title: "Action",
       key: "action",
-      width:180,
+      width: 180,
       render: (_, record) => (
         <Button type="ghost" size="middle" onClick={() => handleDelete(record)}>
           <RiDeleteBin6Line />
@@ -95,9 +95,7 @@ function MedicalHistory() {
       ),
     },
   ];
-  useEffect(() => {
-    console.log("selectedMedicalHistoryDetails", selectedMedicalHistoryDetails);
-  }, [selectedMedicalHistoryDetails]);
+
   return (
     <>
       <Row>

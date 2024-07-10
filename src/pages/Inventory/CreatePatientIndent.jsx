@@ -1,9 +1,9 @@
 import customAxios from '../../components/customAxios/customAxios.jsx';
 import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
-import { urlCreatePurchaseOrder, urlSearchUHID, urlGetLastEncounter, urlAutocompleteProduct, urlUpdateIndent, urlEditIndent, urlGetProductDetailsById, urlAddNewIndent } from '../../../endpoints.js';
+import { urlCreatePurchaseOrder, urlSearchUHID, urlGetLastEncounter, urlAutocompleteProduct, urlUpdatePatientIndent, urlEditPatientIndent, urlGetProductDetailsById, urlAddNewPatientIndent } from '../../../endpoints.js';
 import Select from 'antd/es/select';
-import { ConfigProvider, Tooltip, Typography, Checkbox, Tag, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
+import { ConfigProvider, Card, Typography, Checkbox, Tooltip, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
 import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
@@ -27,42 +27,30 @@ const CreatePatientIndent = () => {
         DateFormat: []
     });
 
-    let [counter, setCounter] = useState(0);
-    let [productCount, setProductcount] = useState(0);
+    let [counter, setCounter] = useState(0);    
 
     const [encounter, setEncounter] = useState([]);
-    //const { PoHeaderId, SupplierId, StoreId } = useParams();
     const [form1] = Form.useForm();
     const [form2] = Form.useForm();
-    const [form3] = Form.useForm();
     const { Title } = Typography;
     const { TextArea } = Input;
     const { Option } = Select;
     const navigate = useNavigate();
-    const currentDate = new Date();
     //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');    
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
     const [data, setData] = useState([]);
     const [dataModal, setDataModal] = useState([]);
-    const [selectedSupplier, setSelectedSupplier] = useState(null);
-    const [selectedStore, setSelectedStore] = useState({});
-    const [shouldValidateModal, setshouldValidateModal] = useState(false);
-    const [isPoSearchTable, setIsPoSearchTable] = useState(false);
-    const [mrp, setMrp] = useState();
     const [poloading, setPoloading] = useState(false);
-    const [productLineId, setProductLineId] = useState(0);
-    const [selecetdUomText, setSelecetdUomText] = useState({});
-    const [selecetdProductId, setSelecetdProductId] = useState({});
-    const [batches, setBatches] = useState([]);
     const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
     const [autoCompleteProduct, setAutoCompleteProduct] = useState([]);
     const fields = form1.getFieldsValue();
     const [buttonTitle, setButtonTitle] = useState('Save');
     const location = useLocation();
-    const [indentId, setIndentId] = useState(location.state.IndentId);
+    const indentId = location.state.IndentId;
     const [isTableVisible, setIsTableVisible] = useState(false);
     const [uhId, setUhId] = useState();
+    const [indentStatus, setIndentStatus] = useState(false);
+    const [isProductAvailable, setIsProductAvailable] = useState(false)
 
     useEffect(() => {
         customAxios.get(urlCreatePurchaseOrder).then((response) => {
@@ -70,78 +58,39 @@ const CreatePatientIndent = () => {
             setDropDown(apiData);
         });
         if (indentId > 0) {
-            debugger;
             setButtonTitle('Update');
-            customAxios.get(`${urlEditIndent}?IndentId=${indentId}`).then((response) => {
+            customAxios.get(`${urlEditPatientIndent}?IndentId=${indentId}`).then((response) => {
                 const apiData = response.data.data;
-                if (apiData.newIndentModel !== null) {
-                    const option = {
-                        PatientId: apiData.newIndentModel.PatientId, value: apiData.newIndentModel.UhId,
-                        PatientName: apiData.newIndentModel.PatientName
-                    }
-                    handleSelect(0, option);
-                    setIsTableVisible(true);
-                    const isoDateString = apiData.newIndentModel.IndentDate;
-
-                    const dateValue = new Date(isoDateString);
-
-                    const formattedDate = dayjs(dateValue).format('DD-MM-YYYY');
-
-                    const dateForDatePicker = dayjs(formattedDate, 'DD-MM-YYYY');
-                    // form1.setFieldsValue({ IndentId: indentId });
-                    form1.setFieldsValue({ IndentDate: dateForDatePicker });
-                    // form1.setFieldsValue({ RequestingStore: apiData.newIndentModel.RequestingStoreId });
-                    form1.setFieldsValue({ IssuingStore: apiData.newIndentModel.IssueingStoreId });
-                    // form1.setFields([
-                    //     {
-                    //         name: 'IssuingStore',
-                    //         value: apiData.newIndentModel.IssueingStoreId,                            
-                    //         disabled: true,
-                    //     },
-                    // ]);
-                    form1.setFieldsValue({ Remarks: apiData.newIndentModel.Remarks });
-                    form1.setFieldsValue({ IndentTemplate: apiData.newIndentModel.IndentTemplateId === 0 ? '' : apiData.newIndentModel.IndentTemplateId });
-                    form1.setFieldsValue({ IndentType: apiData.newIndentModel.IndentType });
-                    form1.setFieldsValue({ IndentId: apiData.newIndentModel.IndentId });
-                    // form1.setFieldsValue({ PatientId: apiData.newIndentModel.PatientId });
-                    form1.setFieldsValue({ Encounter: apiData.newIndentModel.EncounterId });
-                    // const newOptions = ({ value: apiData.newIndentModel.UhId, key: apiData.newIndentModel.UhId, PatientId: apiData.newIndentModel.PatientId, PatientName: apiData.newIndentModel.PatientName });
-                    // setAutoCompleteOptions(newOptions);
-                    setUhId(apiData.newIndentModel.UhId);
-                    // form1.setFieldsValue({ UHID: uhId });
-                    // form1.setFieldsValue({ Name: apiData.newIndentModel.PatientName });
-                }
-                // <Select disabled>
-                //     {DropDown.UOM.map((option) => (
-                //         <Select.Option key={option.UomId} value={option.UomId}>
-                //             {option.FullName}
-                //         </Select.Option>
-                //     ))}
-                // </Select>
-                for (let i = counter; i < apiData.IndentDetails.length; i++) {
-                    AddProduct();
-                }
-                if (response.data.data.IndentDetails !== null) {
-                    for (let i = counter; i <= response.data.data.IndentDetails.length; i++) {
-                        form1.setFieldsValue({ [i]: { product: apiData.IndentDetails[i].ProductName } });
-                        form1.setFieldsValue({ [i]: { uom: apiData.IndentDetails[i].UomId } });
-                        form1.setFieldsValue({ [i]: { RequestingQty: apiData.IndentDetails[i].RequestQty } });
-                        form1.setFieldsValue({ [i]: { RequestingStoreStock: apiData.IndentDetails[i].AvlReqQuantity } });
-                        form1.setFieldsValue({ [i]: { RequestingStoreStock: apiData.IndentDetails[i].AvlReqQuantity } });
-                        form1.setFieldsValue({ [i]: { IssuingStoreStock: apiData.IndentDetails[i].AvlIssueQuantity === null ? 0 : apiData.IndentDetails[i].AvlIssueQuantity } });
-                        form1.setFieldsValue({ [i]: { fav: apiData.IndentDetails[i].Favourite === "N" ? false : true } });
-                        form1.setFieldsValue({ [i]: { productId: apiData.IndentDetails[i].ProductId } });
-                        form1.setFieldsValue({ [i]: { uomId: response.data.data.IndentDetails[i].UomId } });
-                        form1.setFieldsValue({ [i]: { IndentLineId: apiData.IndentDetails[i].IndentLineId } });
-                    }
-                }
+                const products = apiData.IndentDetails.map((item, index) => ({
+                    ...item,
+                    key: index,
+                    IssuingStoreStock: apiData.IndentDetails[index].AvlIssueQuantity,
+                    RequestingStoreStock: apiData.IndentDetails[index].AvlReqQuantity,
+                    Favourite: apiData.IndentDetails[index].Favourite == 'N' ? false : true,
+                    index: index + 1
+                }))
+                setData(products);
+                setCounter(products.length)
+                setIsTableVisible(true)
+                const formdata = apiData.newIndentModel
+                form1.setFieldsValue({
+                    IssuingStore: formdata.IssueingStoreId,
+                    IndentType: formdata.IndentType,
+                    Remarks: formdata.Remarks,
+                    IndentTemplate: formdata.IndentTemplateId == 0 ? undefined : formdata.IndentTemplateId,
+                    IndentStatus: formdata.IndentStatus == 'Created' ? undefined : formdata.IndentStatus,
+                    UHID: formdata.UhId,
+                    Name: formdata.PatientName,
+                    Encounter: formdata.Encounter,
+                    EncounterId: formdata.EncounterId,
+                    PatientId: formdata.PatientId,
+                    IndentId: formdata.IndentId
+                })
             });
-            setIndentId(0);
         }
     }, []);
 
     const onOkModal = () => {
-        debugger;
         form2
             .validateFields()
             .then(() => {
@@ -175,33 +124,38 @@ const CreatePatientIndent = () => {
         // }
     }
 
-    const AddProduct = () => {
-        const newData = {
-            key: productCount.toString(),
-            productId: '',
-            product: '',
-            uomId: '',
-            uom: '',
-            RequestingQty: '',
-            IssuingStoreStock: '',
-            fav: ''
-        }
-        setData([...data, newData]);
-        setProductcount(counter + 1);
+    const AddProduct = async () => {
+        setAutoCompleteProduct([])
+        await form1.validateFields();
+        setData([
+            ...data,
+            {
+                key: counter,
+                ProductName: '',
+                ProductId: '',
+                UomId: '',
+                RequestQty: '',
+                RequestingStoreStock: '',
+                IssuingStoreStock: '',
+                Favourite: false,
+                ActiveFlag: true,
+            },
+        ]);
+        setCounter(counter + 1);
+        setIsProductAvailable(false)
     }
 
     const getPanelValue1 = (value, key) => {
         if (value === "") {
             form1.setFieldsValue({ [key]: { uom: '' } });
-            form1.setFieldsValue({ [key]: { RequestingQty: '' } });
-            form1.setFieldsValue({ [key]: { fav: false } });
+            form1.setFieldsValue({ [key]: { RequestQty: '' } });
+            form1.setFieldsValue({ [key]: { Favourite: false } });
             form1.setFieldsValue({ [key]: { IssuingStoreStock: '' } });
         }
         try {
             customAxios.get(`${urlAutocompleteProduct}?Product=${value}`).then((response) => {
                 const apiData = response.data.data;
-                debugger
-                const newOptions = apiData.map(item => ({ value: item.LongName, key: item.ProductDefinitionId, UomId: item.UOMPrimaryUOM }));
+                const newOptions = apiData.map(item => ({ value: item.LongName, key: item.ProductId, UomId: item.UOMPrimaryUOM }));
                 setAutoCompleteProduct(newOptions);
             });
         } catch (error) {
@@ -210,12 +164,10 @@ const CreatePatientIndent = () => {
     }
 
     const handleSelect1 = (value, option, key) => {
-        debugger;
-        form1.setFieldsValue({ [key]: { uom: option.UomId } });
-        form1.setFieldsValue({ [key]: { productId: option.key } });
+        form1.setFieldsValue({ [key]: { UomId: option.UomId } });
+        form1.setFieldsValue({ [key]: { ProductId: option.key } });
         customAxios.get(`${urlGetProductDetailsById}?ProductId=${option.key}`).then((response) => {
             const apiData = response.data.data;
-            debugger;
             let reqstr = form1.getFieldValue('IssuingStore');
             let qty = 0;
             apiData.Stock.forEach(value => {
@@ -226,59 +178,49 @@ const CreatePatientIndent = () => {
             form1.setFieldsValue({ [key]: { IssuingStoreStock: qty } });
         });
     }
+
     const columns = [
         {
-            // title: 'productId',
-            dataIndex: 'productId',
-            key: 'productId',
-            width: 0,
-            render: (_, record) => (
-                <Form.Item name={[record.key, 'productId']} hidden>
-                    <Input></Input>
-                </Form.Item>
-            )
-        },
-        {
             title: 'Product',
-            dataIndex: 'product',
-            key: 'product',
+            dataIndex: 'ProductName',
+            key: 'ProductName',
+            width: 450,
             render: (_, record) => (
-                <Form.Item name={[record.key, 'product']} style={{ width: 250 }}
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please input!'
-                        }
-                    ]}
-                >
-                    <AutoComplete style={{ width: '100%' }}
-                        options={autoCompleteProduct}
-                        onSearch={(value) => getPanelValue1(value, record.key)}
-                        onSelect={(value, option) => handleSelect1(value, option, record.key)}
-                        placeholder="Search for a product"
-                        allowClear
-                    />
-                </Form.Item>
-            )
-        },
-        {
-            // title: 'UOM',
-            dataIndex: 'uomId',
-            key: 'uomId',
-            width: 0,
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'uomId']} hidden>
-                    <Input></Input>
-                </Form.Item >
+                <>
+                    <Form.Item name={[record.key, 'ProductName']} style={{ width: '100%' }}
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please input!'
+                            }
+                        ]}
+                        initialValue={record.ProductName}
+                    >
+                        <AutoComplete style={{ width: '100%' }} disabled={!!indentId && record.IndentLineId}
+                            options={autoCompleteProduct}
+                            onSearch={(value) => getPanelValue1(value, record.key)}
+                            onSelect={(value, option) => handleSelect1(value, option, record.key)}
+                            placeholder="Search for a product"
+                            allowClear
+                        />
+                    </Form.Item>
+                    <Form.Item name={[record.key, 'ProductId']} hidden initialValue={record.ProductId}>
+                        <Input></Input>
+                    </Form.Item>
+                    <Form.Item name={[record.key, 'IndentLineId']} hidden initialValue={record.IndentLineId}>
+                        <Input></Input>
+                    </Form.Item>
+                </>
             )
         },
         {
             title: 'UOM',
-            dataIndex: 'uom',
-            key: 'uom',
+            dataIndex: 'UomId',
+            key: 'UomId',
+            width: 150,
             render: (text, record) => (
-                <Form.Item name={[record.key, 'uom']} style={{ width: 100 }}>
-                    <Select disabled>
+                <Form.Item name={[record.key, 'UomId']} style={{ width: '100%' }} initialValue={record.UomId}>
+                    <Select disabled defaultValue={record.UomId}>
                         {DropDown.UOM.map((option) => (
                             <Select.Option key={option.UomId} value={option.UomId}>
                                 {option.FullName}
@@ -290,12 +232,11 @@ const CreatePatientIndent = () => {
         },
         {
             title: 'Requesting Qty',
-            dataIndex: 'RequestingQty',
-            key: 'RequestingQty',
+            dataIndex: 'RequestQty',
+            key: 'RequestQty',
             render: (text, record) => (
-                <Form.Item
-                    name={[record.key, 'RequestingQty']}
-                    style={{ width: 100 }}
+                <Form.Item style={{ width: '100%' }} initialValue={record.RequestQty}
+                    name={[record.key, 'RequestQty']}
                     rules={[
                         {
                             required: true,
@@ -303,32 +244,52 @@ const CreatePatientIndent = () => {
                         }
                     ]}
                 >
-                    <InputNumber min={1} />
+                    <InputNumber min={1} style={{ width: '100%' }} />
                 </Form.Item>
             )
         },
+        (indentId > 0 ?
+            {
+                title: 'RequestingStoreStock',
+                dataIndex: 'RequestingStoreStock',
+                key: 'RequestingStoreStock',
+                render: (text, record) => (
+                    <Form.Item name={[record.key, 'RequestingStoreStock']} initialValue={record.RequestingStoreStock}>
+                        <Input disabled />
+                    </Form.Item>
+                )
+            }
+            : {}),
         {
             title: 'Issuing Store Stock',
             dataIndex: 'IssuingStoreStock',
             key: 'IssuingStoreStock',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'IssuingStoreStock']}>
+                <Form.Item name={[record.key, 'IssuingStoreStock']} initialValue={record.IssuingStoreStock}>
                     <Input disabled />
                 </Form.Item>
             )
         },
         {
             title: 'Fav',
-            dataIndex: 'fav',
-            key: 'fav',
+            dataIndex: 'Favourite',
+            key: 'Favourite',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'fav']}>
-                    <Checkbox valuePropName="checked"></Checkbox>
-                </Form.Item>
+                <>
+                    <Form.Item name={[record.key, 'Favourite']} initialValue={record.Favourite} valuePropName="checked">
+                        <Checkbox onChange={FavouriteChanged}></Checkbox>
+                    </Form.Item>
+                    <Form.Item name={[record.key, 'ActiveFlag']} initialValue={record.ActiveFlag} hidden>
+                        <Checkbox valuePropName="checked"></Checkbox>
+                    </Form.Item>
+                </>
             )
         },
         {
-            title: <Button type="primary" icon={<PlusOutlined />} onClick={AddProduct}></Button>,
+            title: (<Tooltip title="Please Add Product!" open={isProductAvailable}>
+                <Button type="primary" icon={<PlusOutlined />} onClick={AddProduct}></Button>
+            </Tooltip>),
+            // title: <Button type="primary" icon={<PlusOutlined />} onClick={AddProduct}></Button>,
             dataIndex: 'add',
             key: 'add',
             width: 50,
@@ -337,18 +298,13 @@ const CreatePatientIndent = () => {
     ]
 
     const handleDelete = (record) => {
-        debugger;
-        const newData = data.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
-        Object.keys(fields).forEach(fieldName => {
-            if (fieldName.startsWith(`${record.key}.`)) {
-                form1.resetFields([fieldName]);
+        const newData = data.map((item) => {
+            if (item.key === record.key) {
+                return { ...item, ActiveFlag: false };
             }
+            return item;
         });
         setData(newData);
-        setCounter(newData.length);
-        // if (tableRef.current) {
-        //   tableRef.current.scrollLeft = 0;
-        // }      
     };
 
     const Modelcolumns = [
@@ -373,7 +329,6 @@ const CreatePatientIndent = () => {
     ];
 
     const onCancelmodal = () => {
-        debugger;
         setIsModalOpen(false);
         // setDataModal([]);
     }
@@ -402,63 +357,88 @@ const CreatePatientIndent = () => {
     const handleOnFinish = async (values) => {
         debugger;
         const products = [];
-        for (let i = 0; i <= productCount; i++) {
-            if (values[i] !== undefined) {
+        if (data.length == 0) {
+            setIsProductAvailable(true)
+            return false;
+        }
+        else {
+            const temp = data.filter(item => item.ActiveFlag == true)
+            if (temp.length == 0) {
+                setIsProductAvailable(true)
+                return false;
+            }
+        }
+
+        for (let i = 0; i <= counter; i++) {
+            if (data[i] !== undefined && values[i] !== undefined) {
                 const product = {
-                    ProductId: values[i].productId,
-                    UomId: values[i].uom,
+                    ProductId: values[i].ProductId,
+                    UomId: values[i].UomId ? values[i].UomId : values[i].UomId,
                     IssuingStoreStock: values[i].IssuingStoreStock,
-                    RequestQty: values[i].RequestingQty === "" ? 0 : values[i].RequestingQty,
-                    Favourite: values[i].fav === undefined || values[i].fav === false ? 'N' : 'Y',
+                    RequestQty: values[i].RequestQty,
+                    Favourite: values[i].Favourite === false ? 'N' : 'Y',
+                    IndentLineId: values[i].IndentLineId ? values[i].IndentLineId : 0,
+                    ActiveFlag: values[i].ActiveFlag
                 }
                 products.push(product);
             }
+            else {
+                if (data[i] != undefined) {
+                    data[i].Favourite = data[i].Favourite == false ? 'N' : 'Y'
+                    products.push(data[i])
+                }
+            }
         }
-        if (products.length > 0) {
-            const Indent = {
-                IndentId: values.IndentId === undefined ? 0 : values.IndentId,
-                IndentDate: values.IndentDate === undefined ? '' : values.IndentDate,
-                IndentStatus: values.IndentStatus === undefined ? 'Created' : values.IndentStatus,
-                IndentTemplateId: values.IndentTemplate === undefined || values.IndentTemplate === "" ? 0 : values.IndentTemplate,
-                IndentType: values.IndentType === undefined ? null : values.IndentType,
-                IssueingStoreId: values.IssuingStore,
-                Name: values.Name === undefined ? null : values.Name,
-                Remarks: values.Remarks === undefined ? null : values.Remarks,
-                UHID: values.UHID === undefined ? 0 : values.UHID,
-                SubmitCheck: values.SubmitCheck === undefined ? null : values.SubmitCheck,
-                PatientId: values.PatientId === undefined ? 0 : values.PatientId,
-                EncounterId: values.Encounter === undefined ? null : values.Encounter,
-                IndentCategory: 'PatientIndent'
-            }
-            const postData = {
-                newIndentModel: Indent,
-                IndentDetails: products,
-            }
-            if (values.IndentId > 0) {
-                const response = await customAxios.post(urlUpdateIndent, postData, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                handleCancel();
-            } else {
-                const response = await customAxios.post(urlAddNewIndent, postData, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                handleCancel();
-            }
+
+        const Indent = {
+            IndentId: values.IndentId ? values.IndentId : 0,
+            IndentDate: values.IndentDate,
+            IndentStatus: !indentStatus ? 'Created' : values.IndentStatus,
+            IndentTemplateId: values.IndentTemplate ? values.IndentTemplate : 0,
+            IndentType: values.IndentType,
+            IssueingStoreId: values.IssuingStore,
+            Name: values.Name,
+            Remarks: values.Remarks,
+            UHID: values.UHID === undefined ? 0 : values.UHID,
+            SubmitCheck: values.SubmitCheck,
+            PatientId: values.PatientId,
+            EncounterId: !!indentId ? values.EncounterId : values.Encounter,
+            IndentCategory: 'PatientIndent',
+            RequestingStoreId: 0
+        }
+        const postData = {
+            newIndentModel: Indent,
+            IndentDetails: products,
+        }
+        if (indentId > 0) {
+            const response = await customAxios.post(urlUpdatePatientIndent, postData, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            handleCancel();
         } else {
-            message.warning('Please add Product Details');
+            const response = await customAxios.post(urlAddNewPatientIndent, postData, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            handleCancel();
         }
     };
+
+    const FavouriteChanged = (event) => {
+        setIndentStatus(event.target.checked)
+    }
+
+    const SubmitChanged = (event) => {
+        setIndentStatus(event.target.checked)
+    }
 
     const GetUHID = (value) => {
         if (value !== "") {
             customAxios.get(`${urlSearchUHID}?Uhid=${value}`).then((response) => {
                 const apiData = response.data.data;
-                debugger;
                 const newOptions = apiData.map(item => ({ value: item.UhId, key: item.UhId, PatientId: item.PatientId, PatientName: item.PatientFirstName + '' + item.PatientLastName }));
                 setAutoCompleteOptions(newOptions);
             });
@@ -470,7 +450,6 @@ const CreatePatientIndent = () => {
     }
 
     const handleSelect = (value, option) => {
-        debugger;
         form1.setFieldsValue({ Name: option.PatientName });
         form1.setFieldsValue({ UHID: option.value });
         customAxios.get(`${urlGetLastEncounter}?Uhid=${option.key}`).then((response) => {
@@ -506,170 +485,181 @@ const CreatePatientIndent = () => {
                         </Button>
                     </Col>
                 </Row>
-                <Form
-                    layout="vertical"
-                    onFinish={handleOnFinish}
-                    variant="outlined"
-                    size="default"
-                    style={{
-                        maxWidth: 1500
-                    }}
-                    name="trigger"
-                    form={form1}
-                    initialValues={{
-                        IndentDate: dayjs(),
-                        UHID: ''
-                    }}
-                    onValuesChange={(changedValues, allValues) => {
-                        debugger;
-                        if (allValues.IssuingStore !== undefined) {
-                            setIsTableVisible(true);
-                        } else {
-                            setData([]);
-                            setIsTableVisible(false);
-                        }
-                    }}
-                >
-                    <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Indent Date" name="IndentDate"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input!'
-                                    }
-                                ]}
-                            >
-                                <DatePicker
-                                    style={{ width: "100%" }}
-                                    format="DD-MM-YYYY"
-                                />
-                            </Form.Item>
-                            <Form.Item name="IndentId" hidden>
-                                <Input></Input>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Issuing Store" name="IssuingStore"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input!'
-                                    }
-                                ]}
-                            >
-                                <Select allowClear placeholder='Select Value'>
-                                    {DropDown.StoreDetails.map((option) => (
-                                        <Select.Option key={option.StoreId} value={option.StoreId}>
-                                            {option.LongName}
-                                        </Select.Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Indent Type" name="IndentType"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input!'
-                                    }
-                                ]}
-                            >
-                                <Select placeholder='Select Value' allowClear>
-                                    <Select.Option key='Effective' value='Effective'></Select.Option>
-                                    <Select.Option key='Consumption Based' value='Consumption Based'></Select.Option>
-                                    <Select.Option key='Urgent' value='Urgent'></Select.Option>
-                                    <Select.Option key='Reorder level Based' value='Reorder level Based'></Select.Option>
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <div>
-                                <Form.Item label="Remarks" name="Remarks">
-                                    <TextArea autoSize allowClear />
+                <Card>
+                    <Form
+                        layout="vertical"
+                        onFinish={handleOnFinish}
+                        variant="outlined"
+                        size="default"
+                        style={{
+                            maxWidth: 1500
+                        }}
+                        name="trigger"
+                        form={form1}
+                        initialValues={{
+                            IndentDate: dayjs(),
+                            SubmitCheck: false
+                        }}
+                        onValuesChange={(changedValues, allValues) => {
+                            if (allValues.IssuingStore !== undefined) {
+                                setIsTableVisible(true);
+                            } else {
+                                setData([]);
+                                setIsTableVisible(false);
+                            }
+                        }}
+                    >
+                        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
+                            <Col className="gutter-row" span={6}>
+                                <Form.Item label="Indent Date" name="IndentDate"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Please input!'
+                                        }
+                                    ]}
+                                >
+                                    <DatePicker
+                                        style={{ width: "100%" }}
+                                        format="DD-MM-YYYY"
+                                    />
                                 </Form.Item>
+                                <Form.Item name="IndentId" hidden>
+                                    <Input></Input>
+                                </Form.Item>
+                            </Col>
+                            <Col className="gutter-row" span={6}>
+                                <Form.Item label="Issuing Store" name="IssuingStore"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Please input!'
+                                        }
+                                    ]}
+                                >
+                                    <Select allowClear placeholder='Select Value' disabled={!!indentId}>
+                                        {DropDown.StoreDetails.map((option) => (
+                                            <Select.Option key={option.StoreId} value={option.StoreId}>
+                                                {option.LongName}
+                                            </Select.Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col className="gutter-row" span={6}>
+                                <Form.Item label="Indent Type" name="IndentType"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Please input!'
+                                        }
+                                    ]}
+                                >
+                                    <Select placeholder='Select Value' allowClear>
+                                        <Select.Option key='Effective' value='Effective'></Select.Option>
+                                        <Select.Option key='Consumption Based' value='Consumption Based'></Select.Option>
+                                        <Select.Option key='Urgent' value='Urgent'></Select.Option>
+                                        <Select.Option key='Reorder level Based' value='Reorder level Based'></Select.Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col className="gutter-row" span={6}>
+                                <div>
+                                    <Form.Item label="Remarks" name="Remarks">
+                                        <TextArea autoSize allowClear />
+                                    </Form.Item>
+                                </div>
+                            </Col>
+                            <Col className="gutter-row" span={6}>
+                                <Form.Item label="Indent Template" name="IndentTemplate">
+                                    <Select allowClear placeholder='Select Value'>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col className="gutter-row" span={6}>
+                                <Form.Item label="Indent Status" name="IndentStatus"
+                                    rules={[
+                                        {
+                                            required: indentStatus,
+                                            message: 'Please input!'
+                                        }
+                                    ]}
+                                >
+                                    <Select allowClear placeholder='Select Value'>
+                                        <Option value="Draft">Draft</Option>
+                                        <Option value="Pending">Finalize</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col className="gutter-row" span={7} >
+                                <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }} valuePropName='checked'>
+                                    <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
+                                </Form.Item>
+                            </Col>
+                            <Col className="gutter-row" span={6}>
+                                <Form.Item label="UHID" name="UHID"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Please input!'
+                                        }
+                                    ]}
+                                >
+                                    <AutoComplete style={{ width: '100%' }} disabled={!!indentId}
+                                        options={autoCompleteOptions}
+                                        onSearch={(value) => GetUHID(value)}
+                                        onSelect={(value, option) => handleSelect(value, option)}
+                                        value={uhId}
+                                        allowClear
+                                    />
+                                    <Button type="link" onClick={ShowModel}>Dr Note</Button>
+                                </Form.Item>
+                                <Form.Item name="PatientId" hidden>
+                                    <Input></Input>
+                                </Form.Item>
+                            </Col>
+                            <Col className="gutter-row" span={6}>
+                                <Form.Item label="Name" name="Name">
+                                    <Input style={{ width: '100%' }} disabled></Input>
+                                </Form.Item>
+                            </Col>
+                            <Col className="gutter-row" span={6}>
+                                <Form.Item label="Encounter" name="Encounter">
+                                    <Select disabled={encounter.length > 1 ? false : true}>
+                                        {encounter.map((option) => (
+                                            <Select.Option key={option.EncounterId} value={option.EncounterId}>{option.GeneratedEncounterId}</Select.Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                                <Form.Item name="EncounterId" hidden>
+                                    <Input></Input>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Row justify="end" style={{ padding: '0rem 1rem' }}>
+                            <Col style={{ marginRight: '10px' }}>
+                                <Form.Item>
+                                    <Button type="primary" htmlType="submit">
+                                        {buttonTitle}
+                                    </Button>
+                                </Form.Item>
+                            </Col>
+                            <Col>
+                                <Form.Item>
+                                    <Button type="primary" onClick={handleCancel}>
+                                        Cancel
+                                    </Button>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Divider style={{ marginTop: '0' }}></Divider>
+                        {isTableVisible ? (
+                            <div>
+                                <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} scroll={{ x: 0 }} />
                             </div>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Indent Template" name="IndentTemplate">
-                                <Select allowClear placeholder='Select Value'>
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Indent Status" name="IndentStatus">
-                                <Select allowClear placeholder='Select Value'>
-                                    <Option value="Draft">Draft</Option>
-                                    <Option value="Finalize">Finalize</Option>
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={7} >
-                            <Form.Item name="SubmitCheck" style={{ paddingTop: 30 }}>
-                                <Checkbox>Submit</Checkbox>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="UHID" name="UHID"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input!'
-                                    }
-                                ]}
-                            >
-                                <AutoComplete style={{ width: '100%' }}
-                                    options={autoCompleteOptions}
-                                    onSearch={(value) => GetUHID(value)}
-                                    onSelect={(value, option) => handleSelect(value, option)}
-                                    value={uhId}
-                                    allowClear
-                                />
-                                <Button type="link" onClick={ShowModel}>Dr Note</Button>
-                            </Form.Item>
-                            <Form.Item name="PatientId" hidden>
-                                <Input></Input>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Name" name="Name">
-                                <Input style={{ width: '100%' }} disabled></Input>
-                            </Form.Item>
-                        </Col>
-                        <Col className="gutter-row" span={6}>
-                            <Form.Item label="Encounter" name="Encounter">
-                                <Select disabled={encounter.length > 1 ? false : true}>
-                                    {encounter.map((option) => (
-                                        <Select.Option key={option.EncounterId} value={option.EncounterId}>{option.GeneratedEncounterId}</Select.Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row justify="end" style={{ padding: '0rem 1rem' }}>
-                        <Col style={{ marginRight: '10px' }}>
-                            <Form.Item>
-                                <Button type="primary" htmlType="submit">
-                                    {buttonTitle}
-                                </Button>
-                            </Form.Item>
-                        </Col>
-                        <Col>
-                            <Form.Item>
-                                <Button type="primary" onClick={handleCancel}>
-                                    Cancel
-                                </Button>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Divider style={{ marginTop: '0' }}></Divider>
-                    {isTableVisible ? (
-                        <div>
-                            <Table columns={columns} dataSource={data} scroll={{ x: 0 }} />
-                        </div>
-                    ) : null}
-                </Form>
+                        ) : null}
+                    </Form>
+                </Card>
                 <ConfigProvider
                     theme={{
                         token: {

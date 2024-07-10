@@ -1,0 +1,9 @@
+.showCreateEditDefinition .ant-collapse-header {
+  background-color: lavender;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+}
+
+.showCreateEditDefinition .ant-collapse-content-box {
+  padding-top: 0 !important;
+}
