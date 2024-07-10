@@ -16,6 +16,7 @@ import {
   Spin,
   Layout,
   notification,
+  message,
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import Input from "antd/es/input/Input";
@@ -41,6 +42,8 @@ function States() {
     Countries: [],
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [IsSubmitClicked, setIsSubmitClicked] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -94,6 +97,8 @@ function States() {
 
   const handleStateModalCancel = () => {
     setIsModalOpen(false);
+    setIsEditing(false);
+    setIsSubmitClicked(false);
     form.resetFields();
   };
 
@@ -127,59 +132,77 @@ function States() {
     form.validateFields();
     const values = form.getFieldsValue();
     console.log("state Edit Modal Submit", values);
-    // UpdateState(int StateId, string Name, string StateCode, int CountryId)
-    // SaveNewState(int CountryId, string StateCode, string StateName)
+    setIsSubmitClicked(true);
+    if (
+      values.StateName !== undefined &&
+      values.StateCode !== undefined &&
+      values.Country !== undefined
+    ) {
+      const state = isEditing
+        ? {
+            StateId: stateData.StateID,
+            StateName: values.StateName,
+            StateCode: values.StateCode,
+            CountryId: stateData.CountryId,
+          }
+        : {
+            StateId: 0,
+            StateName: values.StateName,
+            StateCode: values.StateCode,
+            CountryId: values.Country,
+          };
 
-    const state = isEditing
-      ? {
-          StateId: stateData.StateID,
-          StateName: values.StateName,
-          StateCode: values.StateCode,
-          CountryId: stateData.CountryId,
-        }
-      : {
-          StateId: 0,
-          StateName: values.StateName,
-          StateCode: values.StateCode,
-          CountryId: values.Country,
-        };
-
-    try {
-      // Send a POST request to the server
-      const response = await customAxios.post(urlAddAndUpdateState, state, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.data.data !== null) {
-        setIsModalOpen(false);
-        const stateDetails = response.data.data.StateModel.map((obj, index) => {
-          return { ...obj, key: index + 1 };
+      try {
+        // Send a POST request to the server
+        const response = await customAxios.post(urlAddAndUpdateState, state, {
+          headers: {
+            "Content-Type": "application/json",
+          },
         });
-        setColumnData(stateDetails);
-        {
-          isEditing
-            ? notification.success({
-                message: "State details updated Successfully",
-              })
-            : notification.success({
-                message: "State details added Successfully",
-              });
-        }
-      }
-    } catch (error) {
-      console.error("Failed to send data to server: ", error);
 
-      {
-        isEditing
-          ? notification.error({
-              message: "Edited State  details UnSuccessful",
-            })
-          : notification.error({
-              message: "Adding State details UnSuccessful",
+        if (response.data !== null) {
+          if (response.data === "Already Exists") {
+            // setIsModalOpen(false);
+            setIsSubmitClicked(false);
+            messageApi.warning({
+              // type: "warning",
+              content: `State already exists`,
             });
+          } else if (response.data.data !== null) {
+            setIsSubmitClicked(false);
+            setIsModalOpen(false);
+            const stateDetails = response.data.data.StateModel.map(
+              (obj, index) => {
+                return { ...obj, key: index + 1 };
+              }
+            );
+            setColumnData(stateDetails);
+            {
+              isEditing
+                ? notification.success({
+                    message: "State details updated Successfully",
+                  })
+                : notification.success({
+                    message: "State details added Successfully",
+                  });
+            }
+          } else {
+            {
+              isEditing
+                ? notification.error({
+                    message: "Edited State  details UnSuccessful",
+                  })
+                : notification.error({
+                    message: "Adding State details UnSuccessful",
+                  });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Failed to send data to server: ", error);
       }
+    } else {
+      setIsSubmitClicked(false);
     }
   };
 
@@ -257,11 +280,25 @@ function States() {
               onDelete={handleDelete}
             />
           </Spin>
+          {contextHolder}
           <Modal
-            title="Add New State"
+            title={isEditing ? "Update State Details" : "Add New State"}
             open={isModalOpen}
             maskClosable={false}
-            footer={null}
+            footer={[
+              <Button
+                key="submit"
+                type="primary"
+                loading={IsSubmitClicked}
+                onClick={handleSubmit}
+              >
+                {/* {IsSubmitClicked ? "Submitting" : "Submit"} */}
+                {isEditing ? "Update" : "Submit"}
+              </Button>,
+              <Button key="back" onClick={handleStateModalCancel}>
+                Cancel
+              </Button>,
+            ]}
             onCancel={handleStateModalCancel}
           >
             <Form
@@ -324,22 +361,6 @@ function States() {
               >
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-              <Row gutter={32} style={{ height: "1.8rem" }}>
-                <Col offset={12} span={6}>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                      Submit
-                    </Button>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item>
-                    <Button type="default" onClick={handleStateModalCancel}>
-                      Cancel
-                    </Button>
-                  </Form.Item>
-                </Col>
-              </Row>
             </Form>
           </Modal>
         </div>

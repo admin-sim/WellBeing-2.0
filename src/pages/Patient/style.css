@@ -51,7 +51,11 @@
   font-weight: "bold";
 }
 .ant-card-head {
-  background-color: #1a9bf0 !important;
+  background-color: #bae0ff !important;
+}
+
+.ant-card-bordered {
+  border: 1px solid #0050b3 !important; /* Ensures the border is darker */
 }
 .hovered-row {
   background-color: #b5f5ec; /* Change to whatever color you want */

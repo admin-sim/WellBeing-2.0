@@ -225,6 +225,7 @@ const MyCalendar = ({}) => {
           ) {
             break; // Prevent overbooking to previous day or past time
           }
+
           if (
             !isSlotBooked(overbookedTimeStart, overbookedTimeEnd) &&
             !isSlotInAbsencePeriod(overbookedTimeStart, overbookedTimeEnd) &&

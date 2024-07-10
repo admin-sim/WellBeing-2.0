@@ -8,6 +8,7 @@ import {
   Spin,
   Layout,
   notification,
+  message,
 } from "antd";
 
 import Input from "antd/es/input/Input";
@@ -30,9 +31,8 @@ function UOM() {
   const [loading, setLoading] = useState(false);
   const [UOMData, setUOMData] = useState();
   const [isEditing, setIsEditing] = useState();
-
- 
- 
+  const [messageApi, contextHolder] = message.useMessage();
+  const [IsSubmitClicked, setIsSubmitClicked] = useState(false);
 
   const options = [
     {
@@ -129,60 +129,73 @@ function UOM() {
   const handleSubmit = async () => {
     debugger;
     form.validateFields();
+    setIsSubmitClicked(true);
     const values = form.getFieldsValue();
     console.log("Look up  Edit Modal Submit", values);
 
-    const uom = isEditing
-      ? {
-          UOMID: UOMData.UomId,
-          ShortName: values.ShortName,
-          LongName: values.LongName,
-        }
-      : {
-          UOMID: 0,
-          ShortName: values.ShortName,
-          LongName: values.LongName,
-        };
-
-    try {
-      // Send a POST request to the server
-      const response = await customAxios.post(urlAddAndUpdateUOM, uom, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.data.data !== null) {
-        setIsModalOpen(false);
-        const uomDetails = response.data.data.UOMModel.map((obj, index) => {
-          return { ...obj, key: index + 1 };
+    if (values.ShortName !== undefined && values.LongName !== undefined) {
+      const uom = isEditing
+        ? {
+            UOMID: UOMData.UomId,
+            ShortName: values.ShortName,
+            LongName: values.LongName,
+          }
+        : {
+            UOMID: 0,
+            ShortName: values.ShortName,
+            LongName: values.LongName,
+          };
+      try {
+        // Send a POST request to the server
+        const response = await customAxios.post(urlAddAndUpdateUOM, uom, {
+          headers: {
+            "Content-Type": "application/json",
+          },
         });
-        setColumnData(uomDetails);
-        {
-          isEditing
-            ? notification.success({
-                message: "UOM details updated Successfully",
-              })
-            : notification.success({
-                message: "UOM details added Successfully",
-              });
-        }
-      }
-    } catch (error) {
-      console.error("Failed to send data to server: ", error);
 
-      {
-        isEditing
-          ? notification.error({
-              message: "Editing UOM details UnSuccessful",
-            })
-          : notification.error({
-              message: "Adding UOM details UnSuccessful",
+        if (response.data !== null) {
+          if (response.data === "Already Exists") {
+            // setIsModalOpen(false);
+            setIsSubmitClicked(false);
+            messageApi.warning({
+              // type: "warning",
+              content: `UOM already exists`,
             });
+          } else if (response.data.data !== null) {
+            setIsSubmitClicked(false);
+            setIsModalOpen(false);
+            const uomDetails = response.data.data.UOMModel.map((obj, index) => {
+              return { ...obj, key: index + 1 };
+            });
+            setColumnData(uomDetails);
+            {
+              isEditing
+                ? notification.success({
+                    message: "UOM details updated Successfully",
+                  })
+                : notification.success({
+                    message: "UOM details added Successfully",
+                  });
+            }
+          } else {
+            {
+              isEditing
+                ? notification.error({
+                    message: "Editing UOM details UnSuccessful",
+                  })
+                : notification.error({
+                    message: "Adding UOM details UnSuccessful",
+                  });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Failed to send data to server: ", error);
       }
+    }else{
+      setIsSubmitClicked(false);
     }
   };
-
 
   const columns = [
     {
@@ -233,8 +246,12 @@ function UOM() {
                 Unit Of Measurement (UOM) Manager
               </Title>
             </Col>
+
             <Col offset={5} span={3}>
-              <Button icon={<PlusCircleOutlined />} onClick={handleAddUOMShowModal}>
+              <Button
+                icon={<PlusCircleOutlined />}
+                onClick={handleAddUOMShowModal}
+              >
                 Add New UOM
               </Button>
             </Col>
@@ -250,11 +267,25 @@ function UOM() {
               onDelete={handleDelete}
             />
           </Spin>
+          {contextHolder}
           <Modal
             title="Add New UOM"
             open={isModalOpen}
             maskClosable={false}
-            footer={null}
+            footer={[
+              <Button
+                key="submit"
+                type="primary"
+                loading={IsSubmitClicked}
+                onClick={handleSubmit}
+                
+              >
+                 {isEditing ? "Update" : "Submit"}
+              </Button>,
+              <Button key="back" onClick={handleUOMModalCancel}>
+                Cancel
+              </Button>,
+            ]}
             onCancel={handleUOMModalCancel}
           >
             <Form
@@ -262,6 +293,7 @@ function UOM() {
               layout="vertical"
               form={form}
               onFinish={handleSubmit}
+              //disabled={IsSubmitClicked}
             >
               <Form.Item
                 name="ShortName"
@@ -285,24 +317,8 @@ function UOM() {
                   },
                 ]}
               >
-                <Input style={{ width: "100%" }}  />
+                <Input style={{ width: "100%" }} />
               </Form.Item>
-              <Row gutter={32} style={{ height: "1.8rem" }}>
-                <Col offset={12} span={6}>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                      Submit
-                    </Button>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item>
-                    <Button type="default" onClick={handleUOMModalCancel}>
-                      Cancel
-                    </Button>
-                  </Form.Item>
-                </Col>
-              </Row>
             </Form>
           </Modal>
         </div>

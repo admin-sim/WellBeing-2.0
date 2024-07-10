@@ -27,7 +27,6 @@ import Areas from "./pages/Masters/GeneralMasters/Areas";
 import UOM from "./pages/Masters/GeneralMasters/UOM";
 import ProviderRegistration from "./pages/Masters/GeneralMasters/Provider/ProviderRegistration";
 import ProviderSearch from "./pages/Masters/GeneralMasters/Provider/ProviderSearch";
-import ProviderEdit from "./pages/Masters/GeneralMasters/Provider/ProviderEdit";
 import Referal from "./pages/Masters/GeneralMasters/Referral/Referal";
 import ReferralCreateEdit from "./pages/Masters/GeneralMasters/Referral/ReferralCreateEdit";
 import PayerRegistration from "./pages/Masters/GeneralMasters/Payer/PayerRegistration";
@@ -544,14 +543,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="Provider/Edit"
-            element={
-              <ProtectedRoute>
-                <ProviderEdit />
-              </ProtectedRoute>
-            }
-          />
+
           <Route
             path="Referral"
             element={
