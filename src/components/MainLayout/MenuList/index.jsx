@@ -67,6 +67,12 @@ const menuData = [
             title: "Payer",
             link: "/PayerRegistration",
           },
+          {
+            key: "Template",
+            icon: "GoDotFill",
+            title: "Template Master",
+            link: "/Templates",
+          },
         ],
       },
       {
