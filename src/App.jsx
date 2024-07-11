@@ -563,14 +563,6 @@ function App() {
               }
             />
             <Route
-              path="Provider/Edit"
-              element={
-                <ProtectedRoute>
-                  <ProviderEdit />
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="Referral"
               element={
                 <ProtectedRoute>
