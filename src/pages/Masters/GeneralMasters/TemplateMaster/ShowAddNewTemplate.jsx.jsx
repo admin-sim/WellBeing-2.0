@@ -158,7 +158,7 @@ function ShowAddNewTemplate() {
             </Row>
           </Form>
           <Divider />
-          <CkEditor initialData={" "} printButton={true} setData={setData} />
+          <CkEditor initialData={""} printButton={true} setData={setData} />
         </Spin>
       </div>
     </>
