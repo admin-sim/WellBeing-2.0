@@ -321,13 +321,13 @@ const NewVisit = () => {
 
   const handleOk = async () => {
     debugger;
-    setIsSubmitLoader(true);
+   
     try {
-      await form1.validateFields(); 
+      await form1.validateFields();
       const values = form1.getFieldsValue();
 
       setIsVisitCreated(true);
-      
+      setIsSubmitLoader(true);
       const postData = {
         PatientId: selectedRecord.PatientId,
         PatientType: values.PatientType,

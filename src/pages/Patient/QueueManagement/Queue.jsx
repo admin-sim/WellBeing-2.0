@@ -1477,7 +1477,7 @@ const Queue = () => {
       >
         {/* {contextHolder} */}
         <Modal
-          width={600}
+          width={800}
           title="CLOSE CONSULTATION"
           open={isCloseConsultationModalVisible}
           onCancel={handleCloseConsultationModalCancel}

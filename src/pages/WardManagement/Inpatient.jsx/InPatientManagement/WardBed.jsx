@@ -166,10 +166,10 @@ function WardBed({ bed }) {
   );
 
   return (
-    <Col key={bed.id}>
+    <Col key={bed.BedID}>
       <Badge.Ribbon
-        text={bed.status === "available" ? "Available" : "Occupied"}
-        color={bed.status === "available" ? "green" : "red"}
+        text={bed.PatientStatus === "Vacant" ? "Vacant" : "Occupied"}
+        color={bed.PatientStatus === "Vacant" ? "green" : "red"}
       >
         <Card
           hoverable
@@ -177,11 +177,12 @@ function WardBed({ bed }) {
           style={{
             width: "15rem",
             height: "10rem",
-            backgroundColor: bed.status === "available" ? "#C5EBAA" : "#FFBABA",
+            backgroundColor:
+              bed.PatientStatus === "Vacant" ? "#C5EBAA" : "#FFBABA",
           }}
           cover={
             <img
-              src={bed.status === "available" ? vacant : occupied}
+              src={bed.PatientStatus === "Vacant" ? vacant : occupied}
               style={{ objectFit: "contain", marginTop: "0.8rem" }}
               height={40}
               width={40}
@@ -198,7 +199,7 @@ function WardBed({ bed }) {
           >
             <Dropdown
               overlay={
-                bed.status === "available" ? vacantBedMenu : occupiedBedMenu
+                bed.PatientStatus === "Vacant" ? vacantBedMenu : occupiedBedMenu
               }
               placement="bottom"
               arrow
@@ -232,23 +233,23 @@ function WardBed({ bed }) {
             >
               {bed.status.charAt(0).toUpperCase() + bed.status.slice(1)}
             </Tag> */}
-            <Text strong>{bed.name}</Text>
+            <Text strong>{bed.BedNo}</Text>
             <Tooltip
               placement="rightBottom"
               title={
                 <span>
                   <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-                    <li>{bed.patientName}</li>
-                    <li>{bed.uhId}</li>
-                    <li>{bed.age}</li>
-                    <li>{bed.gender}</li>
-                    <li>Bed : {bed.name}</li>
+                    <li>{bed.PatientName}</li>
+                    <li>{bed.UhId}</li>
+                    <li>{bed.Age}</li>
+                    <li>{bed.Gender}</li>
+                    <li>Bed : {bed.BedNo}</li>
                   </ul>
                 </span>
               }
             >
               <Text strong style={{ color: "brown" }}>
-                {bed.patientName || "N/A"}
+                {bed.PatientName || "N/A"}
               </Text>
             </Tooltip>
             <Text
@@ -258,7 +259,7 @@ function WardBed({ bed }) {
                 marginTop: "12px",
               }}
             >
-              {bed.uhId || "N/A"}
+              {bed.UhId || "N/A"}
             </Text>
           </div>
         </Card>
