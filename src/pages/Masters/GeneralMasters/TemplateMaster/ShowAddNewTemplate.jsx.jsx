@@ -16,7 +16,7 @@ import { useForm } from "antd/es/form/Form";
 import { useNavigate } from "react-router-dom";
 import { urlLoadAllDropDownsTemplate } from "../../../../../endpoints";
 import customAxios from "../../../../components/customAxios/customAxios";
-import CkEditor from "../../../../components/CKEditor";
+import CkEditor from "../../../../components/CKEditor/index.jsx";
 
 function ShowAddNewTemplate() {
   const [apiData, setApiData] = useState([]);
@@ -158,7 +158,12 @@ function ShowAddNewTemplate() {
             </Row>
           </Form>
           <Divider />
-          <CkEditor initialData={" "} printButton={true} setData={setData} />
+          <CkEditor
+            initialData={`<p style="text-align:center;">&nbsp;</p><figure class="table" style="width:1000px;"><table align="center" border="1" cellpadding="1" cellspacing="1" dir="ltr" id="PatientHeader"><tbody><tr><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Name</strong></span></td><td style="width:300px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">Mahesh</span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Provider</strong></span></td><td style="width:300px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">Mahesh Dr.</span></td></tr><tr><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>UHID</strong></span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">COH/25</span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Age/Sex</strong></span></td><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;">25Y 2M 6D /Male</span></td></tr><tr><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Encounter</strong></span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">COH/OP/01</span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Sample Collection Time</strong></span></td><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;">01-02-2023 11:08 AM</span></td></tr><tr><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Lab Number</strong></span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">COH/LAB/25</span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Report Date Time</strong></span></td><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;">01-02-2023 11:08 AM</span></td></tr></tbody></table></figure><p>&nbsp;</p>
+`}
+            printButton={true}
+            setData={setData}
+          />
         </Spin>
       </div>
     </>
