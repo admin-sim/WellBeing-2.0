@@ -287,20 +287,33 @@ const VisitModal = (
                         },
                       ]}
                     >
-                      <Select
-                        onChange={handlePatientTypeChange}
-                        disabled={details.isCancelOrEditVisit}
-                        allowClear
-                      >
-                        {Dropdown.PatientType.map((option) => (
-                          <Select.Option
-                            key={option.LookupID}
-                            value={option.LookupID}
-                          >
-                            {option.LookupDescription}
-                          </Select.Option>
-                        ))}
-                      </Select>
+                      {details.isCancelOrEditVisit ? (
+                        <Select
+                          onChange={handlePatientTypeChange}
+                          disabled={details.isCancelOrEditVisit}
+                          allowClear
+                        >
+                          {Dropdown.PatientType.map((option) => (
+                            <Select.Option
+                              key={option.LookupID}
+                              value={option.LookupID}
+                            >
+                              {option.LookupDescription}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      ) : (
+                        <Select onChange={handlePatientTypeChange} allowClear>
+                          {Dropdown.PatientType.map((option) => (
+                            <Select.Option
+                              key={option.LookupID}
+                              value={option.LookupID}
+                            >
+                              {option.LookupDescription}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      )}
                     </Form.Item>
                   </Col>
                   <Col span={12}>
@@ -511,20 +524,36 @@ const VisitModal = (
                             },
                           ]}
                         >
-                          <Select
-                            allowClear
-                            disabled={details.isCancelOrEditVisit}
-                            onChange={handleWardCategoryChange}
-                          >
-                            {Dropdown.WardCategory.map((option) => (
-                              <Select.Option
-                                key={option.LookupID}
-                                value={option.LookupID}
-                              >
-                                {option.LookupDescription}
-                              </Select.Option>
-                            ))}
-                          </Select>
+                          {details.isCancelOrEditVisit ? (
+                            <Select
+                              allowClear
+                              disabled={details.isCancelOrEditVisit}
+                              onChange={handleWardCategoryChange}
+                            >
+                              {Dropdown.WardCategory.map((option) => (
+                                <Select.Option
+                                  key={option.LookupID}
+                                  value={option.LookupID}
+                                >
+                                  {option.LookupDescription}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          ) : (
+                            <Select
+                              allowClear
+                              onChange={handleWardCategoryChange}
+                            >
+                              {Dropdown.WardCategory.map((option) => (
+                                <Select.Option
+                                  key={option.LookupID}
+                                  value={option.LookupID}
+                                >
+                                  {option.LookupDescription}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          )}
                         </Form.Item>
                       </Col>
                       <Col span={12}>

@@ -216,12 +216,12 @@ const Patient = () => {
 
   const handleOk = async () => {
     // debugger;
-    setIsSubmitLoader(true);
+
     try {
       await form.validateFields(); // Trigger form validation
       const values = form.getFieldsValue();
       console.log("Selected submitting values", values);
-
+      setIsSubmitLoader(true);
       const Encounter = {
         PatientId: selectedRecord.PatientId,
         PatientType: selectedRecord.PatientType,
@@ -280,6 +280,7 @@ const Patient = () => {
             });
           }
         } else {
+          setIsSubmitLoader(false);
           if (isCancelEncounter) {
             notification.error({
               message: "Cancelling Visit details UnSuccessful",
@@ -293,6 +294,7 @@ const Patient = () => {
           }
         }
       } catch (error) {
+        setIsSubmitLoader(false);
         console.error("Failed to send data to server: ", error);
         notification.error({
           message: "Visit edit details UnSuccessful",
@@ -616,7 +618,6 @@ const Patient = () => {
         }}
       >
         {/* {contextHolder} */}
-        
 
         {isEditOrDeleteVisitModalVisible &&
           patientDropdown.PatientType !== undefined && (

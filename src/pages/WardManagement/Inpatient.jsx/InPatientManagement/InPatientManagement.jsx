@@ -63,7 +63,10 @@ function InPatientManagement() {
       );
       if (response.data !== null) {
         setTableLoading(false);
-        setInPatientDetails(response.data.data.PatientsInBed);
+        const inPatient = response.data.data.PatientsInBed.map((obj, index) => {
+          return { ...obj, key: index + 1 };
+        });
+        setInPatientDetails(inPatient);
         setBeds(response.data.data.Beds);
       } else {
         console.log("data is not clear ");
@@ -246,6 +249,7 @@ function InPatientManagement() {
         {view === "" || view === "Tabular" ? (
           <Spin spinning={tableLoading}>
             <CustomTable
+              // rowKey={inPatientDetails.BedID}
               columns={columns}
               dataSource={inPatientDetails}
               actionColumn={false}
@@ -356,8 +360,8 @@ function InPatientManagement() {
 const columns = [
   {
     title: "Sl.No",
-    dataIndex: "slno",
-    key: "slno",
+    dataIndex: "key",
+    key: "key",
   },
   {
     title: "UHID",
