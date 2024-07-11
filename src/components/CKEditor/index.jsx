@@ -415,7 +415,6 @@ function CkEditor({ initialData, printButton, setData }) {
           </div>
         </div>
       </div>
-      {editorData}
     </div>
   );
 }

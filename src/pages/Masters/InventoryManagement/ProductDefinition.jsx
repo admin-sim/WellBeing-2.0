@@ -15,7 +15,8 @@ import { IoMdAddCircle } from "react-icons/io";
 function ProductDefinition() {
   const [dropDownData, setDropDownData] = useState({});
   const [tableData, setTableData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [tableLoading, setTableLoading] = useState(false);
   const [showTable, setShowTable] = useState(false);
   const navigate = useNavigate();
 
@@ -24,7 +25,7 @@ function ProductDefinition() {
   }, []);
 
   const fetchProductDefinitionIndex = () => {
-    setLoading(true);
+
     try {
       customAxios.get(urlProductDefinitionIndex).then((response) => {
         const apiData = response.data.data;
@@ -37,9 +38,9 @@ function ProductDefinition() {
     }
   };
 
-  const handleProductClassificationClick = (ProductClassificationId) => {
+  const handleProductClassificationClick =async (ProductClassificationId) => {
     setShowTable(true);
-    setLoading(true);
+    setTableLoading(true);
     try {
       customAxios
         .get(
@@ -48,12 +49,15 @@ function ProductDefinition() {
         .then((response) => {
           const apiData = response.data.data;
           setTableData(apiData.ProductDefinition);
+          setTableLoading(false);
         });
     } catch (error) {
       console.error("Error fetching Product Classification details:", error);
-    } finally {
-      setLoading(false);
-    }
+      setTableLoading(false);
+    } 
+     
+    
+    
   };
 
   const items =
@@ -132,7 +136,7 @@ function ProductDefinition() {
   };
 
   return (
-    <Spin spinning={loading}>
+   
       <div
         style={{
           width: "100%",
@@ -165,8 +169,11 @@ function ProductDefinition() {
             </Title>
           </Col>
         </Row>
+
         <Row gutter={32} style={{ margin: "1rem 1rem" }}>
+        
           <Col span={7} style={{ margin: "1rem 0 1rem 0" }}>
+          <Spin spinning={loading}>
             <div
               style={{
                 backgroundColor: "lavender",
@@ -176,6 +183,7 @@ function ProductDefinition() {
               }}
             >
               <Title
+             
                 level={5}
                 style={{
                   color: "black",
@@ -209,11 +217,14 @@ function ProductDefinition() {
                   },
                 }}
               >
-                <Collapse ghost items={items} className="productDefinition" />
+                <Collapse   ghost items={items} className="productDefinition" />
               </ConfigProvider>
             </div>
+            </Spin>
           </Col>
+        
           <Col span={17}>
+          <Spin spinning={tableLoading}>
             {showTable && (
               <CustomTable
                 columns={columns}
@@ -235,10 +246,12 @@ function ProductDefinition() {
                 }
               />
             )}
+          </Spin>
+          
           </Col>
         </Row>
       </div>
-    </Spin>
+   
   );
 }
 
