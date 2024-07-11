@@ -481,7 +481,7 @@ const CreateGRNAgainstPO = () => {
       render: (text, record) => (
         <Form.Item
           name={[record.key, "PoBalanceQty"]}
-          initialValue={record.PoBalanceQty}
+          initialValue={record.PoBalanceQty + record.PoBalanceBonusQty}
         >
           <InputNumber min={0} disabled />
         </Form.Item>
@@ -501,6 +501,16 @@ const CreateGRNAgainstPO = () => {
             {
               required: true,
               message: "Please input!",
+            },
+            {
+              validator: (_, value) => {
+                if (value > record.PoBalanceQty) {
+                  return Promise.reject(
+                    new Error("Received Qty must be less than PO Qty.")
+                  );
+                }
+                return Promise.resolve();
+              },
             },
           ]}
         >
@@ -522,12 +532,35 @@ const CreateGRNAgainstPO = () => {
       title: "Bonus Qty",
       dataIndex: "BonusQuantity",
       key: "BonusQuantity",
-      render: (text, record) => (
+      render: (text, record,index) => (
         <Form.Item
           name={[record.key, "BonusQuantity"]}
-          initialValue={record.BonusQuantity}
+          //initialValue={record.BonusQuantity}
+          rules={[
+            {
+              required: true,
+              message: "Please input!",
+            },
+            {
+              validator: (_, value) => {
+                if (value > record.PoBalanceBonusQty) {
+                  return Promise.reject(
+                    new Error("Received Qty must be less than PO Qty.")
+                  );
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
         >
-          <InputNumber min={0} disabled />
+          <InputNumber min={0} onChange={(value) => {
+              handleInputChange(
+                { target: { value } },
+                "BonusQuantity",
+                index,
+                record
+              );
+            }} disabled={record.BonusQuantity === 0 || record.BonusQuantity == null}/>
         </Form.Item>
       ),
     },
@@ -843,7 +876,7 @@ const CreateGRNAgainstPO = () => {
               UomId: values[i].UomId,
               ReceivedQty: values[i].ReceivedQty,
               PoQuantity: values[i].PoBalanceQty,
-              PoBalanceQty: values[i].PoBalanceQty,
+             // PoBalanceQty: values[i].PoBalanceQty,
               BonusQuantity: values[i].BonusQuantity,
               PoLineId: values[i].PoLineId,
               GrnLineId: values[i].GrnLineId,
@@ -926,30 +959,30 @@ const CreateGRNAgainstPO = () => {
       GRNAgainstPODetails: products,
       BatchDetails: filteredbatch === undefined ? [] : filteredbatch,
     };
-    if (GrnHeaderId > 0) {
-      const response = await customAxios.post(urlUpdateGRNAgainstPO, postData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (response != false && response.status == 200) {
-        message.success("Updated Successfully");
-      } else {
-        message.error("Updated Failure");
-      }
-    } else {
-      const response = await customAxios.post(urlAddNewGRNAgainstPO, postData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (response != false && response.status == 200) {
-        message.success("Created Successfully");
-      } else {
-        message.error("Create Failure");
-      }
-    }
-    handleCancel();
+    // if (GrnHeaderId > 0) {
+    //   const response = await customAxios.post(urlUpdateGRNAgainstPO, postData, {
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   });
+    //   if (response != false && response.status == 200) {
+    //     message.success("Updated Successfully");
+    //   } else {
+    //     message.error("Updated Failure");
+    //   }
+    // } else {
+    //   const response = await customAxios.post(urlAddNewGRNAgainstPO, postData, {
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   });
+    //   if (response != false && response.status == 200) {
+    //     message.success("Created Successfully");
+    //   } else {
+    //     message.error("Create Failure");
+    //   }
+    // }
+    // handleCancel();
   };
 
   const BatchAdd = async () => {
@@ -1070,10 +1103,10 @@ const CreateGRNAgainstPO = () => {
       render: (text, record) => (
         <Form.Item
           name={[record.key, "BatchBonusQty"]}
-          initialValue={batchRecord.BonusQuantity}
-          disabled={!!GrnHeaderId}
+          //initialValue={batchRecord.BonusQuantity}
+          //disabled={!!GrnHeaderId}
         >
-          <InputNumber min={0} style={{ width: 50 }} disabled />
+          <InputNumber min={0} style={{ width: 50 }} disabled={batchRecord.BonusQuantity<0} />
         </Form.Item>
       ),
     },
