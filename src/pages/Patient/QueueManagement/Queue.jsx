@@ -63,6 +63,12 @@ const Queue = () => {
   const { Title } = Typography;
   const { TextArea } = Input;
   const [isLoading, setLoading] = useState(false);
+  const [serachLoading, setSearchLoading] = useState(false);
+  const [assignTokenLoader, setAssignTokenLoader] = useState(false);
+  const [pushPatientLoader, setPushPatientLoader] = useState(false);
+  const [revertToCheckInLoader, setRevertToCheckInLoader] = useState(false);
+  const [startConsLoader, setStartConsLoader] = useState(false);
+  const [closeConsLoader, setCloseConsLoader] = useState(false);
   const navigate = useNavigate();
   const { Option } = Select;
   //   const [form1] = Form.useForm();
@@ -284,7 +290,7 @@ const Queue = () => {
       const values = form.getFieldsValue();
       selectedProvider = values.Provider || 0;
       console.log("values", values);
-
+      setSearchLoading(true);
       try {
         // Send a POST request to the server
         const response = await customAxios.get(
@@ -298,6 +304,7 @@ const Queue = () => {
         );
 
         if (response.data != null) {
+          setSearchLoading(false);
           setQueueDropDown(response.data.data);
           setLoading(false);
           setIsShowSearchModalVisible(false);
@@ -317,6 +324,7 @@ const Queue = () => {
             `Server responded with status code ${response.status}`
           );
         } else {
+          setSearchLoading(false);
           //   messageApi.open({
           //     type: "success",
           //     content: `Successfully created visit for patient.`,
@@ -447,13 +455,7 @@ const Queue = () => {
     setIsMarkArrivalModalVisible(false);
     form3.resetFields();
     setSelectedTime(null);
-    // setProviders([]);
-  };
-
-  const handlePatientVitalSignsModalCancel = () => {
-    // debugger;
-    setIsPatientVitalSignsModalVisible(false);
-    form3.resetFields();
+    form1.resetFields();
     // setProviders([]);
   };
 
@@ -468,6 +470,7 @@ const Queue = () => {
     // debugger;
     setIsPushPatientModalVisible(false);
     form3.resetFields();
+    form1.resetFields();
     // setProviders([]);
   };
 
@@ -476,6 +479,7 @@ const Queue = () => {
     setIsStartConsultationModalVisible(false);
     setSelectedTime(null);
     form3.resetFields();
+
     // setProviders([]);
   };
 
@@ -484,6 +488,7 @@ const Queue = () => {
     setIsCloseConsultationModalVisible(false);
     setSelectedTime(null);
     form3.resetFields();
+    form1.resetFields();
     // setProviders([]);
   };
   const handleRevertToMarkArrivalModalCancel = () => {
@@ -508,11 +513,14 @@ const Queue = () => {
 
   const handleAssignQueue = async () => {
     debugger;
-    const inputvalues = form1.getFieldsValue();
+
+    const inputvalues = await form1.validateFields();
     console.log("the assign Queue values", inputvalues);
     // const fl1 = Flag === "All" ? '"All"' : Flag;
+
     setFormSubmitted(true);
-    setIsMarkArrivalModalVisible(false);
+
+    setAssignTokenLoader(true);
     try {
       const response = await customAxios.post(
         `${urlAssignQueue}?QId=${selectedPatientRecord.QId}&QNo=${selectedPatientRecord.QNo}&ProviderId=${selectedPatientRecord.ProviderId}&Flag=${Flag}&TokenNo=${inputvalues.TokenNo}`,
@@ -525,6 +533,8 @@ const Queue = () => {
       );
 
       if (response.status === 200) {
+        setIsMarkArrivalModalVisible(false);
+        setAssignTokenLoader(false);
         if (response.data.data.QueueMessage !== null) {
           const queueModel = response.data.data.QueueModel;
           const queueAction = response.data.data.QueueAction;
@@ -567,7 +577,7 @@ const Queue = () => {
 
   const handleConfirmCheckIn = async () => {
     debugger;
-
+    setRevertToCheckInLoader(true);
     const fl1 = Flag === "All" ? '""' : Flag;
     try {
       const response = await customAxios.post(
@@ -581,6 +591,7 @@ const Queue = () => {
       );
 
       if (response.status === 200) {
+        setRevertToCheckInLoader(false);
         setIsRevertToCheckInModalVisible(false);
         const queueModel = response.data.data.QueueModel;
         const queueAction = response.data.data.QueueAction;
@@ -606,7 +617,8 @@ const Queue = () => {
 
   const handlePushPatientPosition = async () => {
     debugger;
-    const values = form1.getFieldsValue();
+    const values = await form1.validateFields();
+    setPushPatientLoader(true);
     //PushToQueue(long QID, int ProviderId, long PatientId, int QNo, int PushToPosition, string Flag)
     const fl1 = Flag === "All" ? '""' : Flag;
     try {
@@ -621,6 +633,7 @@ const Queue = () => {
       );
 
       if (response.status === 200) {
+        setPushPatientLoader(false);
         if (response.data === "Failure") {
           setIsPushPatientModalVisible(false);
           form3.resetFields();
@@ -663,7 +676,7 @@ const Queue = () => {
     const tokenNo =
       selectedPatientRecord.TokenNo === 0 ? 1 : selectedPatientRecord.TokenNo;
     console.log("start Consultations", formatedTime);
-
+    setStartConsLoader(true);
     try {
       const response = await customAxios.post(
         `${urlStartConsultation}?QId=${selectedPatientRecord.QId}&QNo=${selectedPatientRecord.QNo}&ConsultationStartTime=${formatedTime}&Flag=${Flag}&TokenNo=${tokenNo}`,
@@ -675,6 +688,7 @@ const Queue = () => {
         }
       );
       if (response.status === 200) {
+        setStartConsLoader(false);
         if (response.data === "Failure") {
           setIsStartConsultationModalVisible(false);
           form3.resetFields();
@@ -711,11 +725,12 @@ const Queue = () => {
 
   const handleConfirmCloseConsultation = async () => {
     debugger;
-    const inputvalues = form1.getFieldsValue();
-    const formatedTime = inputvalues.CloseConsultationTime.format("HH:mm:ss");
-    console.log("start Consultations", formatedTime);
-    // long QId, long PatientID, int ProviderId, int Disposition, string CloseConsultTime, string Flag
 
+    const inputvalues = await form1.validateFields();
+    const formatedTime = inputvalues.CloseConsultationTime.format("HH:mm:ss");
+    //console.log("close Consultations", formatedTime);
+    // long QId, long PatientID, int ProviderId, int Disposition, string CloseConsultTime, string Flag
+    setCloseConsLoader(true);
     try {
       const response = await customAxios.post(
         `${urlCloseConsultation}?QId=${selectedPatientRecord.QId}&ProviderId=${selectedPatientRecord.ProviderId}&PatientID=${selectedPatientRecord.PatientId}&Disposition=${inputvalues.DispositionType}&CloseConsultTime=${formatedTime}&Flag=${Flag}`,
@@ -727,6 +742,7 @@ const Queue = () => {
         }
       );
       if (response.status === 200) {
+        setCloseConsLoader(false);
         setIsCloseConsultationModalVisible(false);
         const queueModel = response.data.data.QueueModel;
         const queueAction = response.data.data.QueueAction;
@@ -1098,6 +1114,7 @@ const Queue = () => {
           onCancel={handleShowSearchModalCancel}
           okText="Search"
           maskClosable={false}
+          confirmLoading={serachLoading}
         >
           <div>
             <Form
@@ -1208,6 +1225,7 @@ const Queue = () => {
               key="ok"
               type="primary"
               onClick={handleAssignQueue}
+              loading={assignTokenLoader}
               disabled={formSubmitted}
             >
               Assign Queue
@@ -1320,6 +1338,7 @@ const Queue = () => {
           okText="Yes"
           cancelText="No"
           maskClosable={false}
+          confirmLoading={revertToCheckInLoader}
         >
           <Row
             gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
@@ -1352,6 +1371,7 @@ const Queue = () => {
               key="ok"
               type="primary"
               onClick={handlePushPatientPosition}
+              loading={pushPatientLoader}
               // disabled={IsVisitCreated}
             >
               Push Patient
@@ -1439,6 +1459,7 @@ const Queue = () => {
           okText="Start"
           cancelText="Cancel"
           maskClosable={false}
+          // confirmLoading={startConsLoader}
         >
           <Form
             form={form1}
@@ -1485,6 +1506,7 @@ const Queue = () => {
           okText="Save"
           cancelText="Cancel"
           maskClosable={false}
+          confirmLoading={closeConsLoader}
         >
           <div>
             <PatientHeader patient={patientHeaderDetails}></PatientHeader>
@@ -1526,7 +1548,16 @@ const Queue = () => {
                 gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
               >
                 <Col span={10}>
-                  <Form.Item name="DispositionType" label="Disposition Type">
+                  <Form.Item
+                    name="DispositionType"
+                    label="Disposition Type"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Disposition type is required",
+                      },
+                    ]}
+                  >
                     <Select allowClear>
                       {QueueDropDown.DispositionType.map((option) => (
                         <Select.Option
