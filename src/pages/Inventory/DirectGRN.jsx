@@ -94,6 +94,7 @@ const DirectGRN = () => {
     Pending: "volcano",
     "Partially Pending": "orange",
     Completed: "green",
+     Finalize:"#52c41a"
   };
 
   const columns = [
@@ -131,18 +132,10 @@ const DirectGRN = () => {
     },
     {
       title: "GRN Date",
-      dataIndex: "GRNDate",
-      key: "GRNDate",
-      sorter: (a, b) => new Date(a.GRNDate) - new Date(b.GRNDate),
+      dataIndex: "GRNDatestring",
+      key: "GRNDatestring",
+      sorter: (a, b) => new Date(a.GRNDatestring) - new Date(b.GRNDatestring),
       sortDirections: ["descend", "ascend"],
-      render: (text) => {
-        const dateParts = text.split("T")[0].split("-");
-        const year = dateParts[0];
-        const month = dateParts[1];
-        const day = dateParts[2];
-
-        return `${day}-${month}-${year}`;
-      },
     },
     {
       title: "Supplier",
@@ -427,6 +420,7 @@ const DirectGRN = () => {
                 dataSource={filteredData}
                 columns={columns}
                 isFilter={true}
+                actionColumn={false}
               bordered
               />
               </Spin>

@@ -84,7 +84,7 @@ const GRNAgainstPO = () => {
   const colorMapping = {
     Created: "blue",
     Draft: "geekblue",
-    FINALIZE: "green",
+    Finalize:"#52c41a"
   };
 
   const handleGRN = (GrnHeaderId) => {
@@ -418,7 +418,8 @@ const GRNAgainstPO = () => {
                 dataSource={filteredData}
                 columns={columns}
                 isFilter={true}
-              bordered
+                actionColumn={false}
+              
               />
               </Spin>
         </Card>

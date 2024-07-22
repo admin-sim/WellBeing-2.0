@@ -263,6 +263,7 @@ const CreateGRNAgainstPO = () => {
   };
 
   function calculateTotalAmount(data) {
+    debugger;
     let totalAmount = 0;
     data.forEach((item) => {
       if (
@@ -278,6 +279,7 @@ const CreateGRNAgainstPO = () => {
   }
 
   const handleInputChange = (e, column, index, record) => {
+    debugger;
     let newData;
     if (["ReceivedQty", "PoRate", "DiscountRate"].includes(column)) {
       newData = data.map((item) => {
@@ -359,11 +361,11 @@ const CreateGRNAgainstPO = () => {
     setPoloading(false);
   };
 
-  const BatchmodalOpen = (record) => {
+  const BatchmodalOpen = async (record) => {
     debugger;
-    const fieldsToValidate = [[record.key, "POReceivedQty"]];
+    const fieldsToValidate = [[record.key, "ReceivedQty"]];
     const va = form1.getFieldsValue();
-    form1.validateFields(fieldsToValidate);
+    await form1.validateFields(fieldsToValidate);
     if (va[record.key].ReceivedQty <= va[record.key].PoBalanceQty) {
       record.ReceivedQty = va[record.key].ReceivedQty;
       setBatchRecord(record);
@@ -532,10 +534,10 @@ const CreateGRNAgainstPO = () => {
       title: "Bonus Qty",
       dataIndex: "BonusQuantity",
       key: "BonusQuantity",
-      render: (text, record,index) => (
+      render: (text, record, index) => (
         <Form.Item
           name={[record.key, "BonusQuantity"]}
-          //initialValue={record.BonusQuantity}
+          initialValue={record.BonusQuantity}
           rules={[
             {
               required: true,
@@ -545,7 +547,9 @@ const CreateGRNAgainstPO = () => {
               validator: (_, value) => {
                 if (value > record.PoBalanceBonusQty) {
                   return Promise.reject(
-                    new Error("Received Qty must be less than PO Qty.")
+                    new Error(
+                      "BonusQuantity  must be less than PoBalanceBonusQty."
+                    )
                   );
                 }
                 return Promise.resolve();
@@ -553,14 +557,17 @@ const CreateGRNAgainstPO = () => {
             },
           ]}
         >
-          <InputNumber min={0} onChange={(value) => {
+          <InputNumber
+            min={0}
+            onChange={(value) => {
               handleInputChange(
                 { target: { value } },
                 "BonusQuantity",
                 index,
                 record
               );
-            }} disabled={record.BonusQuantity === 0 || record.BonusQuantity == null}/>
+            }}
+          />
         </Form.Item>
       ),
     },
@@ -794,6 +801,18 @@ const CreateGRNAgainstPO = () => {
       (total, item) => (item ? total + (item.Quantity || 0) : total),
       0
     );
+
+    const bonusqty = valuesArray.reduce(
+      (total, item) => (item ? total + (item.BatchBonusQty || 0) : total),
+      0
+    );
+    if (bonusqty != batchRecord.BonusQuantity) {
+      message.warning(
+        "Total Batch Bonus Quantity should be equal to Total Bonus Quantity"
+      );
+      return false;
+    }
+
     if (qty === batchRecord.ReceivedQty) {
       const updatedBatch = dataBatchModal.map((item) => {
         const key = item.key;
@@ -826,7 +845,7 @@ const CreateGRNAgainstPO = () => {
       setdataBatchModal(updatedBatch);
       setIsBatchModalOpen(false);
     } else {
-      message.warning("Quantity must not be Greater than Recieved Quantity");
+      message.warning("Quantity shold be equal to Recieved Quantity");
     }
   };
 
@@ -861,8 +880,149 @@ const CreateGRNAgainstPO = () => {
   };
 
   const onFinishBatchFailed = () => {};
+  // const handleOnFinish = async (values) => {
+  //   debugger;
+  //   const products = [];
+  //   for (let i = 0; i <= data.length; i++) {
+  //     if (values.TotalPoAmount == values.InvoiceAmount) {
+  //       if (values[i] !== undefined) {
+  //         if (
+  //           values[i].ReceivedQty + values[i].BonusQuantity <=
+  //           values[i].PoBalanceQty
+  //         ) {
+  //           const product = {
+  //             ProductId: values[i].ProductId,
+  //             UomId: values[i].UomId,
+  //             ReceivedQty: values[i].ReceivedQty,
+  //             PoQuantity: values[i].PoBalanceQty,
+  //            // PoBalanceQty: values[i].PoBalanceQty,
+  //             BonusQuantity: values[i].BonusQuantity,
+  //             PoLineId: values[i].PoLineId,
+  //             GrnLineId: values[i].GrnLineId,
+  //             // QuantityTobeIssued: values[i].discount === "" ? 0 : values[i].discount,
+  //             PoRate: values[i].PoRate,
+  //             DiscountRate: values[i].DiscountRate,
+  //             DiscountAmount:
+  //               values[i].DiscountAmount == undefined
+  //                 ? 0
+  //                 : values[i].DiscountAmount,
+  //             LineAmount: values[i].LineAmount,
+  //             TaxAmount1:
+  //               values[i].TaxAmount1 == undefined ? 0 : values[i].TaxAmount1,
+  //             TotalAmount: values[i].LineAmount,
+  //             Replaceable: values[i].Replaceable === true ? "Y" : "N",
+  //             PoStatus:
+  //               values[i].ReceivedQty + values[i].BonusQuantity ==
+  //               values[i].PoBalanceQty
+  //                 ? "Completed"
+  //                 : "Pending",
+  //             ActiveFlag: true,
+  //           };
+  //           products.push(product);
+  //         } else {
+  //           message.warning("Recieved Qty must not Greater than PoPending Qty");
+  //           return false;
+  //         }
+  //       }
+  //     } else {
+  //       message.warning("Invoice Amount Must be equals to Total Po Amount");
+  //       return false;
+  //     }
+  //   }
+
+  //   const GRNAgainstPO = {
+  //     GRNHeaderId: values.GRNHeaderId,
+  //     PoHeaderId: values.PoHeaderId,
+  //     SupplierId: values.SupplierId,
+  //     StoreId: values.StoreId,
+  //     DocumentType:
+  //       values.DocumentType === undefined ? "" : values.DocumentType,
+  //     // GrnNumber: values.PODate === undefined ? dayjs(`${currentDate}`).format(dateFormat) : values.PODate,
+  //     // GRNDatestring: values.GRNDate === undefined ? null : (values.GRNDate.$D.toString().padStart(2, '0') + '-' + (values.GRNDate.$M + 1).toString().padStart(2, '0') + '-' + values.GRNDate.$y).toString(),
+  //     DCChallanDateString: values.DCChallanDateString
+  //       ? values.DCChallanDateString.format("DD-MM-YYYY")
+  //       : "",
+  //     GRNDatestring: values.GRNDatestring.format("DD-MM-YYYY"),
+  //     InvoiceDateString: values.InvoiceDateString.format("DD-MM-YYYY"),
+  //     ReceivingDateString: values.ReceivingDateString.format("DD-MM-YYYY"),
+  //     Remarks: values.Remarks === undefined ? null : values.Remarks,
+  //     GrnStatus: values.GRNStatus === undefined ? "Created" : values.GRNStatus,
+  //     InvoiceNumber:
+  //       values.InvoiceNumber === undefined ? null : values.InvoiceNumber,
+  //     InvoiceAmount:
+  //       values.InvoiceAmount === undefined ? 0 : values.InvoiceAmount,
+  //     DCChallanNumber: values.DCChallanNumber,
+  //     TotalAmount: values.TotalAmount,
+  //     TaxAmount1: values.TaxAmount == undefined ? 0 : values.TaxAmount,
+  //     RoundOff: values.RoundOff == undefined ? 0 : values.RoundOff,
+  //     TotalPoAmount: values.TotalPoAmount,
+  //     // GrnType: values.PoTaxAmount === undefined ? 0 : values.PoTaxAmount,
+  //   };
+  //   batches.forEach((item, index) => {
+  //     form1.getFieldValue([index, "POReceivedQty"]);
+  //   });
+  //   // const activeData = dataBatchModal.filter(
+  //   //   (item) => item.ActiveFlag === true && item.ProductId
+  //   // );
+
+  //   const result = checkActiveBatches(products, dataBatchModal);
+  //   if (!result.allActiveProductsHaveActiveBatch) {
+  //     message.warning("Please Add BatchDeatils");
+  //     return false;
+  //   }
+
+  //   const filteredbatch = dataBatchModal.filter((item) => item.ProductId);
+
+  //   const postData = {
+  //     newGRNAgainstPOModel: GRNAgainstPO,
+  //     GRNAgainstPODetails: products,
+  //     BatchDetails: filteredbatch === undefined ? [] : filteredbatch,
+  //   };
+  //   console.log('input',postData);
+  //   if (GrnHeaderId > 0) {
+  //     const response = await customAxios.post(urlUpdateGRNAgainstPO, postData, {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+  //     if (response != false && response.status == 200) {
+  //       message.success("Updated Successfully");
+  //     } else {
+  //       message.error("Updated Failure");
+  //     }
+  //   } else {
+  //     const response = await customAxios.post(urlAddNewGRNAgainstPO, postData, {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+  //     if (response != false && response.status == 200) {
+  //       message.success("Created Successfully");
+  //     } else {
+  //       message.error("Create Failure");
+  //     }
+  //   }
+  //   handleCancel();
+  // };
+
+  // const onFinishBatchFailed = () => {};
+
   const handleOnFinish = async (values) => {
     debugger;
+
+    const isAnyIdNotNull = dataBatchModal.some(
+      (item) => item.ProductId !== "" && item.ActiveFlag
+    );
+
+    if (!isAnyIdNotNull) {
+      message.warning("Please add Batch details");
+      return false;
+    }
+
+    if (values.TotalPoAmount !== values.InvoiceAmount) {
+      message.warning("Invoice Amount Must be equal to Total Po Amount");
+      return false;
+    }
     const products = [];
     for (let i = 0; i <= data.length; i++) {
       if (values.TotalPoAmount == values.InvoiceAmount) {
@@ -876,27 +1036,17 @@ const CreateGRNAgainstPO = () => {
               UomId: values[i].UomId,
               ReceivedQty: values[i].ReceivedQty,
               PoQuantity: values[i].PoBalanceQty,
-             // PoBalanceQty: values[i].PoBalanceQty,
-              BonusQuantity: values[i].BonusQuantity,
-              PoLineId: values[i].PoLineId,
-              GrnLineId: values[i].GrnLineId,
-              // QuantityTobeIssued: values[i].discount === "" ? 0 : values[i].discount,
+              BonusQuantity: values[i].BonusQuantity||0,
+              PoLineId: values[i].PoLineId || 0,
+              GrnLineId: values[i].GrnLineId || 0,
               PoRate: values[i].PoRate,
-              DiscountRate: values[i].DiscountRate,
-              DiscountAmount:
-                values[i].DiscountAmount == undefined
-                  ? 0
-                  : values[i].DiscountAmount,
+              DiscountRate: values[i].DiscountRate || 0,
+              DiscountAmount:values[i].DiscountAmount ?? 0,
               LineAmount: values[i].LineAmount,
-              TaxAmount1:
-                values[i].TaxAmount1 == undefined ? 0 : values[i].TaxAmount1,
+              TaxAmount1: values[i].TaxAmount1 ?? 0 ,
               TotalAmount: values[i].LineAmount,
               Replaceable: values[i].Replaceable === true ? "Y" : "N",
-              PoStatus:
-                values[i].ReceivedQty + values[i].BonusQuantity ==
-                values[i].PoBalanceQty
-                  ? "Completed"
-                  : "Pending",
+              PoStatus:values[i].ReceivedQty + values[i].BonusQuantity ==values[i].PoBalanceQty? "Completed" : "Pending",
               ActiveFlag: true,
             };
             products.push(product);
@@ -911,78 +1061,90 @@ const CreateGRNAgainstPO = () => {
       }
     }
 
+    const activeProducts = products.filter((product) => product.ActiveFlag);
+
     const GRNAgainstPO = {
       GRNHeaderId: values.GRNHeaderId,
       PoHeaderId: values.PoHeaderId,
       SupplierId: values.SupplierId,
       StoreId: values.StoreId,
-      DocumentType:
-        values.DocumentType === undefined ? "" : values.DocumentType,
-      // GrnNumber: values.PODate === undefined ? dayjs(`${currentDate}`).format(dateFormat) : values.PODate,
-      // GRNDatestring: values.GRNDate === undefined ? null : (values.GRNDate.$D.toString().padStart(2, '0') + '-' + (values.GRNDate.$M + 1).toString().padStart(2, '0') + '-' + values.GRNDate.$y).toString(),
+      DocumentType: values.DocumentType || "",
       DCChallanDateString: values.DCChallanDateString
         ? values.DCChallanDateString.format("DD-MM-YYYY")
         : "",
       GRNDatestring: values.GRNDatestring.format("DD-MM-YYYY"),
       InvoiceDateString: values.InvoiceDateString.format("DD-MM-YYYY"),
       ReceivingDateString: values.ReceivingDateString.format("DD-MM-YYYY"),
-      Remarks: values.Remarks === undefined ? null : values.Remarks,
-      GrnStatus: values.GRNStatus === undefined ? "Created" : values.GRNStatus,
-      InvoiceNumber:
-        values.InvoiceNumber === undefined ? null : values.InvoiceNumber,
-      InvoiceAmount:
-        values.InvoiceAmount === undefined ? 0 : values.InvoiceAmount,
+      Remarks: values.Remarks || null,
+      GrnStatus: values.GRNStatus || "Created",
+      InvoiceNumber: values.InvoiceNumber || null,
+      InvoiceAmount: values.InvoiceAmount || 0,
       DCChallanNumber: values.DCChallanNumber,
       TotalAmount: values.TotalAmount,
-      TaxAmount1: values.TaxAmount == undefined ? 0 : values.TaxAmount,
-      RoundOff: values.RoundOff == undefined ? 0 : values.RoundOff,
+      TaxAmount1: values.TaxAmount || 0,
+      RoundOff: values.RoundOff || 0,
       TotalPoAmount: values.TotalPoAmount,
-      // GrnType: values.PoTaxAmount === undefined ? 0 : values.PoTaxAmount,
     };
-    batches.forEach((item, index) => {
-      form1.getFieldValue([index, "POReceivedQty"]);
-    });
-    // const activeData = dataBatchModal.filter(
-    //   (item) => item.ActiveFlag === true && item.ProductId
-    // );
 
     const result = checkActiveBatches(products, dataBatchModal);
     if (!result.allActiveProductsHaveActiveBatch) {
-      message.warning("Please Add BatchDeatils");
+      message.warning("Please Add Batch Details");
       return false;
     }
 
-    const filteredbatch = dataBatchModal.filter((item) => item.ProductId);
+    const filteredBatch = dataBatchModal.filter((item) => item.ProductId);
+
+    const filteredBatchwithactive = dataBatchModal.filter(
+      (item) => item.ProductId && item.ActiveFlag
+    );
+
+    const sumItems = (items, key) =>
+      items.reduce((sum, item) => sum + parseInt(item[key] || 0, 10), 0);
+
+    const totalReceivedQty = sumItems(activeProducts, "ReceivedQty");
+    const totalBonusQuantity = sumItems(activeProducts, "BonusQuantity");
+    const totalBatchQuantity = sumItems(filteredBatchwithactive, "Quantity");
+    const totalBatchBonusQty = sumItems(
+      filteredBatchwithactive,
+      "BatchBonusQty"
+    );
+
+    if (totalReceivedQty !== totalBatchQuantity) {
+      message.warning("Total ReceivedQty does not match total Batch Quantity.");
+      return false;
+    }
+
+    if (totalBonusQuantity !== totalBatchBonusQty) {
+      message.warning(
+        "Total BonusQuantity does not match total Batch BonusQty."
+      );
+      return false;
+    }
 
     const postData = {
       newGRNAgainstPOModel: GRNAgainstPO,
       GRNAgainstPODetails: products,
-      BatchDetails: filteredbatch === undefined ? [] : filteredbatch,
+      BatchDetails: GrnHeaderId === 0 ? filteredBatchwithactive : filteredBatch
     };
-    // if (GrnHeaderId > 0) {
-    //   const response = await customAxios.post(urlUpdateGRNAgainstPO, postData, {
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //   });
-    //   if (response != false && response.status == 200) {
-    //     message.success("Updated Successfully");
-    //   } else {
-    //     message.error("Updated Failure");
-    //   }
-    // } else {
-    //   const response = await customAxios.post(urlAddNewGRNAgainstPO, postData, {
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //   });
-    //   if (response != false && response.status == 200) {
-    //     message.success("Created Successfully");
-    //   } else {
-    //     message.error("Create Failure");
-    //   }
-    // }
-    // handleCancel();
+
+   
+    console.log("input", postData);
+    //alert("successss call goes to api");
+
+    const url = GrnHeaderId > 0 ? urlUpdateGRNAgainstPO : urlAddNewGRNAgainstPO;
+    const response = await customAxios.post(url, postData, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response && response.status === 200) {
+      message.success(GrnHeaderId > 0 ? "Updated Successfully" : "Created Successfully");
+    } else {
+      message.error(GrnHeaderId > 0 ? "Update Failed" : "Creation Failed");
+    }
+
+    handleCancel();
   };
 
   const BatchAdd = async () => {
@@ -1028,7 +1190,7 @@ const CreateGRNAgainstPO = () => {
             name={[record.key, "BarCode"]}
             initialValue={record.BarCode}
           >
-            <InputNumber
+            <Input
               style={{ width: 50 }}
               min={0}
               disabled={!!GrnHeaderId && record.GrnBatchId}
@@ -1091,7 +1253,7 @@ const CreateGRNAgainstPO = () => {
           <InputNumber
             min={0}
             style={{ width: 50 }}
-            disabled={!!GrnHeaderId && record.GrnBatchId}
+            // disabled={!!GrnHeaderId && record.GrnBatchId}
           />
         </Form.Item>
       ),
@@ -1103,10 +1265,15 @@ const CreateGRNAgainstPO = () => {
       render: (text, record) => (
         <Form.Item
           name={[record.key, "BatchBonusQty"]}
-          //initialValue={batchRecord.BonusQuantity}
-          //disabled={!!GrnHeaderId}
+          initialValue={record.BatchBonusQty}
+          rules={[
+            {
+              required: true,
+              message: "input!",
+            },
+          ]}
         >
-          <InputNumber min={0} style={{ width: 50 }} disabled={batchRecord.BonusQuantity<0} />
+          <InputNumber min={0} style={{ width: 50 }} />
         </Form.Item>
       ),
     },
@@ -1137,6 +1304,10 @@ const CreateGRNAgainstPO = () => {
             style={{ width: "100%" }}
             format="DD-MM-YYYY"
             disabled={!!GrnHeaderId && record.GrnBatchId}
+            disabledDate={(current) => {
+              // Disable future dates
+              return current && current > dayjs().endOf("day");
+            }}
           />
         </Form.Item>
       ),
@@ -1164,6 +1335,10 @@ const CreateGRNAgainstPO = () => {
             style={{ width: "100%" }}
             format="DD-MM-YYYY"
             disabled={!!GrnHeaderId && record.GrnBatchId}
+            disabledDate={(current) => {
+              // Disable past dates
+              return current && current < dayjs().startOf("day");
+            }}
           />
         </Form.Item>
       ),
@@ -1197,7 +1372,22 @@ const CreateGRNAgainstPO = () => {
           rules={[
             {
               required: true,
-              message: "input!",
+              message: "Please input!",
+            },
+            {
+              validator: (_, value) => {
+                if (value <= 0) {
+                  return Promise.reject(
+                    new Error("MRP should be greater than zero.")
+                  );
+                }
+                if (value < batchRecord.PoRate) {
+                  return Promise.reject(
+                    new Error("MRP should be greater than Rate.")
+                  );
+                }
+                return Promise.resolve();
+              },
             },
           ]}
         >
@@ -1539,7 +1729,7 @@ const CreateGRNAgainstPO = () => {
                   },
                 ]}
               >
-                <Input style={{ width: "100%" }} allowClear />
+                <InputNumber min={0} allowClear style={{ width: "100%" }} />
               </Form.Item>
             </Col>
             <Col className="gutter-row" span={7}>
