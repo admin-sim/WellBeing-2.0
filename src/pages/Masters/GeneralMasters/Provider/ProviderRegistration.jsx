@@ -223,7 +223,9 @@ const Provider = () => {
             values.Qualification === undefined || values.Qualification === ""
               ? null
               : values.Qualification,
-          Dob: values.dob,
+          DateOfBirth: values.dob
+            ? dayjs(values.dob).format("DD-MM-YYYY")
+            : null,
           StructuralRoleId: values.structuralRole,
           ConsultantTypeId: values.consultantType,
           PresentAddress1:
@@ -274,7 +276,9 @@ const Provider = () => {
             values.Qualification === undefined || values.Qualification === ""
               ? null
               : values.Qualification,
-          Dob: values.dob,
+          DateOfBirth: values.dob
+            ? dayjs(values.dob).format("DD-MM-YYYY")
+            : null,
           StructuralRoleId: values.structuralRole,
           ConsultantTypeId: values.consultantType,
           PresentAddress1:
@@ -1183,7 +1187,11 @@ const Provider = () => {
                         },
                       ]}
                     >
-                      <Select placeholder="Select Title" allowClear>
+                      <Select
+                        loading={isLoading}
+                        placeholder="Select Title"
+                        allowClear
+                      >
                         {providerDropdown.Titles.map((option) => (
                           <Select.Option
                             key={option.LookupID}
@@ -1242,7 +1250,11 @@ const Provider = () => {
                         },
                       ]}
                     >
-                      <Select placeholder="select" allowClear>
+                      <Select
+                        loading={isLoading}
+                        placeholder="select"
+                        allowClear
+                      >
                         {providerDropdown.Genders.map((option) => (
                           <Select.Option
                             key={option.LookupID}
@@ -1311,7 +1323,7 @@ const Provider = () => {
                             .toLowerCase()
                             .localeCompare(optionB.children.toLowerCase())
                         }
-                        // loading={Loading}
+                        loading={isLoading}
                         allowClear
                       >
                         {providerDropdown.StructuralRoles.map((option) => (
@@ -1336,7 +1348,11 @@ const Provider = () => {
                         },
                       ]}
                     >
-                      <Select placeholder="Select Type" allowClear>
+                      <Select
+                        loading={isLoading}
+                        placeholder="Select Type"
+                        allowClear
+                      >
                         {providerDropdown.ConsultantType.map((option) => (
                           <Select.Option
                             key={option.LookupID}
@@ -1453,7 +1469,7 @@ const Provider = () => {
                             .toLowerCase()
                             .localeCompare(optionB.children.toLowerCase())
                         }
-                        // loading={Loading}
+                        //loading={isLoading}
                         onChange={(value) => handleStatesChange(value, false)}
                         allowClear
                       >

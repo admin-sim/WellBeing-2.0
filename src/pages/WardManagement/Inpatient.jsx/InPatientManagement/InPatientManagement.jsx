@@ -72,6 +72,7 @@ function InPatientManagement() {
         console.log("data is not clear ");
       }
     } else {
+      setTableLoading(false);
       console.log("click", e);
     }
   };
