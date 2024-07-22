@@ -21,7 +21,7 @@ import {
 } from "antd";
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
-
+import CustomTable from "../../components/customTable/index.jsx";
 import { urlGetPurshaseOrderDetails, urlSearchPatientIndent } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
 //import { format } from 'prettier';
@@ -93,9 +93,9 @@ const PatientIndent = () => {
 
     const columns = [
         {
-            title: "Sl No",
-            key: "index",
-            render: (text, record, index) => index + 1,
+            title: 'Sl No',
+            key: 'key',
+            dataIndex: 'key'
         },
         {
             title: "UHID",
@@ -132,12 +132,11 @@ const PatientIndent = () => {
             sortDirections: ["descend", "ascend"],
             render: (text, record, index) => {
                 if (record.IndentStatus === "Created" || record.IndentStatus === "Draft") {
-                    return (<Button type="link" onClick={() => GetIndentById(record.IndentId)}>
+                    return <Button type="link" onClick={() => GetIndentById(record.IndentId)}>
                         {text}
-                    </Button>
-                    )
+                    </Button>                    
                 }
-                return (<Tag style={{ marginLeft: '15px' }}>{text}</Tag>);
+                return <Tag style={{ marginLeft: '15px' }}>{text}</Tag>;
             },
         },
         {
@@ -251,6 +250,7 @@ const PatientIndent = () => {
         return inputDate; // Return as is if not in the expected format
     }
     const onFinish = async (values) => {
+        setLoading(true);
         try {
             const postData1 = {
                 IndentType: values.IndentType === 0 ? null : values.IndentType,
@@ -267,12 +267,18 @@ const PatientIndent = () => {
                     {
                         params: postData1,
                         headers: {
-                            "Content-Type": "application/json", 
+                            "Content-Type": "application/json",
                         },
                     }
                 )
                 .then((response) => {
-                    setFilteredData(response.data.data.IndentDetails);
+                    const ApiData = response.data.data.IndentDetails.map((item, index) => {
+                        return {
+                            ...item,
+                            key: index + 1
+                        }
+                    })
+                    setFilteredData(ApiData);
                 })
                 .finally(() => {
                     setLoading(false);
@@ -340,7 +346,7 @@ const PatientIndent = () => {
                             </Col>
                             <Col className="gutter-row" span={6}>
                                 <Form.Item name="IndentNumber" label="Indent Number">
-                                    <Input style={{ width: '100%' }} />
+                                    <Input allowClear style={{ width: '100%' }} />
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
@@ -393,7 +399,16 @@ const PatientIndent = () => {
                             </Col>
                         </Row>
                     </Form>
-                    <Table display={setIsTable}
+                    <Spin spinning={loading}>
+                        <CustomTable
+                            dataSource={filteredData}
+                            columns={columns}
+                            isFilter={true}
+                            size="small"
+                            bordered
+                        />
+                    </Spin>
+                    {/* <Table display={setIsTable}
                         dataSource={filteredData}
                         columns={columns}
                         pagination={{
@@ -410,7 +425,7 @@ const PatientIndent = () => {
                         rowKey={(row) => row.AppUserId}
                         size="small"
                         bordered
-                    />
+                    /> */}
                 </Card>
             </div>
         </Layout>

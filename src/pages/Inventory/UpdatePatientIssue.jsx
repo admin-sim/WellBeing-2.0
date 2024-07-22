@@ -1,9 +1,9 @@
 import customAxios from '../../components/customAxios/customAxios.jsx';
 import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
-import { urlCreatePurchaseOrder, urlSearchUHID, urlGetLastEncounter, urlAutocompleteProduct, urlUpdatePatientIndent, urlEditPatientIndent, urlGetProductDetailsById, urlAddNewPatientIndent } from '../../../endpoints.js';
+import { urlCreatePurchaseOrder, urlSearchUHID, urlShowPatientIssueBatchDetails, urlAutocompleteProduct, urlUpdatePatientIndent, urlCreatePatientIssue, urlGetProductDetailsById, urlAddNewIndentPatientIssue } from '../../../endpoints.js';
 import Select from 'antd/es/select';
-import { ConfigProvider, Card, Typography, Checkbox, Tooltip, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
+import { ConfigProvider, Card, Typography, Checkbox, message, Tooltip, Modal, Tag, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
 import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
@@ -28,6 +28,7 @@ const UpdatePatientIssue = () => {
     });
 
     let [counter, setCounter] = useState(0);
+    let [modelCounter, setModelCounter] = useState(0)
 
     const [encounter, setEncounter] = useState([]);
     const [form1] = Form.useForm();
@@ -37,21 +38,18 @@ const UpdatePatientIssue = () => {
     const { Option } = Select;
     const navigate = useNavigate();
     //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');    
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [data, setData] = useState([]);
     const [dataModal, setDataModal] = useState([]);
     const [poloading, setPoloading] = useState(false);
     const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
-    const [autoCompleteProduct, setAutoCompleteProduct] = useState([]);
     const fields = form1.getFieldsValue();
-    const [buttonTitle, setButtonTitle] = useState('Save');
     const location = useLocation();
     const indentId = location.state.IndentId;
     const [batchOpen, setBatchOpen] = useState(false)
     const [isTableVisible, setIsTableVisible] = useState(false);
-    const [productDetails, setProductDetails] = useState();
-    const [indentStatus, setIndentStatus] = useState(false);
-    const [isProductAvailable, setIsProductAvailable] = useState(false)
+    const [productDetails, setProductDetails] = useState([]);
+    const [issueStatus, setIssueStatus] = useState(false);
+    const [batchDetails, setBatchDetails] = useState()
 
     useEffect(() => {
         debugger
@@ -60,60 +58,101 @@ const UpdatePatientIssue = () => {
             setDropDown(apiData);
         });
         if (indentId > 0) {
-            setButtonTitle('Update');
-            customAxios.get(`${urlEditPatientIndent}?IndentId=${indentId}`).then((response) => {
+            customAxios.get(`${urlCreatePatientIssue}?IndentId=${indentId}`).then((response) => {
                 const apiData = response.data.data;
-                const products = apiData.IndentDetails.map((item, index) => ({
-                    ...item,
-                    key: index,
-                    IssuingStoreStock: apiData.IndentDetails[index].AvlIssueQuantity,
-                    RequestingStoreStock: apiData.IndentDetails[index].AvlReqQuantity,
-                    Favourite: apiData.IndentDetails[index].Favourite == 'N' ? false : true,
-                    index: index + 1
-                }))
-                setData(products);
-                setCounter(products.length)
-                setIsTableVisible(true)
+                if (apiData.IndentDetails != null && apiData.IndentDetails.length > 0) {
+                    const products = apiData.IndentDetails.map((item, index) => {
+                        let matchedProduct = null;
+
+                        if (apiData.newIndentIssueModel.length > 0) {
+                            matchedProduct = apiData.newIndentIssueModel.find((item1, index1) => {
+                                if (item1.ProductId === item.ProductId && apiData.newPatientIssueModel.IndentId === item.IndentId) {
+                                    return true;
+                                }
+                                return false;
+                            });
+
+                            if (matchedProduct) {
+                                return {
+                                    ...matchedProduct,
+                                    key: index,
+                                    IssueQty: matchedProduct.IssueQty,
+                                    PatientIssueLineId: matchedProduct.PatientIssueLineId,
+                                    AvlQtyatIssue: item.StockBalanceQty,
+                                    Remarks: matchedProduct.Remarks,
+                                    RequestQty: item.RequestQty,
+                                    PendingQty: item.PendingQty,
+                                    index: index + 1
+                                };
+                            }
+                        }
+
+                        return {
+                            ...item,
+                            key: index,
+                            AvlQtyatIssue: item.AvlIssueQuantity,
+                            // RequestingStoreStock: item.RequestQty,
+                            PendingQty: item.PendingQty,
+                            index: index + 1
+                        };
+                    });
+                    setData(products);
+                    setCounter(products.length);
+                    const batch = apiData.BatchDetails.map((item, index) => {
+                        return {
+                            ...item,
+                            key: index,
+                            index: index + 1
+                        }
+                    })
+                    setDataModal(batch)
+                    setModelCounter(batch.length)
+                    setIsTableVisible(true);
+                }
+
                 const formdata = apiData.newIndentModel
                 form1.setFieldsValue({
                     IssuingStore: formdata.IssueingStoreId,
                     IndentType: formdata.IndentType,
                     Remarks: formdata.Remarks,
                     IndentNumber: formdata.IndentNumber,
-                    IndentStatus: formdata.IndentStatus == 'Created' ? undefined : formdata.IndentStatus,
+                    IssueStatus: formdata.IssueStatus == 'Created' || formdata.IssueStatus == 'Pending' ? undefined : formdata.IssueStatus,
                     UHID: formdata.UhId,
                     Name: formdata.PatientName,
                     Encounter: formdata.Encounter,
                     EncounterId: formdata.EncounterId,
                     PatientId: formdata.PatientId,
-                    IndentId: formdata.IndentId
+                    IndentId: formdata.IndentId,
+                    IssueId: apiData.newPatientIssueModel != null ? apiData.newPatientIssueModel.IssueId : 0
                 })
             });
         }
     }, []);
 
-    const onOkModal = () => {
-        form2
-            .validateFields()
-            .then(() => {
-                setIsModalOpen(false);
-            })
-            .catch((error) => {
-                console.log('Validation error:', error);
-            });
+    const onOkModal = async () => {
+        debugger
+        await form2.validateFields();
+        const totalQuantity = dataModal.reduce((sum, item) => sum + item.IssueQty, 0);
+        if (productDetails.IssueQty === totalQuantity) {
+            setBatchOpen(false);
+            form2.submit()
+        }
+        else {
+            message.warning('Batch Qty is must equals to Issued Qty')
+        }
     }
 
     const onFinishmodal = (values) => {
         debugger;
-        setPoloading(true);
-        setIsPoSearchTable(true);
-        const postData = {
-            Supplier: values.Supplier,
-            ReceivingStore: values.ReceivingStore,
-            POStatus: values.POStatus,
-            FromDate: values.PODateFrom === undefined || values.PODateFrom === null ? '' : (values.PODateFrom.$D.toString().padStart(2, '0') + '-' + (values.PODateFrom.$M + 1).toString().padStart(2, '0') + '-' + values.PODateFrom.$y).toString(),
-            ToDate: values.PODateTo === undefined || values.PODateTo === null ? '' : (values.PODateTo.$D.toString().padStart(2, '0') + '-' + (values.PODateTo.$M + 1).toString().padStart(2, '0') + '-' + values.PODateTo.$y).toString(), // A sample value
-        }
+        // setPoloading(true);
+        // setIsPoSearchTable(true);
+        // const postData = {
+        //     Supplier: values.Supplier,
+        //     ReceivingStore: values.ReceivingStore,
+        //     POStatus: values.POStatus,
+        //     FromDate: values.PODateFrom === undefined || values.PODateFrom === null ? '' : (values.PODateFrom.$D.toString().padStart(2, '0') + '-' + (values.PODateFrom.$M + 1).toString().padStart(2, '0') + '-' + values.PODateFrom.$y).toString(),
+        //     ToDate: values.PODateTo === undefined || values.PODateTo === null ? '' : (values.PODateTo.$D.toString().padStart(2, '0') + '-' + (values.PODateTo.$M + 1).toString().padStart(2, '0') + '-' + values.PODateTo.$y).toString(), // A sample value
+        // }
         // try {
         //   customAxios.get(`${urlSearchPendingPO}?Supplier=${postData.Supplier}&ReceivingStore=${postData.ReceivingStore}&POStatus=${postData.POStatus}&PODateFrom=${postData.FromDate}&PODateTo=${postData.ToDate}`).then((response) => {
         //     debugger;
@@ -124,66 +163,148 @@ const UpdatePatientIssue = () => {
         // } catch (error) {
         //   // Handle the error as needed
         // }
+    }    
+
+    function isExpired(dateString) {
+        if (new Date() > new Date(dateString)) {
+            return false
+        }
+        else {
+            return true
+        }
     }
 
-    const AddProduct = async () => {
-        setAutoCompleteProduct([])
-        await form1.validateFields();
-        setData([
-            ...data,
-            {
-                key: counter,
-                ProductName: '',
-                ProductId: '',
-                UomId: '',
-                RequestQty: '',
-                RequestingStoreStock: '',
-                IssuingStoreStock: '',
-                Favourite: false,
-                ActiveFlag: true,
-            },
-        ]);
-        setCounter(counter + 1);
-        setIsProductAvailable(false)
-    }
-
-    const getPanelValue1 = (value, key) => {
-        if (value === "") {
-            form1.setFieldsValue({ [key]: { uom: '' } });
-            form1.setFieldsValue({ [key]: { RequestQty: '' } });
-            form1.setFieldsValue({ [key]: { Favourite: false } });
-            form1.setFieldsValue({ [key]: { IssuingStoreStock: '' } });
+    const OpenBatch = async (record) => {
+        debugger
+        setProductDetails(record)
+        await form1.validateFields()
+        const va = form1.getFieldsValue()
+        record.IssueQty = va[record.key].IssueQty
+        setProductDetails(record)
+        const batch = {
+            IssueQty: record.IssueQty,
+            ProductId: record.ProductId,
+            IssueId: record.IssueingStoreId,
+            StoreId: record.IssueingStoreId
+        }
+        const post1 = {
+            newIndentModel: batch,
+            Batch: dataModal
         }
         try {
-            customAxios.get(`${urlAutocompleteProduct}?Product=${value}`).then((response) => {
-                const apiData = response.data.data;
-                const newOptions = apiData.map(item => ({ value: item.LongName, key: item.ProductId, UomId: item.UOMPrimaryUOM }));
-                setAutoCompleteProduct(newOptions);
+            const response = await customAxios.post(urlShowPatientIssueBatchDetails, post1, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             });
-        } catch (error) {
-            // Handle the error as needed
-        }
-    }
+            const ApiData = response.data.data;
+            if (ApiData.Batch.length > 0) {
+                const batch = ApiData.Batch.map((item, index) => {
+                    if (item.ProductId == ApiData.ProductDefinitionModel.ProductDefinitionId && item.ActiveFlag != false) {
+                        if (item.IssueBatchId != 0) {
+                            const newitem = {
+                                ...item,
+                                key: index,
+                                BatchNo: item.BatchNo,
+                                IssueQty: item.IssueQty,
+                                AvlQty: item.BalanceQty,
+                                Uom: item.Uom,
+                                EXPDate: item.EXPDate,
+                                IssueRate: item.IssueRate,
+                                Amount: item.IssueRate * item.IssueQty,
+                                StockLocator: item.StockLocatorName,
+                                index: index + 1
+                            };
+                            return newitem
+                        }
+                        return item
+                    }
+                    return item
+                })
+                setDataModal(batch)
+                setModelCounter(batch.length)
+            }
+            else if (ApiData.BatchDetails.length > 0) {
+                let qty = 0; let amount = 0; let totalbatchqty = 0; let total = 0;
+                const batch = ApiData.BatchDetails.map((item, index) => {
+                    total += qty;
+                    qty = item.PendingQty;
+                    totalbatchqty += qty;
 
-    const handleSelect1 = (value, option, key) => {
-        form1.setFieldsValue({ [key]: { UomId: option.UomId } });
-        form1.setFieldsValue({ [key]: { ProductId: option.key } });
-        customAxios.get(`${urlGetProductDetailsById}?ProductId=${option.key}`).then((response) => {
-            const apiData = response.data.data;
-            let reqstr = form1.getFieldValue('IssuingStore');
-            let qty = 0;
-            apiData.Stock.forEach(value => {
-                if (value.StoreId === reqstr) {
-                    qty += value.Quantity;
+                    if (totalbatchqty > ApiData.newIndentModel.IssueQty) {
+                        qty = ApiData.newIndentModel.IssueQty - total;
+                    }
+
+                    amount = qty * item.MRP;
+
+                    if (isExpired(item.EXPDate)) {
+                        if (qty > 0) {
+                            const newitem = {
+                                ...item,
+                                key: index,
+                                BatchNo: item.BatchNo,
+                                IssueQty: qty,
+                                AvlQty: item.PendingQty,
+                                Uom: item.Uom,
+                                EXPDate: item.EXPDate,
+                                IssueRate: item.MRP,
+                                Amount: amount,
+                                StockLocator: item.StockLocatorName,
+                                index: index + 1
+                            };
+                            return newitem
+                        }
+                        return null
+                    }
+                    return null;
+                }).filter(item => item !== null);
+                setDataModal(batch);
+                setModelCounter(batch.length)
+            }
+            const batch = ApiData.BatchDetails.map((item, index) => {
+                return {
+                    ...item,
+                    key: index,
+                    index: index + 1
                 }
             })
-            form1.setFieldsValue({ [key]: { IssuingStoreStock: qty } });
-        });
+            setBatchDetails(batch)
+            // setCounter(ApiData.Batch.length > 0 ? ApiData.Batch.length + 1 : ApiData.BatchDetails.length + 1)
+        } catch (error) {
+
+        }
+        setBatchOpen(true)
     }
 
-    const OpenBatch = (record) => {
-        setProductDetails(record)
-        setBatchOpen(true)
+    const validateNotGreaterValue = (record, value) => {
+        if (value > record.PendingQty || value > record.AvlQtyatIssue) {
+            if (value > record.PendingQty) {
+                return Promise.reject(new Error('Must not Greater than Pending Qty!'));
+            }
+            else if (value > record.AvlQtyatIssue) {
+                return Promise.reject(new Error('Must not Greater than Available at Issue!'));
+            }
+
+        }
+        else {
+            return Promise.resolve();
+        }
+    };
+
+    const validateEqualValue = (record, value) => {
+        debugger
+        if (record.IssueQty <= record.AvlQty) {
+            return Promise.resolve();
+        }
+        return Promise.reject(new Error('Equals to Issued Qty!'));
+    }
+
+    const validateExpiryValue = (record, value) => {
+        debugger
+        if (isExpired(record.EXPDate)) {
+            return Promise.resolve();
+        }
+        return Promise.reject(new Error('Batch is Expired!'))
     }
 
     const columns = [
@@ -203,18 +324,19 @@ const UpdatePatientIssue = () => {
                         ]}
                         initialValue={record.ProductName}
                     >
-                        <AutoComplete style={{ width: '100%' }} disabled={!!indentId && record.IndentLineId}
+                        <Input disabled />
+                        {/* <AutoComplete style={{ width: '100%' }} disabled={!!indentId && record.IndentLineId}
                             options={autoCompleteProduct}
                             onSearch={(value) => getPanelValue1(value, record.key)}
                             onSelect={(value, option) => handleSelect1(value, option, record.key)}
                             placeholder="Search for a product"
                             allowClear
-                        />
+                        /> */}
                     </Form.Item>
                     <Form.Item name={[record.key, 'ProductId']} hidden initialValue={record.ProductId}>
                         <Input></Input>
                     </Form.Item>
-                    <Form.Item name={[record.key, 'IndentLineId']} hidden initialValue={record.IndentLineId}>
+                    <Form.Item name={[record.key, 'PatientIssueLineId']} hidden initialValue={record.PatientIssueLineId}>
                         <Input></Input>
                     </Form.Item>
                 </>
@@ -224,9 +346,8 @@ const UpdatePatientIssue = () => {
             title: 'UOM',
             dataIndex: 'UomId',
             key: 'UomId',
-            width: 150,
             render: (text, record) => (
-                <Form.Item name={[record.key, 'UomId']} style={{ width: '100%' }} initialValue={record.UomId}>
+                <Form.Item name={[record.key, 'UomId']} initialValue={record.UomId}>
                     <Select disabled defaultValue={record.UomId}>
                         {DropDown.UOM.map((option) => (
                             <Select.Option key={option.UomId} value={option.UomId}>
@@ -242,7 +363,7 @@ const UpdatePatientIssue = () => {
             dataIndex: 'RequestQty',
             key: 'RequestQty',
             render: (text, record) => (
-                <Form.Item style={{ width: '100%' }} initialValue={record.RequestQty}
+                <Form.Item initialValue={record.RequestQty}
                     name={[record.key, 'RequestQty']}
                     rules={[
                         {
@@ -251,27 +372,38 @@ const UpdatePatientIssue = () => {
                         }
                     ]}
                 >
-                    <InputNumber min={1} style={{ width: '100%' }} disabled />
+                    <InputNumber style={{ width: '100%' }} disabled />
                 </Form.Item>
             )
         },
         {
             title: 'Issue Qty',
-            dataIndex: 'RequestingStoreStock',
-            key: 'RequestingStoreStock',
+            dataIndex: 'IssueQty',
+            key: 'IssueQty',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'RequestingStoreStock']}>
-                    <Input />
+                <Form.Item name={[record.key, 'IssueQty']}
+                    initialValue={record.IssueQty != null ? record.IssueQty : 0}
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Please input!'
+                        },
+                        {
+                            validator: (_, value) => validateNotGreaterValue(record, value)
+                        }
+                    ]}
+                >
+                    <InputNumber allowClear min={0} />
                 </Form.Item>
             )
         },
         {
             title: 'Avl Qty at Issue',
-            dataIndex: 'IssuingStoreStock',
-            key: 'IssuingStoreStock',
+            dataIndex: 'AvlQtyatIssue',
+            key: 'AvlQtyatIssue',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'IssuingStoreStock']} initialValue={record.IssuingStoreStock}>
-                    <Input disabled />
+                <Form.Item name={[record.key, 'AvlQtyatIssue']} initialValue={record.AvlQtyatIssue}>
+                    <InputNumber disabled />
                 </Form.Item>
             )
         },
@@ -290,7 +422,7 @@ const UpdatePatientIssue = () => {
             dataIndex: 'Batch',
             key: 'Batch',
             render: (text, record) => (
-                <Button type='link' onClick={OpenBatch(record)}>Batch</Button>
+                <Button type='link' onClick={() => OpenBatch(record)}>Batch</Button>
             )
         },
         {
@@ -299,76 +431,279 @@ const UpdatePatientIssue = () => {
             key: 'PendingQty',
             render: (text, record) => (
                 <>
-                    <Form.Item name={[record.key, 'PendingQty']} initialValue={record.PendingQty} valuePropName="checked">
-                        <Input disabled={!!indentId} />
+                    <Form.Item name={[record.key, 'PendingQty']} initialValue={record.PendingQty}>
+                        <InputNumber disabled />
                     </Form.Item>
                 </>
             )
         },
-        {
-            title: (<Tooltip title="Please Add Product!" open={isProductAvailable}>
-                <Button type="primary" icon={<PlusOutlined />} onClick={AddProduct}></Button>
-            </Tooltip>),
-            // title: <Button type="primary" icon={<PlusOutlined />} onClick={AddProduct}></Button>,
-            dataIndex: 'add',
-            key: 'add',
-            width: 50,
-            render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}><DeleteOutlined /></Popconfirm>
-        }
     ]
 
-    const handleDelete = (record) => {
-        const newData = data.map((item) => {
+    // const handleDelete = (record) => {
+    //     const newData = data.map((item) => {
+    //         if (item.key === record.key) {
+    //             return { ...item, ActiveFlag: false };
+    //         }
+    //         return item;
+    //     });
+    //     setData(newData);
+    // };
+
+    const handleAddBatch = async () => {
+        debugger;
+        await form2.validateFields();
+        setDataModal([
+            ...dataModal,
+            {
+                key: modelCounter,
+                BatchNo: '',
+                IssueQty: '',
+                AvlQty: '',
+                UomId: '',
+                EXPDate: '',
+                Rate: '',
+                IssueRate: '',
+                Stocklocator: '',
+                ActiveFlag: true,
+            },
+        ]);
+        setModelCounter(modelCounter + 1);
+    };
+
+    const BatchSelect = (value, record) => {
+        debugger
+        form2.resetFields()
+        const IsExist = dataModal.filter((item) => item.BatchNo == record && item.BatchNo != '' && item.ActiveFlag == true)
+        if (IsExist.length > 0) {
+            message.warning('Same Batch No should not be selected.')
+            return false
+        }
+        const newdata = dataModal.map((item) => {
+            const matchingBatch = batchDetails.find((item1) => item.key === record.key && value === item1.BatchNo);
+            if (matchingBatch) {
+                return {
+                    ...item,
+                    BatchNo: matchingBatch.BatchNo,
+                    IssueQty: 0,
+                    AvlQty: matchingBatch.PendingQty,
+                    Uom: matchingBatch.Uom,
+                    IssueBatchId: 0,
+                    EXPDate: matchingBatch.EXPDate,
+                    IssueRate: matchingBatch.MRP,
+                    Amount: 0
+                };
+            }
+            return item;
+        });
+        setDataModal(newdata);
+    }
+
+    const handleQuantityChange = (value, record) => {
+        debugger
+        const newData = dataModal.map(item => {
+            if (item.key === record.key) {
+                const updatedItem = {
+                    ...item,
+                    IssueQty: value,
+                    Amount: value * item.IssueRate
+                };
+                return updatedItem;
+            }
+            return item;
+        });
+        setDataModal(newData);
+    }
+    const columnsModel = [
+        {
+            title: "BatchNo",
+            dataIndex: "BatchNo",
+            width: 100,
+            key: "BatchNo",
+            render: (text, record, index) => (
+                <>
+                    <Form.Item
+                        name={[record.key, "BatchNo"]}
+                        rules={[{ required: true, message: "Required" }]}
+                        initialValue={record.BatchNo}
+                    >
+                        <Select allowClear onChange={(value) => BatchSelect(value, record)} style={{ width: 100 }} disabled={!!record.IssueBatchId}>
+                            {batchDetails.map((option) => (
+                                <Select.Option key={option.BatchNo} value={option.BatchNo}>{option.BatchNo}</Select.Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                    <Form.Item name={[record.key, "BatchId"]} initialValue={record.StockId} hidden>
+                        <Input />
+                    </Form.Item>
+                    <Form.Item name={[record.key, "IssueBatchId"]} initialValue={record.StockId} hidden>
+                        <Input />
+                    </Form.Item>
+                </>
+
+            ),
+        },
+        {
+            title: "Quantity",
+            dataIndex: "IssueQty",
+            key: "IssueQty",
+            width: 100,
+            render: (text, record, index) => (
+                <Form.Item name={[record.key, "IssueQty"]} initialValue={record.IssueQty}
+                    rules={[{ required: true, message: "Required" },
+                    {
+                        validator: (_, value) => validateEqualValue(record, value)
+                    }
+                    ]}
+                    style={{ width: "100%" }}
+                >
+                    <InputNumber min={0} onChange={(value) => handleQuantityChange(value, record)} />
+                </Form.Item>
+            ),
+        },
+        {
+            title: "AvlQty",
+            dataIndex: "AvlQty",
+            key: "AvlQty",
+            render: (text, record, index) => (
+                <Form.Item name={[record.key, "AvlQty"]} initialValue={record.AvlQty}>
+                    <Input style={{ width: 70 }} disabled />
+                </Form.Item>
+            ),
+        },
+        {
+            title: "Uom",
+            dataIndex: "UomId",
+            width: 100,
+            key: "UomId",
+            render: (text, record, index) => (
+                <Form.Item
+                    name={[record.key, "UomId"]}
+                >
+                    <Input style={{ width: 100 }} defaultValue={record.Uom} disabled />
+                </Form.Item>
+            ),
+        },
+        {
+            title: "Exp Date",
+            dataIndex: "EXPDate",
+            width: 100,
+            key: "EXPDate",
+            render: (text, record, index) => (
+                <Form.Item
+                    name={[record.key, "EXPDate"]}
+                    initialValue={record.EXPDate == '' ? undefined : DateBindtoDatepicker(record.EXPDate)}
+                    rules={[{ required: true, message: "Required" },
+                    {
+                        validator: (_, value) => validateExpiryValue(record, value)
+                    }
+                    ]}
+                >
+                    <DatePicker style={{ width: 100 }} disabled format='MMMM YYYY'></DatePicker>
+                </Form.Item>
+            ),
+        },
+        {
+            title: "Rate",
+            dataIndex: "IssueRate",
+            width: 100,
+            key: "IssueRate",
+            render: (text, record, index) => (
+                <Form.Item
+                    name={[record.key, "IssueRate"]}
+                    initialValue={record.IssueRate}
+                >
+                    <Input style={{ width: 100 }} allowClear disabled />
+                </Form.Item>
+            ),
+        },
+        {
+            title: "Amount",
+            dataIndex: "Amount",
+            width: 100,
+            key: "Amount",
+            render: (text, record, index) => (
+                <Form.Item name={[record.key, "Amount"]} initialValue={record.Amount}>
+                    <Input style={{ width: 100 }} allowClear disabled />
+                </Form.Item>
+            ),
+        },
+        {
+            title: "Stock Locator",
+            dataIndex: "StockLocator",
+            width: 100,
+            key: "StockLocator",
+            render: (text, record, index) => (
+                <Form.Item
+                    name={[record.key, "StockLocator"]}
+                    initialValue={record.StockLocatorName}
+                >
+                    <Input style={{ width: 100 }} allowClear disabled />
+                </Form.Item>
+            ),
+        },
+        {
+            title: (
+                <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={handleAddBatch}
+                ></Button>
+            ),
+            dataIndex: "add",
+            key: "add",
+            width: 50,
+            render: (text, record) => (
+                <Popconfirm
+                    title="Sure to delete?"
+                    onConfirm={() => ModelDelete(record)}
+                >
+                    <DeleteOutlined />
+                </Popconfirm>
+            ),
+        },
+    ];
+
+    const ModelDelete = (record) => {
+        debugger
+        const newData = dataModal.map((item) => {
             if (item.key === record.key) {
                 return { ...item, ActiveFlag: false };
             }
             return item;
         });
-        setData(newData);
+        setDataModal(newData);
+    }
+
+    const DateBindtoDatepicker = (value) => {
+        const isoDateString = value;
+        const dateValue = new Date(isoDateString);
+        const formattedDate = dayjs(dateValue).format("DD-MM-YYYY");
+        return dayjs(formattedDate, "DD-MM-YYYY");
     };
 
-    const Modelcolumns = [
-        {
-            title: 'Date',
-            dataIndex: 'date',
-            key: 'date',
-            sorter: (a, b) => a.date.localeCompare(b.date),
-        },
-        {
-            title: 'Time',
-            dataIndex: 'time',
-            key: 'time',
-            sorter: (a, b) => a.time.localeCompare(b.time),
-        },
-        {
-            title: 'View',
-            dataIndex: 'view',
-            key: 'view',
-            sorter: (a, b) => a.view.localeCompare(b.view),
-        }
-    ];
-
     const onCancelmodal = () => {
-        setIsModalOpen(false);
-        // setDataModal([]);
+        setDataModal([])
+        setModelCounter(0)
+        form2.resetFields()
+        setBatchOpen(false)
     }
 
     const handleCancel = () => {
         const url = '/PatientIssue';
         navigate(url);
     }
-    const ShowModel = () => {
-        debugger;
-        const uhid = form1.getFieldValue('UHID');
-        form1
-            .validateFields(['UHID'])
-            .then(() => {
-                setIsModalOpen(true);
-            })
-            .catch((error) => {
-                console.log('Validation error:', error);
-            });
-    }
+    // const ShowModel = () => {
+    //     debugger;
+    //     const uhid = form1.getFieldValue('UHID');
+    //     form1
+    //         .validateFields(['UHID'])
+    //         .then(() => {
+    //             setBatchOpen(false);
+    //         })
+    //         .catch((error) => {
+    //             console.log('Validation error:', error);
+    //         });
+    // }
 
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
@@ -376,69 +711,48 @@ const UpdatePatientIssue = () => {
 
     const handleOnFinish = async (values) => {
         debugger;
+
+        if (dataModal.length == 0) {
+            message.warning('Please Add Batch Details!')
+            return false
+        }
+
         const products = [];
-        if (data.length == 0) {
-            setIsProductAvailable(true)
-            return false;
-        }
-        else {
-            const temp = data.filter(item => item.ActiveFlag == true)
-            if (temp.length == 0) {
-                setIsProductAvailable(true)
-                return false;
-            }
-        }
 
         for (let i = 0; i <= counter; i++) {
             if (data[i] !== undefined && values[i] !== undefined) {
                 const product = {
-                    ProductId: values[i].ProductId,
-                    UomId: values[i].UomId ? values[i].UomId : values[i].UomId,
-                    IssuingStoreStock: values[i].IssuingStoreStock,
-                    RequestQty: values[i].RequestQty,
-                    Favourite: values[i].Favourite === false ? 'N' : 'Y',
-                    IndentLineId: values[i].IndentLineId ? values[i].IndentLineId : 0,
-                    ActiveFlag: values[i].ActiveFlag
+                    ProductId: data[i].ProductId,
+                    UomId: data[i].UomId,
+                    RequestQty: data[i].RequestQty,
+                    IssueQty: values[i].IssueQty,
+                    PendingQty: values[i].PendingQty - values[i].IssueQty,
+                    PatientIssueLineId: data[i].PatientIssueLineId,
+                    Remarks: values[i].Remarks
                 }
                 products.push(product);
-            }
-            else {
-                if (data[i] != undefined) {
-                    data[i].Favourite = data[i].Favourite == false ? 'N' : 'Y'
-                    products.push(data[i])
-                }
             }
         }
 
         const Indent = {
-            IndentId: values.IndentId ? values.IndentId : 0,
-            IndentDate: values.IndentDate,
-            IndentStatus: !indentStatus ? 'Created' : values.IndentStatus,
-            IndentTemplateId: values.IndentTemplate ? values.IndentTemplate : 0,
-            IndentType: values.IndentType,
+            FacilityId: 1,
             IssueingStoreId: values.IssuingStore,
-            Name: values.Name,
-            Remarks: values.Remarks,
-            UHID: values.UHID === undefined ? 0 : values.UHID,
-            SubmitCheck: values.SubmitCheck,
+            IssueDateString: values.IssueDate ? values.IssueDate.format("DD-MM-YYYY") : "",
+            IndentId: values.IndentId,
             PatientId: values.PatientId,
-            EncounterId: !!indentId ? values.EncounterId : values.Encounter,
-            IndentCategory: 'PatientIndent',
-            RequestingStoreId: 0
+            EncounterId: values.EncounterId,
+            IssueStatus: !issueStatus ? 'Created' : values.IssueStatus,
+            IssueId: values.IssueId ? values.IssueId : 0,
+            IndentType: values.IndentType,
+            IndentCategory: 'PatientIssue',
         }
         const postData = {
             newIndentModel: Indent,
             IndentDetails: products,
+            Batch: dataModal
         }
         if (indentId > 0) {
-            const response = await customAxios.post(urlUpdatePatientIndent, postData, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            handleCancel();
-        } else {
-            const response = await customAxios.post(urlAddNewPatientIndent, postData, {
+            const response = await customAxios.post(urlAddNewIndentPatientIssue, postData, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -447,12 +761,8 @@ const UpdatePatientIssue = () => {
         }
     };
 
-    const FavouriteChanged = (event) => {
-        setIndentStatus(event.target.checked)
-    }
-
     const SubmitChanged = (event) => {
-        setIndentStatus(event.target.checked)
+        setIssueStatus(event.target.checked)
     }
 
     const GetUHID = (value) => {
@@ -530,7 +840,10 @@ const UpdatePatientIssue = () => {
                                     <Input disabled={!!indentId} />
                                 </Form.Item>
                                 <Form.Item name="IndentId" hidden>
-                                    <Input></Input>
+                                    <InputNumber></InputNumber>
+                                </Form.Item>
+                                <Form.Item name="IssueId" hidden>
+                                    <InputNumber></InputNumber>
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
@@ -582,28 +895,28 @@ const UpdatePatientIssue = () => {
                             </Col>
                             <Col className="gutter-row" span={6}>
                                 <Form.Item label="Issue Owner" name="IssueOwner"
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message: 'Please input!'
-                                        }
-                                    ]}
+                                // rules={[
+                                //     {
+                                //         required: true,
+                                //         message: 'Please input!'
+                                //     }
+                                // ]}
                                 >
                                     <Input allowClear />
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
-                                <Form.Item label="Indent Status" name="IndentStatus"
+                                <Form.Item label="Issue Status" name="IssueStatus"
                                     rules={[
                                         {
-                                            required: indentStatus,
+                                            required: issueStatus,
                                             message: 'Please input!'
                                         }
                                     ]}
                                 >
                                     <Select allowClear placeholder='Select Value'>
                                         <Option value="Draft">Draft</Option>
-                                        <Option value="Pending">Finalize</Option>
+                                        <Option value="Finalize">Finalize</Option>
                                     </Select>
                                 </Form.Item>
                                 <Form.Item name="EncounterId" hidden>
@@ -630,7 +943,7 @@ const UpdatePatientIssue = () => {
                             <Col style={{ marginRight: '10px' }}>
                                 <Form.Item>
                                     <Button type="primary" htmlType="submit">
-                                        {buttonTitle}
+                                        Save
                                     </Button>
                                 </Form.Item>
                             </Col>
@@ -657,11 +970,12 @@ const UpdatePatientIssue = () => {
                         }
                     }}>
                     <Modal
-                        title="Doctor Note"
+                        title="Product Batch Details"
                         onOk={onOkModal}
                         onCancel={onCancelmodal}
-                        width={500}
+                        width={1000}
                         open={batchOpen}
+                        okText='Save'
                     >
                         <Form
                             name="basic"
@@ -684,28 +998,28 @@ const UpdatePatientIssue = () => {
                             form={form2}
                         >
                             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                                <Col className="gutter-row" span={6}>
+                                <Col className="gutter-row" span={12}>
                                     <Form.Item
                                         label="Product"
                                         name="Product"
                                     >
                                         <Tag color="blue">
-                                            {batchRecord.LongName == undefined ? batchRecord.ProductName : batchRecord.LongName}
+                                            {productDetails.ProductName}
                                         </Tag>
                                     </Form.Item>
                                 </Col>
-                                <Col className="gutter-row" span={6}>
+                                <Col className="gutter-row" span={12}>
                                     <Form.Item
-                                        label="Recieved Quantity"
-                                        name="RecievedQty"
+                                        label="Issued Qty"
+                                        name="IssuedQuantity"
                                     >
                                         <Tag color="blue">
-                                            {batchRecord.IssueQty}
+                                            {productDetails.IssueQty}
                                         </Tag>
                                     </Form.Item>
                                 </Col>
                             </Row>
-                            <Table columns={Modelcolumns} dataSource={dataModal} scroll={{ x: 0 }} />
+                            <Table columns={columnsModel} dataSource={dataModal.filter(item => item.ActiveFlag == true)} scroll={{ x: 0 }} />
                         </Form>
                     </Modal>
                 </ConfigProvider>
