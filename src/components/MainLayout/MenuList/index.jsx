@@ -67,6 +67,12 @@ const menuData = [
             title: "Payer",
             link: "/PayerRegistration",
           },
+          {
+            key: "Template",
+            icon: "GoDotFill",
+            title: "Template Master",
+            link: "/Templates",
+          },
         ],
       },
       {
@@ -290,7 +296,7 @@ const menuData = [
   {
     key: "Account",
     icon: "ExperimentOutlined",
-    title: "AccountManagement",
+    title: "Account Management",
     children: [
       {
         key: "Billing",

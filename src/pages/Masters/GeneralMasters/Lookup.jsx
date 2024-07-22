@@ -10,6 +10,7 @@ import {
   Layout,
   ConfigProvider,
   notification,
+  message,
 } from "antd";
 import Title from "antd/es/typography/Title";
 
@@ -32,7 +33,9 @@ function Lookup() {
   const [lookUpTypeDropdown, setLookUpTypeDropdown] = useState({
     lookuptypes: [],
   });
-  const [isEditing, setIsEditing] = useState();
+  const [isEditing, setIsEditing] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [IsSubmitClicked, setIsSubmitClicked] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -108,62 +111,81 @@ function Lookup() {
 
   const handleLookUpModalCancel = () => {
     setIsLookUpModalVisible(false);
+    setIsEditing(false);
+    setIsSubmitClicked(false);
+    form.resetFields();
   };
 
   const handleSubmit = async () => {
     debugger;
     form.validateFields();
     const values = form.getFieldsValue();
-    console.log("Look up  Edit Modal Submit", values);
+    setIsSubmitClicked(true);
+    // console.log("Look up  Edit Modal Submit", values);
+    if (values.Type !== undefined && values.Description !== undefined) {
+      const master = isEditing
+        ? {
+            LookupID: lookUpData.LookupID,
+            LookupType: lookUpData.LookupType,
+            LookupDescription: values.Description,
+          }
+        : {
+            LookupID: 0,
+            LookupType: values.Type,
+            LookupDescription: values.Description,
+          };
 
-    const master = isEditing
-      ? {
-          LookupID: lookUpData.LookupID,
-          LookupType: lookUpData.LookupType,
-          LookupDescription: values.Description,
-        }
-      : {
-          LookupID: 0,
-          LookupType: values.Type,
-          LookupDescription: values.Description,
-        };
-
-    try {
-      // Send a POST request to the server
-      const response = await customAxios.post(urlAddandUpdateLookup, master, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.data.data !== null) {
-        setIsLookUpModalVisible(false);
-        const lookUpDetails = response.data.data.masters.map((obj, index) => {
-          return { ...obj, key: index + 1 };
+      try {
+        // Send a POST request to the server
+        const response = await customAxios.post(urlAddandUpdateLookup, master, {
+          headers: {
+            "Content-Type": "application/json",
+          },
         });
-        setColumnData(lookUpDetails);
-        {
-          isEditing
-            ? notification.success({
-                message: "Lookup details updated Successfully",
-              })
-            : notification.success({
-                message: "Lookup details added Successfully",
-              });
-        }
-      }
-    } catch (error) {
-      console.error("Failed to send data to server: ", error);
 
-      {
-        isEditing
-          ? notification.error({
-              message: "Lookup edit details UnSuccessful",
-            })
-          : notification.error({
-              message: "Adding Lookup details UnSuccessful",
+        if (response.data !== null) {
+          if (response.data === "Already Exists") {
+            // setIsModalOpen(false);
+            setIsSubmitClicked(false);
+            messageApi.warning({
+              // type: "warning",
+              content: `Lookup already exists`,
             });
+          } else if (response.data.data !== null) {
+            setIsSubmitClicked(false);
+            setIsLookUpModalVisible(false);
+            const lookUpDetails = response.data.data.masters.map(
+              (obj, index) => {
+                return { ...obj, key: index + 1 };
+              }
+            );
+            setColumnData(lookUpDetails);
+            {
+              isEditing
+                ? notification.success({
+                    message: "Lookup details updated Successfully",
+                  })
+                : notification.success({
+                    message: "Lookup details added Successfully",
+                  });
+            }
+          } else {
+            {
+              isEditing
+                ? notification.error({
+                    message: "Lookup edit details UnSuccessful",
+                  })
+                : notification.error({
+                    message: "Adding Lookup details UnSuccessful",
+                  });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Failed to send data to server: ", error);
       }
+    } else {
+      setIsSubmitClicked(false);
     }
   };
 
@@ -219,14 +241,27 @@ function Lookup() {
           </Spin>
         </div>
       </Layout>
-
+      {contextHolder}
       <Modal
         width={500}
-        title={isEditing ? "LOOK UP EDIT MODAL" : "ADD NEW LOOKUP"}
+        title={isEditing ? "EDIT LOOKUP " : "ADD NEW LOOKUP"}
         open={isLookUpModalVisible}
         onCancel={handleLookUpModalCancel}
         maskClosable={false}
-        footer={null}
+        footer={[
+          <Button
+            key="submit"
+            type="primary"
+            loading={IsSubmitClicked}
+            onClick={handleSubmit}
+          >
+            {/* {IsSubmitClicked ? "Submitting" : "Submit"} */}
+            {isEditing ? "Update" : "Submit"}
+          </Button>,
+          <Button key="back" onClick={handleLookUpModalCancel}>
+            Cancel
+          </Button>,
+        ]}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
@@ -242,6 +277,22 @@ function Lookup() {
                 ]}
               >
                 <Select
+                  showSearch
+                  style={{ width: "100%" }}
+                  optionFilterProp="children"
+                  filterOption={(input, option) => {
+                    const description = option.children || "";
+                    return description
+                      .toLowerCase()
+                      .includes(input.toLowerCase());
+                  }}
+                  filterSort={(optionA, optionB) => {
+                    const descriptionA = optionA.children || "";
+                    const descriptionB = optionB.children || "";
+                    return descriptionA
+                      .toLowerCase()
+                      .localeCompare(descriptionB.toLowerCase());
+                  }}
                   disabled={isEditing}
                   allowClear
                   placeholder="Select a type"
@@ -251,7 +302,7 @@ function Lookup() {
                       key={option.LookupID}
                       value={option.LookupType}
                     >
-                      {option.LookupDescription}
+                      {option.LookupType }
                     </Select.Option>
                   ))}
                 </Select>
@@ -269,22 +320,6 @@ function Lookup() {
                 ]}
               >
                 <Input></Input>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row justify="end">
-            <Col style={{ marginRight: "10px" }}>
-              <Form.Item>
-                <Button type="primary" htmlType="submit">
-                  {isEditing ? "Update" : "Submit"}
-                </Button>
-              </Form.Item>
-            </Col>
-            <Col>
-              <Form.Item>
-                <Button type="default" onClick={handleLookUpModalCancel}>
-                  Cancel
-                </Button>
               </Form.Item>
             </Col>
           </Row>

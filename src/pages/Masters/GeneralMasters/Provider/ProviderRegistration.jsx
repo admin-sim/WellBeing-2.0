@@ -16,6 +16,7 @@ import {
   Space,
   Table,
   Modal,
+  Tooltip,
 } from "antd";
 import Layout from "antd/es/layout/layout";
 import {
@@ -24,6 +25,7 @@ import {
   EditOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
+import { FaAnglesRight } from "react-icons/fa6";
 import { useNavigate, useLocation } from "react-router";
 const { Option } = Select;
 import {
@@ -68,13 +70,13 @@ const Provider = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitClicked, setIsSubmitClicked] = useState(false);
   const [states, setStates] = useState([]);
   const [places, setPlaces] = useState([]);
   const [areas, setAreas] = useState([]);
   const [permanentStates, setPermanentStates] = useState([]);
   const [permanentPlaces, setPermanentPlaces] = useState([]);
   const [permanentAreas, setPermanentAreas] = useState([]);
-  const [isSameAddress, setIsSameAddress] = useState(false);
   const [IsIdentifiersModalOpen, setIsIdentifiersModalOpen] = useState(false);
   const [IsCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false);
   const [identificationData, setIdentificationData] = useState();
@@ -135,14 +137,14 @@ const Provider = () => {
           setPermanentStates(response.data.data.PermanentStates);
           setPermanentPlaces(response.data.data.PermanentPlaces);
           setPermanentAreas(response.data.data.PermanentAreas);
-          setIsSameAddress(false);
+          // setIsSameAddress(false);
           setIsLoading(false);
         });
     } else {
       customAxios.get(urlGetProviderDetails).then((response) => {
         const apiData = response.data.data;
         setProviderDropdown(apiData);
-        setIsSameAddress(false);
+        // setIsSameAddress(false);
         setIsLoading(false);
       });
     }
@@ -151,11 +153,11 @@ const Provider = () => {
   useEffect(() => {
     if (isEditProviderRegistration && providerDetails) {
       form.setFieldsValue({
-        title: providerDetails.ProviderTitle || null,
-        PatientFirstName: providerDetails.ProviderFirstName || null,
-        PatientMiddleName: providerDetails.ProviderMiddleName || null,
-        PatientLastName: providerDetails.ProviderLastName || null,
-        PatientGender: providerDetails.Gender || null,
+        title: providerDetails?.ProviderTitle || null,
+        FirstName: providerDetails.ProviderFirstName || null,
+        MiddleName: providerDetails.ProviderMiddleName || null,
+        LastName: providerDetails.ProviderLastName || null,
+        Gender: providerDetails.Gender || null,
         Qualification: providerDetails.Qualification || null,
         dob: providerDetails.Dob ? dayjs(providerDetails.Dob) : null,
         structuralRole: providerDetails.StructuralRoleId || null,
@@ -189,25 +191,41 @@ const Provider = () => {
     form.resetFields();
   };
 
+  const disabledDate = (current) => {
+    // Can not select days before today and today
+    // const today = dayjs();
+    return current && current < dayjs().startOf("day");
+  };
+
+  const disabledDateOfBirth = (current) => {
+    // Can not select days before today and today
+    // const today = dayjs();
+    return current && current > dayjs().startOf("day");
+  };
+
   const handleOnFinish = async (values) => {
     debugger;
     console.log("Received values from form: ", values);
-
+    setIsSubmitClicked(true);
     const patientDetails = isEditProviderRegistration
       ? {
           ProviderId: providerDetails.ProviderId,
           ProviderTitle: values.title,
-          ProviderFirstName: values.PatientFirstName,
+          ProviderFirstName: values.FirstName,
           ProviderMiddleName:
-            values.PatientMiddleName === undefined
+            values.MiddleName === undefined || values.MiddleName === ""
               ? null
-              : values.PatientMiddleName,
-          ProviderLastName: values.PatientLastName,
-          Gender: values.PatientGender,
+              : values.MiddleName,
+          ProviderLastName: values.LastName,
+          Gender: values.Gender,
           FacilityId: 1,
           Qualification:
-            values.Qualification === undefined ? null : values.Qualification,
-          DateOfBirth: values.dob,
+            values.Qualification === undefined || values.Qualification === ""
+              ? null
+              : values.Qualification,
+          DateOfBirth: values.dob
+            ? dayjs(values.dob).format("DD-MM-YYYY")
+            : null,
           StructuralRoleId: values.structuralRole,
           ConsultantTypeId: values.consultantType,
           PresentAddress1:
@@ -218,7 +236,9 @@ const Provider = () => {
           PresentAreaId:
             values.PresentArea === undefined ? null : values.PresentArea,
           PresentPin:
-            values.PresentPinCode === undefined ? null : values.PresentPinCode,
+            values.PresentPinCode === undefined || values.PresentPinCode === ""
+              ? null
+              : values.PresentPinCode,
           PermanentAddress1:
             values.PermanentAddress === undefined
               ? null
@@ -229,29 +249,36 @@ const Provider = () => {
           PermanentAreaId:
             values.PermanentArea === undefined ? null : values.PermanentArea,
           PermanentPin:
-            values.PermanentPinCode === undefined
+            values.PermanentPinCode === undefined ||
+            values.PermanentPinCode === ""
               ? null
               : values.PresentPinCode,
 
           MobileNumber: values.MobileNumber,
           LandlineNumber:
-            values.LandlineNumber === "" ? null : values.LandlineNumber,
+            values.LandlineNumber === undefined || values.LandlineNumber === ""
+              ? null
+              : values.LandlineNumber,
           EmailId: values.EmailId === undefined ? null : values.EmailId,
         }
       : {
           ProviderId: 0,
           ProviderTitle: values.title,
-          ProviderFirstName: values.PatientFirstName,
+          ProviderFirstName: values.FirstName,
           ProviderMiddleName:
-            values.PatientMiddleName === undefined
+            values.MiddleName === undefined || values.MiddleName === ""
               ? null
-              : values.PatientMiddleName,
-          ProviderLastName: values.PatientLastName,
-          Gender: values.PatientGender,
+              : values.MiddleName,
+          ProviderLastName: values.LastName,
+          Gender: values.Gender,
           FacilityId: 1,
           Qualification:
-            values.Qualification === undefined ? null : values.Qualification,
-          DateOfBirth: values.Dob,
+            values.Qualification === undefined || values.Qualification === ""
+              ? null
+              : values.Qualification,
+          DateOfBirth: values.dob
+            ? dayjs(values.dob).format("DD-MM-YYYY")
+            : null,
           StructuralRoleId: values.structuralRole,
           ConsultantTypeId: values.consultantType,
           PresentAddress1:
@@ -262,7 +289,9 @@ const Provider = () => {
           PresentAreaId:
             values.PresentArea === undefined ? null : values.PresentArea,
           PresentPin:
-            values.PresentPinCode === undefined ? null : values.PresentPinCode,
+            values.PresentPinCode === undefined || values.PresentPinCode === ""
+              ? null
+              : values.PresentPinCode,
           PermanentAddress1:
             values.PermanentAddress === undefined
               ? null
@@ -273,13 +302,16 @@ const Provider = () => {
           PermanentAreaId:
             values.PermanentArea === undefined ? null : values.PermanentArea,
           PermanentPin:
-            values.PermanentPinCode === undefined
+            values.PermanentPinCode === undefined ||
+            values.PermanentPinCode === ""
               ? null
               : values.PresentPinCode,
 
           MobileNumber: values.MobileNumber,
           LandlineNumber:
-            values.LandlineNumber === "" ? null : values.LandlineNumber,
+            values.LandlineNumber === undefined || values.LandlineNumber === ""
+              ? null
+              : values.LandlineNumber,
           EmailId: values.EmailId === undefined ? null : values.EmailId,
         };
 
@@ -302,6 +334,7 @@ const Provider = () => {
       }
 
       if (response.data !== null) {
+        setIsSubmitClicked(false);
         if (isEditProviderRegistration) {
           if (response.data === "Success") {
             // Display success notification
@@ -342,34 +375,45 @@ const Provider = () => {
     }
   };
 
-  const handleCheckBox = (checked) => {
+  const handleAddressClick = () => {
     debugger;
-    const getAddressValues = form.getFieldsValue();
-    setIsSameAddress(e.target.checked);
-    if (e.target.checked) {
-      form.setFieldsValue({
-        PermanentAddress: getAddressValues.PresentAddress,
-        PermanentCountry: getAddressValues.PresentCountry,
-        PermanentState: getAddressValues.PresentState,
-        PermanentCity: getAddressValues.PresentCity,
-        PermanentArea: getAddressValues.PresentArea,
-        PermanentPinCode: getAddressValues.PresentPinCode,
+
+    const presentAddressFields = form.getFieldsValue([
+      "PresentAddress",
+      "PresentCountry",
+      "PresentState",
+      "PresentCity",
+      "PresentArea",
+      "PresentPinCode",
+    ]);
+
+    if (presentAddressFields.PresentCountry !== undefined) {
+      const filteredState = providerDropdown.States.filter((option) => {
+        return option.CountryId == presentAddressFields.PresentCountry;
       });
-    } else {
-      form.setFieldsValue({
-        PermanentAddress: null,
-        PermanentCountry: null,
-        PermanentState: null,
-        PermanentCity: null,
-        PermanentArea: null,
-        PermanentPinCode: null,
+      setPermanentStates(filteredState);
+    }
+    if (presentAddressFields.PresentState !== undefined) {
+      const filteredPlace = providerDropdown.Places.filter((option) => {
+        return option.StateId == presentAddressFields.PresentState;
       });
-      setPermanentAreas([]);
-      setPermanentPlaces([]);
-      setPermanentStates([]);
+      setPermanentPlaces(filteredPlace);
+    }
+    if (presentAddressFields.PresentCity !== undefined) {
+      const filteredArea = providerDropdown.Areas.filter((option) => {
+        return option.PlaceId == presentAddressFields.PresentCity;
+      });
+      setPermanentAreas(filteredArea);
     }
 
-    console.log(getAddressValues);
+    form.setFieldsValue({
+      PermanentAddress: presentAddressFields.PresentAddress,
+      PermanentCountry: presentAddressFields.PresentCountry,
+      PermanentState: presentAddressFields.PresentState,
+      PermanentCity: presentAddressFields.PresentCity,
+      PermanentArea: presentAddressFields.PresentArea,
+      PermanentPinCode: presentAddressFields.PresentPinCode,
+    });
   };
 
   const handleCountriesChange = async (value, isPermanent) => {
@@ -1104,14 +1148,18 @@ const Provider = () => {
                   paddingTop: 0,
                 }}
               >
-                Provider Registration
+                {isEditProviderRegistration
+                  ? "Edit Provider Details"
+                  : "Add Provider details"}
               </Title>
             </Col>
-            <Col offset={5} span={3}>
-              <Button icon={<SearchOutlined />} onClick={searchProvider}>
-                Search Provider
-              </Button>
-            </Col>
+            {isEditProviderRegistration ? null : (
+              <Col offset={5} span={3}>
+                <Button icon={<SearchOutlined />} onClick={searchProvider}>
+                  Search Provider
+                </Button>
+              </Col>
+            )}
           </Row>
 
           <Divider orientation="left">Provider Details</Divider>
@@ -1123,42 +1171,6 @@ const Provider = () => {
             onFinish={handleOnFinish}
             scrollToFirstError={true}
             style={{ padding: "0rem 2rem" }}
-            // initialValues={
-            //   isEditProviderRegistration
-            //     ? {
-            //         title: providerDetails.ProviderTitle
-            //           ? providerDetails.ProviderTitle
-            //           : null,
-            //         PatientFirstName: providerDetails.ProviderFirstName
-            //           ? providerDetails.ProviderFirstName
-            //           : null,
-            //         PatientMiddleName: providerDetails.ProviderMiddleName,
-            //         PatientLastName: providerDetails.ProviderLastName,
-            //         PatientGender: providerDetails.Gender,
-            //         Qualification: providerDetails.Qualification,
-            //         dob: providerDetails.Dob
-            //           ? dayjs(providerDetails.Dob)
-            //           : null,
-            //         structuralRole: providerDetails.StructuralRoleId,
-            //         consultantType: providerDetails.ConsultantTypeId,
-            //         PresentAddress: providerDetails.PresentAddress1,
-            //         PresentCountry: providerDetails.PresentCountryId,
-            //         PresentState: providerDetails.PresentStateId,
-            //         PresentCity: providerDetails.PresentPlaceId,
-            //         PresentArea: providerDetails.PresentAreaId,
-            //         PresentPinCode: providerDetails.PresentPin,
-            //         PermanentAddress: providerDetails.PermanentAddress1,
-            //         PermanentCountry: providerDetails.PermanentCountryId,
-            //         PermanentState: providerDetails.PermanentStateId,
-            //         PermanentCity: providerDetails.PermanentPlaceId,
-            //         PermanentArea: providerDetails.PermanentAreaId,
-            //         PermanentPinCode: providerDetails.PermanentPin,
-            //         MobileNumber: providerDetails.MobileNumber,
-            //         LandlineNumber: providerDetails.LandlineNumber,
-            //         EmailId: providerDetails.EmailId,
-            //       }
-            //     : {}
-            // }
           >
             <Row gutter={20}>
               <Col span={18}>
@@ -1175,7 +1187,11 @@ const Provider = () => {
                         },
                       ]}
                     >
-                      <Select placeholder="Select Title" allowClear>
+                      <Select
+                        loading={isLoading}
+                        placeholder="Select Title"
+                        allowClear
+                      >
                         {providerDropdown.Titles.map((option) => (
                           <Select.Option
                             key={option.LookupID}
@@ -1189,7 +1205,7 @@ const Provider = () => {
                   </Col>
                   <Col span={7}>
                     <Form.Item
-                      name="PatientFirstName"
+                      name="FirstName"
                       label="First Name"
                       rules={[
                         {
@@ -1198,17 +1214,17 @@ const Provider = () => {
                         },
                       ]}
                     >
-                      <Input />
+                      <Input allowClear />
                     </Form.Item>
                   </Col>
                   <Col span={7}>
-                    <Form.Item name="PatientMiddleName" label="Middle Name">
+                    <Form.Item name="MiddleName" label="Middle Name" allowClear>
                       <Input />
                     </Form.Item>
                   </Col>
                   <Col span={7}>
                     <Form.Item
-                      name="PatientLastName"
+                      name="LastName"
                       label="Last Name"
                       rules={[
                         {
@@ -1217,14 +1233,14 @@ const Provider = () => {
                         },
                       ]}
                     >
-                      <Input />
+                      <Input allowClear />
                     </Form.Item>
                   </Col>
                 </Row>
                 <Row gutter={16}>
                   <Col span={3}>
                     <Form.Item
-                      name="PatientGender"
+                      name="Gender"
                       label="Gender"
                       // hasFeedback
                       rules={[
@@ -1234,7 +1250,11 @@ const Provider = () => {
                         },
                       ]}
                     >
-                      <Select placeholder="select" allowClear>
+                      <Select
+                        loading={isLoading}
+                        placeholder="select"
+                        allowClear
+                      >
                         {providerDropdown.Genders.map((option) => (
                           <Select.Option
                             key={option.LookupID}
@@ -1265,9 +1285,12 @@ const Provider = () => {
                           ]}
                         >
                           <DatePicker
+                            placeholder="DD-MM-YYYY"
                             style={{ width: "100%" }}
                             format="DD-MM-YYYY"
                             onChange={handleDateOfBirth}
+                            disabledDate={disabledDateOfBirth}
+                            allowClear
                           />
                         </Form.Item>
                       </Col>
@@ -1285,7 +1308,24 @@ const Provider = () => {
                         },
                       ]}
                     >
-                      <Select placeholder="Select Title" allowClear>
+                      <Select
+                        showSearch
+                        placeholder="Select the role"
+                        style={{ width: "100%" }}
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option.children
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionA, optionB) =>
+                          optionA.children
+                            .toLowerCase()
+                            .localeCompare(optionB.children.toLowerCase())
+                        }
+                        loading={isLoading}
+                        allowClear
+                      >
                         {providerDropdown.StructuralRoles.map((option) => (
                           <Select.Option
                             key={option.LookupID}
@@ -1308,7 +1348,11 @@ const Provider = () => {
                         },
                       ]}
                     >
-                      <Select placeholder="Select Title" allowClear>
+                      <Select
+                        loading={isLoading}
+                        placeholder="Select Type"
+                        allowClear
+                      >
                         {providerDropdown.ConsultantType.map((option) => (
                           <Select.Option
                             key={option.LookupID}
@@ -1336,317 +1380,425 @@ const Provider = () => {
               </Col>
             </Row>
 
-            <Divider orientation="left">Present Address</Divider>
-            <Row gutter={14}>
-              <Col span={6}>
-                <Form.Item
-                  name="PresentAddress"
-                  label="Address"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter Address",
-                    },
-                  ]}
-                >
-                  <TextArea placeholder="Add Address" autoSize />
-                </Form.Item>
-              </Col>
-              <Col span={4}>
-                <Form.Item
-                  name="PresentCountry"
-                  label="Country"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select country",
-                    },
-                  ]}
-                >
-                  <Select
-                    onChange={(value) => handleCountriesChange(value, false)}
-                    allowClear
-                  >
-                    {providerDropdown.Countries.map((option) => (
-                      <Select.Option
-                        key={option.LookupID}
-                        value={option.LookupID}
+            <Row gutter={32}>
+              <Col span={12}>
+                <Divider orientation="left" style={{ margin: "0" }}>
+                  Present Address
+                </Divider>
+                <Row gutter={32}>
+                  <Col span={24}>
+                    <Form.Item
+                      name="PresentAddress"
+                      label="Address"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter Address",
+                        },
+                      ]}
+                    >
+                      <TextArea placeholder="Add Address" autoSize allowClear />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="PresentCountry"
+                      label="Country"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select country",
+                        },
+                      ]}
+                    >
+                      <Select
+                        showSearch
+                        placeholder="Select the country"
+                        style={{ width: "100%" }}
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option.children
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionA, optionB) =>
+                          optionA.children
+                            .toLowerCase()
+                            .localeCompare(optionB.children.toLowerCase())
+                        }
+                        onChange={(value) =>
+                          handleCountriesChange(value, false)
+                        }
+                        allowClear
+                        loading={isLoading}
                       >
-                        {option.LookupDescription}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={4}>
-                <Form.Item
-                  name="PresentState"
-                  label="State"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select state",
-                    },
-                  ]}
-                >
-                  <Select
-                    // value={selectedState || ""}
-                    onChange={(value) => handleStatesChange(value, false)}
-                    allowClear
-                  >
-                    {states.map((option) => (
-                      <Select.Option
-                        key={option.StateID}
-                        value={option.StateID}
+                        {providerDropdown.Countries.map((option) => (
+                          <Select.Option
+                            key={option.LookupID}
+                            value={option.LookupID}
+                          >
+                            {option.LookupDescription}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="PresentState"
+                      label="State"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select state",
+                        },
+                      ]}
+                    >
+                      <Select
+                        showSearch
+                        placeholder="Select the state"
+                        style={{ width: "100%" }}
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option.children
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionA, optionB) =>
+                          optionA.children
+                            .toLowerCase()
+                            .localeCompare(optionB.children.toLowerCase())
+                        }
+                        //loading={isLoading}
+                        onChange={(value) => handleStatesChange(value, false)}
+                        allowClear
                       >
-                        {option.StateName}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={4}>
-                <Form.Item
-                  name="PresentCity"
-                  label="Place"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select place",
-                    },
-                  ]}
-                >
-                  <Select
-                    onChange={(value) => handlePlacesChange(value, false)}
-                    allowClear
-                  >
-                    {places.map((option) => (
-                      <Select.Option
-                        key={option.PlaceId}
-                        value={option.PlaceId}
+                        {states.map((option) => (
+                          <Select.Option
+                            key={option.StateID}
+                            value={option.StateID}
+                          >
+                            {option.StateName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="PresentCity"
+                      label="City"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select place",
+                        },
+                      ]}
+                    >
+                      <Select
+                        showSearch
+                        placeholder="Select the city"
+                        style={{ width: "100%" }}
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option.children
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionA, optionB) =>
+                          optionA.children
+                            .toLowerCase()
+                            .localeCompare(optionB.children.toLowerCase())
+                        }
+                        // loading={Loading}
+                        onChange={(value) => handlePlacesChange(value, false)}
+                        allowClear
                       >
-                        {option.PlaceName}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
+                        {places.map((option) => (
+                          <Select.Option
+                            key={option.PlaceId}
+                            value={option.PlaceId}
+                          >
+                            {option.PlaceName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="PresentArea"
+                      label="Area"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select area",
+                        },
+                      ]}
+                    >
+                      <Select
+                        showSearch
+                        placeholder="Select the area"
+                        style={{ width: "100%" }}
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option.children
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionA, optionB) =>
+                          optionA.children
+                            .toLowerCase()
+                            .localeCompare(optionB.children.toLowerCase())
+                        }
+                        // loading={Loading}
+                        allowClear
+                      >
+                        {areas.map((option) => (
+                          <Select.Option
+                            key={option.AreaId}
+                            value={option.AreaId}
+                          >
+                            {option.AreaName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="PresentPinCode"
+                      label="Pin Code"
+                      rules={[
+                        {
+                          pattern: new RegExp(/^\d{6}$/),
+                          message: "Invalid Pin Code",
+                        },
+                      ]}
+                    >
+                      <Input maxLength={6} allowClear />
+                    </Form.Item>
+                  </Col>
+                  <Col
+                    offset={3}
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      marginTop: "1.5rem",
+                    }}
+                  >
+                    <Tooltip title="Permanent Address same as Present Address?">
+                      <Button
+                        type="primary"
+                        size="middle"
+                        onClick={handleAddressClick}
+                      >
+                        <FaAnglesRight />
+                      </Button>
+                    </Tooltip>
+                  </Col>
+                </Row>
               </Col>
-              <Col span={4}>
-                <Form.Item
-                  name="PresentArea"
-                  label="Area"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select area",
-                    },
-                  ]}
-                >
-                  <Select allowClear>
-                    {areas.map((option) => (
-                      <Select.Option key={option.AreaId} value={option.AreaId}>
-                        {option.AreaName}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={2}>
-                <Form.Item
-                  name="PresentPinCode"
-                  label="Pin Code"
-                  rules={[
-                    {
-                      pattern: new RegExp(/^\d{6}$/),
-                      message: "Invalid Pin Code",
-                    },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
+              <Col span={12}>
+                <Divider orientation="left" style={{ margin: "0" }}>
+                  Permanent Address
+                </Divider>
+                <Row gutter={32}>
+                  <Col span={24}>
+                    <Form.Item
+                      name="PermanentAddress"
+                      label="Address"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter Address",
+                        },
+                      ]}
+                    >
+                      <TextArea placeholder="Add Address" allowClear autoSize />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="PermanentCountry"
+                      label="Country"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select country",
+                        },
+                      ]}
+                    >
+                      <Select
+                        showSearch
+                        placeholder="Select the country"
+                        style={{ width: "100%" }}
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option.children
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionA, optionB) =>
+                          optionA.children
+                            .toLowerCase()
+                            .localeCompare(optionB.children.toLowerCase())
+                        }
+                        onChange={(value) => handleCountriesChange(value, true)}
+                        allowClear
+                        loading={isLoading}
+                      >
+                        {providerDropdown.Countries.map((option) => (
+                          <Select.Option
+                            key={option.LookupID}
+                            value={option.LookupID}
+                          >
+                            {option.LookupDescription}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="PermanentState"
+                      label="State"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select state",
+                        },
+                      ]}
+                    >
+                      <Select
+                        showSearch
+                        placeholder="Select the state"
+                        style={{ width: "100%" }}
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option.children
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionA, optionB) =>
+                          optionA.children
+                            .toLowerCase()
+                            .localeCompare(optionB.children.toLowerCase())
+                        }
+                        // loading={Loading}
+                        onChange={(value) => handleStatesChange(value, true)}
+                        allowClear
+                      >
+                        {permanentStates.map((option) => (
+                          <Select.Option
+                            key={option.StateID}
+                            value={option.StateID}
+                          >
+                            {option.StateName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="PermanentCity"
+                      label="City"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select place",
+                        },
+                      ]}
+                    >
+                      <Select
+                        showSearch
+                        placeholder="Select the city"
+                        style={{ width: "100%" }}
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option.children
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionA, optionB) =>
+                          optionA.children
+                            .toLowerCase()
+                            .localeCompare(optionB.children.toLowerCase())
+                        }
+                        // loading={Loading}
+                        onChange={(value) => handlePlacesChange(value, true)}
+                        allowClear
+                      >
+                        {permanentPlaces.map((option) => (
+                          <Select.Option
+                            key={option.PlaceId}
+                            value={option.PlaceId}
+                          >
+                            {option.PlaceName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="PermanentArea"
+                      label="Area"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select area",
+                        },
+                      ]}
+                    >
+                      <Select
+                        showSearch
+                        placeholder="Select the area"
+                        style={{ width: "100%" }}
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option.children
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        filterSort={(optionA, optionB) =>
+                          optionA.children
+                            .toLowerCase()
+                            .localeCompare(optionB.children.toLowerCase())
+                        }
+                        // loading={Loading}
+                        allowClear
+                      >
+                        {permanentAreas.map((option) => (
+                          <Select.Option
+                            key={option.AreaId}
+                            value={option.AreaId}
+                          >
+                            {option.AreaName}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="PermanentPinCode"
+                      label="Pin Code"
+                      rules={[
+                        {
+                          pattern: new RegExp(/^\d{6}$/),
+                          message: "Invalid Pin Code",
+                        },
+                      ]}
+                    >
+                      <Input allowClear maxLength={6} />
+                    </Form.Item>
+                  </Col>
+                </Row>
               </Col>
             </Row>
-            <Checkbox onChange={handleCheckBox}>
-              Is permanent address is same as present.
-            </Checkbox>
-            <Divider orientation="left">Permanent Address</Divider>
-            <Row gutter={14}>
-              <Col span={6}>
-                <Form.Item
-                  name="PermanentAddress"
-                  label="Address"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter Address",
-                    },
-                  ]}
-                >
-                  <TextArea placeholder="Add Address" autoSize />
-                </Form.Item>
-              </Col>
-              <Col span={4}>
-                <Form.Item
-                  name="PermanentCountry"
-                  label="Country"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select country",
-                    },
-                  ]}
-                >
-                  <Select
-                    // value={selectedCountry || ""}
-                    onChange={(value) => handleCountriesChange(value, true)}
-                    allowClear
-                  >
-                    {providerDropdown.Countries.map((option) => (
-                      <Select.Option
-                        key={option.LookupID}
-                        value={option.LookupID}
-                      >
-                        {option.LookupDescription}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={4}>
-                <Form.Item
-                  name="PermanentState"
-                  label="State"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select state",
-                    },
-                  ]}
-                >
-                  {isSameAddress ? (
-                    <Select
-                      onChange={(value) => handleStatesChange(value, true)}
-                      allowClear
-                    >
-                      {providerDropdown.States.map((option) => (
-                        <Select.Option
-                          key={option.StateID}
-                          value={option.StateID}
-                        >
-                          {option.StateName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  ) : (
-                    <Select
-                      onChange={(value) => handleStatesChange(value, true)}
-                      allowClear
-                    >
-                      {permanentStates.map((option) => (
-                        <Select.Option
-                          key={option.StateID}
-                          value={option.StateID}
-                        >
-                          {option.StateName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  )}
-                </Form.Item>
-              </Col>
-              <Col span={4}>
-                <Form.Item
-                  name="PermanentCity"
-                  label="Place"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select place",
-                    },
-                  ]}
-                >
-                  {isSameAddress ? (
-                    <Select
-                      onChange={(value) => handlePlacesChange(value, true)}
-                      allowClear
-                    >
-                      {providerDropdown.Places.map((option) => (
-                        <Select.Option
-                          key={option.PlaceId}
-                          value={option.PlaceId}
-                        >
-                          {option.PlaceName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  ) : (
-                    <Select
-                      onChange={(value) => handlePlacesChange(value, true)}
-                      allowClear
-                    >
-                      {permanentPlaces.map((option) => (
-                        <Select.Option
-                          key={option.PlaceId}
-                          value={option.PlaceId}
-                        >
-                          {option.PlaceName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  )}
-                </Form.Item>
-              </Col>
-              <Col span={4}>
-                <Form.Item
-                  name="PermanentArea"
-                  label="Area"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select area",
-                    },
-                  ]}
-                >
-                  {isSameAddress ? (
-                    <Select allowClear>
-                      {providerDropdown.Areas.map((option) => (
-                        <Select.Option
-                          key={option.AreaId}
-                          value={option.AreaId}
-                        >
-                          {option.AreaName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  ) : (
-                    <Select allowClear>
-                      {permanentAreas.map((option) => (
-                        <Select.Option
-                          key={option.AreaId}
-                          value={option.AreaId}
-                        >
-                          {option.AreaName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  )}
-                </Form.Item>
-              </Col>
-              <Col span={2}>
-                <Form.Item
-                  name="PermanentPinCode"
-                  label="Pin Code"
-                  rules={[
-                    {
-                      pattern: new RegExp(/^\d{6}$/),
-                      message: "Invalid Pin Code",
-                    },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-              </Col>
-            </Row>
+
             <Divider orientation="left">Contact Details</Divider>
             <Row gutter={14}>
               <Col span={6}>
@@ -1659,17 +1811,26 @@ const Provider = () => {
                       message: "Please enter your mobile number.",
                     },
                     {
-                      pattern: new RegExp(/^(\+\d{1,3})?\d{10,12}$/),
+                      pattern: /^\d{10}$/,
                       message: "Invalid mobile number!",
                     },
                   ]}
                 >
-                  <Input />
+                  <Input allowClear maxLength={10} />
                 </Form.Item>
               </Col>
               <Col span={6}>
-                <Form.Item name="LandlineNumber" label="Landline Number">
-                  <Input />
+                <Form.Item
+                  name="LandlineNumber"
+                  label="Landline Number"
+                  rules={[
+                    {
+                      pattern: /^\d{10}$/,
+                      message: "Invalid mobile number!",
+                    },
+                  ]}
+                >
+                  <Input allowClear maxLength={10} />
                 </Form.Item>
               </Col>
               <Col span={6}>
@@ -1687,7 +1848,7 @@ const Provider = () => {
                     },
                   ]}
                 >
-                  <Input />
+                  <Input allowClear />
                 </Form.Item>
               </Col>
             </Row>
@@ -1808,18 +1969,32 @@ const Provider = () => {
             <Row justify="end">
               <Col style={{ marginRight: "10px" }}>
                 <Form.Item>
-                  <Button type="primary" htmlType="submit">
-                    Submit
+                  <Button
+                    loading={isSubmitClicked}
+                    type="primary"
+                    htmlType="submit"
+                  >
+                    {isEditProviderRegistration ? "Update" : "Submit"}
                   </Button>
                 </Form.Item>
               </Col>
-              <Col>
-                <Form.Item>
-                  <Button type="default" danger onClick={handleReset}>
-                    Reset
-                  </Button>
-                </Form.Item>
-              </Col>
+              {isEditProviderRegistration ? (
+                <Col>
+                  <Form.Item>
+                    <Button type="default" onClick={searchProvider}>
+                      Cancel
+                    </Button>
+                  </Form.Item>
+                </Col>
+              ) : (
+                <Col>
+                  <Form.Item>
+                    <Button type="default" danger onClick={handleReset}>
+                      Reset
+                    </Button>
+                  </Form.Item>
+                </Col>
+              )}
             </Row>
           </Form>
         </div>
@@ -1849,7 +2024,11 @@ const Provider = () => {
                   },
                 ]}
               >
-                <Select style={{ width: "100%" }} allowClear>
+                <Select
+                  placeholder="select type"
+                  style={{ width: "100%" }}
+                  allowClear
+                >
                   {providerDropdown.ProviderCredentialType.map((option) => (
                     <Select.Option
                       key={option.LookupID}
@@ -1868,7 +2047,7 @@ const Provider = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Please Enter Card Number",
+                    message: "Please Enter reference number",
                   },
                 ]}
               >
@@ -1882,7 +2061,7 @@ const Provider = () => {
             </Col>
             <Col span={12}>
               <Form.Item name="Status" label="Status">
-                <Select style={{ width: "100%" }}>
+                <Select placeholder="select status" style={{ width: "100%" }}>
                   <Select.Option key="A">Active</Select.Option>
                   <Select.Option key="H">Hide</Select.Option>
                 </Select>
@@ -1937,7 +2116,11 @@ const Provider = () => {
                   },
                 ]}
               >
-                <Select style={{ width: "100%" }} allowClear>
+                <Select
+                  placeholder="select type"
+                  style={{ width: "100%" }}
+                  allowClear
+                >
                   {providerDropdown.ProviderIdentificationType.map((option) => (
                     <Select.Option
                       key={option.LookupID}
@@ -1964,20 +2147,13 @@ const Provider = () => {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item
-                name="ExpiryDate"
-                label="Expiry Date"
-                // rules={[
-                //   {
-                //     required: true,
-                //     message: "Please enter expiry date",
-                //   },
-                // ]}
-              >
+              <Form.Item name="ExpiryDate" label="Expiry Date">
                 <DatePicker
                   format="DD-MM-YYYY"
                   style={{ width: "100%" }}
                   onChange={handleExpiryDate}
+                  disabledDate={disabledDate}
+                  placeholder="DD-MM-YYYY"
                 />
               </Form.Item>
             </Col>

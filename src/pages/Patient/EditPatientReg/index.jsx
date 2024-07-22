@@ -129,7 +129,10 @@ const NewPatient = () => {
         setFilteredCities(response.data.data.Places);
         setFilteredAreas(response.data.data.Areas);
         setDob(patientData.DateOfBirthstring);
-        handleDateChange(patientData.DateOfBirthstring);
+        handleDateChange(
+          dayjs(patientData.DateOfBirthstring),
+          patientData.DateOfBirthstring
+        );
         setLoading(false);
       });
   }, []);
@@ -208,73 +211,6 @@ const NewPatient = () => {
       birthIdentification2: patientDetails.BirthIdentification2,
     });
   }, [patientDetails]);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     if (selectedPatientType) {
-  //       try {
-  //         const response = await customAxios.get(
-  //           `${urlGetDepartmentBasedOnPatitentType}?PatientType=${selectedPatientType}`
-  //         );
-  //         if (response.status === 200) {
-  //           const dept = response.data.data.Department;
-  //           setDepartments(dept);
-  //         } else {
-  //           console.error("Failed to fetch departments");
-  //         }
-  //       } catch (error) {
-  //         console.error("Error fetching departments:", error);
-  //       }
-  //     } else {
-  //       // Reset the department dropdown if no patient type is selected
-  //       setDepartments([]);
-  //       setSelectedDepartment("");
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [selectedPatientType, setSelectedDepartment, setDepartments]);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     // Fetch data for the "provider" and "servicelocation" dropdowns when "selectedDepartment" changes
-  //     if (selectedDepartment) {
-  //       try {
-  //         const providerResponse = await customAxios.get(
-  //           `${urlGetProviderBasedOnDepartment}?DepartmentId=${selectedDepartment}`
-  //         );
-  //         const serviceLocationResponse = await customAxios.get(
-  //           `${urlGetServiceLocationBasedonId}?DepartmentId=${selectedDepartment}&patienttype=${selectedPatientType}`
-  //         );
-
-  //         if (providerResponse.status === 200) {
-  //           const provider = providerResponse.data.data.Provider;
-  //           setProviders(provider);
-  //         } else {
-  //           console.error("Failed to fetch providers");
-  //         }
-
-  //         if (serviceLocationResponse.status === 200) {
-  //           const serviceloc =
-  //             serviceLocationResponse.data.data.ServiceLocation;
-  //           setServiceLocations(serviceloc);
-  //         } else {
-  //           console.error("Failed to fetch service locations");
-  //         }
-  //       } catch (error) {
-  //         console.error("Error fetching data:", error);
-  //       }
-  //     } else {
-  //       // Reset the provider and servicelocation dropdowns if no department is selected
-  //       setProviders([]);
-  //       setServiceLocations([]);
-  //       setSelectedProvider("");
-  //       setSelectedServiceLocation("");
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [selectedDepartment, selectedPatientType]);
 
   const handleImageUpload = (base64data) => {
     setUploadedImage(base64data);
@@ -1125,6 +1061,7 @@ const NewPatient = () => {
                             max={120}
                             value={age?.years}
                             onChange={handleYearsChange}
+                            maxLength={3}
                           />
                         </Form.Item>
                       </Col>
@@ -1642,7 +1579,7 @@ const NewPatient = () => {
               <Col style={{ marginRight: "1rem" }}>
                 <Form.Item>
                   <Button type="primary" htmlType="submit" size="middle">
-                    Submit
+                    Update
                   </Button>
                 </Form.Item>
               </Col>

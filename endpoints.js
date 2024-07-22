@@ -4,8 +4,6 @@ const baseURL = config.baseUrl;
 // const baseURL = process.env.REACT_APP_API_URL;
 export const urlAddNewVisit1 = `${baseURL}/api/Encounter/SaveNewEncounter1`;
 
-export const urlGetPatientDetails = `${baseURL}/api/Patient/GetPatientDetails`;
-
 export const urlGetServiceCharge = `${baseURL}/api/Billing/GetServiceCharge`;
 
 export const urlBillingCreate = `${baseURL}/api/Billing/Create`;
@@ -261,6 +259,7 @@ export const urlTestMethodIndex = `${baseURL}/api/LabTestMaster/TestMethodIndex`
 export const urlAddNewGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/AddNewGRNAgainstPO`;
 export const urlEditGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/EditGRNAgainstPO`;
 export const urlUpdateGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/UpdateGRNAgainstPO`;
+export const urlGetEditOrCancelEncounterDetails = `${baseURL}/api/Encounter/GetEditOrCancelEncounterDetails`;
 export const urlGetEncounterDetails = `${baseURL}/api/Encounter/GetEncounterDetails`;
 export const urlDeletePriceTariffChargeParameter = `${baseURL}/api/PriceTariff/DeletePriceTariffChargeParameter`;
 export const urlPackageDescriptionServiceGroup = `${baseURL}/api/Service/PackageDescriptionServiceGroup`;
@@ -291,3 +290,7 @@ export const urlAddNewUrgentIssue = `${baseURL}/api/UrgentIssue/AddNewUrgentIssu
 export const urlUrgentIssueSearchIndent = `${baseURL}/api/UrgentIssue/UrgentIssueSearchIndent`;
 export const urlUrgentIssueEdit = `${baseURL}/api/UrgentIssue/UrgentIssueEdit`;
 
+export const urlAddNewProduct = `${baseURL}/api/ProductDefinition/AddNewProduct`;
+export const urlGetPatientHeaderDetails = `${baseURL}/api/Patient/GetPatientHeaderDetails`;
+export const urlGetWardAndBannerData = `${baseURL}/api/WardManagement/GetWardAndBannerData`;
+export const urlGetWardInpatientsDetails = `${baseURL}/api/WardManagement/GetWardInpatientsDetails`;

@@ -211,36 +211,32 @@ const CreatePurchaseOrder = () => {
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
+ 
   const handleOnFinish = async (values) => {
     debugger;
-    const products = [];
-    for (let i = 0; i <= data.length; i++) {
-      if (data[i] !== undefined) {
-        const product = {
-          ProductId: data[i].ProductId,
-          UomId: data[i].UomId,
-          PoQuantity: data[i].PoQuantity,
-          BonusQuantity:
-            data[i].BonusQuantity == "" ? 0 : data[i].BonusQuantity,
-          PoRate: data[i].PoRate,
-          DiscountRate: data[i].DiscountRate == "" ? 0 : data[i].DiscountRate,
-          DiscountAmount: data[i].DiscountAmount,
-          MrpExpected: data[i].MrpExpected == "" ? 0 : data[i].MrpExpected,
-          TaxType1: data[i].TaxType1 === "" ? 0 : data[i].TaxType1,
-          TaxAmount1: data[i].TaxAmount1,
-          TaxType2: data[i].TaxType2 === "" ? 0 : data[i].TaxType2,
-          TaxAmount2: data[i].TaxAmount2,
-          LineAmount: data[i].LineAmount,
-          PoTotalAmount: data[i].LineAmount,
-          AvailableQuantity:
-            data[i].AvailableQuantity === "" ? 0 : data[i].AvailableQuantity,
-          PoLineId: data[i].PoLineId,
-          ActiveFlag: data[i].ActiveFlag,
-        };
-        products.push(product);
-      }
-    }
-
+  
+    const products = data
+      .filter(item => item !== undefined)
+      .map(item => ({
+        ProductId: item.ProductId,
+        UomId: item.UomId,
+        PoQuantity: item.PoQuantity,
+        BonusQuantity: item.BonusQuantity === "" ? 0 : item.BonusQuantity,
+        PoRate: item.PoRate,
+        DiscountRate: item.DiscountRate === "" ? 0 : item.DiscountRate,
+        DiscountAmount: item.DiscountAmount,
+        MrpExpected: item.MrpExpected === "" ? 0 : item.MrpExpected,
+        TaxType1: item.TaxType1 === "" ? 0 : item.TaxType1,
+        TaxAmount1: item.TaxAmount1,
+        TaxType2: item.TaxType2 === "" ? 0 : item.TaxType2,
+        TaxAmount2: item.TaxAmount2,
+        LineAmount: item.LineAmount,
+        PoTotalAmount: item.LineAmount,
+        AvailableQuantity: item.AvailableQuantity === "" ? 0 : item.AvailableQuantity,
+        PoLineId: item.PoLineId,
+        ActiveFlag: item.ActiveFlag,
+      }));
+  
     const purchaseOrder = {
       PoHeaderId: values.PoHeaderId,
       SupplierId: values.SupplierId,
@@ -253,65 +249,37 @@ const CreatePurchaseOrder = () => {
       PoTotalAmount: values.TotalPoAmount,
       PoTaxAmount: values.TaxAmount1 === undefined ? 0 : values.TaxAmount1,
     };
-
-    // const formattedSchedule = schedule.map((item) => {
-    //   if (item.DelDate) {
-    //     item.DelDate = item.DelDate.format("DD-MM-YYYY");
-    //   } else {
-    //     item.DelDate = null;
-    //   }
-    //   return item;
-    // });
-    
-    const activeData = schedule.filter((item) => item.ProductId);
-    
-
-    const activeProduct = products.filter((item) => item.ActiveFlag === true);
-    if (activeProduct.length == 0) {
+  
+    const activeData = schedule.filter(item => item.ProductId);
+  
+    const activeProducts = products.filter(item => item.ActiveFlag === true && item.ProductId);
+    if (activeProducts.length === 0) {
       message.warning("Please Add Product");
       return false;
     }
+  
     const postData = {
       newPurchaseOrderModel: purchaseOrder,
-      PurchaseOrderDetails: products,
-      Delivery:
-        activeData ? activeData : [],
+      PurchaseOrderDetails: PoHeaderId === 0 ? activeProducts : products.filter(item => item.ProductId),
+      Delivery: PoHeaderId === 0 ? activeData.filter(item => item.ActiveFlag === true) : activeData,
     };
-    if (PoHeaderId == 0) {
-      const response = await customAxios.post(
-        urlAddNewPurchaseOrder,
-        postData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response.status == 200) {
-        message.success("Purchase Order Created Successfully");
-        handleCancel();
-      } else {
-        message.error("Something went wrong");
-      }
-    }
-     else {
-      const response = await customAxios.post(
-        urlUpdatePurchaseOrder,
-        postData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response.status == 200) {
-        message.success("Purchase Order Updated Successfully");
-        handleCancel();
-      } else {
-        message.error("Something went wrong");
-      }
+  
+    const url = PoHeaderId === 0 ? urlAddNewPurchaseOrder : urlUpdatePurchaseOrder;
+    const response = await customAxios.post(url, postData, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  
+    if (response.status === 200) {
+      const successMessage = PoHeaderId === 0 ? "Purchase Order Created Successfully" : "Purchase Order Updated Successfully";
+      message.success(successMessage);
+      handleCancel();
+    } else {
+      message.error("Something went wrong");
     }
   };
+  
   const handleToPurchaseOrder = () => {
     const url = "/purchaseOrder";
     navigate(url);
@@ -424,6 +392,7 @@ const CreatePurchaseOrder = () => {
           return item;
         });
         setData(newData);
+        form1.setFieldsValue({ [record.key]: { UomId: option.UomId } })
       });
   };
 
@@ -763,8 +732,10 @@ const CreatePurchaseOrder = () => {
           name={[record.key, "UomId"]}
           rules={[{ required: true, message: "Required" }]}
           initialValue={record.UomId}
+        
         >
           <Select
+            disabled={true}
             defaultValue={text}
             onChange={(value, option) =>
               handleUomChange(option, "UomId", index, record)

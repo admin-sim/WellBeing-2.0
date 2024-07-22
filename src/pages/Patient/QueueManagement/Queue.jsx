@@ -34,6 +34,7 @@ import {
   urlCloseConsultation,
   urlRevertToMarkArrival,
   urlGetCapturedVitalsDetails,
+  urlGetPatientHeaderDetails,
 } from "../../../../endpoints";
 import {
   CalendarFilled,
@@ -54,12 +55,20 @@ import dayjs from "dayjs";
 import { MdManageSearch } from "react-icons/md";
 import { Radio, message } from "antd";
 import "../style.css";
+import PatientHeader from "../../../components/PatientHeader/index.jsx";
 
 const Queue = () => {
   const [patientDetails, setPatientDetails] = useState([]);
+  const [patientHeaderDetails, setPatientHeaderDetails] = useState([]);
   const { Title } = Typography;
   const { TextArea } = Input;
   const [isLoading, setLoading] = useState(false);
+  const [serachLoading, setSearchLoading] = useState(false);
+  const [assignTokenLoader, setAssignTokenLoader] = useState(false);
+  const [pushPatientLoader, setPushPatientLoader] = useState(false);
+  const [revertToCheckInLoader, setRevertToCheckInLoader] = useState(false);
+  const [startConsLoader, setStartConsLoader] = useState(false);
+  const [closeConsLoader, setCloseConsLoader] = useState(false);
   const navigate = useNavigate();
   const { Option } = Select;
   //   const [form1] = Form.useForm();
@@ -111,39 +120,12 @@ const Queue = () => {
   const [NewQueueModel, setNewQueueModel] = useState([]);
   const [encounterDetails, setEncounterDetails] = useState([]);
   const [selectedTime, setSelectedTime] = useState(dayjs());
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
-  const currentDate = new Date();
-  const currentTimeString = currentDate.toLocaleString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-    hour12: true,
-  });
-
-  const [MAPValues, setMAPValues] = useState({
-    SystolicBP: "",
-    DiastolicBP: "",
-    MeanAtrialPressure: "",
-  });
-
-  const [heightWeightValues, setHeightWeightValues] = useState({
-    Height: "",
-    Feet: "",
-    Inch: "",
-    Weight: "",
-    BMI: "",
-  });
-
-  const tempOptions = (
-    <Select defaultValue="celsius">
-      <Select.Option key="celsius">C</Select.Option>
-      <Select.Option key="fahrenheit">F</Select.Option>
-    </Select>
-  );
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPatients = patientQueueDetails.slice(startIndex, endIndex);
+  const totalPatients = patientQueueDetails.length;
 
   useEffect(() => {
     debugger;
@@ -308,7 +290,7 @@ const Queue = () => {
       const values = form.getFieldsValue();
       selectedProvider = values.Provider || 0;
       console.log("values", values);
-
+      setSearchLoading(true);
       try {
         // Send a POST request to the server
         const response = await customAxios.get(
@@ -322,6 +304,7 @@ const Queue = () => {
         );
 
         if (response.data != null) {
+          setSearchLoading(false);
           setQueueDropDown(response.data.data);
           setLoading(false);
           setIsShowSearchModalVisible(false);
@@ -341,6 +324,7 @@ const Queue = () => {
             `Server responded with status code ${response.status}`
           );
         } else {
+          setSearchLoading(false);
           //   messageApi.open({
           //     type: "success",
           //     content: `Successfully created visit for patient.`,
@@ -379,8 +363,13 @@ const Queue = () => {
           }
         );
 
-        if (response.status === 200) {
+        const response1 = await customAxios.get(
+          `${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}&&EncounterId=${record.EncounterId}`
+        );
+
+        if (response.status === 200 && response1.status === 200) {
           setLoading(false);
+          setPatientHeaderDetails(response1.data.data.EncounterModel);
           setIsMarkArrivalModalVisible(true);
           const queueMarkArrivalData = response.data.data.NewQueueModel;
           setNewQueueModel(queueMarkArrivalData);
@@ -409,23 +398,55 @@ const Queue = () => {
       setLoading(false);
       setIsRevertToCheckInModalVisible(true);
     } else if (option.children === "Push Patient") {
-      setLoading(false);
-      setIsPushPatientModalVisible(true);
+      try {
+        const response = await customAxios.get(
+          `${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}&&EncounterId=${record.EncounterId}`
+        );
+        if (response.status === 200) {
+          setLoading(false);
+          const HeaderDetails = response.data.data.EncounterModel;
+          setPatientHeaderDetails(HeaderDetails);
+          setIsPushPatientModalVisible(true);
+        }
+      } catch (error) {
+        console.log("error raised here", error);
+      }
     } else if (option.children === "Start Consultation") {
       setLoading(false);
       form1.setFieldsValue({ StartConsultationTime: dayjs() });
       setIsStartConsultationModalVisible(true);
     } else if (option.children === "Close Consultation") {
-      setLoading(false);
-
-      form1.setFieldsValue({ CloseConsultationTime: dayjs() });
-      setIsCloseConsultationModalVisible(true);
+      try {
+        const response = await customAxios.get(
+          `${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}&&EncounterId=${record.EncounterId}`
+        );
+        if (response.data !== null) {
+          setLoading(false);
+          const HeaderDetails = response.data.data.EncounterModel;
+          setPatientHeaderDetails(HeaderDetails);
+          form1.setFieldsValue({ CloseConsultationTime: dayjs() });
+          setIsCloseConsultationModalVisible(true);
+        }
+      } catch (error) {
+        console.log("error raised here", error);
+      }
     } else if (option.children === "Revert to MarkArrival") {
       setLoading(false);
       setIsRevertToMarkArrivalModalVisible(true);
     } else if (option.children === "Antenatal Vitals") {
-      setLoading(false);
-      setIsAntenatalVitalsModalVisible(true);
+      try {
+        const response = await customAxios.get(
+          `${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}&&EncounterId=${record.EncounterId}`
+        );
+        if (response.data !== null) {
+          setLoading(false);
+          const HeaderDetails = response.data.data.EncounterModel;
+          setPatientHeaderDetails(HeaderDetails);
+          setIsAntenatalVitalsModalVisible(true);
+        }
+      } catch (error) {
+        console.log("error raised here", error);
+      }
     }
   };
 
@@ -434,13 +455,7 @@ const Queue = () => {
     setIsMarkArrivalModalVisible(false);
     form3.resetFields();
     setSelectedTime(null);
-    // setProviders([]);
-  };
-
-  const handlePatientVitalSignsModalCancel = () => {
-    // debugger;
-    setIsPatientVitalSignsModalVisible(false);
-    form3.resetFields();
+    form1.resetFields();
     // setProviders([]);
   };
 
@@ -455,6 +470,7 @@ const Queue = () => {
     // debugger;
     setIsPushPatientModalVisible(false);
     form3.resetFields();
+    form1.resetFields();
     // setProviders([]);
   };
 
@@ -463,6 +479,7 @@ const Queue = () => {
     setIsStartConsultationModalVisible(false);
     setSelectedTime(null);
     form3.resetFields();
+
     // setProviders([]);
   };
 
@@ -471,6 +488,7 @@ const Queue = () => {
     setIsCloseConsultationModalVisible(false);
     setSelectedTime(null);
     form3.resetFields();
+    form1.resetFields();
     // setProviders([]);
   };
   const handleRevertToMarkArrivalModalCancel = () => {
@@ -495,10 +513,14 @@ const Queue = () => {
 
   const handleAssignQueue = async () => {
     debugger;
-    const inputvalues = form1.getFieldsValue();
+
+    const inputvalues = await form1.validateFields();
     console.log("the assign Queue values", inputvalues);
     // const fl1 = Flag === "All" ? '"All"' : Flag;
-    setIsMarkArrivalModalVisible(false);
+
+    setFormSubmitted(true);
+
+    setAssignTokenLoader(true);
     try {
       const response = await customAxios.post(
         `${urlAssignQueue}?QId=${selectedPatientRecord.QId}&QNo=${selectedPatientRecord.QNo}&ProviderId=${selectedPatientRecord.ProviderId}&Flag=${Flag}&TokenNo=${inputvalues.TokenNo}`,
@@ -511,17 +533,40 @@ const Queue = () => {
       );
 
       if (response.status === 200) {
-        const queueModel = response.data.data.QueueModel;
-        const queueAction = response.data.data.QueueAction;
-        setPatientQueueDetails(response.data.data.QueueModel);
-        const filteredQueueAction = filterQueueActions(queueModel, queueAction);
         setIsMarkArrivalModalVisible(false);
-        setQueueActionDropdown(filteredQueueAction);
-        form3.resetFields();
-        notification.success({
-          message: "Patient Assigned into Queue",
-          // description: `The Patient with UHID ${selectedPatientRecord.UhId}  Token No is generated.`,
-        });
+        setAssignTokenLoader(false);
+        if (response.data.data.QueueMessage !== null) {
+          const queueModel = response.data.data.QueueModel;
+          const queueAction = response.data.data.QueueAction;
+          setPatientQueueDetails(response.data.data.QueueModel);
+          const filteredQueueAction = filterQueueActions(
+            queueModel,
+            queueAction
+          );
+          setIsMarkArrivalModalVisible(false);
+          setFormSubmitted(false);
+          setQueueActionDropdown(filteredQueueAction);
+          form3.resetFields();
+          notification.warning({
+            message: "Token number already exists.",
+          });
+        } else {
+          const queueModel = response.data.data.QueueModel;
+          const queueAction = response.data.data.QueueAction;
+          setPatientQueueDetails(response.data.data.QueueModel);
+          const filteredQueueAction = filterQueueActions(
+            queueModel,
+            queueAction
+          );
+          setIsMarkArrivalModalVisible(false);
+          setFormSubmitted(false);
+          setQueueActionDropdown(filteredQueueAction);
+          form3.resetFields();
+          notification.success({
+            message: "Patient Assigned into Queue",
+            // description: `The Patient with UHID ${selectedPatientRecord.UhId}  Token No is generated.`,
+          });
+        }
       } else {
         console.error("Failed to fetch providers");
       }
@@ -532,7 +577,7 @@ const Queue = () => {
 
   const handleConfirmCheckIn = async () => {
     debugger;
-
+    setRevertToCheckInLoader(true);
     const fl1 = Flag === "All" ? '""' : Flag;
     try {
       const response = await customAxios.post(
@@ -546,6 +591,7 @@ const Queue = () => {
       );
 
       if (response.status === 200) {
+        setRevertToCheckInLoader(false);
         setIsRevertToCheckInModalVisible(false);
         const queueModel = response.data.data.QueueModel;
         const queueAction = response.data.data.QueueAction;
@@ -571,7 +617,8 @@ const Queue = () => {
 
   const handlePushPatientPosition = async () => {
     debugger;
-    const values = form1.getFieldsValue();
+    const values = await form1.validateFields();
+    setPushPatientLoader(true);
     //PushToQueue(long QID, int ProviderId, long PatientId, int QNo, int PushToPosition, string Flag)
     const fl1 = Flag === "All" ? '""' : Flag;
     try {
@@ -586,6 +633,7 @@ const Queue = () => {
       );
 
       if (response.status === 200) {
+        setPushPatientLoader(false);
         if (response.data === "Failure") {
           setIsPushPatientModalVisible(false);
           form3.resetFields();
@@ -628,7 +676,7 @@ const Queue = () => {
     const tokenNo =
       selectedPatientRecord.TokenNo === 0 ? 1 : selectedPatientRecord.TokenNo;
     console.log("start Consultations", formatedTime);
-
+    setStartConsLoader(true);
     try {
       const response = await customAxios.post(
         `${urlStartConsultation}?QId=${selectedPatientRecord.QId}&QNo=${selectedPatientRecord.QNo}&ConsultationStartTime=${formatedTime}&Flag=${Flag}&TokenNo=${tokenNo}`,
@@ -640,6 +688,7 @@ const Queue = () => {
         }
       );
       if (response.status === 200) {
+        setStartConsLoader(false);
         if (response.data === "Failure") {
           setIsStartConsultationModalVisible(false);
           form3.resetFields();
@@ -676,11 +725,12 @@ const Queue = () => {
 
   const handleConfirmCloseConsultation = async () => {
     debugger;
-    const inputvalues = form1.getFieldsValue();
-    const formatedTime = inputvalues.CloseConsultationTime.format("HH:mm:ss");
-    console.log("start Consultations", formatedTime);
-    // long QId, long PatientID, int ProviderId, int Disposition, string CloseConsultTime, string Flag
 
+    const inputvalues = await form1.validateFields();
+    const formatedTime = inputvalues.CloseConsultationTime.format("HH:mm:ss");
+    //console.log("close Consultations", formatedTime);
+    // long QId, long PatientID, int ProviderId, int Disposition, string CloseConsultTime, string Flag
+    setCloseConsLoader(true);
     try {
       const response = await customAxios.post(
         `${urlCloseConsultation}?QId=${selectedPatientRecord.QId}&ProviderId=${selectedPatientRecord.ProviderId}&PatientID=${selectedPatientRecord.PatientId}&Disposition=${inputvalues.DispositionType}&CloseConsultTime=${formatedTime}&Flag=${Flag}`,
@@ -692,6 +742,7 @@ const Queue = () => {
         }
       );
       if (response.status === 200) {
+        setCloseConsLoader(false);
         setIsCloseConsultationModalVisible(false);
         const queueModel = response.data.data.QueueModel;
         const queueAction = response.data.data.QueueAction;
@@ -975,11 +1026,11 @@ const Queue = () => {
                       marginLeft: "5px", // Added margin to create space between icon and text
                     }}
                   >
-                    {patientQueueDetails.length}
+                    {patientQueueDetails?.length}
                   </div>
                 </span>
                 <span style={{ fontWeight: 500, fontSize: "12px" }}>
-                  Visits for Today
+                  List for today
                 </span>
               </div>
             </Col>
@@ -1008,8 +1059,11 @@ const Queue = () => {
           </Row>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col span={24}>
-              <Title level={4}> List of Patients in Visits</Title>
-              <Title level={5}>showing 1 of 1 Patients</Title>
+              <Title level={4}> List of Patients in queue</Title>
+              <Title level={5}>
+                Showing {startIndex + 1} to {Math.min(endIndex, totalPatients)}{" "}
+                of {totalPatients} Patients
+              </Title>
             </Col>
           </Row>
           <Spin spinning={isLoading}>
@@ -1023,9 +1077,18 @@ const Queue = () => {
                     size="small"
                     className="custom-table"
                     scroll={{ x: 1000 }}
-                    onChange={(pagination) => {
-                      setCurrentPage(pagination.current);
-                      setItemsPerPage(pagination.pageSize);
+                    // onChange={(pagination) => {
+                    //   setCurrentPage(pagination.current);
+                    //   setItemsPerPage(pagination.pageSize);
+                    // }}
+                    pagination={{
+                      current: currentPage,
+                      pageSize: itemsPerPage,
+                      total: totalPatients,
+                      onChange: (page, pageSize) => {
+                        setCurrentPage(page);
+                        setItemsPerPage(pageSize);
+                      },
                     }}
                     bordered
                   />
@@ -1051,6 +1114,7 @@ const Queue = () => {
           onCancel={handleShowSearchModalCancel}
           okText="Search"
           maskClosable={false}
+          confirmLoading={serachLoading}
         >
           <div>
             <Form
@@ -1144,7 +1208,7 @@ const Queue = () => {
         {/* {contextHolder} */}
         <Modal
           width={900}
-          title="MarkArrivalModal"
+          title="Mark Arrival"
           open={isMarkArrivalModalVisible}
           onCancel={handleMarkArrivalModalCancel}
           maskClosable={false}
@@ -1161,7 +1225,8 @@ const Queue = () => {
               key="ok"
               type="primary"
               onClick={handleAssignQueue}
-              // disabled={IsVisitCreated}
+              loading={assignTokenLoader}
+              disabled={formSubmitted}
             >
               Assign Queue
             </Button>,
@@ -1171,75 +1236,12 @@ const Queue = () => {
           ]}
         >
           <div>
-            <div
-              style={{
-                padding: "16px",
-                borderRadius: "4px",
-                margin: "10px",
-                // display: "flex",
-                // border: "1px solid #d9d9d9",
-                // justifyContent: "space-between",
-                boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
-              }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    UHID:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.UhId}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Name:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.PatientName}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold" }}>PatientGender:</span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.PatientGender}
-                  </span>
-                </Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    VisitId:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.Encounterstr}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Age:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.Age}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Dob:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      formatDatefortable(selectedPatientRecord.DateOfBirth)}
-                  </span>
-                </Col>
-              </Row>
-            </div>
+            <PatientHeader patient={patientHeaderDetails}></PatientHeader>
             <Form
               key={selectedPatientRecord.QId}
               form={form1}
               layout="vertical"
+              disabled={formSubmitted}
             >
               <Row
                 style={{ margin: "24px 0px" }}
@@ -1284,8 +1286,22 @@ const Queue = () => {
                 gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
               >
                 <Col span={6}>
-                  <Form.Item name="TokenNo" label="Token no">
-                    <Input allowClear />
+                  <Form.Item
+                    name="TokenNo"
+                    label="Token no"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter a token number",
+                      },
+                      {
+                        pattern: /^[1-9]\d*$/,
+                        message:
+                          "Token number must be a positive and no special characters",
+                      },
+                    ]}
+                  >
+                    <Input allowClear maxLength={4} />
                   </Form.Item>
                 </Col>
                 <Col span={8} offset={1}>
@@ -1302,31 +1318,6 @@ const Queue = () => {
             </Form>
           </div>
         </Modal>
-      </ConfigProvider>
-      <ConfigProvider
-        theme={{
-          token: {
-            zIndexPopupBase: 3000,
-          },
-        }}
-      >
-        {/* {contextHolder} */}
-        <Modal
-          width={900}
-          title="PATIENT VITAL SIGNS"
-          open={isPatientVitalSignsModalVisible}
-          onCancel={handlePatientVitalSignsModalCancel}
-          maskClosable={false}
-          footer={[
-            <Button
-              key="cancel"
-              type="default"
-              onClick={handlePatientVitalSignsModalCancel}
-            >
-              Close
-            </Button>,
-          ]}
-        ></Modal>
       </ConfigProvider>
 
       <ConfigProvider
@@ -1347,6 +1338,7 @@ const Queue = () => {
           okText="Yes"
           cancelText="No"
           maskClosable={false}
+          confirmLoading={revertToCheckInLoader}
         >
           <Row
             gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
@@ -1379,6 +1371,7 @@ const Queue = () => {
               key="ok"
               type="primary"
               onClick={handlePushPatientPosition}
+              loading={pushPatientLoader}
               // disabled={IsVisitCreated}
             >
               Push Patient
@@ -1389,71 +1382,7 @@ const Queue = () => {
           ]}
         >
           <div>
-            <div
-              style={{
-                padding: "16px",
-                borderRadius: "4px",
-                margin: "10px",
-                // display: "flex",
-                // border: "1px solid #d9d9d9",
-                // justifyContent: "space-between",
-                boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
-              }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    UHID:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.UhId}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Name:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.PatientName}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold" }}>PatientGender:</span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.PatientGender}
-                  </span>
-                </Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    VisitId:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.Encounterstr}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Age:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.Age}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Dob:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      formatDatefortable(selectedPatientRecord.DateOfBirth)}
-                  </span>
-                </Col>
-              </Row>
-            </div>
+            <PatientHeader patient={patientHeaderDetails}></PatientHeader>
             <Form
               key={selectedPatientRecord.QId}
               form={form1}
@@ -1491,8 +1420,21 @@ const Queue = () => {
                 gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
               >
                 <Col span={6}>
-                  <Form.Item name="PushToPosition" label="Push to Position">
-                    <Input allowClear />
+                  <Form.Item
+                    name="PushToPosition"
+                    label="Push to Position"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter a position number",
+                      },
+                      {
+                        pattern: /^[1-9]\d*$/,
+                        message: "No special characters",
+                      },
+                    ]}
+                  >
+                    <Input allowClear maxLength={2} />
                   </Form.Item>
                 </Col>
               </Row>
@@ -1517,6 +1459,7 @@ const Queue = () => {
           okText="Start"
           cancelText="Cancel"
           maskClosable={false}
+          // confirmLoading={startConsLoader}
         >
           <Form
             form={form1}
@@ -1555,7 +1498,7 @@ const Queue = () => {
       >
         {/* {contextHolder} */}
         <Modal
-          width={600}
+          width={800}
           title="CLOSE CONSULTATION"
           open={isCloseConsultationModalVisible}
           onCancel={handleCloseConsultationModalCancel}
@@ -1563,73 +1506,10 @@ const Queue = () => {
           okText="Save"
           cancelText="Cancel"
           maskClosable={false}
+          confirmLoading={closeConsLoader}
         >
           <div>
-            <div
-              style={{
-                padding: "16px",
-                borderRadius: "4px",
-                margin: "10px",
-                // display: "flex",
-                // border: "1px solid #d9d9d9",
-                // justifyContent: "space-between",
-                boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
-              }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    UHID:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.UhId}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Name:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.PatientName}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold" }}>PatientGender:</span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.PatientGender}
-                  </span>
-                </Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    VisitId:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.Encounterstr}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Age:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.Age}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Dob:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      formatDatefortable(selectedPatientRecord.DateOfBirth)}
-                  </span>
-                </Col>
-              </Row>
-            </div>
+            <PatientHeader patient={patientHeaderDetails}></PatientHeader>
             <Form
               key={selectedPatientRecord.QId}
               form={form1}
@@ -1668,7 +1548,16 @@ const Queue = () => {
                 gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
               >
                 <Col span={10}>
-                  <Form.Item name="DispositionType" label="Disposition Type">
+                  <Form.Item
+                    name="DispositionType"
+                    label="Disposition Type"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Disposition type is required",
+                      },
+                    ]}
+                  >
                     <Select allowClear>
                       {QueueDropDown.DispositionType.map((option) => (
                         <Select.Option
@@ -1744,68 +1633,7 @@ const Queue = () => {
           maskClosable={false}
         >
           <div>
-            <div
-              style={{
-                padding: "16px",
-                borderRadius: "4px",
-                margin: "10px",
-                boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
-              }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    UHID:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.UhId}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Name:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.PatientName}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold" }}>PatientGender:</span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.PatientGender}
-                  </span>
-                </Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    VisitId:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      selectedPatientRecord.Encounterstr}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Age:
-                  </span>
-                  <span>
-                    {selectedPatientRecord && selectedPatientRecord.Age}
-                  </span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Dob:
-                  </span>
-                  <span>
-                    {selectedPatientRecord &&
-                      formatDatefortable(selectedPatientRecord.DateOfBirth)}
-                  </span>
-                </Col>
-              </Row>
-            </div>
+            <PatientHeader patient={patientHeaderDetails}></PatientHeader>
           </div>
         </Modal>
       </ConfigProvider>

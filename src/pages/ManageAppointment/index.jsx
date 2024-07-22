@@ -206,6 +206,7 @@ function ManageAppointment() {
                     `${urlSearchAppointRecord}?ProviderId=${values.ProviderId}&Date=${formattedDate}`
                   );
                   if (response.data != null) {
+                    debugger;
                     console.log(
                       "response",
                       response.data.data.ScheduleProviderAppointments

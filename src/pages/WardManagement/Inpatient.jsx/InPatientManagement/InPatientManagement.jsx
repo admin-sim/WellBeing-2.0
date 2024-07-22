@@ -21,115 +21,79 @@ import {
   Space,
   Tag,
   message,
+  Select,
+  Spin,
 } from "antd";
 import Search from "antd/es/input/Search";
 import Title from "antd/es/typography/Title";
-
+import {
+  urlGetWardAndBannerData,
+  urlGetWardInpatientsDetails,
+} from "../../../../../endpoints";
 import React, { useEffect, useState } from "react";
 import CustomTable from "../../../../components/customTable";
-
+import customAxios from "../../../../components/customAxios/customAxios";
 import WardBed from "./WardBed";
 import { CgMoreO } from "react-icons/cg";
 import { TfiMoreAlt } from "react-icons/tfi";
+import Item from "antd/es/list/Item";
 
 function InPatientManagement() {
   const [view, setView] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [tableLoading, setTableLoading] = useState(false);
+  const [wardDetails, setWardDetails] = useState([]);
+  const [locationDropDown, setLocationDropDown] = useState([]);
+  const [inPatientDetails, setInPatientDetails] = useState([]);
+  const [beds, setBeds] = useState([]);
 
-  const handleMenuClick = (e) => {
-    console.log("click", e);
+  useEffect(() => {
+    setIsLoading(true);
+    customAxios.get(urlGetWardInpatientsDetails).then((response) => {
+      setLocationDropDown(response.data.data.FacilityDeptServiceLocation);
+      setIsLoading(false);
+    });
+  }, []);
+
+  const handleMenuClick = async (e) => {
+    setTableLoading(true);
+    if (e !== undefined) {
+      const response = await customAxios.get(
+        `${urlGetWardAndBannerData}?LocationId=${e}&Flag=${1}`
+      );
+      if (response.data !== null) {
+        setTableLoading(false);
+        const inPatient = response.data.data.PatientsInBed.map((obj, index) => {
+          return { ...obj, key: index + 1 };
+        });
+        setInPatientDetails(inPatient);
+        setBeds(response.data.data.Beds);
+      } else {
+        console.log("data is not clear ");
+      }
+    } else {
+      setTableLoading(false);
+      console.log("click", e);
+    }
   };
-  const items = [
-    {
-      label: "First Floor",
-      key: "1",
-    },
-    {
-      label: "Second Floor",
-      key: "2",
-    },
-    {
-      label: "Third Floor",
-      key: "3",
-      icon: <StopOutlined />,
-      disabled: true,
-    },
-  ];
 
-  const femaleBeds = [
-    {
-      id: 1,
-      name: "FWFF1",
-      status: "available",
-      patientName: "",
-      uhId: "",
-      age: "",
-      ward: "Female Ward First Floor",
-      gender: "",
-    },
-    {
-      id: 2,
-      name: "FWFF2",
-      status: "occupied",
-      patientName: "Radha",
-      uhId: "COH/001",
-      age: "31Y 4M 14D",
-      ward: "Female Ward First Floor",
-      gender: "Female",
-    },
-
-    {
-      id: 3,
-      name: "FWFF3",
-      status: "available",
-      patientName: "",
-      uhId: "",
-      age: "",
-      ward: "Female Ward First Floor",
-      gender: "",
-    },
-    {
-      id: 4,
-      ward: "Female Ward First Floor",
-      name: "FWFF4",
-      status: "occupied",
-      patientName: "Pooja",
-      uhId: "COH/002",
-      age: "31Y 4M 14D",
-      gender: "Female",
-    },
-    {
-      ward: "Female Ward First Floor",
-      id: 5,
-      name: "FWFF5",
-      status: "occupied",
-      patientName: "Shruthi",
-      uhId: "COH/003",
-      age: "31Y 4M 14D",
-      gender: "Female",
-    },
-    {
-      id: 6,
-      name: "FWFF6",
-      status: "available",
-      patientName: "",
-      uhId: "",
-      ward: "Female Ward First Floor",
-      age: "",
-      gender: "",
-    },
-  ];
-
-  const menuProps = {
-    items,
-    onClick: handleMenuClick,
+  const groupBedsByWard = () => {
+    return beds.reduce((groups, bed) => {
+      const wardName = bed.WardName || "Unknown Ward";
+      if (!groups[wardName]) {
+        groups[wardName] = [];
+      }
+      groups[wardName].push(bed);
+      return groups;
+    }, {});
   };
 
   const renderBedCards = () => (
     <Row justify="center">
       <Col xs={24}>
         <Row gutter={[32, 32]} justify="start">
-          {femaleBeds.map((bed) => (
-            <WardBed key={bed.id} bed={bed} /> // Pass the bed as a prop
+          {beds.map((bed) => (
+            <WardBed key={bed.BedID} bed={bed} />
           ))}
         </Row>
       </Col>
@@ -138,9 +102,9 @@ function InPatientManagement() {
 
   const renderAwaitingPatients = () => (
     <div>
-      {femaleBeds.map((bed) => (
+      {beds.map((bed) => (
         <Button
-          key={bed.id}
+          key={bed.BedID}
           type="dashed"
           style={{
             display: "flex",
@@ -150,7 +114,7 @@ function InPatientManagement() {
             width: "100%",
           }}
         >
-          <span>{bed.patientName}</span>
+          <span>{bed.PatientName}</span>
           <Dropdown
             arrow
             overlay={
@@ -172,6 +136,9 @@ function InPatientManagement() {
       ))}
     </div>
   );
+
+  const groupedBeds = groupBedsByWard();
+  const firstWardKey = Object.keys(groupedBeds)[0];
 
   return (
     <>
@@ -218,7 +185,7 @@ function InPatientManagement() {
             justifyContent: "space-between",
           }}
         >
-          <Col span={6}>
+          <Col span={10}>
             <Segmented
               defaultValue="Tabular"
               options={[
@@ -233,29 +200,37 @@ function InPatientManagement() {
                   icon: <AppstoreOutlined />,
                 },
               ]}
-              // value={view}
               onChange={(value) => {
                 setView(value);
               }}
             />
           </Col>
-          <Col span={12}>
+          <Col span={8}>
             <Search
               placeholder="Search Patients"
-              // onSearch={onSearch}
               style={{
-                width: "70%",
+                width: "100%",
                 marginRight: "2rem",
               }}
             />
-            <Dropdown menu={menuProps}>
-              <Button>
-                <Space>
-                  Select Floor
-                  <DownOutlined />
-                </Space>
-              </Button>
-            </Dropdown>
+          </Col>
+          <Col span={4}>
+            <Select
+              placeholder="Select Floor"
+              loading={isLoading}
+              onChange={handleMenuClick}
+              style={{ width: "100%" }}
+              allowClear
+            >
+              {locationDropDown.map((option) => (
+                <Select.Option
+                  key={option.FacilityDepartmentServiceLocationId}
+                  value={option.FacilityDepartmentServiceLocationId}
+                >
+                  {option.ServiceLocationName}
+                </Select.Option>
+              ))}
+            </Select>
           </Col>
         </Row>
         <Row>
@@ -273,82 +248,110 @@ function InPatientManagement() {
           </div>
         </Row>
         {view === "" || view === "Tabular" ? (
-          <CustomTable
-            columns={columns}
-            dataSource={dataSource}
-            actionColumn={false}
-          />
+          <Spin spinning={tableLoading}>
+            <CustomTable
+              // rowKey={inPatientDetails.BedID}
+              columns={columns}
+              dataSource={inPatientDetails}
+              actionColumn={false}
+            />
+          </Spin>
         ) : (
-          <Row style={{ padding: "0 1rem" }}>
-            <Col span={17}>
-              <div style={{ overflow: "auto" }}>
-                <Collapse defaultActiveKey={["1"]} ghost>
-                  <Collapse.Panel header="Female Ward First Floor" key="1">
-                    {renderBedCards()}
-                  </Collapse.Panel>
-                  <Collapse.Panel header="Male Ward First Floor" key="2">
-                    {/* Other panels content */}
-                  </Collapse.Panel>
-                </Collapse>
-              </div>
-            </Col>
-            <Col span={7}>
-              <div style={{ width: "100%", marginTop: "2rem" }}>
-                <Divider orientation="left">Tasks</Divider>
-                <Collapse>
-                  <Collapse.Panel
-                    header={
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <span>Incoming Transfer Request</span>
-                        <Tag color="#2db7f5">{0}</Tag>
-                      </div>
-                    }
-                    key="3"
-                  ></Collapse.Panel>
-                  <Collapse.Panel
-                    header={
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <span>Outgoing Transfer Request</span>
-                        <Tag color="#2db7f5">{0}</Tag>
-                      </div>
-                    }
-                    key="4"
-                  ></Collapse.Panel>
-                </Collapse>
-              </div>
-              <div style={{ marginTop: "3rem" }}>
-                <Divider orientation="left"></Divider>
-                <Collapse>
-                  <Collapse.Panel
-                    header={
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <span>Awaiting Patients</span>
-                        <Tag color="#2db7f5">{femaleBeds?.length}</Tag>
-                      </div>
-                    }
-                    key="5"
-                  >
-                    {renderAwaitingPatients()}
-                  </Collapse.Panel>
-                </Collapse>
-              </div>
-            </Col>
-          </Row>
+          <Spin spinning={tableLoading}>
+            <Row style={{ padding: "0 1rem" }}>
+              <Col span={17}>
+                <div style={{ overflow: "auto" }}>
+                  <Collapse defaultActiveKey={[firstWardKey]} ghost>
+                    {Object.keys(groupedBeds).map((wardName, index) => (
+                      <Collapse.Panel header={wardName} key={wardName}>
+                        <Row justify="center">
+                          <Col xs={24}>
+                            <Row gutter={[32, 32]} justify="start">
+                              {groupedBeds[wardName].map((bed) => (
+                                <WardBed key={bed.BedID} bed={bed} />
+                              ))}
+                            </Row>
+                          </Col>
+                        </Row>
+                      </Collapse.Panel>
+                    ))}
+                  </Collapse>
+                </div>
+              </Col>
+              <Col span={7}>
+                <div style={{ width: "100%", marginTop: "2rem" }}>
+                  <Divider orientation="left">Tasks</Divider>
+                  <Collapse>
+                    <Collapse.Panel
+                      header={
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <span>Incoming Transfer Request</span>
+                          <Tag color="#2db7f5">{0}</Tag>
+                        </div>
+                      }
+                      key="3"
+                    ></Collapse.Panel>
+                    <Collapse.Panel
+                      header={
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <span>Outgoing Transfer Request</span>
+                          <Tag color="#2db7f5">{0}</Tag>
+                        </div>
+                      }
+                      key="4"
+                    ></Collapse.Panel>
+                  </Collapse>
+                </div>
+                <div style={{ marginTop: "3rem" }}>
+                  <Divider orientation="left"></Divider>
+                  <Collapse>
+                    <Collapse.Panel
+                      header={
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <span>Awaiting For Discharge</span>
+                          <Tag color="#2db7f5">{0}</Tag>
+                        </div>
+                      }
+                      key="1"
+                    >
+                      {renderAwaitingPatients()}
+                    </Collapse.Panel>
+                    <Collapse.Panel
+                      header={
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <span>Another Panel</span>
+                          <Tag color="#2db7f5">{0}</Tag>
+                        </div>
+                      }
+                      key="2"
+                    >
+                      {renderAwaitingPatients()}
+                    </Collapse.Panel>
+                  </Collapse>
+                </div>
+              </Col>
+            </Row>
+          </Spin>
         )}
       </Layout>
     </>
@@ -357,24 +360,24 @@ function InPatientManagement() {
 
 const columns = [
   {
-    title: "Sl No",
-    dataIndex: "slno",
-    key: "slno",
+    title: "Sl.No",
+    dataIndex: "key",
+    key: "key",
   },
   {
-    title: "UhId",
-    dataIndex: "uhid",
-    key: "uhid",
+    title: "UHID",
+    dataIndex: "UhId",
+    key: "UhId",
   },
   {
     title: "Patient Name",
-    dataIndex: "name",
-    key: "name",
+    dataIndex: "PatientName",
+    key: "PatientName",
   },
   {
     title: "Consultant",
-    dataIndex: "consultant",
-    key: "consultant",
+    dataIndex: "ProviderName",
+    key: "ProviderName",
   },
   {
     title: "Ward Category",
@@ -383,18 +386,18 @@ const columns = [
   },
   {
     title: "Floor",
-    dataIndex: "floor",
-    key: "floor",
+    dataIndex: "ServiceLocation",
+    key: "ServiceLocation",
   },
   {
     title: "Room Number",
-    dataIndex: "roomNo",
-    key: "roomNo",
+    dataIndex: "RoomNo",
+    key: "RoomNo",
   },
   {
     title: "Bed Number",
-    dataIndex: "bedNo",
-    key: "bedNo",
+    dataIndex: "BedNo",
+    key: "BedNo",
   },
   {
     title: "Occupied From",
@@ -403,154 +406,8 @@ const columns = [
   },
   {
     title: "Bed Status",
-    dataIndex: "bedStatus",
-    key: "bedStatus",
-  },
-];
-
-const dataSource = [
-  {
-    key: "1",
-    slno: "1",
-    uhid: "COH/001",
-    name: "Nagaraj",
-    consultant: "Dr. Prabhu",
-    wardCategory: "General",
-    floor: "1",
-    roomNo: "5",
-    bedNo: "120",
-    occupiedFrom: "20/05/2023",
-    bedStatus: "vacant",
-  },
-  {
-    key: "2",
-    slno: "2",
-    uhid: "COH/002",
-    name: "Samantha",
-    consultant: "Dr. Smith",
-    wardCategory: "Pediatric",
-    floor: "1",
-    roomNo: "8",
-    bedNo: "122",
-    occupiedFrom: "18/06/2023",
-    bedStatus: "occupied",
-  },
-  {
-    key: "3",
-    slno: "3",
-    uhid: "COH/003",
-    name: "John",
-    consultant: "Dr. Johnson",
-    wardCategory: "Surgical",
-    floor: "2",
-    roomNo: "12",
-    bedNo: "210",
-    occupiedFrom: "25/07/2023",
-    bedStatus: "vacant",
-  },
-  {
-    key: "4",
-    slno: "4",
-    uhid: "COH/004",
-    name: "Emily",
-    consultant: "Dr. Miller",
-    wardCategory: "General",
-    floor: "2",
-    roomNo: "15",
-    bedNo: "215",
-    occupiedFrom: "30/07/2023",
-    bedStatus: "occupied",
-  },
-  {
-    key: "5",
-    slno: "5",
-    uhid: "COH/005",
-    name: "Michael",
-    consultant: "Dr. Wilson",
-    wardCategory: "Cardiology",
-    floor: "3",
-    roomNo: "20",
-    bedNo: "310",
-    occupiedFrom: "10/08/2023",
-    bedStatus: "vacant",
-  },
-  {
-    key: "6",
-    slno: "6",
-    uhid: "COH/006",
-    name: "Sophia",
-    consultant: "Dr. Brown",
-    wardCategory: "Obstetrics",
-    floor: "3",
-    roomNo: "25",
-    bedNo: "315",
-    occupiedFrom: "15/08/2023",
-    bedStatus: "vacant",
-  },
-  {
-    key: "7",
-    slno: "7",
-    uhid: "COH/007",
-    name: "Matthew",
-    consultant: "Dr. Taylor",
-    wardCategory: "Pediatric",
-    floor: "4",
-    roomNo: "30",
-    bedNo: "410",
-    occupiedFrom: "20/08/2023",
-    bedStatus: "occupied",
-  },
-  {
-    key: "8",
-    slno: "8",
-    uhid: "COH/008",
-    name: "Emma",
-    consultant: "Dr. Martinez",
-    wardCategory: "Surgical",
-    floor: "4",
-    roomNo: "35",
-    bedNo: "415",
-    occupiedFrom: "25/08/2023",
-    bedStatus: "vacant",
-  },
-  {
-    key: "9",
-    slno: "9",
-    uhid: "COH/009",
-    name: "Alexander",
-    consultant: "Dr. Anderson",
-    wardCategory: "Orthopedic",
-    floor: "5",
-    roomNo: "40",
-    bedNo: "510",
-    occupiedFrom: "01/09/2023",
-    bedStatus: "occupied",
-  },
-  {
-    key: "10",
-    slno: "10",
-    uhid: "COH/010",
-    name: "Olivia",
-    consultant: "Dr. Garcia",
-    wardCategory: "General",
-    floor: "5",
-    roomNo: "45",
-    bedNo: "515",
-    occupiedFrom: "05/09/2023",
-    bedStatus: "occupied",
-  },
-  {
-    key: "11",
-    slno: "11",
-    uhid: "COH/011",
-    name: "William",
-    consultant: "Dr. Lopez",
-    wardCategory: "Cardiology",
-    floor: "6",
-    roomNo: "50",
-    bedNo: "610",
-    occupiedFrom: "10/09/2023",
-    bedStatus: "occupied",
+    dataIndex: "PatientStatus",
+    key: "PatientStatus",
   },
 ];
 

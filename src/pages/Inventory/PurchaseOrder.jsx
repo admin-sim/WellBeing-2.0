@@ -50,8 +50,8 @@ const PurchaseOrder = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const { Title } = Typography;
-  const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
-  const [toDate, setToDate] = useState(dayjs());
+  const [fromDate, setFromDate] = useState();
+  const [toDate, setToDate] = useState();
 
   useEffect(() => {
     try {
@@ -79,6 +79,7 @@ const PurchaseOrder = () => {
     Pending: "volcano",
     "Partially Pending": "orange",
     Finalize: "green",
+    Completed: "green",
   };
 
   const GetPobyId = (PoHeaderId) => {
@@ -278,7 +279,6 @@ const PurchaseOrder = () => {
             name="control-hooks"
             layout="vertical"
             variant="outlined"
-            size="Default"
             style={{
               maxWidth: 1500,
             }}
@@ -429,8 +429,8 @@ const PurchaseOrder = () => {
             <CustomTable
               dataSource={filteredData}
               columns={columns}
+              actionColumn={false}
               isFilter={true}
-              size="small"
               bordered
             />
             </Spin>

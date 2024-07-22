@@ -84,7 +84,7 @@ const GRNAgainstPO = () => {
   const colorMapping = {
     Created: "blue",
     Draft: "geekblue",
-    FINALIZE: "green",
+    Finalize:"#52c41a"
   };
 
   const handleGRN = (GrnHeaderId) => {
@@ -286,7 +286,6 @@ const GRNAgainstPO = () => {
             name="control-hooks"
             layout="vertical"
             variant="outlined"
-            size="Default"
             style={{
               maxWidth: 1500,
             }}
@@ -419,7 +418,8 @@ const GRNAgainstPO = () => {
                 dataSource={filteredData}
                 columns={columns}
                 isFilter={true}
-              bordered
+                actionColumn={false}
+              
               />
               </Spin>
         </Card>

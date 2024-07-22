@@ -16,6 +16,7 @@ import {
   Spin,
   Layout,
   notification,
+  message,
 } from "antd";
 
 import Input from "antd/es/input/Input";
@@ -48,7 +49,11 @@ function Areas() {
   const [States, setStates] = useState([]);
   const [Places, setPlaces] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [stateLoader, setStateLoader] = useState(false);
+  const [placeLoader, setPlaceLoader] = useState(false);
   const [selectedCountryValue, setSelectedCountryValue] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [IsSubmitClicked, setIsSubmitClicked] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -99,6 +104,8 @@ function Areas() {
 
   const handleAreaModalCancel = () => {
     setIsModalOpen(false);
+    setIsEditing(false);
+    setIsSubmitClicked(false);
     form.resetFields();
   };
 
@@ -133,81 +140,103 @@ function Areas() {
     form.validateFields();
     const values = form.getFieldsValue();
     console.log("state Edit Modal Submit", values);
-    // UpdateState(int StateId, string Name, string StateCode, int CountryId)
-    // SaveNewState(int CountryId, string StateCode, string StateName)
+    setIsSubmitClicked(true);
+    if (
+      values.Place !== undefined &&
+      values.State !== undefined &&
+      values.Country !== undefined &&
+      values.AreaName !== undefined
+    ) {
+      const area = isEditing
+        ? {
+            AreaId: areaData.AreaId,
+            PlaceId: areaData.PlaceId,
+            AreaName: values.AreaName,
+          }
+        : {
+            AreaId: 0,
+            PlaceId: values.Place,
+            StateId: values.State,
+            CountryId: values.Country,
+            AreaName: values.AreaName,
+          };
 
-    const area = isEditing
-      ? {
-          AreaId: areaData.AreaId,
-          PlaceId: areaData.PlaceId,
-          AreaName: values.AreaName,
-        }
-      : {
-          AreaId: 0,
-          PlaceId: values.Place,
-          StateId: values.State,
-          CountryId: values.Country,
-          AreaName: values.AreaName,
-        };
-
-    try {
-      // Send a POST request to the server
-      const response = await customAxios.post(urlAddAndUpdateArea, area, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.data.data !== null) {
-        setIsModalOpen(false);
-        const areaDetails = response.data.data.AreaModel.map((obj, index) => {
-          return { ...obj, key: index + 1 };
+      try {
+        // Send a POST request to the server
+        const response = await customAxios.post(urlAddAndUpdateArea, area, {
+          headers: {
+            "Content-Type": "application/json",
+          },
         });
-        setColumnData(areaDetails);
-        form.resetFields();
-        {
-          isEditing
-            ? notification.success({
-                message: "Area details updated Successfully",
-              })
-            : notification.success({
-                message: "Area details added Successfully",
-              });
-        }
-      }
-    } catch (error) {
-      console.error("Failed to send data to server: ", error);
 
-      {
-        isEditing
-          ? notification.error({
-              message: "Edited area  details UnSuccessful",
-            })
-          : notification.error({
-              message: "Adding area details UnSuccessful",
+        if (response.data !== null) {
+          if (response.data === "Already Exists") {
+            // setIsModalOpen(false);
+            setIsSubmitClicked(false);
+            messageApi.warning({
+              // type: "warning",
+              content: `Lookup already exists`,
             });
+          } else if (response.data.data !== null) {
+            setIsSubmitClicked(false);
+            setIsModalOpen(false);
+            const areaDetails = response.data.data.AreaModel.map(
+              (obj, index) => {
+                return { ...obj, key: index + 1 };
+              }
+            );
+            setColumnData(areaDetails);
+            form.resetFields();
+            {
+              isEditing
+                ? notification.success({
+                    message: "Area details updated Successfully",
+                  })
+                : notification.success({
+                    message: "Area details added Successfully",
+                  });
+            }
+          }
+        } else {
+          {
+            isEditing
+              ? notification.error({
+                  message: "Edited area  details UnSuccessful",
+                })
+              : notification.error({
+                  message: "Adding area details UnSuccessful",
+                });
+          }
+        }
+      } catch (error) {
+        console.error("Failed to send data to server: ", error);
       }
+    } else {
+      setIsSubmitClicked(false);
     }
   };
 
   const handleCountryChange = async (value) => {
     setSelectedCountryValue(value);
+    
     debugger;
     try {
       // Update the options for the second select based on the value of the first select
       if (value != null) {
+        setStateLoader(true);
         const response = await customAxios.get(
           `${urlGetStatesBasedOnCountryId}?CountryId=${value}`
         );
 
         if (response.status === 200) {
+          setStateLoader(false);
           const states = response.data.data.States;
 
           setStates(states);
         } else {
           // Handle other response statuses if needed
         }
-      } 
+      }
     } catch (error) {
       // Handle errors (e.g., network issues)
       console.error("Error fetching data:", error);
@@ -216,22 +245,24 @@ function Areas() {
 
   const handleStateChange = async (value) => {
     debugger;
-    
+
     try {
       // Update the options for the second select based on the value of the first select
       if (value != null) {
+        setPlaceLoader(true);
         const response = await customAxios.get(
           `${urlGetPlacesBasedOnStateId}?StateId=${value}`
         );
 
         if (response.status === 200) {
+          setPlaceLoader(false);
           const places = response.data.data.Places;
 
           setPlaces(places);
         } else {
           // Handle other response statuses if needed
         }
-      } 
+      }
     } catch (error) {
       // Handle errors (e.g., network issues)
       console.error("Error fetching data:", error);
@@ -318,10 +349,23 @@ function Areas() {
             />
           </Spin>
           <Modal
-            title="Add New Place"
+            title={isEditing ? "UPDATE AREA" : "ADD NEW AREA"}
             open={isModalOpen}
             maskClosable={false}
-            footer={null}
+            footer={[
+              <Button
+                key="submit"
+                type="primary"
+                loading={IsSubmitClicked}
+                onClick={handleSubmit}
+              >
+                {/* {IsSubmitClicked ? "Submitting" : "Submit"} */}
+                {isEditing ? "Update" : "Submit"}
+              </Button>,
+              <Button key="back" onClick={handleAreaModalCancel}>
+                Cancel
+              </Button>,
+            ]}
             onCancel={handleAreaModalCancel}
           >
             <Form
@@ -373,6 +417,7 @@ function Areas() {
                     allowClear
                     placeholder="Select a type"
                     onChange={handleStateChange}
+                    loading={stateLoader}
                   >
                     {States.map((option) => (
                       <Select.Option
@@ -397,7 +442,7 @@ function Areas() {
                 ]}
               >
                 {isEditing ? (
-                  <Select allowClear>
+                  <Select allowClear loading={placeLoader}>
                     {Dropdown.Places.map((option) => (
                       <Select.Option
                         key={option.PlaceId}
@@ -408,7 +453,7 @@ function Areas() {
                     ))}
                   </Select>
                 ) : (
-                  <Select allowClear>
+                  <Select allowClear loading={placeLoader}>
                     {Places.map((option) => (
                       <Select.Option
                         key={option.PlaceId}
@@ -432,22 +477,6 @@ function Areas() {
               >
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-              <Row gutter={32} style={{ height: "1.8rem" }}>
-                <Col offset={12} span={6}>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                      Submit
-                    </Button>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item>
-                    <Button type="default" onClick={handleAreaModalCancel}>
-                      Cancel
-                    </Button>
-                  </Form.Item>
-                </Col>
-              </Row>
             </Form>
           </Modal>
         </div>
