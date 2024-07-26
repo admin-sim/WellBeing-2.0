@@ -34,6 +34,7 @@ import customAxios from "../../components/customAxios/customAxios";
 import { render } from "react-dom";
 import FormItem from "antd/es/form/FormItem/index.js";
 import CustomTable from "../../components/customTable/index.jsx";
+import moment from "moment";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -332,7 +333,7 @@ const PurchaseOrder = () => {
                   <DatePicker
                     value={fromDate}
                     onChange={(date) => setFromDate(date)}
-                    disabledDate={disableFromDate}
+                    disabledDate={(current) => current > moment()}
                     style={{ width: "100%" }}
                     format="DD-MM-YYYY"
                   />
@@ -343,7 +344,7 @@ const PurchaseOrder = () => {
                   <DatePicker
                     value={toDate}
                     onChange={(date) => setToDate(date)}
-                    disabledDate={disableToDate}
+                    disabledDate={(current) => current < fromDate} // disable dates before fromDate
                     style={{ width: "100%" }}
                     format="DD-MM-YYYY"
                   />

@@ -61,9 +61,7 @@ const UpdateItemReceipt = () => {
   const [dataModel, setDataModel] = useState([]);
   const [batchDetails, setBatchDetails] = useState([]);
   const [productDetails, setProductDetails] = useState([]);
-  const [indentDetails, setIndentDetails] = useState([]);
-  const [newIndentIssueDetails, setnewIndentIssueDetails] = useState([]);
-  const [indentIssueDetails, setIndentIssueDetails] = useState();
+
 
   const [istablevisible, setIstablevisible] = useState(false);
   const fields = form1.getFieldsValue();

@@ -175,7 +175,7 @@ const UpdateIndentIssue = () => {
       // Filter dataModel based on ProductId and ActiveFlag
       const filteredDataModel = dataModel.filter(
         (item) =>
-          item.ProductId === record.ProductId && item.ActiveFlag === true
+          item.ProductId === record.ProductId && item.ActiveFlag === true && item.IssueBatchId>0
       );
 
       const post1 = {
@@ -203,7 +203,8 @@ const UpdateIndentIssue = () => {
           }));
 
           setDataModel(batch);
-        } else {
+        } 
+        else {
           const calculateQuantitiesAndAmounts = (issueQty) => {
             let totalQty = 0;
             const sortedBatchDetails = [...ApiData.BatchDetails].sort(
@@ -214,7 +215,7 @@ const UpdateIndentIssue = () => {
               let amount = 0;
 
               if (!item.IsProductBatchExpired && totalQty < issueQty) {
-                qty = Math.min(item.PendingQty, issueQty - totalQty);
+                qty = Math.min(item.BalanceQty, issueQty - totalQty);
                 totalQty += qty;
                 amount = qty * item.MRP;
               }
@@ -340,7 +341,6 @@ const UpdateIndentIssue = () => {
           UomId: values[i].UomId,
           RequestQty: values[i].RequestQty,
           IssueQty: values[i].IssueQty,
-          PendingQty: values[i].PendingQty,
           IndentLineId: values[i].IndentLineId,
           IndentIssueLineId:
             values[i].IndentIssueLineId === undefined
@@ -376,9 +376,6 @@ const UpdateIndentIssue = () => {
           StockLocator: batch.StockLocator ? batch.StockLocator : 0,
         })
       );
-
-
-
       const postData = {
         newIndentModel: Indent,
         IndentDetails: products,
@@ -396,17 +393,9 @@ const UpdateIndentIssue = () => {
               },
             }
           );
+          
           handleCancel();
         }
-        // else {
-        //     const response = await customAxios.post(urlAddNewIndent, postData, {
-        //         headers: {
-        //             'Content-Type': 'application/json'
-        //         }
-        //     });
-        //     handleCancel();
-        // }
-        // form1.resetFields();
       } catch (error) {
         // Handle error
       }
@@ -450,7 +439,6 @@ const UpdateIndentIssue = () => {
               StockId: selectedBatch.StockId,
               IssueBatchId: selectedBatch.IssueBatchId,
               IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
-              BatchNo: selectedBatch.BatchNo,
               IssueRate: selectedBatch.MRP,
               //LineAmount:item.LineAmount,
               // BalanceQty:item.BalanceQty,
@@ -470,7 +458,6 @@ const UpdateIndentIssue = () => {
           IssueBatchId: selectedBatch.IssueBatchId,
           IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
           BatchNo: selectedBatch.BatchNo,
-          IssueRate: selectedBatch.IssueRate,
           // LineAmount:item.LineAmount,
           BalanceQty: selectedBatch.BalanceQty,
           EXPDate: selectedBatch.EXPDate
@@ -582,7 +569,7 @@ const UpdateIndentIssue = () => {
       ),
     },
     {
-      title: "Avg qty at Issue",
+      title: "Avl qty at Issue",
       dataIndex: "AvlIssueQuantity",
       key: "AvlIssueQuantity",
       width: 150,
@@ -670,7 +657,7 @@ const UpdateIndentIssue = () => {
         EXPDate: "",
         IssueRate: 0,
         amount: 0,
-        StockLocator: "",
+        StockLocator: 0,
         IssueBatchId: 0,
         ActiveFlag: true,
       },
@@ -678,54 +665,7 @@ const UpdateIndentIssue = () => {
     setBatchCount(batchCount + 1);
   };
 
-  // const BatchAdd = async () => {
-  //   debugger;
-  //   // No need to validate form2 here
-  //   setDataModel((prevDataModel) => [
-  //     ...prevDataModel,
-  //     {
-  //       key: batchCount,
-  //       BatchNo: "",
-  //       IssueQty: 0,
-  //       BalanceQty: 0,
-  //       Uom: "",
-  //       EXPDate: "",
-  //       IssueRate: 0,
-  //       amount: 0,
-  //       StockLocator: "",
-  //       ActiveFlag: true,
-  //     },
-  //   ]);
-  //   setBatchCount((prevCount) => prevCount + 1);
-  // };
-
-  // const BatchSelect = (record) => {
-  //   debugger;
-  //   const IsExist = dataModel.filter((item) => item.BatchNo == record);
-  //   const temp = batchDetails.filter((item) => item.BatchNo === record);
-  //   const newdata = temp.map((item) => {
-  //     return {
-  //       ...item,
-  //       BalanceQty: item.BalanceQty,
-  //       Uom: item.Uom,
-  //       EXPDate: item.EXPDate,
-  //       IssueRate: item.IssueRate,
-  //       amount: 0,
-  //     };
-  //   });
-  //   setDataModel(newdata);
-  //   if (IsExist.length > 0) {
-  //     message.warning("Same Batch No should not be selected.");
-  //   }
-  // };
-
-  // const validateEqualValue = (record, value) => {
-  //     if (parseInt(value) == productDetails.IssueQty) {
-  //         return Promise.resolve();
-  //     }
-  //     return Promise.reject(new Error('Must equal to Issue Qty!'));
-  // };
-
+  
   const validateExpiry = (record, value) => {
     const isExpired = dayjs(record.EXPDate).isBefore(dayjs(), "day");
     if (!isExpired) {
@@ -845,7 +785,7 @@ const UpdateIndentIssue = () => {
     },
 
     {
-      title: "Avg Quantity",
+      title: "Avl Quantity",
       dataIndex: "BalanceQty",
       key: "BalanceQty",
       width: 100,

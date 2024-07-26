@@ -548,7 +548,6 @@ const CreatePatientIndent = () => {
                         layout="vertical"
                         onFinish={handleOnFinish}
                         variant="outlined"
-                        size="default"
                         style={{
                             maxWidth: 1500
                         }}
@@ -559,7 +558,7 @@ const CreatePatientIndent = () => {
                             SubmitCheck: false
                         }}
                     >
-                        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
+                        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} align="Bottom">
                             <Col className="gutter-row" span={6}>
                                 <Form.Item label="Indent Date" name="IndentDate"
                                     rules={[
@@ -707,7 +706,6 @@ const CreatePatientIndent = () => {
                     <Form
                         onFinish={handleOnFinish}
                         variant="outlined"
-                        size="default"
                         style={{
                             maxWidth: 1500
                         }}

@@ -40,7 +40,7 @@ import { useLocation } from "react-router-dom";
 import { MdOutlineWifiTetheringError } from "react-icons/md";
 import CustomTable from "../../components/customTable/index.jsx";
 //import { useParams } from 'react-router-dom';
-
+import moment from 'moment';
 const CreateGRNAgainstPO = () => {
   const [DropDown, setDropDown] = useState({
     DocumentType: [],
@@ -53,7 +53,7 @@ const CreateGRNAgainstPO = () => {
 
   let [counter, setCounter] = useState(2);
   let [productCount, setProductcount] = useState(1);
-
+  const [grnStatus, setGrnStatus] = useState(false);
   // const initialProductDataSource = [
   //   {
   //     key: 1,
@@ -817,7 +817,7 @@ const CreateGRNAgainstPO = () => {
       const updatedBatch = dataBatchModal.map((item) => {
         const key = item.key;
         if (values[key] != undefined) {
-          if (values[key].Quantity || values[key].EXPDate || values[key].mrp) {
+          if (values[key].Quantity || values[key].EXPDateString || values[key].mrp) {
             return {
               ...item,
               ProductId: batchRecord.ProductId,
@@ -829,9 +829,13 @@ const CreateGRNAgainstPO = () => {
                 ? values[key].MFGDateString.format("DD-MM-YYYY")
                 : null,
               BatchNo: values[key].BatchNo,
-              EXPDateString: values[key].EXPDateString
-                ? values[key].EXPDateString.format("DD-MM-YYYY")
-                : null,
+              EXPDateString: batchRecord.Expiry === "Month wise"
+              ? values[key].EXPDateString
+                ? `01-${moment(values[key].EXPDateString).format("MM-YYYY")}`
+                : null
+              : values[key].EXPDateString
+              ? values[key].EXPDateString.format("DD-MM-YYYY")
+              : null,
               Rate: values[key].Rate,
               MRP: values[key].MRP,
               StockLocator: 0,
@@ -860,7 +864,18 @@ const CreateGRNAgainstPO = () => {
     setdataBatchModal(newData);
     //setIsModalOpen(false);
     setIsBatchModalOpen(false);
-    form3.resetFields();
+    //form3.resetFields();
+    form3.resetFields({
+      // Add a callback function to resetFields to handle invalid dates
+      callback: (name, value) => {
+        if (name === "MFGDateString" || name === "EXPDateString") {
+          if (!value || !dayjs(value).isValid()) {
+            return null; // Return null to reset the field to its initial value
+          }
+        }
+        return value;
+      },
+    });
   };
 
   const checkActiveBatches = (products, batches) => {
@@ -1076,7 +1091,7 @@ const CreateGRNAgainstPO = () => {
       InvoiceDateString: values.InvoiceDateString.format("DD-MM-YYYY"),
       ReceivingDateString: values.ReceivingDateString.format("DD-MM-YYYY"),
       Remarks: values.Remarks || null,
-      GrnStatus: values.GRNStatus || "Created",
+      GrnStatus:  grnStatus ? values.GRNStatus : "Created",
       InvoiceNumber: values.InvoiceNumber || null,
       InvoiceAmount: values.InvoiceAmount || 0,
       DCChallanNumber: values.DCChallanNumber,
@@ -1312,32 +1327,66 @@ const CreateGRNAgainstPO = () => {
         </Form.Item>
       ),
     },
+    // {
+    //   title: "Exp Date",
+    //   dataIndex: "EXPDateString",
+    //   key: "EXPDateString",
+    //   render: (text, record) => (
+    //     <Form.Item
+    //       name={[record.key, "EXPDateString"]}
+    //       initialValue={
+    //         record.EXPDateString
+    //           ? dayjs(record.EXPDateString, "DD-MM-YYYY")
+    //           : null
+    //       }
+    //       rules={[
+    //         {
+    //           required: true,
+    //           message: "input!",
+    //         },
+    //       ]}
+    //     >
+    //       <DatePicker
+    //         style={{ width: "100%" }}
+    //         format="DD-MM-YYYY"
+    //         disabled={!!GrnHeaderId && record.GrnBatchId}
+    //         disabledDate={(current) => {
+    //           // Disable past dates
+    //           return current && current < dayjs().startOf("day");
+    //         }}
+    //       />
+    //     </Form.Item>
+    //   ),
+    // },
     {
       title: "Exp Date",
       dataIndex: "EXPDateString",
       key: "EXPDateString",
+      width: 150,
       render: (text, record) => (
         <Form.Item
-          name={[record.key, "EXPDateString"]}
           initialValue={
-            record.EXPDateString
-              ? dayjs(record.EXPDateString, "DD-MM-YYYY")
-              : null
+            record.EXPDateString? 
+              moment(record.EXPDateString, 'DD-MM-YYYY') : 
+              null 
           }
+          name={[record.key, "EXPDateString"]}
           rules={[
             {
-              required: true,
+              required: batchRecord.Expiry === "Month wise" || batchRecord.Expiry === "Date wise",
               message: "input!",
             },
           ]}
+          width={150}
         >
           <DatePicker
-            style={{ width: "100%" }}
-            format="DD-MM-YYYY"
-            disabled={!!GrnHeaderId && record.GrnBatchId}
+            format={batchRecord.Expiry === "Month wise"? "MMMM YYYY" : batchRecord.Expiry === "Date wise"? "DD-MM-YYYY" : null}
+            disabled={!!GrnHeaderId && record.GrnBatchId || batchRecord.Expiry !== "Month wise" && batchRecord.Expiry !== "Date wise"}
+           // disabled={record.Expiry!== "Month wise" && record.Expiry!== "Date wise"}
+            style={{ width: 100 }}
             disabledDate={(current) => {
               // Disable past dates
-              return current && current < dayjs().startOf("day");
+              return current && current < moment().startOf('day');
             }}
           />
         </Form.Item>
@@ -1507,6 +1556,9 @@ const CreateGRNAgainstPO = () => {
       return item;
     });
     setdataBatchModal(newData);
+  };
+  const SubmitChanged = (event) => {
+    setGrnStatus(event.target.checked);
   };
 
   return (
@@ -1679,12 +1731,12 @@ const CreateGRNAgainstPO = () => {
               <Form.Item
                 label="GRNStatus"
                 name="GRNStatus"
-                // rules={[
-                //     {
-                //         required: true,
-                //         message: 'Please input!'
-                //     }
-                // ]}
+                rules={[
+                  {
+                    required: grnStatus,
+                    message: "Please input!",
+                  },
+                ]}
               >
                 <Select allowClear placeholder="Select Value">
                   <Option value="Draft">Draft</Option>
@@ -1694,7 +1746,7 @@ const CreateGRNAgainstPO = () => {
             </Col>
             <Col className="gutter-row" span={2} style={{ paddingTop: 35 }}>
               <Form.Item name="SubmitCheck">
-                <Checkbox>Submit</Checkbox>
+                <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
               </Form.Item>
             </Col>
             <Col className="gutter-row" span={6}>
