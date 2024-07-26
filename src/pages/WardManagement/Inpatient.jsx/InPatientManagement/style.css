@@ -6,3 +6,17 @@
   background-color: #b56767 !important;
   color: yellowgreen !important;
 }
+
+.InpatientManagement > .ant-collapse-item > .ant-collapse-header {
+  background-color: lavender;
+  margin-bottom: 0.5rem;
+  margin-top: 0.8rem;
+  border-radius: 1rem !important;
+  width: 98%;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.InpatientManagement .ant-collapse-content-box {
+  padding-top: 0 !important;
+}

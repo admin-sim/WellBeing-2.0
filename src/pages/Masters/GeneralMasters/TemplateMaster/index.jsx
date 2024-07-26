@@ -2,8 +2,11 @@ import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import CustomTable from "../../../../components/customTable/index.jsx";
-import { urlGetAllTemplates } from "../../../../../endpoints";
-import { Spin } from "antd";
+import {
+  urlDeleteTemplateByTempId,
+  urlGetAllTemplates,
+} from "../../../../../endpoints";
+import { Spin, message } from "antd";
 import customAxios from "../../../../components/customAxios/customAxios";
 import { useNavigate } from "react-router-dom";
 
@@ -27,7 +30,6 @@ function Templates() {
         }
       );
       setApiData(newColumnData);
-      console.log("data", response.data.data.templateListModel);
     } catch (error) {
       console.error(error);
     }
@@ -43,6 +45,7 @@ function Templates() {
       title: "Sl No.",
       dataIndex: "key",
       key: "1",
+      width: 100,
     },
     {
       title: "Template Name",
@@ -61,8 +64,28 @@ function Templates() {
     },
   ];
 
-  function handleEdit() {}
-  function handleDelete() {}
+  function handleEdit(record) {
+    navigate("ShowAddNewTemplate", { state: { record } });
+  }
+  async function handleDelete(record) {
+    setLoading(true);
+    try {
+      const response = await customAxios.delete(
+        `${urlDeleteTemplateByTempId}?tempid=${record.TID}`
+      );
+      if (response.status === 200) {
+        message.success("Template deleted successfully");
+        fetchData();
+        setLoading(false);
+      } else {
+        message.error("Failed to delete Template");
+        setLoading(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  }
 
   return (
     <>

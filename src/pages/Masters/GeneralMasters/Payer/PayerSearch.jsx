@@ -50,7 +50,6 @@ function PayerSearch() {
   const [payerSearchDetails, setPayerSearchDetails] = useState([]);
 
   const processPayerData = (payers) => {
-    debugger;
     return payers.map((payer) => {
       const combinedIdentifiers = payer.PayerIdentifications.map(
         (identification, index) => {
@@ -128,7 +127,6 @@ function PayerSearch() {
   const handleReset = () => {
     form.resetFields();
   };
- 
 
   const handleEditPayerDetails = (record) => {
     debugger;

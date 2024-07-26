@@ -274,12 +274,15 @@ function MainLayout() {
                 <Button
                   type="text"
                   style={{ width: "100%", textAlign: "left" }}
+                  icon={<UserOutlined />}
                 >
-                  <UserOutlined />
                   My Profile
                 </Button>
-                <Button type="text" style={{ width: "100%" }}>
-                  <SettingOutlined />
+                <Button
+                  type="text"
+                  style={{ width: "100%" }}
+                  icon={<SettingOutlined />}
+                >
                   Change Password
                 </Button>
                 <Divider style={{ margin: "0" }} />
@@ -287,8 +290,8 @@ function MainLayout() {
                   type="text"
                   onClick={logout}
                   style={{ width: "100%", textAlign: "left" }}
+                  icon={<LogoutOutlined />}
                 >
-                  <LogoutOutlined />
                   Logout
                 </Button>
               </Space.Compact>

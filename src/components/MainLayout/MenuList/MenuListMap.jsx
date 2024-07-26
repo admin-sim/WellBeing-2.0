@@ -17,6 +17,7 @@ import { CiSettings } from "react-icons/ci";
 import { MdInventory } from "react-icons/md";
 import { GrSchedule } from "react-icons/gr";
 import Bed from "../../../assets/bed.png";
+import { FaHospitalUser } from "react-icons/fa";
 const { SubMenu } = Menu;
 
 export default function MenuList({ menuData, onClose }) {
@@ -30,6 +31,8 @@ export default function MenuList({ menuData, onClose }) {
         return <FaUserFriends style={{ fontSize: "1.2rem" }} />;
       case "CodepenOutlined":
         return <CodepenOutlined />;
+      case "FaHospitalUser":
+        return <FaHospitalUser style={{ fontSize: "1.1rem" }} />;
       case "GrSchedule":
         return <GrSchedule />;
       case "bed":
