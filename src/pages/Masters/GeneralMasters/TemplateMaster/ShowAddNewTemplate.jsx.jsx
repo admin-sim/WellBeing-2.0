@@ -8,26 +8,40 @@ import {
   Row,
   Select,
   Spin,
+  message,
 } from "antd";
 import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader";
 import { LeftOutlined } from "@ant-design/icons";
 import { useForm } from "antd/es/form/Form";
-import { useNavigate } from "react-router-dom";
-import { urlLoadAllDropDownsTemplate } from "../../../../../endpoints";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  urlEditTemplate,
+  urlLoadAllDropDownsTemplate,
+  urlSaveNewTemplate,
+} from "../../../../../endpoints";
 import customAxios from "../../../../components/customAxios/customAxios";
 import CkEditor from "../../../../components/CKEditor/index.jsx";
+import { template } from "lodash";
 
 function ShowAddNewTemplate() {
   const [apiData, setApiData] = useState([]);
+  const [templateData, setTemplateData] = useState(null);
+  const [templateEditorData, setTemplateEditorData] = useState("");
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState(null);
+  // const [data, setData] = useState('');
   const navigate = useNavigate();
   const [form] = useForm();
+  const location = useLocation();
+
+  const templateRecord = location?.state?.record;
 
   useEffect(() => {
     fetchData();
+    fetchTemplateData();
   }, []);
+
+  useEffect(() => {}, [setTemplateEditorData]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -35,16 +49,70 @@ function ShowAddNewTemplate() {
       const response = await customAxios.get(urlLoadAllDropDownsTemplate);
 
       setApiData(response.data.data);
-      console.log("data", response.data.data);
     } catch (error) {
       console.error(error);
     }
     setLoading(false);
   };
 
-  const handleSubmit = (values) => {
-    console.log("Editoor Data", data);
-    console.log("Form Values", values);
+  const fetchTemplateData = async () => {
+    if (templateRecord) {
+      setLoading(true);
+      try {
+        const response = await customAxios.get(
+          `${urlEditTemplate}?Tid=${templateRecord.TID}`
+        );
+        setTemplateData(response.data.data.templatemodel);
+        form.setFieldsValue({
+          facilityID: response.data.data.templatemodel?.FacilityID,
+          tempGroupID: response.data.data.templatemodel?.TempGroupID,
+          providerID: response.data.data.templatemodel?.ProviderID,
+          tempName: response.data.data.templatemodel?.TempName,
+        });
+        setTemplateEditorData(response?.data.data.templatemodel?.TempData);
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+        console.error(error);
+      }
+    }
+  };
+
+  const handleSubmit = async (values) => {
+    setLoading(true);
+    if (!templateRecord) {
+      values = { ...values, tempData: templateEditorData };
+      try {
+        const response = await customAxios.post(urlSaveNewTemplate, values);
+        if (response.status === 200) {
+          message.success("Template saved successfully");
+        }
+        setLoading(false);
+        navigate("/Templates");
+      } catch (error) {
+        message.error("Failed to save Template");
+        console.error(error);
+        setLoading(false);
+      }
+    } else {
+      values = {
+        ...values,
+        tempData: templateEditorData,
+        tid: templateRecord?.TID,
+      };
+      try {
+        const response = await customAxios.post(urlSaveNewTemplate, values);
+        if (response.status === 200) {
+          message.success("Template updated successfully");
+        }
+        setLoading(false);
+        navigate("/Templates");
+      } catch (error) {
+        message.error("Failed to update Template");
+        console.error(error);
+        setLoading(false);
+      }
+    }
   };
 
   return (
@@ -76,7 +144,7 @@ function ShowAddNewTemplate() {
             <Row gutter={32}>
               <Col span={6}>
                 <Form.Item
-                  name="Facility"
+                  name="facilityID"
                   label="Facility"
                   rules={[
                     {
@@ -99,7 +167,7 @@ function ShowAddNewTemplate() {
               </Col>
               <Col span={6}>
                 <Form.Item
-                  name="TemplateGroup"
+                  name="tempGroupID"
                   label="Template Group"
                   rules={[
                     {
@@ -121,7 +189,7 @@ function ShowAddNewTemplate() {
                 </Form.Item>
               </Col>
               <Col span={5}>
-                <Form.Item name="Providers" label="Providers">
+                <Form.Item name="providerID" label="Providers">
                   <Select style={{ width: "100%" }}>
                     {apiData?.Provider?.map((option) => (
                       <Select.Option
@@ -136,7 +204,7 @@ function ShowAddNewTemplate() {
               </Col>
               <Col span={5}>
                 <Form.Item
-                  name="TemplateName"
+                  name="tempName"
                   label="Template Name"
                   rules={[
                     {
@@ -151,19 +219,21 @@ function ShowAddNewTemplate() {
               <Col span={2}>
                 <Form.Item label=" ">
                   <Button type="primary" htmlType="submit">
-                    Save
+                    {templateRecord ? "Update" : "Save"}
                   </Button>
                 </Form.Item>
               </Col>
             </Row>
           </Form>
           <Divider />
-          <CkEditor
-            initialData={`<p style="text-align:center;">&nbsp;</p><figure class="table" style="width:1000px;"><table align="center" border="1" cellpadding="1" cellspacing="1" dir="ltr" id="PatientHeader"><tbody><tr><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Name</strong></span></td><td style="width:300px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">Mahesh</span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Provider</strong></span></td><td style="width:300px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">Mahesh Dr.</span></td></tr><tr><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>UHID</strong></span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">COH/25</span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Age/Sex</strong></span></td><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;">25Y 2M 6D /Male</span></td></tr><tr><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Encounter</strong></span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">COH/OP/01</span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Sample Collection Time</strong></span></td><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;">01-02-2023 11:08 AM</span></td></tr><tr><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Lab Number</strong></span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">COH/LAB/25</span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Report Date Time</strong></span></td><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;">01-02-2023 11:08 AM</span></td></tr></tbody></table></figure><p>&nbsp;</p>
-`}
-            printButton={true}
-            setData={setData}
-          />
+          {(templateEditorData || !templateRecord) && (
+            <CkEditor
+              // initialData={`<p style="text-align:center;">&nbsp;</p><figure class="table" style="width:1000px;"><table align="center" border="1" cellpadding="1" cellspacing="1" dir="ltr" id="PatientHeader"><tbody><tr><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Name</strong></span></td><td style="width:300px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">Mahesh</span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Provider</strong></span></td><td style="width:300px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">Mahesh Dr.</span></td></tr><tr><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>UHID</strong></span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">COH/25</span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Age/Sex</strong></span></td><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;">25Y 2M 6D /Male</span></td></tr><tr><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Encounter</strong></span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">COH/OP/01</span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Sample Collection Time</strong></span></td><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;">01-02-2023 11:08 AM</span></td></tr><tr><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Lab Number</strong></span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;">COH/LAB/25</span></td><td style="width:200px;"><span style="font-family:Times New Roman,Times,serif;font-size:16px;"><strong>Report Date Time</strong></span></td><td><span style="font-family:Times New Roman,Times,serif;font-size:16px;">01-02-2023 11:08 AM</span></td></tr></tbody></table></figure><p>&nbsp;</p>`}
+              initialData={templateEditorData}
+              printButton={true}
+              setData={setTemplateEditorData}
+            />
+          )}
         </Spin>
       </div>
     </>

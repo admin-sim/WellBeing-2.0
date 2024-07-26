@@ -31,6 +31,9 @@ import logo from "../../assets/smileslogo.png";
 import desktop_Login from "../../assets/desktop_Login.jpg";
 import mobile_Login from "../../assets/mobile_Login.jpg";
 import { isMobile } from "react-device-detect";
+// import CustomLoader from "../../components/CustomLoader";
+
+// Spin.setDefaultIndicator(<CustomLoader />);
 
 const Login = () => {
   const navigate = useNavigate();
@@ -38,7 +41,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const onFinish = async (values) => {
     setLoading(true);
-    // debugger;
+
     try {
       const response = await axios.post(urlLogin, values, {
         headers: {
@@ -94,8 +97,8 @@ const Login = () => {
             backgroundColor: "#fff",
             // border: "1px solid purple",
             boxShadow: "rgb(38, 57, 77) 0px 20px 30px -10px",
-            width: "30vw",
-            height: "70vh",
+            width: "28.5rem",
+            height: "30rem",
           }}
           name="loginForm"
           initialValues={{
@@ -213,16 +216,15 @@ const Login = () => {
       </Spin>
     </Card>
   ) : (
-    <Card
+    <div
       style={{
-        height: "100vh",
+        height: "max-content",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#EEF1FF",
         backgroundImage: `url(${mobile_Login})`,
         backgroundSize: "cover",
-
         backgroundPosition: "center",
       }}
     >
@@ -354,73 +356,7 @@ const Login = () => {
           </Row>
         </Form>
       </Spin>
-    </Card>
+    </div>
   );
 };
 export default Login;
-
-// const menuData = [
-//   {
-//     key: "role",
-//     icon: <TeamOutlined style={{ fontSize: "1.5rem" }} />,
-//     title: "Role",
-//     link: "/role",
-//   },
-//   {
-//     key: "client",
-//     icon: <TeamOutlined style={{ fontSize: "1.5rem" }} />,
-//     title: "Client",
-//     link: "/client",
-//   },
-//   {
-//     key: "employee",
-//     icon: <UserOutlined style={{ fontSize: "1.5rem" }} />,
-//     title: "Employee",
-//     link: "/employee",
-//   },
-//   {
-//     key: "implementation",
-//     icon: <CodepenOutlined style={{ fontSize: "1.5rem" }} />,
-//     title: "Implementation",
-//     link: "/implementation",
-//   },
-//   {
-//     key: "collection",
-//     icon: <UserOutlined style={{ fontSize: "1.5rem" }} />,
-//     title: "Collection",
-//     link: "/collection",
-//   },
-//   {
-//     key: "amc",
-//     icon: <UserOutlined style={{ fontSize: "1.5rem" }} />,
-//     title: "AMC",
-//     link: "/amc",
-//   },
-//   {
-//     key: "subtasks",
-//     icon: <HomeOutlined style={{ fontSize: "1.5rem" }} />,
-//     title: "Tasks",
-//     children: [
-//       {
-//         key: "task-1",
-//         icon: <HomeOutlined />,
-//         title: "Sub Task 1",
-//         link: "/sub-task-1",
-//       },
-//       {
-//         key: "task-2",
-//         icon: <HomeOutlined />,
-//         title: "Sub Task 2",
-//         link: "/sub-task-2",
-//       },
-//       {
-//         key: "sub-subtask",
-//         title: "SubTask",
-//         children: [
-//           { key: "ta1", title: "Task11", link: "/task-11" },
-//           { key: "ta2", title: "Task12", link: "/task-12" },
-//         ],
-//       },
-//     ],
-//   },
-// ];

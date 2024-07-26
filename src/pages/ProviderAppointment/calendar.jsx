@@ -479,7 +479,10 @@ const MyCalendar = ({}) => {
                 <Col
                   span={7}
                   style={{
+                    display: "flex",
+                    alignItems: "center",
                     backgroundColor: "#4caf50",
+                    justifyContent: "center",
                     // margin: "1.5rem 1rem",
                     color: "#fff",
                   }}
@@ -526,7 +529,7 @@ const MyCalendar = ({}) => {
               }}
             >
               <Col>
-                <span>Book by Date : </span>
+                <span>Search by Date : </span>
                 <DatePicker
                   placeholder="DD/MM/YYYY"
                   format={"DD/MM/YYYY"}

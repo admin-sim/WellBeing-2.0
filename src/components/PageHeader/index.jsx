@@ -3,7 +3,13 @@ import { Row, Col, Typography, Button } from "antd";
 
 const { Title } = Typography;
 
-const PageHeader = ({ title, buttonLabel, buttonIcon, onButtonClick }) => {
+const PageHeader = ({
+  title,
+  buttonLabel,
+  buttonIcon,
+  onButtonClick,
+  button = true,
+}) => {
   return (
     <Row
       style={{
@@ -27,15 +33,16 @@ const PageHeader = ({ title, buttonLabel, buttonIcon, onButtonClick }) => {
         >
           {title}
         </Title>
-
-        <Button
-          size="middle"
-          className="dfja"
-          icon={buttonIcon}
-          onClick={onButtonClick}
-        >
-          {buttonLabel}
-        </Button>
+        {button && (
+          <Button
+            size="middle"
+            className="dfja"
+            icon={buttonIcon}
+            onClick={onButtonClick}
+          >
+            {buttonLabel}
+          </Button>
+        )}
       </Col>
     </Row>
   );

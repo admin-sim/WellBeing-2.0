@@ -67,7 +67,7 @@ function ShowEditDefinition() {
         ProductClassificationId: record.ProductClassificationId,
         HSNSAC: values.HSNSAC,
         LongName: values.LongName,
-        ShortName:values.ShortName,
+        ShortName: values.ShortName,
         Manufacturer: values.Manufacturer,
         TrackingMethod: values.TrackingMethod,
         Sourcing: values.Sourcing,
@@ -77,24 +77,53 @@ function ShowEditDefinition() {
         Remarks: values.Remarks,
         UOMPrimaryUOM: values.UOMPrimaryUOM,
         UOMDecimalPlaces: values.UOMDecimalPlaces ? values.UOMDecimalPlaces : 0,
-        BillingIsChargeable: values.BillingIsChargeable  === true || values.BillingIsChargeable === undefined  ? "True" : "False",
-        BillingIsProviderMandatory: values.BillingIsProviderMandatory === true || values.BillingIsProviderMandatory === undefined  ? "True" : "False",
-        BillingPricingMethod: values.BillingPricingMethod === "Regulated Price" || values.BillingPricingMethod === undefined ? "Regulated Price" : values.BillingPricingMethod ,
-        OrderIsOrderable: values.OrderIsOrderable === true || values.OrderIsOrderable === undefined ? "True" : "False",
-        OrderIsIntervalApplicable: values.OrderIsIntervalApplicable === true || values.OrderIsIntervalApplicable === undefined   ? "True" : "False",
-        OrderIsQuantityApplicable: values.OrderIsQuantityApplicable === true || values.OrderIsQuantityApplicable ===undefined ? "True" : "False",
+        BillingIsChargeable:
+          values.BillingIsChargeable === true ||
+          values.BillingIsChargeable === undefined
+            ? "True"
+            : "False",
+        BillingIsProviderMandatory:
+          values.BillingIsProviderMandatory === true ||
+          values.BillingIsProviderMandatory === undefined
+            ? "True"
+            : "False",
+        BillingPricingMethod:
+          values.BillingPricingMethod === "Regulated Price" ||
+          values.BillingPricingMethod === undefined
+            ? "Regulated Price"
+            : values.BillingPricingMethod,
+        OrderIsOrderable:
+          values.OrderIsOrderable === true ||
+          values.OrderIsOrderable === undefined
+            ? "True"
+            : "False",
+        OrderIsIntervalApplicable:
+          values.OrderIsIntervalApplicable === true ||
+          values.OrderIsIntervalApplicable === undefined
+            ? "True"
+            : "False",
+        OrderIsQuantityApplicable:
+          values.OrderIsQuantityApplicable === true ||
+          values.OrderIsQuantityApplicable === undefined
+            ? "True"
+            : "False",
         OrderDuration: values.OrderDuration,
         OrderUOM: values.OrderUOM,
         OrderDefaultFrequency: values.OrderDefaultFrequency,
         OrderRoute: values.OrderRoute,
         OrderPatTypeEmergency: values.OrderPatTypeEmergency ? "True" : "False",
         OrderPatTypeIp: values.OrderPatTypeIp ? "True" : "False",
-        OrderPatTypeAmbulatory: values.OrderPatTypeAmbulatory ? "True" : "False",
+        OrderPatTypeAmbulatory: values.OrderPatTypeAmbulatory
+          ? "True"
+          : "False",
         OrderPatTypeShortstay: values.OrderPatTypeShortstay ? "True" : "False",
       };
 
       const Stock = {
-        Serialization: values.Serialization  === "Auto" || values.Serialization === undefined  ? "Auto" : values.Serialization ,
+        Serialization:
+          values.Serialization === "Auto" || values.Serialization === undefined
+            ? "Auto"
+            : values.Serialization,
         DrugForm: values.DrugForm,
         MinimumStockDays: values.MinimumStockDays,
         MinimumStock: values.MinimumStock,
@@ -102,10 +131,18 @@ function ShowEditDefinition() {
         MaximumStock: values.MaximumStock,
         ReorderLevel: values.ReorderLevel,
         ReorderQuantity: values.ReorderQuantity,
-        BarcodeApplicability: values.BarcodeApplicability === "Not Applicable" || values.BarcodeApplicability === undefined ?  "Not Applicable" : values.BarcodeApplicability,
+        BarcodeApplicability:
+          values.BarcodeApplicability === "Not Applicable" ||
+          values.BarcodeApplicability === undefined
+            ? "Not Applicable"
+            : values.BarcodeApplicability,
         DefaultPrice: values.DefaultPrice,
         MinimumShelfLifeinDays: values.MinimumShelfLifeinDays,
-        IsConsumptionAllowed: values.IsConsumptionAllowed === true || values.IsConsumptionAllowed === undefined  ? "True" : "False",
+        IsConsumptionAllowed:
+          values.IsConsumptionAllowed === true ||
+          values.IsConsumptionAllowed === undefined
+            ? "True"
+            : "False",
       };
 
       const ProductDefinition = {
@@ -114,16 +151,20 @@ function ShowEditDefinition() {
         ProductStock: Stock,
         Gender: null,
       };
-     //Send a POST request to the server
-      const response = await customAxios.post(urlAddNewProduct, ProductDefinition, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      //Send a POST request to the server
+      const response = await customAxios.post(
+        urlAddNewProduct,
+        ProductDefinition,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      if (response.status===200 && response.data.data===true) {
-         message.success("Product Definition Is Success");
-         navigate("/ProductDefinition");
+      if (response.status === 200 && response.data.data === true) {
+        message.success("Product Definition Is Success");
+        navigate("/ProductDefinition");
       }
     } catch (error) {}
   };
@@ -220,7 +261,7 @@ function ShowEditDefinition() {
       ),
       extra: (
         <Button
-         // onClick={() => alert("UOM icon Clicked")}
+          // onClick={() => alert("UOM icon Clicked")}
           type="link"
           icon={
             <IoMdAddCircleOutline
@@ -237,17 +278,21 @@ function ShowEditDefinition() {
         <div style={{ borderBottom: "1px solid silver" }}>
           <Row gutter={32}>
             <Col offset={1} span={7}>
-              <Form.Item valuePropName="checked"  name="BillingIsChargeable" label=" ">
-                <Checkbox checked>
-                  Is Chargeable
-                </Checkbox>
+              <Form.Item
+                valuePropName="checked"
+                name="BillingIsChargeable"
+                label=" "
+              >
+                <Checkbox checked>Is Chargeable</Checkbox>
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="BillingIsProviderMandatory" valuePropName="checked" label=" ">
-                <Checkbox  checked>
-                  Is Provider Mandatory
-                </Checkbox>
+              <Form.Item
+                name="BillingIsProviderMandatory"
+                valuePropName="checked"
+                label=" "
+              >
+                <Checkbox checked>Is Provider Mandatory</Checkbox>
               </Form.Item>
             </Col>
             <Col span={8}>
@@ -365,10 +410,12 @@ function ShowEditDefinition() {
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item name="IsConsumptionAllowed" valuePropName="checked" label=" ">
-                <Checkbox  checked>
-                  Is Consumption Allowed
-                </Checkbox>
+              <Form.Item
+                name="IsConsumptionAllowed"
+                valuePropName="checked"
+                label=" "
+              >
+                <Checkbox checked>Is Consumption Allowed</Checkbox>
               </Form.Item>
             </Col>
           </Row>
@@ -386,26 +433,30 @@ function ShowEditDefinition() {
         <div style={{ borderBottom: "1px solid silver" }}>
           <Row gutter={32}>
             <Col offset={1} span={7}>
-              <Form.Item name="OrderIsOrderable" valuePropName="checked"  label=" ">
-                <Checkbox checked>
-                  Is Orderable
-                </Checkbox>
+              <Form.Item
+                name="OrderIsOrderable"
+                valuePropName="checked"
+                label=" "
+              >
+                <Checkbox checked>Is Orderable</Checkbox>
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="OrderIsIntervalApplicable" valuePropName="checked" label=" ">
-                <Checkbox  checked>
-                  {" "}
-                  Is Interval Applicable
-                </Checkbox>
+              <Form.Item
+                name="OrderIsIntervalApplicable"
+                valuePropName="checked"
+                label=" "
+              >
+                <Checkbox checked> Is Interval Applicable</Checkbox>
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="OrderIsQuantityApplicable" valuePropName="checked" label=" ">
-                <Checkbox  checked>
-                  {" "}
-                  Is Quantity Applicable
-                </Checkbox>
+              <Form.Item
+                name="OrderIsQuantityApplicable"
+                valuePropName="checked"
+                label=" "
+              >
+                <Checkbox checked> Is Quantity Applicable</Checkbox>
               </Form.Item>
             </Col>
             <Divider style={{ margin: "0" }} orientation="left">
@@ -453,23 +504,39 @@ function ShowEditDefinition() {
               Applicable Patient Type
             </Divider>
             <Col offset={1} span={5}>
-              <Form.Item valuePropName="checked" name="OrderPatTypeEmergency" label=" ">
-                <Checkbox >Emergency Patient</Checkbox>
+              <Form.Item
+                valuePropName="checked"
+                name="OrderPatTypeEmergency"
+                label=" "
+              >
+                <Checkbox>Emergency Patient</Checkbox>
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item valuePropName="checked" name="OrderPatTypeIp" label=" ">
-                <Checkbox >In Patient</Checkbox>
+              <Form.Item
+                valuePropName="checked"
+                name="OrderPatTypeIp"
+                label=" "
+              >
+                <Checkbox>In Patient</Checkbox>
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item valuePropName="checked" name="OrderPatTypeAmbulatory" label=" ">
-                <Checkbox >Ambulatory Patient</Checkbox>
+              <Form.Item
+                valuePropName="checked"
+                name="OrderPatTypeAmbulatory"
+                label=" "
+              >
+                <Checkbox>Ambulatory Patient</Checkbox>
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item valuePropName="checked" name="OrderPatTypeShortstay" label=" ">
-                <Checkbox >Short Stay Patient</Checkbox>
+              <Form.Item
+                valuePropName="checked"
+                name="OrderPatTypeShortstay"
+                label=" "
+              >
+                <Checkbox>Short Stay Patient</Checkbox>
               </Form.Item>
             </Col>
             <Divider
@@ -530,7 +597,16 @@ function ShowEditDefinition() {
           layout="vertical"
           onFinish={onFinish}
           style={{ margin: "1rem" }}
-          initialValues={{ Serialization: 'Auto', IsAtomic: true ,BillingIsChargeable:true,BillingIsProviderMandatory:true,IsConsumptionAllowed:true,OrderIsOrderable:true,OrderIsIntervalApplicable:true,OrderIsQuantityApplicable:true}}
+          initialValues={{
+            Serialization: "Auto",
+            IsAtomic: true,
+            BillingIsChargeable: true,
+            BillingIsProviderMandatory: true,
+            IsConsumptionAllowed: true,
+            OrderIsOrderable: true,
+            OrderIsIntervalApplicable: true,
+            OrderIsQuantityApplicable: true,
+          }}
         >
           <Row gutter={32}>
             <Col span={16}>
@@ -617,11 +693,7 @@ function ShowEditDefinition() {
 
                 <Col span={6}>
                   <Form.Item valuePropName="checked" name="IsAtomic" label=" ">
-                    <Checkbox
-                      
-                      checked
-                      style={{ width: "100%" }}
-                    >
+                    <Checkbox checked style={{ width: "100%" }}>
                       is Atomic
                     </Checkbox>
                   </Form.Item>

@@ -106,6 +106,14 @@ import UpdatePatientIssue from "./pages/Inventory/UpdatePatientIssue";
 import ShowCreateEditDefinition from "./pages/Masters/InventoryManagement/ShowCreateEditDefinition";
 import Templates from "./pages/Masters/GeneralMasters/TemplateMaster";
 import ShowAddNewTemplate from "./pages/Masters/GeneralMasters/TemplateMaster/ShowAddNewTemplate.jsx";
+import Enterprise from "./pages/Masters/Identity Management/Enterprise/index.jsx";
+import Department from "./pages/Masters/Identity Management/Department/index.jsx";
+import ServiceLocation from "./pages/Masters/Identity Management/ServiceLocation/index.jsx";
+import FacilityDepartment from "./pages/Masters/Identity Management/FacilityDepartment/index.jsx";
+import FacilityDepartmentServiceLocation from "./pages/Masters/Identity Management/FacilityDepartmentServiceLocation/index.jsx";
+import Facility from "./pages/Masters/Identity Management/Facility/index.jsx";
+import EditEnterprise from "./pages/Masters/Identity Management/Enterprise/EditEnterprise.jsx";
+import CreateFacility from "./pages/Masters/Identity Management/Facility/CreateFacility.jsx";
 
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
@@ -543,6 +551,70 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ShowAddNewTemplate />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Enterprise"
+              element={
+                <ProtectedRoute>
+                  <Enterprise />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Enterprise/EditEnterprise"
+              element={
+                <ProtectedRoute>
+                  <EditEnterprise />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Facility"
+              element={
+                <ProtectedRoute>
+                  <Facility />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Facility/CreateFacility"
+              element={
+                <ProtectedRoute>
+                  <CreateFacility />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="DepartmentManager"
+              element={
+                <ProtectedRoute>
+                  <Department />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="ServiceLocation"
+              element={
+                <ProtectedRoute>
+                  <ServiceLocation />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="FacilityDepartment"
+              element={
+                <ProtectedRoute>
+                  <FacilityDepartment />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="FacilityDepartmentServiceLocation"
+              element={
+                <ProtectedRoute>
+                  <FacilityDepartmentServiceLocation />
                 </ProtectedRoute>
               }
             />

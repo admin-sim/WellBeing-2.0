@@ -1,5 +1,5 @@
 .showCreateEditDefinition .ant-collapse-header {
-  background-color: lavender;
+  background-color: lavender !important;
   margin-bottom: 1rem;
   margin-top: 1rem;
 }

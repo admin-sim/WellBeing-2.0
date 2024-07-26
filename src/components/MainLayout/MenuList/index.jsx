@@ -76,6 +76,50 @@ const menuData = [
         ],
       },
       {
+        key: "IdentityManagement",
+        icon: "FaHospitalUser",
+
+        title: "Identity Management",
+        children: [
+          {
+            key: "Enterprise",
+            icon: "GoDotFill",
+            title: "Enterprise",
+            link: "/Enterprise",
+          },
+          {
+            key: "Facility",
+            icon: "GoDotFill",
+            title: "Facility",
+            link: "/Facility",
+          },
+          {
+            key: "DepartmentManager",
+            icon: "GoDotFill",
+            title: "Department Manager",
+            link: "/DepartmentManager",
+          },
+          {
+            key: "ServiceLocation",
+            icon: "GoDotFill",
+            title: "Service Location",
+            link: "/ServiceLocation",
+          },
+          {
+            key: "FacilityDepartment",
+            icon: "GoDotFill",
+            title: "Facility Department",
+            link: "/FacilityDepartment",
+          },
+          {
+            key: "FacilityDepartmentServiceLocation",
+            icon: "GoDotFill",
+            title: "Facility Department Service Location",
+            link: "/FacilityDepartmentServiceLocation",
+          },
+        ],
+      },
+      {
         key: "Accountmanagement",
         icon: "CiSettings",
 
