@@ -477,7 +477,7 @@ const menuData = [
       {
         key: "PatientConsumption",
         icon: "GoDotFill",
-        title: "PatientConsumption",
+        title: "Patient Consumption",
         link: "/PatientConsumption",
       },
       {

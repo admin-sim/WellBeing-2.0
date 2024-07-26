@@ -21,8 +21,8 @@ import {
 } from "antd";
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
-
-import { urlGetPurshaseOrderDetails } from "../../../endpoints.js";
+import CustomTable from "../../components/customTable/index.jsx";
+import { urlGetPurshaseOrderDetails, urlSearchStoreConsumption } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
@@ -32,8 +32,9 @@ const StoreConsumption = () => {
     DocumentType: [],
     StoreDetails: [],
     SupplierList: [],
-    DateFormat: []
+    DateFormat: [],
   });
+
   const [paginationSize, setPaginationSize] = useState(5);
   const [filteredData, setFilteredData] = useState([]);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
@@ -43,10 +44,10 @@ const StoreConsumption = () => {
   const [isTable, setIsTable] = useState(false);
   const { Title } = Typography;
   useEffect(() => {
-    try {      
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {        
-        const apiData = response.data.data;        
-        setDropDown(apiData);        
+    try {
+      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
+        const apiData = response.data.data;
+        setDropDown(apiData);
       });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
@@ -101,7 +102,7 @@ const StoreConsumption = () => {
       key: "PoDate",
       sorter: (a, b) => new Date(a.PoDate) - new Date(b.PoDate),
       sortDirections: ["descend", "ascend"],
-      render: (text) => {        
+      render: (text) => {
         return text;
       },
     },
@@ -132,7 +133,7 @@ const StoreConsumption = () => {
       key: "PoStatus",
       sorter: (a, b) => a.PoStatus.localeCompare(b.PoStatus),
       sortDirections: ["descend", "ascend"],
-      render: (text) => {        
+      render: (text) => {
         return (
           <Tag color={colorMapping[`${text}`]} key={text}>
             {text.toUpperCase()}
@@ -208,37 +209,14 @@ const StoreConsumption = () => {
     setLoading(true);
     try {
       const postData1 = {
-        DocumentType:
-          values.DocumentType === undefined ? "" : values.DocumentType, // Set to empty string when left blank
-        Supplier: values.Supplier === undefined ? "" : values.Supplier,
-        ProcurementStore:
-          values.ProcurementStore === undefined ? "" : values.ProcurementStore,
-        POStatus: values.POStatus === undefined ? "" : values.POStatus,
-        FromDate:
-          values.FromDate === undefined || values.FromDate === null
-            ? ""
-            : (
-              values.FromDate.$D.toString().padStart(2, "0") +
-              "-" +
-              (values.FromDate.$M + 1).toString().padStart(2, "0") +
-              "-" +
-              values.FromDate.$y
-            ).toString(),
-        ToDate:
-          values.ToDate === undefined || values.ToDate === null
-            ? ""
-            : (
-              values.ToDate.$D.toString().padStart(2, "0") +
-              "-" +
-              (values.ToDate.$M + 1).toString().padStart(2, "0") +
-              "-" +
-              values.ToDate.$y
-            ).toString(), // A sample value
-        PONumber: values.PONumber === undefined ? "" : values.PONumber, // A sample value
+        IssuingStore: values.IssuingStore ? values.IssuingStore : 0,
+        IssueStatus: values.IssueStatus === 0 ? null : values.IssueStatus,
+        FromDateString: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : "",
+        ToDateString: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
       };
       customAxios
         .get(
-          `${urlSearchStoreConsumption}?DocumentType=${postData1.DocumentType}&Supplier=${postData1.Supplier}&ProcurementStore=${postData1.ProcurementStore}&DocumentStatus=${postData1.POStatus}&FromDate=${postData1.FromDate}&ToDate=${postData1.ToDate}&PoNumber=${postData1.PONumber}`,
+          `${urlSearchStoreConsumption}?IssuingStoreId=${postData1.IssuingStore}&FromDateString=${postData1.FromDateString}&ToDateString=${postData1.ToDateString}&IssueStatus=${postData1.IssueStatus}`,
           null,
           {
             params: postData1,
@@ -347,7 +325,16 @@ const StoreConsumption = () => {
             </Row>
           </Form>
         </Card>
-        <Table display={setIsTable}
+        <Spin spinning={loading}>
+          <CustomTable
+            dataSource={filteredData}
+            columns={columns}
+            isFilter={true}
+            size="small"
+            bordered
+          />
+        </Spin>
+        {/* <Table display={setIsTable}
           dataSource={filteredData}
           columns={columns}
           pagination={{
@@ -364,7 +351,7 @@ const StoreConsumption = () => {
           rowKey={(row) => row.AppUserId} // Specify the custom id property here
           size="small"
           bordered
-        />
+        /> */}
       </div>
     </Layout>
   );

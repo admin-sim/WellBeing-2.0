@@ -16,14 +16,15 @@ import {
   DatePicker,
   Card,
   Divider,
-  Tooltip,
+  AutoComplete,
   Table,
 } from "antd";
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
-
-import { urlGetPurshaseOrderDetails, urlSearchPatientConsumption } from "../../../endpoints.js";
+import CustomTable from "../../components/customTable/index.jsx";
+import { urlGetPurshaseOrderDetails, urlSearchPatientConsumption, urlSearchUHID, urlGetLastEncounter } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
+import { render } from "react-dom";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -34,6 +35,7 @@ const PatientConsumption = () => {
     SupplierList: [],
     DateFormat: []
   });
+
   const [paginationSize, setPaginationSize] = useState(5);
   const [filteredData, setFilteredData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,6 +45,11 @@ const PatientConsumption = () => {
   const [loading, setLoading] = useState(false);
   const [isTable, setIsTable] = useState(false);
   const { Title } = Typography;
+  const [fromDate, setFromDate] = useState(dayjs().subtract(1, 'day'));
+  const [toDate, setToDate] = useState(dayjs());
+  const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
+  const [encounter, setEncounter] = useState([])
+
   useEffect(() => {
     try {
       customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
@@ -52,11 +59,31 @@ const PatientConsumption = () => {
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
+    form.submit()
   }, []);
 
   const navigate = useNavigate();
-  const handleAddTemplate = () => {
-    navigate(`/CreatePatientConsumption`);
+  const handleAddTemplate = (IndentId) => {
+    navigate("/CreatePatientConsumption", { state: { IndentId } });
+  };
+
+  const handleFromDateChange = (date) => {
+    setFromDate(date);
+    if (toDate && date && date.isAfter(toDate)) {
+      setToDate(null);
+    }
+  };
+
+  const handleToDateChange = (date) => {
+    setToDate(date);
+  };
+
+  const disabledFromDate = (current) => {
+    return current && current.isAfter(dayjs().endOf('day'));
+  };
+
+  const disabledToDate = (current) => {
+    return current && (current.isBefore(fromDate, 'day') || current.isAfter(dayjs().endOf('day')));
   };
 
   const colorMapping = {
@@ -66,16 +93,19 @@ const PatientConsumption = () => {
     "Partially Pending": "orange",
     Completed: "green",
   };
-
-  const GetModelDetails = (text, record, index) => {
-    debugger;
-    console.log("welcome");
-  };
+  const handleIssueNumber = (IssueId) => {
+    navigate("/CreatePatientConsumption", { state: { IssueId } });
+  }
+  // const GetModelDetails = (text, record, index) => {
+  //   debugger;
+  //   console.log("welcome");
+  // };
+  
   const columns = [
     {
       title: "Sl No",
-      key: "index",
-      render: (text, record, index) => index + 1,
+      key: 'key',
+      dataIndex: 'key',
     },
     {
       title: "Issue ID",
@@ -83,6 +113,12 @@ const PatientConsumption = () => {
       key: "IssueNumber",
       sorter: (a, b) => a.IssueNumber - b.IssueNumber,
       sortDirections: ["descend", "ascend"],
+      render: (text, record) => {
+        if (record.IssueStatus == "Finalize") {
+          return <Tag style={{ marginLeft: '15px' }}>{text}</Tag>;
+        }
+        return <Button type='link' onClick={() => handleIssueNumber(record.IssueId)}>{text}</Button>
+      }
     },
     {
       title: "Issue Date",
@@ -169,57 +205,86 @@ const PatientConsumption = () => {
 
     // ... Repeat for other parameters
   };
-  const [formatedFromDate, setFormatedFromDate] = useState();
-  const [formatedToDate, setFormatedToDate] = useState();
-  function formatDate(inputDate) {
-    const dateParts = inputDate.split("/");
-    if (dateParts.length === 3) {
-      const [year, month, day] = dateParts;
-      return `${day}-${month}-${year}`;
-    }
-    return inputDate;
-  }
+
   const onFinish = async (values) => {
     debugger;
     setIsSearchLoading(true);
     setLoading(true);
     try {
       const postData1 = {
-        IssuingStoreId: values.IssuingStore === undefined ? 0 : values.IssuingStore,
-        PatientName: values.PatientName === undefined ? null : values.PatientName,
-        EncounterId: values.Encounter === undefined ? 0 : values.Encounter,
-        FromDate: values.FromDate,
-        ToDate: values.ToDate,
-        Status: values.Status === 0 ? null : values.Status,
-        PatientId: 0
+        IssueingStoreId: values.IssuingStore ? values.IssuingStore : 0,
+        PatientName: values.PatientName ? values.PatientName : undefined,
+        EncounterId: values.Encounter ? values.Encounter : 0,
+        FromDateString: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : "",
+        ToDateString: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
+        IssueStatus: values.IssueStatus === 0 ? undefined : values.IssueStatus,
+        PatientId: values.PatientId ? values.PatientId : 0
       };
-      customAxios
-        .get(
-          `${urlSearchPatientConsumption}?IssuingStoreId=${postData1.IssuingStoreId}&PatientName=${postData1.PatientName}&IssueStatus=${postData1.Status}&EncounterId=${postData1.EncounterId}&FromDate=${postData1.FromDate}&ToDate=${postData1.ToDate}&PatientId=${postData1.PatientId}`,
-          null,
-          {
-            params: postData1,
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        )
-        .then((response) => {
-          debugger;
-          setFilteredData(response.data.data.newIndentIssueModel);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      const response = await customAxios.post(urlSearchPatientConsumption, postData1);
+      debugger;
+      const ApiData = response.data.data.newIndentIssueModel.map((item, index) => {
+        return {
+          ...item,
+          key: index + 1
+        }
+      })
+      setFilteredData(ApiData);
     } catch (error) {
       console.error("Error:", error);
     }
+    setLoading(false);
     setIsSearchLoading(false);
   };
 
   const onReset = () => {
+    setIsTable(false)
+    setFilteredData([]);
     form.resetFields();
   };
+
+  const getPanelValue = async (searchText) => {
+    try {
+      customAxios.get(`${urlSearchUHID}?Uhid=${searchText}`).then((response) => {
+        const apiData = response.data.data;
+        const newOptions = apiData.map(item => ({ value: item.UhId, key: item.UhId, PatientId: item.PatientId, Name: item.PatientFirstName + ' ' + item.PatientLastName }));
+        setAutoCompleteOptions(newOptions);
+      });
+    } catch (error) {
+      //console.error("Error fetching purchase order details:", error);        
+    }
+  }
+
+  const handleSelect = (value, option) => {
+    form.setFieldsValue({ PatientName: option.Name })
+    form.setFieldsValue({ PatientId: option.PatientId })
+    // setPatientName(option.Name);
+    try {
+      customAxios.get(`${urlGetLastEncounter}?Uhid=${option.key}`).then((response) => {
+        const apiData = response.data.data;
+        if (apiData.length > 0) {
+          setEncounter(apiData);
+          form.setFieldsValue({ Encounter: apiData[0].EncounterId });
+          form.setFieldsValue({ PatientId: option.PatientId });
+        } else {
+          setEncounter([]);
+          form.setFieldsValue({ Encounter: '' });
+          form.setFieldsValue({ PatientId: '' });
+        }
+      });
+    } catch (error) {
+      //console.error("Error fetching purchase order details:", error);        
+    }
+  }
+
+  const handleUHId = (value) => {
+    debugger
+    if (value == undefined) {
+      setEncounter([])
+      form.setFieldsValue({ Encounter: undefined });
+      form.setFieldsValue({ PatientId: undefined });
+      form.setFieldsValue({ PatientName: undefined });
+    }
+  }
 
   return (
     <Layout style={{ zIndex: '999999999' }}>
@@ -231,7 +296,7 @@ const PatientConsumption = () => {
             </Title>
           </Col>
           <Col offset={4} span={2}>
-            <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={handleAddTemplate}>
+            <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={() => handleIssueNumber(0)}>
               Add Patient Consumption
             </Button>
           </Col>
@@ -249,8 +314,7 @@ const PatientConsumption = () => {
             initialValues={{
               FromDate: dayjs().subtract(1, 'day'),
               ToDate: dayjs(),
-              Status: 0,
-
+              IssueStatus: 0,
             }}
             onFinish={onFinish}
           >
@@ -260,7 +324,8 @@ const PatientConsumption = () => {
                   label="From Date"
                   name="FromDate"
                 >
-                  <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' />
+                  <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY'
+                    value={fromDate} onChange={handleFromDateChange} disabledDate={disabledFromDate} />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
@@ -268,7 +333,8 @@ const PatientConsumption = () => {
                   name="ToDate"
                   label="To Date"
                 >
-                  <DatePicker format='DD-MM-YYYY' style={{ width: '100%' }} />
+                  <DatePicker format='DD-MM-YYYY' style={{ width: '100%' }}
+                    value={toDate} onChange={handleToDateChange} disabledDate={disabledToDate} />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
@@ -287,8 +353,8 @@ const PatientConsumption = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item
-                  name="Status"
-                  label="Status"
+                  name="IssueStatus"
+                  label="IssueStatus"
                 >
                   <Select>
                     <Select.Option key={0} value={0}>All</Select.Option>
@@ -299,11 +365,16 @@ const PatientConsumption = () => {
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
-                <Form.Item
-                  name="UHID"
-                  label="UHID"
-                >
-                  <Input style={{ width: '100%' }} allowClear />
+                <Form.Item name="UHID" label="UHID">
+                  <AutoComplete
+                    options={autoCompleteOptions}
+                    // options={autoCompleteOptions[record.key]}
+                    onSearch={getPanelValue}
+                    onSelect={(value, option) => handleSelect(value, option)}
+                    onChange={handleUHId}
+                    placeholder="Search for a Uhid"
+                    allowClear
+                  />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
@@ -312,18 +383,18 @@ const PatientConsumption = () => {
                   label="Patient Name"
                   rules={[{ required: false }]}
                 >
-                  <Input style={{ width: '100%' }} allowClear />
+                  <Input disabled={!!form.getFieldValue('PatientId')} style={{ width: '100%' }} allowClear />
+                </Form.Item>
+                <Form.Item name="PatientId" hidden>
+                  <Input />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
-                <Form.Item
-                  label="Encounter"
-                  name="Encounter"
-                >
-                  <Select allowClear disabled>
-                    {PatientConsumptionDropdown.DocumentType.map((option) => (
-                      <Select.Option key={option.LookupID} value={option.LookupID}>
-                        {option.LookupDescription}
+                <Form.Item name="Encounter" label="Encounter">
+                  <Select allowClear disabled={encounter.length > 1 ? false : true}>
+                    {encounter.map((option) => (
+                      <Select.Option key={option.EncounterId} value={option.EncounterId}>
+                        {option.GeneratedEncounterId}
                       </Select.Option>
                     ))}
                   </Select>
@@ -351,25 +422,34 @@ const PatientConsumption = () => {
               </Col>
             </Row>
           </Form>
+          <Spin spinning={loading}>
+            <CustomTable
+              dataSource={filteredData}
+              columns={columns}
+              isFilter={true}
+              size="small"
+              bordered
+            />
+          </Spin>
+          {/* <Table display={isTable}
+            dataSource={filteredData}
+            columns={columns}
+            pagination={{
+              onChange: (current, pageSize) => {
+                setPage(current);
+                setPaginationSize(pageSize);
+              },
+              defaultPageSize: 5, 
+              hideOnSinglePage: true,
+              showSizeChanger: true,
+              showTotal: (total, range) =>
+                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+            }}
+            rowKey={(row) => row.AppUserId} 
+            size="small"
+            bordered
+          /> */}
         </Card>
-        <Table display={setIsTable}
-                dataSource={filteredData}
-                columns={columns}
-                pagination={{
-                  onChange: (current, pageSize) => {
-                    setPage(current);
-                    setPaginationSize(pageSize);
-                  },
-                  defaultPageSize: 5, // Set your default pagination size
-                  hideOnSinglePage: true,
-                  showSizeChanger: true,
-                  showTotal: (total, range) =>
-                    `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                }}
-                rowKey={(row) => row.AppUserId} // Specify the custom id property here
-                size="small"
-                bordered
-              />
       </div>
     </Layout>
   );

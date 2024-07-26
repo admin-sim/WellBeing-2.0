@@ -22,9 +22,10 @@ import {
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
 
-import { urlGetPurshaseOrderDetails } from "../../../endpoints.js";
+import { urlGetPurshaseOrderDetails, urlUrgentIssueSearchIndent } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
-//import { format } from 'prettier';
+import CustomTable from "../../components/customTable/index.jsx";
+import { render } from "react-dom";
 //import { useLocation } from 'react-router-dom';
 
 const UrgentIssue = () => {
@@ -46,18 +47,19 @@ const UrgentIssue = () => {
 
     useEffect(() => {
         try {
-          customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {            
-            const apiData = response.data.data;
-            setUrgentIssueDropDown(apiData);            
-          });
+            customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
+                const apiData = response.data.data;
+                setUrgentIssueDropDown(apiData);
+            });
         } catch (error) {
-          console.error("Error fetching purchase order details:", error);
+            console.error("Error fetching purchase order details:", error);
         }
+        form.submit()
     }, []);
 
     const navigate = useNavigate();
-    const handleAddTemplate = () => {
-        navigate(`/CreateUrgentIssue`);
+    const handleAddTemplate = (IssueId) => {
+        navigate("/CreateUrgentIssue", { state: { IssueId } });
     };
 
     const colorMapping = {
@@ -68,79 +70,56 @@ const UrgentIssue = () => {
         Completed: "green",
     };
 
-    const GetModelDetails = (text, record, index) => {
-        debugger;
-        console.log("welcome");
-    };
     const columns = [
         {
-            title: "Sl No",
-            key: "index",
-            render: (text, record, index) => index + 1,
+            title: 'Sl No',
+            key: 'key',
+            dataIndex: 'key'
         },
         {
-            title: "PO Number",
-            dataIndex: "PONumber",
-            key: "PONumber",
-            sorter: (a, b) => a.PONumber - b.PONumber,
+            title: "Issue Id",
+            dataIndex: "IssueNumber",
+            key: "IssueNumber",
+            sorter: (a, b) => a.IssueNumber - b.IssueNumber,
             sortDirections: ["descend", "ascend"],
-            render: (text, record, index) => (
-                <Button
-                    type="link"
-                    onClick={() => GetModelDetails(text, record, index)}
-                >
-                    {text}
-                </Button>
-            ),
-        },
-        {
-            title: "Document Type",
-            dataIndex: "DocumentTypeName",
-            key: "DocumentTypeName",
-            sorter: (a, b) => a.DocumentTypeName.localeCompare(b.DocumentTypeName),
-            sortDirections: ["descend", "ascend"],
-        },
-        {
-            title: "Po Date",
-            dataIndex: "PoDate",
-            key: "PoDate",
-            sorter: (a, b) => new Date(a.PoDate) - new Date(b.PoDate),
-            sortDirections: ["descend", "ascend"],
-            render: (text) => {
-                //const poDate = new Date(text);
-                //const formattedDate = text;
-                return text;
+            render: (text, record, index) => {
+                if (record.IssueStatus === "Created" || record.IssueStatus === "Draft") {
+                    return <Button type="link" onClick={() => handleAddTemplate(record.IssueId)}>
+                        {text}
+                    </Button>
+                }
+                return <Tag style={{ marginLeft: '15px' }}>{text}</Tag>;
             },
         },
         {
-            title: "Supplier Name",
-            dataIndex: "SupplierName",
-            key: "SupplierName",
-            sorter: (a, b) => a.SupplierName.localeCompare(b.SupplierName),
-            sortDirections: ["descend", "ascend"],
-        },
-        {
-            title: "Store Name",
-            dataIndex: "StoreName",
-            key: "StoreName",
-            sorter: (a, b) => a.StoreName.localeCompare(b.StoreName),
-            sortDirections: ["descend", "ascend"],
-        },
-        {
-            title: "PO Raised By",
-            dataIndex: "PORaisedBy",
-            key: "PORaisedBy",
-            sorter: (a, b) => a.UrgentIssueId.localeCompare(b.UrgentIssueId),
-            sortDirections: ["descend", "ascend"],
-        },
-        {
-            title: "Po Status",
-            dataIndex: "PoStatus",
-            key: "PoStatus",
-            sorter: (a, b) => a.PoStatus.localeCompare(b.PoStatus),
+            title: "Issue Date",
+            dataIndex: "IssueDate",
+            key: "IssueDate",
+            sorter: (a, b) => a.IssueDate.localeCompare(b.IssueDate),
             sortDirections: ["descend", "ascend"],
             render: (text) => {
-                // let color = text === 'Pending' ? 'volcano' : text === 'Completed' ? 'green' : text === '';
+                const dateParts = text.split("T")[0].split("-");
+                const year = dateParts[0];
+                const month = dateParts[1];
+                const day = dateParts[2];
+
+                return `${day}-${month}-${year}`;
+            },
+        },
+        {
+            title: "Issuing Store",
+            dataIndex: "IssueStoreName",
+            key: "IssueStoreName",
+            sorter: (a, b) => new Date(a.IssueStoreName) - new Date(b.IssueStoreName),
+            sortDirections: ["descend", "ascend"],
+        },
+        {
+            title: "Issue Status",
+            dataIndex: "IssueStatus",
+            key: "IssueStatus",
+            sorter: (a, b) => a.IssueStatus.localeCompare(b.IssueStatus),
+            sortDirections: ["descend", "ascend"],
+            render: (text) => {
                 return (
                     <Tag color={colorMapping[`${text}`]} key={text}>
                         {text.toUpperCase()}
@@ -149,23 +128,8 @@ const UrgentIssue = () => {
             },
         },
         {
-            title: "Actions",
-            dataIndex: "actions",
-            key: "actions",
-            render: (_, row) => (
-                <>
-                    <Tooltip title="Edit">
-                        <Button icon={<EditOutlined />} onClick={() => handleEdit(row)} />
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                        <Button
-                            icon={<DeleteOutlined />}
-                            onClick={() => handleDelete(row)}
-                        />
-                    </Tooltip>
-                </>
-            ),
-        },
+            render: (_, row) => <Button type="link">Report</Button>,
+        }
     ];
     // const handleSearch = (value) => {
     //   setSearchText(value);
@@ -211,42 +175,18 @@ const UrgentIssue = () => {
         return inputDate; // Return as is if not in the expected format
     }
     const onFinish = async (values) => {
-        debugger;
-        setIsSearchLoading(true);
         setLoading(true);
         try {
             const postData1 = {
-                DocumentType:
-                    values.DocumentType === undefined ? "" : values.DocumentType, // Set to empty string when left blank
-                Supplier: values.Supplier === undefined ? "" : values.Supplier,
-                ProcurementStore:
-                    values.ProcurementStore === undefined ? "" : values.ProcurementStore,
-                POStatus: values.POStatus === undefined ? "" : values.POStatus,
-                FromDate:
-                    values.FromDate === undefined || values.FromDate === null
-                        ? ""
-                        : (
-                            values.FromDate.$D.toString().padStart(2, "0") +
-                            "-" +
-                            (values.FromDate.$M + 1).toString().padStart(2, "0") +
-                            "-" +
-                            values.FromDate.$y
-                        ).toString(),
-                ToDate:
-                    values.ToDate === undefined || values.ToDate === null
-                        ? ""
-                        : (
-                            values.ToDate.$D.toString().padStart(2, "0") +
-                            "-" +
-                            (values.ToDate.$M + 1).toString().padStart(2, "0") +
-                            "-" +
-                            values.ToDate.$y
-                        ).toString(), // A sample value
-                PONumber: values.PONumber === undefined ? "" : values.PONumber, // A sample value
+                IssueStatus: values.IssueStatus ? values.IssueStatus : null,
+                IssuingStoreId: values.IssuingStore ? values.IssuingStore : 0,
+                RequestingStoreId: values.RequestingStore ? values.RequestingStore : 0,
+                FromDateString: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : "",
+                ToDateString: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
             };
             customAxios
                 .get(
-                    `${urlSearchUrgentIssue}?DocumentType=${postData1.DocumentType}&Supplier=${postData1.Supplier}&ProcurementStore=${postData1.ProcurementStore}&DocumentStatus=${postData1.POStatus}&FromDate=${postData1.FromDate}&ToDate=${postData1.ToDate}&PoNumber=${postData1.PONumber}`,
+                    `${urlUrgentIssueSearchIndent}?IssueStatus=${postData1.IssueStatus}&IssuingStoreId=${postData1.IssuingStoreId}&RequestingStoreId=${postData1.RequestingStoreId}&FromDateString=${postData1.FromDateString}&ToDateString=${postData1.ToDateString}`,
                     null,
                     {
                         params: postData1,
@@ -256,10 +196,10 @@ const UrgentIssue = () => {
                     }
                 )
                 .then((response) => {
-                    console.log("Response:", response.data);
-                    //resetForm();
-                    setFilteredData(response.data.data.UrgentIssueDetails);
-                    // setCurrentPage1(1);
+                    const newColumnData = response.data.data.newIndentIssueModel.map((obj, index) => {
+                        return { ...obj, key: index + 1 };
+                    });
+                    setFilteredData(newColumnData);
                 })
                 .finally(() => {
                     setLoading(false);
@@ -268,7 +208,7 @@ const UrgentIssue = () => {
             // Handle any errors here
             console.error("Error:", error);
         }
-        setIsSearchLoading(false);
+        // setIsSearchLoading(false);
     };
 
     const onReset = () => {
@@ -285,7 +225,7 @@ const UrgentIssue = () => {
                         </Title>
                     </Col>
                     <Col offset={5} span={2}>
-                        <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={handleAddTemplate}>
+                        <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={() => handleAddTemplate(0)}>
                             Add Urgent Issue
                         </Button>
                     </Col>
@@ -303,8 +243,7 @@ const UrgentIssue = () => {
                         initialValues={{
                             FromDate: dayjs().subtract(1, 'day'),
                             ToDate: dayjs(),
-                            IndentStatus: 'All',
-                            IndentType: 'All'
+                            IssueStatus: '',
                         }}
                         onFinish={onFinish}
                     >
@@ -361,12 +300,9 @@ const UrgentIssue = () => {
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
-                                <Form.Item
-                                    label="Indent Status"
-                                    name="IndentStatus"
-                                >
+                                <Form.Item label="Issue Status" name="IssueStatus">
                                     <Select>
-                                        <Select.Option value='All'></Select.Option>
+                                        <Select.Option key='' value=''>All</Select.Option>
                                         <Select.Option key="Draft" value="Draft"></Select.Option>
                                         <Select.Option key="Finalize" value="Finalize"></Select.Option>
                                     </Select>
@@ -376,11 +312,7 @@ const UrgentIssue = () => {
                         <Row justify="end">
                             <Col>
                                 <Form.Item>
-                                    <Button
-                                        type="primary"
-                                        loading={isSearchLoading}
-                                        htmlType="submit"
-                                    >
+                                    <Button type="primary" htmlType="submit">
                                         Search
                                     </Button>
                                 </Form.Item>
@@ -395,35 +327,35 @@ const UrgentIssue = () => {
                         </Row>
                     </Form>
                 </Card>
-                {loading ? (
-                    <Skeleton active />
-                ) : (
-                    // <Spin tip="Loading" size="large">
-                    //   <div className="content" />
-                    // </Spin>
-                    <div>
-                        {isTable && (
-                            <Table display={setIsTable}
-                                dataSource={filteredData}
-                                columns={columns}
-                                pagination={{
-                                    onChange: (current, pageSize) => {
-                                        setPage(current);
-                                        setPaginationSize(pageSize);
-                                    },
-                                    defaultPageSize: 5, // Set your default pagination size
-                                    hideOnSinglePage: true,
-                                    showSizeChanger: true,
-                                    showTotal: (total, range) =>
-                                        `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                                }}
-                                rowKey={(row) => row.AppUserId} // Specify the custom id property here
-                                size="small"
-                                bordered
-                            />
-                        )}
-                    </div>
-                )}
+                <Spin spinning={loading}>
+                    <CustomTable
+                        dataSource={filteredData}
+                        columns={columns}
+                        isFilter={true}
+                        size="small"
+                        bordered
+                    />
+                </Spin>
+                {/* {isTable && (
+                    <Table display={setIsTable}
+                        dataSource={filteredData}
+                        columns={columns}
+                        pagination={{
+                            onChange: (current, pageSize) => {
+                                setPage(current);
+                                setPaginationSize(pageSize);
+                            },
+                            defaultPageSize: 5, // Set your default pagination size
+                            hideOnSinglePage: true,
+                            showSizeChanger: true,
+                            showTotal: (total, range) =>
+                                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+                        }}
+                        rowKey={(row) => row.AppUserId} // Specify the custom id property here
+                        size="small"
+                        bordered
+                    />
+                )} */}
             </div>
         </Layout>
     );

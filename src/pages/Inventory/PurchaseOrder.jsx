@@ -79,6 +79,7 @@ const PurchaseOrder = () => {
     Pending: "volcano",
     "Partially Pending": "orange",
     Finalize: "green",
+    Completed: "green",
   };
 
   const GetPobyId = (PoHeaderId) => {
@@ -428,6 +429,7 @@ const PurchaseOrder = () => {
             <CustomTable
               dataSource={filteredData}
               columns={columns}
+              actionColumn={false}
               isFilter={true}
               bordered
             />

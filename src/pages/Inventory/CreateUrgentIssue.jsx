@@ -1,9 +1,9 @@
 import customAxios from '../../components/customAxios/customAxios.jsx';
 import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
-import { urlCreatePurchaseOrder } from '../../../endpoints.js';
+import { urlCreatePurchaseOrder, urlAutocompleteProduct, urlAddNewUrgentIssue, urlUrgentIssueEdit, urlGetProductDetailsById, urlUrgentIssueShowBatchDetails } from '../../../endpoints.js';
 import Select from 'antd/es/select';
-import { ConfigProvider, Tooltip, Typography, Checkbox, Tag, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
+import { ConfigProvider, Tooltip, Typography, Checkbox, Tag, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete, message } from 'antd';
 import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
@@ -12,6 +12,7 @@ import { LeftOutlined } from '@ant-design/icons';
 //import Typography from 'antd/es/typography';
 import { useNavigate } from 'react-router';
 import { Table, InputNumber } from 'antd';
+import { useLocation } from "react-router-dom";
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 //import { useParams } from 'react-router-dom';
@@ -27,9 +28,26 @@ const CreateUrgentIssue = () => {
     });
 
     let [counter, setCounter] = useState(0);
-    let [productCount, setProductcount] = useState(0);
+    let [modalCounter, setModalCounter] = useState(0);
+    const location = useLocation();
+    const issueId = location.state.IssueId;
 
-    //const { PoHeaderId, SupplierId, StoreId } = useParams();
+    const initialDataSource =
+        issueId === 0
+            ? [
+                {
+                    key: counter,
+                    ProductName: '',
+                    ProductId: '',
+                    UomId: '',
+                    IssueQty: '',
+                    AvlQtyatIssue: '',
+                    Remarks: '',
+                    ActiveFlag: true,
+                },
+            ]
+            : [];
+
     const [form1] = Form.useForm();
     const [form2] = Form.useForm();
     const [form3] = Form.useForm();
@@ -37,24 +55,18 @@ const CreateUrgentIssue = () => {
     const { TextArea } = Input;
     const { Option } = Select;
     const navigate = useNavigate();
-    const currentDate = new Date();
-    //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');
-    const [isLoading, setIsLoading] = useState(true);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [buttonTitle, setButtonTitle] = useState('Save');
     const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
-    const [data, setData] = useState([]);
+    const [data, setData] = useState(initialDataSource);
     const [dataModal, setDataModal] = useState([]);
     const [dataBatchModal, setdataBatchModal] = useState([]);
-    const [selectedSupplier, setSelectedSupplier] = useState(null);
-    const [selectedStore, setSelectedStore] = useState({});
     const [istablevisible, setIstablevisible] = useState(false);
-    const [shouldValidateModal, setshouldValidateModal] = useState(false);
-    const [isPoSearchTable, setIsPoSearchTable] = useState(false);
-    const [mrp, setMrp] = useState();
-    const [poloading, setPoloading] = useState(false);
-    const [productLineId, setProductLineId] = useState(0);
-    const [selecetdUomText, setSelecetdUomText] = useState({});
-    const [selecetdProductId, setSelecetdProductId] = useState({});
+    const [autoCompleteProduct, setAutoCompleteProduct] = useState([]);
+    const [productDetails, setProductDetails] = useState([])
+    const [isModelOpen, setIsModelOpen] = useState()
+    const [batchDetails, setBatchDetails] = useState()
+    const [issueStatus, setIssueStatus] = useState()
+
     const [batches, setBatches] = useState([]);
 
     useEffect(() => {
@@ -62,110 +74,281 @@ const CreateUrgentIssue = () => {
             const apiData = response.data.data;
             setDropDown(apiData);
         });
+        if (issueId > 0) {
+            setButtonTitle('Update')
+            customAxios.get(`${urlUrgentIssueEdit}?IssueId=${issueId}`).then((response) => {
+                const apiData = response.data.data;
+                if (apiData.newIndentIssueModel != null && apiData.newIndentIssueModel.length > 0) {
+                    const products = apiData.newIndentIssueModel.map((item, index) => ({
+                        ...item,
+                        key: index,
+                        AvlQtyatIssue: item.BalanceQty,
+                        index: index + 1
+                    }))
+                    setData(products)
+                    setCounter(products.length)
+                    setIstablevisible(true)
+                    const formdata = apiData.newPatientIssueModel
+                    form1.setFieldsValue({
+                        IssueStore: formdata.IssueingStoreId,
+                        Remarks: formdata.Remarks,
+                        IssueStatus: formdata.IssueStatus == 'Created' ? undefined : formdata.IssueStatus,
+                        RequestingLocation: formdata.RequestingStoreId,
+                        IssueId: formdata.IssueId
+                    })
+                }
+                const newData = apiData.BatchDetails.map((item => {
+                    return {
+                        ...item,
+                        RequestQty: item.IssueQty
+                    }
+                }))
+                setDataModal(newData)
+            })
+        }
     }, []);
 
-    const handleSupplier = (value, option) => {
-        setSelectedSupplier(option.children);
-    }
-
-    const onOkModal = () => {
-        debugger;
-        form2
-            .validateFields()
-            .then(() => {
-                setIsModalOpen(false);
-                // If validation succeeds, submit the form        
-            })
-            .catch((error) => {
-                console.log('Validation error:', error);
-            });
-    }
-
-    const onFinishmodal = (values) => {
-        debugger;
-        setPoloading(true);
-        setIsPoSearchTable(true);
-        const postData = {
-            Supplier: values.Supplier,
-            ReceivingStore: values.ReceivingStore,
-            POStatus: values.POStatus,
-            FromDate: values.PODateFrom === undefined || values.PODateFrom === null ? '' : (values.PODateFrom.$D.toString().padStart(2, '0') + '-' + (values.PODateFrom.$M + 1).toString().padStart(2, '0') + '-' + values.PODateFrom.$y).toString(),
-            ToDate: values.PODateTo === undefined || values.PODateTo === null ? '' : (values.PODateTo.$D.toString().padStart(2, '0') + '-' + (values.PODateTo.$M + 1).toString().padStart(2, '0') + '-' + values.PODateTo.$y).toString(), // A sample value
+    const getPanelValue1 = (value, key) => {
+        if (value === "") {
+            form2.setFieldsValue({ [key]: { uom: '' } });
+            form2.setFieldsValue({ [key]: { RequestQty: '' } });
+            form2.setFieldsValue({ [key]: { Favourite: false } });
+            form2.setFieldsValue({ [key]: { IssuingStoreStock: '' } });
         }
-        // try {
-        //   customAxios.get(`${urlSearchPendingPO}?Supplier=${postData.Supplier}&ReceivingStore=${postData.ReceivingStore}&POStatus=${postData.POStatus}&PODateFrom=${postData.FromDate}&PODateTo=${postData.ToDate}`).then((response) => {
-        //     debugger;
-        //     const apiData = response.data.data;
-        //     setDataModal(apiData.PurchaseOrderDetails);
-        //     setPoloading(false);
-        //   });
-        // } catch (error) {
-        //   // Handle the error as needed
-        // }
-    }
-
-    const BatchmodalOpen = (record) => {
-        debugger;
-        const fieldsToValidate = [[record.key, 'POReceivedQty']];
-        form1
-            .validateFields(fieldsToValidate)
-            .then(() => {
-                setBatches([]);
-                setProductLineId(parseInt(record.key));
-                setIsBatchModalOpen(true);
-                BatchAdd();
-            })
-            .catch((error) => {
-                console.log('Validation error:', error);
+        try {
+            customAxios.get(`${urlAutocompleteProduct}?Product=${value}`).then((response) => {
+                const apiData = response.data.data;
+                const filteredApiData = apiData.filter(apiItem =>
+                    !data.some(option => option.ProductId === apiItem.ProductId && option.ActiveFlag)
+                );
+                const newOptions = filteredApiData.map(item => ({ value: item.LongName, key: item.ProductId, UomId: item.UOMPrimaryUOM }));
+                setAutoCompleteProduct(newOptions);
             });
+        } catch (error) {
+            // Handle the error as needed
+        }
     }
 
-    const AddProduct = () => {
-        const newData = {
-            key: productCount.toString(),
-            product: '',
-            uom: '',
-            poPendingQty: '',
-            POReceivedQty: '',
-            BonusQty: '',
-            poRate: '',
-            discount: '',
-            discountAmt: '',
-            Batch: '',
-            Amount: '',
-            TaxAmount: '',
-            totalAmount: '',
-            Replaceable: '',
+    const handleSelect1 = (value, option, key) => {
+        debugger
+        form2.setFieldsValue({ [key]: { UomId: option.UomId } });
+        form2.setFieldsValue({ [key]: { ProductId: option.key } });
+        customAxios.get(`${urlGetProductDetailsById}?ProductId=${option.key}`).then((response) => {
+            const apiData = response.data.data;
+            let reqstr = form1.getFieldValue('IssueStore');
+            let qty = 0;
+            apiData.Stock.forEach(value => {
+                if (value.StoreId === reqstr) {
+                    qty += value.Quantity;
+                }
+            })
+            const newData = data.map((item) => {
+                if (item.key === key) {
+                    const updatedItem = {
+                        ...item,
+                        // [column]: option.key,
+                        ProductName: option.value,
+                        UomId: option.UomId,
+                        ProductId: option.key,
+                        AvlQtyatIssue: qty
+                    };
+                    return updatedItem;
+                }
+                return item;
+            });
+            setData(newData);
+            form2.setFieldsValue({ [key]: { AvlQtyatIssue: qty } });
+        });
+    }
+
+    const AddProduct = async () => {
+        setAutoCompleteProduct([])
+        const fieldsToValidate = data.map(record => [record.key, 'ProductName']);
+        await form2.validateFields(fieldsToValidate);
+        setData([
+            ...data,
+            {
+                key: counter,
+                ProductName: '',
+                ProductId: '',
+                UomId: '',
+                IssueQty: '',
+                AvlQtyatIssue: '',
+                Remarks: '',
+                ActiveFlag: true,
+            },
+        ]);
+        setCounter(counter + 1);
+    }
+
+    function isExpired(dateString) {
+        if (new Date() > new Date(dateString)) {
+            return false
         }
-        setData([...data, newData]);
-        setProductcount(productCount + 1);
+        else {
+            return true
+        }
+    }
+
+    const OpenBatch = async (record) => {
+        debugger
+        await form1.validateFields()
+        await form2.validateFields()
+        setProductDetails(record)
+        const batch = {
+            IssueQty: record.IssueQty,
+            ProductId: record.ProductId,
+            StoreId: form1.getFieldValue('IssueStore')
+        }
+        const post1 = {
+            newIndentModel: batch,
+            Batch: dataModal
+        }
+        try {
+            const response = await customAxios.post(urlUrgentIssueShowBatchDetails, post1, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            const ApiData = response.data.data;
+            if (ApiData.Batch.length > 0) {
+                const batchs = ApiData.Batch.map((item, index) => {
+                    if (item.ProductId == ApiData.ProductDefinitionModel.ProductDefinitionId && item.ActiveFlag != false) {
+                        if (item.IssueBatchId != 0) {
+                            const newitem = {
+                                ...item,
+                                key: index,
+                                BatchNo: item.BatchNo,
+                                IssueQty: item.IssueQty,
+                                AvlQtyatIssue: item.BalanceQty,
+                                Uom: item.Uom,
+                                UomId: record.UomId,
+                                EXPDate: item.EXPDate,
+                                IssueRate: item.IssueRate,
+                                Amount: item.IssueRate * item.IssueQty,
+                                StockLocator: item.StockLocatorName,
+                                index: index + 1
+                            };
+                            return newitem
+                        }
+                        return item
+                    }
+                    return item
+                })
+                setDataModal(batchs)
+                setModalCounter(batchs.length)
+            }
+            else if (ApiData.BatchDetails.length > 0) {
+                let qty = 0; let amount = 0; let totalbatchqty = 0; let total = 0;
+                const batchs = ApiData.BatchDetails.map((item, index) => {
+                    total += qty;
+                    qty = item.PendingQty;
+                    totalbatchqty += qty;
+
+                    if (totalbatchqty > ApiData.newIndentModel.IssueQty) {
+                        qty = ApiData.newIndentModel.IssueQty - total;
+                    }
+
+                    amount = qty * item.MRP;
+
+                    if (isExpired(item.EXPDate)) {
+                        if (qty > 0) {
+                            const newitem = {
+                                ...item,
+                                key: index,
+                                BatchNo: item.BatchNo,
+                                IssueQty: qty,
+                                AvlQtyatIssue: item.PendingQty,
+                                Uom: item.Uom,
+                                UomId: record.UomId,
+                                EXPDate: item.EXPDate,
+                                IssueRate: item.MRP,
+                                Amount: amount,
+                                StockLocator: item.StockLocatorName,
+                                index: index + 1
+                            };
+                            return newitem
+                        }
+                        return null
+                    }
+                    return null;
+                }).filter(item => item !== null);
+                setDataModal(batchs);
+                setModalCounter(batchs.length)
+            }
+            const batchs = ApiData.BatchDetails.map((item, index) => {
+                return {
+                    ...item,
+                    key: index,
+                    index: index + 1
+                }
+            })
+            setBatchDetails(batchs)
+        } catch (error) {
+        }
+        setIsModelOpen(true)
+    }
+
+    const validateEqualValue = (record, value) => {
+        debugger
+        const newData = data.map((item => {
+            if (record.key == item.key) {
+                return {
+                    ...item,
+                    IssueQty: value
+                }
+            }
+        }))
+        setData(newData)
+        const va = form1.getFieldsValue()
+        if (value <= record.AvlQtyatIssue) {
+            return Promise.resolve();
+        }
+        return Promise.reject(new Error('Must Not Greater than Available Qty'));
     }
 
     const columns = [
         {
             title: 'Product',
-            dataIndex: 'product',
-            key: 'product',
+            dataIndex: 'ProductName',
+            key: 'ProductName',
+            width: 450,
             render: (_, record) => (
-                <Form.Item
-                    name={[record.key, 'product']}
-                    style={{ width: 250 }}
-                    initialValue={selecetdProductId[productLineId]}
-                >
-                    <Input disabled />
-                </Form.Item>
+                <>
+                    <Form.Item name={[record.key, 'ProductName']} style={{ width: '100%' }}
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please input!'
+                            }
+                        ]}
+                        initialValue={record.ProductName}
+                    >
+                        <AutoComplete style={{ width: '100%' }} disabled={!!issueId}
+                            options={autoCompleteProduct}
+                            onSearch={(value) => getPanelValue1(value, record.key)}
+                            onSelect={(value, option) => handleSelect1(value, option, record.key)}
+                            placeholder="Search for a product"
+                            allowClear
+                        />
+                    </Form.Item>
+                    <Form.Item name={[record.key, 'ProductId']} hidden initialValue={record.ProductId}>
+                        <Input></Input>
+                    </Form.Item>
+                    <Form.Item name={[record.key, 'IndentIssueLineId']} hidden initialValue={record.IndentIssueLineId}>
+                        <Input></Input>
+                    </Form.Item>
+                </>
             )
         },
         {
             title: 'UOM',
-            dataIndex: 'uom',
-            key: 'uom',
+            dataIndex: 'UomId',
+            key: 'UomId',
+            width: 150,
             render: (text, record) => (
-                <Form.Item
-                    name={[record.key, 'uom']}
-                    style={{ width: 100 }}
-                >
-                    <Select disabled>
+                <Form.Item name={[record.key, 'UomId']} style={{ width: '100%' }} initialValue={record.UomId}>
+                    <Select disabled defaultValue={record.UomId}>
                         {DropDown.UOM.map((option) => (
                             <Select.Option key={option.UomId} value={option.UomId}>
                                 {option.FullName}
@@ -176,605 +359,254 @@ const CreateUrgentIssue = () => {
             )
         },
         {
-            title: 'PO Pending Qty',
-            dataIndex: 'poPendingQty',
-            key: 'poPendingQty',
+            title: 'Issue Qty',
+            dataIndex: 'IssueQty',
+            key: 'IssueQty',
             render: (text, record) => (
-                <Form.Item
-                    name={[record.key, 'poPendingQty']}
-                    style={{ width: 100 }}
-                >
-                    <InputNumber min={0} disabled />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'PO Received Qty',
-            dataIndex: 'POReceivedQty',
-            key: 'POReceivedQty',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'POReceivedQty']}
+                <Form.Item style={{ width: '100%' }} initialValue={record.IssueQty}
+                    name={[record.key, 'IssueQty']}
                     rules={[
                         {
                             required: true,
                             message: 'Please input!'
-                        }
-                    ]}
-                >
-                    <InputNumber min={0} />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'Bonus Qty',
-            dataIndex: 'BonusQty',
-            key: 'BonusQty',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'BonusQty']}>
-                    <InputNumber min={0} disabled />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'PO Rate',
-            dataIndex: 'poRate',
-            key: 'poRate',
-            render: (text, record) => (
-                <Form.Item
-                    name={[record.key, 'poRate']}
-                    rules={[
+                        },
                         {
-                            required: true,
-                            message: 'Please input!'
+                            validator: (_, value) => validateEqualValue(record, value)
                         }
                     ]}
-                    style={{ width: 100 }}
                 >
-                    <InputNumber min={0} disabled />
+                    <InputNumber min={1} style={{ width: '100%' }} />
                 </Form.Item>
             )
         },
         {
-            title: 'Discount%',
-            dataIndex: 'discount',
-            key: 'discount',
+            title: 'Avl Qty at Issue',
+            dataIndex: 'AvlQtyatIssue',
+            key: 'AvlQtyatIssue',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'discount']}>
-                    <InputNumber min={0} disabled />
+                <Form.Item name={[record.key, 'AvlQtyatIssue']} initialValue={record.AvlQtyatIssue}>
+                    <Input disabled />
                 </Form.Item>
             )
         },
         {
-            title: 'Discount Amount',
-            dataIndex: 'discountAmt',
-            key: 'discountAmt',
+            title: 'Remarks',
+            dataIndex: 'Remarks',
+            key: 'Remarks',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'discountAmt']}>
+                <>
+                    <Form.Item name={[record.key, 'Remarks']} initialValue={record.Remarks}>
+                        <Input allowClear />
+                    </Form.Item>
+                </>
+            )
+        },
+        {
+            title: 'Batch Details',
+            dataIndex: 'BatchDetails',
+            key: 'BatchDetails',
+            render: (text, record) => (
+                <>
+                    <Button type='link' onClick={() => OpenBatch(record)}>Batch</Button>
+                </>
+            )
+        },
+        {
+            title: <Button type="primary" icon={<PlusOutlined />} onClick={AddProduct}></Button>,
+            // title: <Button type="primary" icon={<PlusOutlined />} onClick={AddProduct}></Button>,
+            dataIndex: 'add',
+            key: 'add',
+            width: 50,
+            render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}><DeleteOutlined /></Popconfirm>
+        }
+    ]
+
+    const handleDelete = () => {
+        const newData = data.map((item) => {
+            if (item.key === record.key) {
+                return { ...item, ActiveFlag: false };
+            }
+            return item;
+        });
+        setData(newData);
+    }
+
+    const BatchSelect = (record) => {
+        debugger
+        const IsExist = dataModel.filter((item) => item.BatchNo == record)
+        const temp = batchDetails.filter((item) => item.BatchNo === record)
+        const newdata = temp.map((item) => {
+            return {
+                ...item,
+                BatchNo: record,
+                Quantity: item.PendingQty,
+                UomId: item.Uom,
+                EXPDate: DateBindtoDatepicker(item.EXPDate),
+                MRP: item.MRP,
+                amount: 0
+            }
+        })
+        setDataModal(newdata)
+        if (IsExist.length > 0) {
+            message.warning('Same Batch No should not be selected.')
+        }
+    }
+
+    const BatchAdd = async () => {
+        const fieldsToValidate = data.map(record => [record.key, 'ProductName']);
+        setDataModal([
+            ...data,
+            {
+                key: modelCounter,
+                BatchNo: '',
+                Quantity: '',
+                AvlQuantity: '',
+                UomId: '',
+                EXPDate: '',
+                MRP: '',
+                Amount: '',
+                StockLocator: '',
+                ActiveFlag: true
+            },
+        ]);
+        setModalCounter(modalCounter + 1);
+        setIsProductAvailable(false)
+    };
+
+    const DateBindtoDatepicker = (value) => {
+        const isoDateString = value;
+        const dateValue = new Date(isoDateString);
+        const formattedDate = dayjs(dateValue).format("DD-MM-YYYY");
+        return dayjs(formattedDate, "DD-MM-YYYY");
+    };
+
+    const validateEqualIssueQty = (record, value) => {
+        const newData = dataModal.map((item => {
+            if (record.key == item.key) {
+                return {
+                    ...item,
+                    IssueQty: value
+                }
+            }
+        }))
+        setDataModal(newData)
+        if (record.AvlQtyatIssue >= value) {
+            return Promise.resolve()
+        }
+        return Promise.reject(new Error('Issue Qty must not be Avl Qty!'))
+    }
+
+    const columnsmodal = [
+        {
+            title: 'Batch No',
+            dataIndex: 'BatchNo',
+            key: 'BatchNo',
+            width: 100,
+            render: (_, record) => (
+                <>
+                    <Form.Item name={[record.key, 'BatchNo']}
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please input!'
+                            },
+                        ]}
+                        initialValue={record.BatchNo}
+                    >
+                        <Select allowClear onChange={(record) => BatchSelect(record)} style={{ width: 100 }} disabled={!!record.IssueBatchId}>
+                            {batchDetails.map((option) => (
+                                <Select.Option key={option.BatchNo} value={option.BatchNo}>{option.BatchNo}</Select.Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                    <Form.Item name={[record.key, 'ProductId']} hidden initialValue={record.ProductId}><Input /></Form.Item>
+                    <Form.Item name={[record.key, 'IssueBatchId']} hidden initialValue={record.IssueBatchId}><Input /></Form.Item>
+                </>
+            )
+        },
+        {
+            title: 'Quantity',
+            dataIndex: 'IssueQty',
+            key: 'IssueQty',
+            width: 100,
+            render: (text, record) => {
+                return (
+                    <Form.Item name={[record.key, 'IssueQty']} initialValue={record.IssueQty}
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please input!'
+                            },
+                            {
+                                validator: (_, value) => validateEqualIssueQty(record, value)
+                            }
+                        ]}
+                    >
+                        <InputNumber allowClear />
+                    </Form.Item>
+                );
+            }
+        },
+        {
+            title: 'Avl Quantity',
+            dataIndex: 'AvlQtyatIssue',
+            key: 'AvlQtyatIssue',
+            width: 100,
+            render: (text, record) => (
+                <Form.Item name={[record.key, 'AvlQtyatIssue']} initialValue={record.AvlQtyatIssue}>
                     <InputNumber disabled />
                 </Form.Item>
             )
         },
         {
-            title: 'Batch',
-            dataIndex: 'Batch',
-            key: 'Batch',
-            render: (text, record, index) => <Button type="link" onClick={() => BatchmodalOpen(record)}>Batch</Button>
+            title: 'UOM',
+            dataIndex: 'UomId',
+            key: 'UomId',
+            width: 100,
+            render: (text, record) => (
+                <Form.Item name={[record.key, 'UomId']} initialValue={record.UomId}>
+                    {record.Uom}
+                </Form.Item>
+            )
+        },
+        {
+            title: 'Exp Date',
+            dataIndex: 'EXPDate',
+            key: 'EXPDate',
+            width: 100,
+            render: (text, record) => (
+                <Form.Item name={[record.key, 'EXPDate']} initialValue={record.EXPDate == '' ? undefined : DateBindtoDatepicker(record.EXPDate)}>
+                    <DatePicker style={{ width: 100 }} disabled format="MMMM-YYYY" />
+                </Form.Item>
+            )
+        },
+        {
+            title: 'Rate',
+            dataIndex: 'IssueRate',
+            key: 'IssueRate',
+            render: (text, record) => (
+                <Form.Item name={[record.key, 'IssueRate']} initialValue={record.IssueRate}>
+                    <InputNumber disabled />
+                </Form.Item>
+            )
         },
         {
             title: 'Amount',
             dataIndex: 'Amount',
             key: 'Amount',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'Amount']}>
+                <Form.Item name={[record.key, 'Amount']} initialValue={record.Amount}>
                     <InputNumber disabled />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'Tax Amount',
-            dataIndex: 'TaxAmount',
-            key: 'TaxAmount',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'TaxAmount']}>
-                    <InputNumber disabled />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'Total Amount',
-            dataIndex: 'totalAmount',
-            key: 'totalAmount',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'totalAmount']}>
-                    <InputNumber disabled />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'Replaceable',
-            dataIndex: 'Replaceable',
-            key: 'Replaceable',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'Replaceable']} initialValue={true} valuePropName="checked">
-                    <Checkbox />
-                </Form.Item>
-            )
-        }
-    ]
-
-    const columnsmodal = [
-        {
-            title: 'PO Number',
-            dataIndex: 'PONumber',
-            key: 'PONumber',
-            render: (text, record, index) => <Button type="link" onClick={() => handlePoNumber(record)}>{text}</Button>
-        },
-        {
-            title: 'Document Type',
-            dataIndex: 'DocumentTypeName',
-            key: 'DocumentTypeName',
-            sorter: (a, b) => a.DocumentType.localeCompare(b.DocumentType),
-        },
-        {
-            title: 'PO Date',
-            dataIndex: 'PoDate',
-            key: 'PoDate',
-            sorter: (a, b) => a.PoDate.localeCompare(b.PoDate),
-        },
-        {
-            title: 'PO Raised By',
-            dataIndex: 'PORaisedBy',
-            key: 'PORaisedBy',
-            sorter: (a, b) => a.PORaisedBy.localeCompare(b.PORaisedBy),
-        },
-        {
-            title: 'Status',
-            dataIndex: 'PoStatus',
-            key: 'PoStatus',
-            sorter: (a, b) => a.PoStatus.localeCompare(b.PoStatus),
-        },
-    ];
-
-    const onCancelmodal = () => {
-        debugger;
-        form2.resetFields();
-        setIsModalOpen(false);
-        setDataModal([]);
-    }
-
-    const handleCancel = () => {
-        const url = '/UrgentIssue';
-        navigate(url);
-    }
-    const handleReset = () => {
-        form1.resetFields();
-        form2.resetFields();
-    };
-
-    const Searchmodal = (value, record) => {
-        debugger;
-        const fieldsToValidate = ['SupplierList', 'StoreDetails'];
-        form1
-            .validateFields(fieldsToValidate)
-            .then(() => {
-                setIsModalOpen(true);
-            })
-            .catch((error) => {
-                console.log('Validation error:', error);
-            });
-    }
-
-    const onFinishFailed = (errorInfo) => {
-        console.log('Failed:', errorInfo);
-    };
-
-    const handlePoNumber = (record) => {
-        debugger;
-        const postData = {
-            PoHeaderId: record.PoHeaderId,
-            Supplier: record.SupplierId,
-            Store: record.ProcurementStoreId,
-        }
-        // try {
-        //   customAxios.get(`${urlCreateUrgentIssue}?PoHeaderId=${postData.PoHeaderId}&Supplier=${postData.Supplier}&Store=${postData.Store}`).then((response) => {
-        //     debugger;
-        //     const apiData = response.data.data;
-        //     setDropDown(prevState => ({
-        //       ...prevState,
-        //       UOM: apiData.UOM
-        //     }));
-        //     setIstablevisible(true);
-        //     apiData.ProductDetails.map((product, index) => {
-        //       if (data.length == 0) {
-        //         AddProduct();
-        //       }
-        //       form1.setFieldsValue({ DocumentType: apiData.POProducts.DocumentType });
-        //       form1.setFieldsValue({ [productCount]: { product: product.ProductName } });
-        //       form1.setFieldsValue({ [productCount]: { uom: product.UomId } });
-        //       form1.setFieldsValue({ [productCount]: { poPendingQty: product.PoQuantity } });
-        //       form1.setFieldsValue({ [productCount]: { poRate: product.PoRate } });
-        //       form1.setFieldsValue({ [productCount]: { BonusQty: product.BonusQuantity === null ? 0 : product.BonusQuantity } });
-        //       form1.setFieldsValue({ [productCount]: { discount: product.DiscountRate } });
-        //       form1.setFieldsValue({ [productCount]: { discountAmt: product.DiscountAmount } });
-        //       form1.setFieldsValue({ [productCount]: { TaxAmount: product.TaxAmount1 } });
-        //       setSelecetdUomText((prevState) => {
-        //         const newState = { ...prevState, [productCount]: product.Uom };
-        //         return newState;
-        //       });
-        //       setSelecetdProductId((prevState) => {
-        //         const newState = { ...prevState, [productCount]: product.ProductId };
-        //         return newState;
-        //       });
-        //       setMrp(product.MrpExpected);
-        //     })
-        //     setIsModalOpen(false);
-        //   });
-        // } catch (error) {
-        //   //console.error("Error fetching purchase order details:", error);      
-        // }
-        //const url = `/CreateUrgentIssue/${record.PoHeaderId}/${record.SupplierId}/${record.ProcurementStoreId}`;
-        //navigate(url);
-    };
-
-    const onOkBatchModal = () => {
-        debugger;
-        form3
-            .validateFields()
-            .then(() => {
-                form3.submit();
-                setIsBatchModalOpen(false);
-            })
-            .catch((error) => {
-                console.log('Validation error:', error);
-            });
-    }
-
-    const onCancelBatchmodal = () => {
-        setIsBatchModalOpen(false);
-        setdataBatchModal([]);
-        setshouldValidateModal(false);
-    }
-
-    const onFinishBatchmodal = (values) => {
-        debugger;
-        const batche = [];
-        for (let i = 0; i < counter; i++) {
-            const batch = {
-                BarCode: values[i].barcode,
-                BatchNo: values[i].batchnumber,
-                BatchQty: values[i].quantity,
-                BatchBonusQty: values[i].bonusqty,
-                UomId: values[i].uom,
-                EXPDateString: values[i].expdate.$D.toString().padStart(2, '0') + '-' + (values[i].expdate.$M + 1).toString().padStart(2, '0') + '-' + (values[i].expdate.$y).toString(),
-                BatchMRP: values[i].rate,
-                MRP: values[i].mrp,
-                DiscountRate: values[i].discount,
-                DiscountAmount: values[i].discountamt,
-                BatchTaxType1: values[i].cgst,
-                BatchTaxAmount1: values[i].cgstamt,
-                BatchTaxType2: values[i].sgst,
-                BatchTaxAmount2: values[i].sgstamt,
-                BatchStockLocator: values[i].stocklocator,
-                MFGDateString: values[i].mfgdate === undefined ? null : (values[i].mfgdate.$D.toString().padStart(2, '0') + '-' + (values[i].mfgdate.$M + 1).toString().padStart(2, '0') + '-' + values[i].mfgdate.$y).toString(),
-            }
-            batche.push(batch);
-            setBatches(batche);
-            setIsBatchModalOpen(false);
-        }
-        onCancelBatchmodal();
-    }
-
-    const onFinishBatchFailed = () => {
-
-    }
-    const handleOnFinish = async (values) => {
-        debugger;
-        // setIsSearchLoading(true);
-        const products = [];
-        for (let i = 0; i <= productCount; i++) {
-            if (values[i] !== undefined) {
-                const product = {
-                    ProductId: selecetdProductId[i],
-                    UomId: values[i].uom,
-                    ReceivedQty: values[i].POReceivedQty,
-                    PendingQty: values[i].poPendingQty === "" ? 0 : values[i].poPendingQty,
-                    BonusQty: values[i].BonusQty === "" ? null : values[i].BonusQty,
-                    QuantityTobeIssued: values[i].discount === "" ? 0 : values[i].discount,
-                    PoRate: values[i].poRate === "" ? 0 : parseFloat(values[i].poRate),
-                    DiscountRate: values[i].discount === "" ? 0 : values[i].discount,
-                    DiscountAmount: values[i].discountAmt === "" ? 0 : values[i].discountAmt,
-                    LineAmount: values[i].Amount === "" ? 0 : values[i].Amount,
-                    TaxAmount: values[i].TaxAmount,
-                    TotalAmount: values[i].totalAmount === "" ? 0 : values[i].totalAmount,
-                    Replaceable: values[i].Replaceable === true ? "Yes" : "No"
-                }
-                products.push(product);
-            }
-        }
-
-        const PatientIndent = {
-            SupplierId: values.SupplierList === undefined ? '' : values.SupplierList,
-            ReceivingStoreId: values.StoreDetails === undefined ? '' : values.StoreDetails,
-            DocumentType: values.DocumentType === undefined ? '' : values.DocumentType,
-            // GrnNumber: values.PODate === undefined ? dayjs(`${currentDate}`).format(dateFormat) : values.PODate,
-            GRNDatestring: values.GRNDate === undefined ? null : (values.GRNDate.$D.toString().padStart(2, '0') + '-' + (values.GRNDate.$M + 1).toString().padStart(2, '0') + '-' + values.GRNDate.$y).toString(),
-            Remarks: values.Remarks === undefined ? null : values.Remarks,
-            GrnStatus: values.GRNStatus === undefined ? null : values.GRNStatus,
-            InvoiceNo: values.InvoiceNumber === undefined ? null : values.InvoiceNumber,
-            InvoiceAmount: values.InvoiceAmount === undefined ? 0 : values.InvoiceAmount,
-            InvoiceDateString: values.InvoiceDate === undefined ? null : (values.InvoiceDate.$D.toString().padStart(2, '0') + '-' + (values.InvoiceDate.$M + 1).toString().padStart(2, '0') + '-' + values.InvoiceDate.$y).toString(),
-            DcNo: values.DCChallanNumber === undefined ? 0 : values.DCChallanNumber,
-            DCChallanDateString: values.DCChallanDate === undefined ? null : (values.DCChallanDate.$D.toString().padStart(2, '0') + '-' + (values.DCChallanDate.$M + 1).toString().padStart(2, '0') + '-' + values.DCChallanDate.$y).toString(),
-            ReceivingDateString: values.ReceivingDate === undefined ? null : (values.ReceivingDate.$D.toString().padStart(2, '0') + '-' + (values.ReceivingDate.$M + 1).toString().padStart(2, '0') + '-' + values.ReceivingDate.$y).toString(),
-            Amount: values.PoTaxAmount === undefined ? 0 : values.PoTaxAmount,
-            TaxAmount: values.TotalAmount === undefined ? 0 : values.TotalAmount,
-            RoundOff: values.RoundOff === undefined ? 0 : values.RoundOff,
-            TotalPoAmount: values.totalpoAmount === undefined ? 0 : values.totalpoAmount,
-            // GrnType: values.PoTaxAmount === undefined ? 0 : values.PoTaxAmount,
-        }
-        const postData = {
-            newPatientIndentModel: PatientIndent,
-            PatientIndentDetails: products,
-            BatchDetails: batches
-        }
-        // try {
-        //   const response = await customAxios.post(urlAddNewPatientIndent, postData, {
-        //     headers: {
-        //       'Content-Type': 'application/json'
-        //     }
-        //   });
-        //   form1.resetFields();
-        // } catch (error) {
-        //   // Handle error      
-        // }
-        // setIsSearchLoading(false);
-    };
-
-    const BatchAdd = () => {
-        debugger;
-        if (shouldValidateModal) { //first time going to add row without validation, call from use useEffect      
-            form3
-                .validateFields()
-                .then(() => {
-                    const newRow = {
-                        key: counter.toString(),
-                        barcode: '',
-                        batchnumber: '',
-                        quantity: '',
-                        uom: '',
-                        bonusqty: '',
-                        mfgdate: '',
-                        expdate: '',
-                        rate: '',
-                        mrp: '',
-                        discountamt: '',
-                        cgst: '',
-                        cgstamt: '',
-                        sgst: '',
-                        sgstamt: '',
-                        stocklocator: '',
-                    }; // Define your new row data here
-                    setdataBatchModal([...dataBatchModal, newRow]);
-                    setCounter(counter + 1);
-                })
-        } else {
-            const newRow = {
-                key: counter.toString(),
-                barcode: '',
-                batchnumber: '',
-                quantity: '',
-                bonusqty: '',
-                uom: '',
-                mfgdate: '',
-                expdate: '',
-                rate: '',
-                mrp: '',
-                discount: '',
-                discountamt: '',
-                cgst: '',
-                cgstamt: '',
-                sgst: '',
-                sgstamt: '',
-                stocklocator: '',
-            }; // Define your new row data here
-            setdataBatchModal([...dataBatchModal, newRow]);
-            setshouldValidateModal(true);
-            setCounter(counter + 1);
-        }
-    };
-
-    const Batchmodal = [
-        {
-            title: 'Bar Code',
-            dataIndex: 'barcode',
-            key: 'barcode',
-            render: (_, record) => (
-                <Form.Item
-                    name={[record.key, 'barcode']}
-                    rules={[
-                        {
-                            required: false,
-                        },
-                    ]}
-                >
-                    <InputNumber style={{ width: 50 }} min={0} />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'Batch Number',
-            dataIndex: 'batchnumber',
-            key: 'batchnumber',
-            render: (text, record) => {
-                return (
-                    <Form.Item style={{ width: 60 }}
-                        name={[record.key, 'batchnumber']}
-                        rules={[
-                            {
-                                required: true,
-                                message: "input!"
-                            }
-                        ]}
-                    >
-                        <Input />
-                    </Form.Item>
-                );
-            }
-        },
-        {
-            title: 'Quantity',
-            dataIndex: 'quantity',
-            key: 'quantity',
-            render: (text, record) => (
-                <Form.Item
-                    name={[record.key, 'quantity']}
-                    rules={[
-                        {
-                            required: true,
-                            message: "input!"
-                        }
-                    ]}
-                >
-                    <InputNumber min={0} style={{ width: 50 }} />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'Bonus Qty',
-            dataIndex: 'bonusqty',
-            key: 'bonusqty',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'bonusqty']} initialValue={form1.getFieldValue([productLineId, 'BonusQty'])}>
-                    <InputNumber min={0} style={{ width: 50 }} disabled />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'Uom',
-            dataIndex: 'uom',
-            key: 'uom',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'uom']} initialValue={form1.getFieldValue([productLineId, 'uom'])}>
-                    <Tag color="blue">{selecetdUomText[productLineId]}</Tag>
-                </Form.Item>
-            )
-        },
-        {
-            title: 'MFG Date',
-            dataIndex: 'mfgdate',
-            key: 'mfgdate',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'mfgdate']}>
-                    <DatePicker format='DD-MM-YYYY' />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'Exp Date',
-            dataIndex: 'expdate',
-            key: 'expdate',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'expdate']}
-                    rules={[
-                        {
-                            required: true,
-                            message: "input!"
-                        }
-                    ]}
-                >
-                    <DatePicker format='DD-MM-YYYY' />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'Rate',
-            dataIndex: 'rate',
-            key: 'rate',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'rate']} initialValue={form1.getFieldValue([productLineId, 'poRate'])}>
-                    <InputNumber min={0} style={{ width: 50 }} disabled />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'MRP',
-            dataIndex: 'mrp',
-            key: 'mrp',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'mrp']} initialValue={mrp}>
-                    <InputNumber min={0} style={{ width: 50 }} allowClear />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'Discount',
-            dataIndex: 'discount',
-            key: 'discount',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'discount']} initialValue={form1.getFieldValue([productLineId, 'discount'])}>
-                    <InputNumber min={0} style={{ width: 50 }} disabled />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'Discount Amt',
-            dataIndex: 'discountamt',
-            key: 'discountamt',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'discountamt']} initialValue={form1.getFieldValue([productLineId, 'discountAmt'])}>
-                    <InputNumber min={0} style={{ width: 50 }} disabled />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'CGST',
-            dataIndex: 'cgst',
-            key: 'cgst',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'cgst']}>
-                    <Select>
-                    </Select>
-                </Form.Item>
-            )
-        },
-        {
-            title: 'CGST Amount',
-            dataIndex: 'cgstamt',
-            key: 'cgstamt',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'cgstamt']}>
-                    <InputNumber min={0} style={{ width: 50 }} disabled />
-                </Form.Item>
-            )
-        },
-        {
-            title: 'SGST',
-            dataIndex: 'sgst',
-            key: 'sgst',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'sgst']}>
-                    <Select>
-                    </Select>
-                </Form.Item>
-            )
-        },
-        {
-            title: 'SGST Amount',
-            dataIndex: 'sgstamt',
-            key: 'sgstamt',
-            render: (text, record) => (
-                <Form.Item name={[record.key, 'sgstamt']}>
-                    <InputNumber min={0} style={{ width: 50 }} disabled />
                 </Form.Item>
             )
         },
         {
             title: 'Stock Locator',
-            dataIndex: 'stocklocator',
-            key: 'stocklocator',
+            dataIndex: 'StockLocator',
+            key: 'StockLocator',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'stocklocator']} initialValue={'Manual'}>
-                    <Input style={{ width: 60 }} />
+                <Form.Item name={[record.key, 'StockLocator']}>
+                    <Input style={{ width: 100 }} allowClear disabled />
                 </Form.Item>
             )
         },
@@ -783,21 +615,163 @@ const CreateUrgentIssue = () => {
             dataIndex: 'add',
             key: 'add',
             width: 50,
-            render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => BatchDelete(record)}><DeleteOutlined /></Popconfirm>
-            //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>      
+            render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => ModelDelete(record)}><DeleteOutlined /></Popconfirm>
         }
-    ]
+    ];
 
-    const BatchDelete = (record) => {
+    const ModelDelete = (record) => {
         debugger;
-        const newData = data.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
-        Object.keys(fields).forEach(fieldName => {
-            if (fieldName.startsWith(`${record.key}.`)) {
-                form1.resetFields([fieldName]);
-            }
-        });
-        setData(newData);
+        const newData = dataModal.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
+        setDataModal(newData);
     };
+
+    const handleCancel = () => {
+        const url = '/UrgentIssue';
+        navigate(url);
+    }
+
+    const SubmitChanged = (event) => {
+        setIssueStatus(event.target.checked)
+    }
+
+    const onFinishFailed = (errorInfo) => {
+        console.log('Failed:', errorInfo);
+    };
+
+    // const handlePoNumber = (record) => {
+    //     debugger;
+    //     const postData = {
+    //         PoHeaderId: record.PoHeaderId,
+    //         Supplier: record.SupplierId,
+    //         Store: record.ProcurementStoreId,
+    //     }
+    // try {
+    //   customAxios.get(`${urlCreateUrgentIssue}?PoHeaderId=${postData.PoHeaderId}&Supplier=${postData.Supplier}&Store=${postData.Store}`).then((response) => {
+    //     debugger;
+    //     const apiData = response.data.data;
+    //     setDropDown(prevState => ({
+    //       ...prevState,
+    //       UOM: apiData.UOM
+    //     }));
+    //     setIstablevisible(true);
+    //     apiData.ProductDetails.map((product, index) => {
+    //       if (data.length == 0) {
+    //         AddProduct();
+    //       }
+    //       form1.setFieldsValue({ DocumentType: apiData.POProducts.DocumentType });
+    //       form1.setFieldsValue({ [productCount]: { product: product.ProductName } });
+    //       form1.setFieldsValue({ [productCount]: { uom: product.UomId } });
+    //       form1.setFieldsValue({ [productCount]: { poPendingQty: product.PoQuantity } });
+    //       form1.setFieldsValue({ [productCount]: { poRate: product.PoRate } });
+    //       form1.setFieldsValue({ [productCount]: { BonusQty: product.BonusQuantity === null ? 0 : product.BonusQuantity } });
+    //       form1.setFieldsValue({ [productCount]: { discount: product.DiscountRate } });
+    //       form1.setFieldsValue({ [productCount]: { discountAmt: product.DiscountAmount } });
+    //       form1.setFieldsValue({ [productCount]: { TaxAmount: product.TaxAmount1 } });
+    //       setSelecetdUomText((prevState) => {
+    //         const newState = { ...prevState, [productCount]: product.Uom };
+    //         return newState;
+    //       });
+    //       setSelecetdProductId((prevState) => {
+    //         const newState = { ...prevState, [productCount]: product.ProductId };
+    //         return newState;
+    //       });
+    //       setMrp(product.MrpExpected);
+    //     })
+    //     setIsModalOpen(false);
+    //   });
+    // } catch (error) {
+    //   //console.error("Error fetching purchase order details:", error);      
+    // }
+    //const url = `/CreateUrgentIssue/${record.PoHeaderId}/${record.SupplierId}/${record.ProcurementStoreId}`;
+    //navigate(url);
+    // };
+
+    const onCancelBatchmodal = () => {
+        setIsBatchModalOpen(false);
+        setdataBatchModal([]);
+        setshouldValidateModal(false);
+    }
+
+    const handleOnFinish = async (values) => {
+        debugger;
+        if (dataModal.length == 0) {
+            message.warning('Please Add Batch!')
+            return false
+        }
+        const form2data = form2.getFieldsValue()
+        const products = [];
+        for (let i = 0; i <= data.length; i++) {
+            if (data[i] !== undefined) {
+                const product = {
+                    ProductId: data[i].ProductId,
+                    UomId: data[i].UomId,
+                    IssueQty: data[i].IssueQty,
+                    Remarks: data[i].Remarks,
+                    IndentIssueLineId: data[i].IndentIssueLineId ? data[i].IndentIssueLineId : 0
+                }
+                products.push(product);
+            }
+        }
+
+        const UrgentIssue = {
+            IssueDateString: values.IssuingDate ? values.IssuingDate.format("DD-MM-YYYY") : '',
+            RequestingStoreId: values.RequestingLocation,
+            IssueingStoreId: values.IssueStore,
+            IssueId: values.IssueId ? values.IssueId : 0,
+            // IndentId: values.IndentId ? values.IndentId : 0,
+            IssueStatus: !issueStatus ? 'Created' : values.IssueStatus,
+            Remarks: values.Remarks,
+        }
+        const postData = {
+            newIndentModel: UrgentIssue,
+            IndentDetails: products,
+            Batch: dataModal
+        }
+        try {
+            const response = await customAxios.post(urlAddNewUrgentIssue, postData, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            handleCancel()
+        } catch (error) {
+            // Handle error      
+        }
+        // setIsSearchLoading(false);
+    };
+
+    const onFinishModel = (values) => {
+        debugger
+        const qty = dataModal.reduce((sum, item) => sum + item.IssueQty, 0)
+        if (productDetails.IssueQty !== qty) {
+            message.warning('Batch Issue Qty is equals to Issued Qty');
+            return false
+        }
+        setIsModelOpen(false)
+    }
+
+    const handleCloseModal = () => {
+        setDataModal([])
+        form3.resetFields()
+        setIsModelOpen(false)
+    }
+
+    const handleSaveModal = () => {
+        form3.submit()
+    }
+
+    const handleStore = (value) => {
+        debugger
+        const Va = form1.getFieldsValue()
+        if (Va.RequestingLocation == Va.IssueStore) {
+            message.warning('Please Select Different Store')
+            form1.resetFields()
+            return false
+        }
+        if (value != undefined) {
+            setIstablevisible(true)
+        }
+    }
 
     return (
         <Layout style={{ zIndex: '999999999' }}>
@@ -836,11 +810,14 @@ const CreateUrgentIssue = () => {
                             >
                                 <DatePicker style={{ width: '100%' }} disabled format='DD-MM-YYYY' />
                             </Form.Item>
+                            <Form.Item name="IssueId" hidden>
+                                <Input />
+                            </Form.Item>
                         </Col>
                         <Col className="gutter-row" span={4}>
                             <Form.Item
                                 label="Issuing Store"
-                                name="StoreDetails"
+                                name="IssueStore"
                                 rules={[
                                     {
                                         required: true,
@@ -848,7 +825,7 @@ const CreateUrgentIssue = () => {
                                     }
                                 ]}
                             >
-                                <Select allowClear placeholder='Select Value'>
+                                <Select allowClear placeholder='Select Value' onChange={handleStore} disabled={!!issueId}>
                                     {DropDown.StoreDetails.map((option) => (
                                         <Select.Option key={option.StoreId} value={option.StoreId}>
                                             {option.LongName}
@@ -868,7 +845,7 @@ const CreateUrgentIssue = () => {
                                     }
                                 ]}
                             >
-                                <Select allowClear placeholder='Select Value'>
+                                <Select allowClear placeholder='Select Value' onChange={handleStore} disabled={!!issueId}>
                                     {DropDown.StoreDetails.map((option) => (
                                         <Select.Option key={option.StoreId} value={option.StoreId}>
                                             {option.LongName}
@@ -878,14 +855,7 @@ const CreateUrgentIssue = () => {
                             </Form.Item>
                         </Col>
                         <Col className="gutter-row" span={6}>
-                            <Form.Item label="Issue Owner" name="IssueOwner"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please input!'
-                                    }
-                                ]}
-                            >
+                            <Form.Item label="Issue Owner" name="IssueOwner">
                                 <Input style={{ width: '100%' }} allowClear />
                             </Form.Item>
                         </Col>
@@ -893,7 +863,7 @@ const CreateUrgentIssue = () => {
                             <Form.Item label="Issue Status" name="IssueStatus"
                                 rules={[
                                     {
-                                        required: true,
+                                        required: issueStatus,
                                         message: 'Please input!'
                                     }
                                 ]}
@@ -904,9 +874,9 @@ const CreateUrgentIssue = () => {
                                 </Select>
                             </Form.Item>
                         </Col>
-                        <Col className="gutter-row" span={3} style={{ paddingTop: 35 }} >
-                            <Form.Item name="SubmitCheck">
-                                <Checkbox>Submit</Checkbox>
+                        <Col className="gutter-row" span={3} >
+                            <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }} valuePropName='checked'>
+                                <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
                             </Form.Item>
                         </Col>
                         <Col className="gutter-row" span={9}>
@@ -919,7 +889,7 @@ const CreateUrgentIssue = () => {
                         <Col style={{ marginRight: '10px' }}>
                             <Form.Item>
                                 <Button type="primary" htmlType="submit">
-                                    Submit
+                                    {buttonTitle}
                                 </Button>
                             </Form.Item>
                         </Col>
@@ -932,239 +902,90 @@ const CreateUrgentIssue = () => {
                         </Col>
                     </Row>
                     <Divider style={{ marginTop: '0' }}></Divider>
-                    {istablevisible ? (
+                    {/* {istablevisible ? (
                         <div>
                             <Table columns={columns} dataSource={data} scroll={{ x: 0 }} />
-                            <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px', float: 'right' }}>
-                                <Form.Item label="Amount" name='TotalAmount' style={{ marginRight: '16px', width: 100 }} >
-                                    <InputNumber min={0} disabled />
-                                </Form.Item>
-                                <Form.Item label="Tax" name='Tax' style={{ marginRight: '16px', width: 100 }} >
-                                    <InputNumber min={0} disabled />
-                                </Form.Item>
-                                <Form.Item label="Round Off" name='RoundOff' style={{ marginRight: '16px', width: 100 }}>
-                                    <InputNumber min={0} disabled />
-                                </Form.Item>
-                                <Form.Item label="Total PO Amount" name='totalpoAmount' style={{ width: 150 }}>
-                                    <InputNumber min={0} disabled />
-                                </Form.Item>
-                            </div>
                         </div>
-                    ) : null}
+                    ) : null} */}
+                    <Form
+                        onFinish={handleOnFinish}
+                        variant="outlined"
+                        size="default"
+                        style={{
+                            maxWidth: 1500
+                        }}
+                        form={form2}
+                    >
+                        {istablevisible ? (
+                            <div>
+                                <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} scroll={{ x: 0 }} />
+                            </div>
+                        ) : null}
+                    </Form>
                 </Form>
-                <ConfigProvider
-                    theme={{
-                        token: {
-                            zIndexPopupBase: 3000
-                        }
-                    }}>
-                    <Modal
-                        title="Search for PO"
-                        onOk={onOkModal}
-                        onCancel={onCancelmodal}
-                        width={1000}
-                        open={isModalOpen}
+                <Modal
+                    width={1000}
+                    maskClosable={false}
+                    title="Product Batch Details"
+                    open={isModelOpen}
+                    onOk={handleSaveModal}
+                    onCancel={handleCloseModal}
+                    okText={"Save"}
+                >
+                    <Form
+                        name="basic"
+                        labelCol={{
+                            span: 8,
+                        }}
+                        wrapperCol={{
+                            span: 16,
+                        }}
+                        style={{
+                            width: "100%",
+                        }}
+                        initialValues={{
+                            remember: true,
+                        }}
+                        onFinish={onFinishModel}
+                        onFinishFailed={onFinishFailed}
+                        autoComplete="off"
+                        form={form3}
                     >
-                        <Form
-                            name="basic"
-                            labelCol={{
-                                span: 8,
-                            }}
-                            wrapperCol={{
-                                span: 16,
-                            }}
-                            style={{
-                                width: '100%',
-                            }}
-                            initialValues={{
-                                remember: true,
-                            }}
-                            // layout='vertical'
-                            onFinish={onFinishmodal}
-                            onFinishFailed={onFinishFailed}
-                            autoComplete="off"
-                            form={form2}
-                        >
-                            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                                <Col span={12}>
-                                    <Form.Item
-                                        label="Supplier"
-                                        name="Supplier"
-                                        initialValue={form1.getFieldValue('SupplierList')}
-                                        rules={[
-                                            {
-                                                required: false,
-                                            }
-                                        ]}
-                                    >
-                                        <Tag color="blue">{selectedSupplier}</Tag>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={12}>
-                                    <Form.Item
-                                        label="Receiving Store"
-                                        name="ReceivingStore"
-                                        initialValue={form1.getFieldValue('StoreDetails')}
-                                        rules={[
-                                            {
-                                                required: false,
-                                            }
-                                        ]}
-                                    >
-                                        <Tag color="blue">{selectedStore}</Tag>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
-                                <Col span={6}>
-                                    <Form.Item label="PO Status" name="POStatus" initialValue="ALL"
-                                        rules={[
-                                            {
-                                                required: false,
-                                            }
-                                        ]}
-                                    >
-                                        <Select allowClear>
-                                            <Option value="ALL">All</Option>
-                                            <Option value="Pending">Pending</Option>
-                                            <Option value="PartiallyPending">Partially Pending</Option>
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col className="gutter-row" span={9}>
-                                    <>
-                                        <Form.Item label="PO Date From" name="PODateFrom"
-                                            initialValue={dayjs().subtract(1, 'day')}
-                                            rules={[
-                                                {
-                                                    required: true,
-                                                    message: "Input!"
-                                                }
-                                            ]}
-                                        >
-                                            <DatePicker format='DD-MM-YYYY' />
-                                        </Form.Item>
-                                    </>
-                                </Col>
-                                <Col className="gutter-row" span={9}>
-                                    <Form.Item label="PO Date To" name="PODateTo"
-                                        initialValue={dayjs(`${currentDate}`)}
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: "Input!"
-                                            }
-                                        ]}
-                                    >
-                                        <DatePicker format='DD-MM-YYYY' />
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                            <Row justify="end" style={{ padding: '0rem 1rem' }}>
-                                <Col style={{ marginRight: '10px' }}>
-                                    <Form.Item>
-                                        <Button type="primary" htmlType="submit">
-                                            Search
-                                        </Button>
-                                    </Form.Item>
-                                </Col>
-                                <Col>
-                                    <Form.Item>
-                                        <Button type="primary" onClick={handleReset}>
-                                            Reset
-                                        </Button>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                            {isPoSearchTable && poloading ? (
-                                <Skeleton active />
-                            ) : (
-                                <Table columns={columnsmodal} dataSource={dataModal} />
-                            )}
-                        </Form>
-                    </Modal>
-                </ConfigProvider>
-                <ConfigProvider
-                    theme={{
-                        token: {
-                            zIndexPopupBase: 3000
-                        }
-                    }}>
-                    <Modal
-                        title="Product Batch Details"
-                        onOk={onOkBatchModal}
-                        onCancel={onCancelBatchmodal}
-                        width={1700}
-                        open={isBatchModalOpen}
-                    >
-                        <Form
-                            name="basic"
-                            labelCol={{
-                                span: 8,
-                            }}
-                            wrapperCol={{
-                                span: 16,
-                            }}
-                            style={{
-                                width: '100%',
-                            }}
-                            initialValues={{
-                                remember: true,
-                            }}
-                            // layout='vertical'
-                            onFinish={onFinishBatchmodal}
-                            onFinishFailed={onFinishBatchFailed}
-                            autoComplete="off"
-                            form={form3}
-                        >
-                            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                                <Col span={8}>
-                                    <Form.Item
-                                        label="Product"
-                                        name="Product"
-                                        initialValue={selecetdProductId[productLineId]}
-                                        rules={[
-                                            {
-                                                required: false,
-                                            }
-                                        ]}
-                                    >
-                                        <Tag color="blue">{form1.getFieldValue([productLineId, 'product'])}</Tag>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={8}>
-                                    <Form.Item
-                                        label="Received Qty"
-                                        name="ReceivedQty"
-                                        initialValue={form1.getFieldValue([productLineId, 'POReceivedQty'])}
-                                        rules={[
-                                            {
-                                                required: false,
-                                            }
-                                        ]}
-                                    >
-                                        <Tag color="blue">{form1.getFieldValue([productLineId, 'POReceivedQty'])}</Tag>
-                                    </Form.Item>
-                                </Col>
-                                <Col className="gutter-row" span={8}>
-                                    <Form.Item
-                                        label="Bonus qty"
-                                        name="Bonusqty"
-                                        initialValue={form1.getFieldValue([productLineId, 'BonusQty'])}
-                                        rules={[
-                                            {
-                                                required: false,
-                                            }
-                                        ]}
-                                    >
-                                        <Tag color="blue">{form1.getFieldValue([productLineId, 'BonusQty'])}</Tag>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                            <Table columns={Batchmodal} dataSource={dataBatchModal} />
-                        </Form>
-                    </Modal>
-                </ConfigProvider>
+                        <Row>
+                            <Col className="gutter-row" span={12}>
+                                <div>
+                                    <span>
+                                        Product :{" "}
+                                        <b style={{ color: "#1677ff" }}>{productDetails.ProductName}</b>{" "}
+                                    </span>
+                                </div>
+                            </Col>
+                            <Col className="gutter-row" span={12}>
+                                <div>
+                                    <span>
+                                        Issued Quantity  :{" "}
+                                        <b style={{ color: "#1677ff" }}>{productDetails.IssueQty}</b>{" "}
+                                    </span>
+                                </div>
+                            </Col>
+                        </Row>
+                        <Table
+                            columns={columnsmodal}
+                            size="small"
+                            locale={{ emptyText: "Nodata " }}
+                            dataSource={dataModal}
+                        //   deliveryRecord.ProductId
+                        //     ? schedule.filter(
+                        //       (item) =>
+                        //         (item.ProductId === deliveryRecord.ProductId &&
+                        //           item.ActiveFlag) ||
+                        //         (item.ProductId === "" && item.ActiveFlag)
+                        //     )
+                        //     : initialDeliveryDataSource
+                        // }
+                        />
+                    </Form>
+                </Modal>
             </div>
         </Layout >
     );

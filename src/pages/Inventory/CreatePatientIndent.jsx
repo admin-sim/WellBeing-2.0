@@ -27,26 +27,43 @@ const CreatePatientIndent = () => {
         DateFormat: []
     });
 
-    let [counter, setCounter] = useState(0);    
+    let [counter, setCounter] = useState(1);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const indentId = location.state.IndentId;
+
+    const initialDataSource =
+        indentId === 0
+            ? [
+                {
+                    key: 0,
+                    ProductName: '',
+                    ProductId: '',
+                    UomId: '',
+                    RequestQty: '',
+                    RequestingStoreStock: '',
+                    IssuingStoreStock: '',
+                    Favourite: false,
+                    ActiveFlag: true,
+                },
+            ]
+            : [];
 
     const [encounter, setEncounter] = useState([]);
     const [form1] = Form.useForm();
     const [form2] = Form.useForm();
+    const [form3] = Form.useForm();
     const { Title } = Typography;
     const { TextArea } = Input;
     const { Option } = Select;
-    const navigate = useNavigate();
-    //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');    
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [data, setData] = useState([]);
+    const [data, setData] = useState(initialDataSource);
     const [dataModal, setDataModal] = useState([]);
     const [poloading, setPoloading] = useState(false);
     const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
     const [autoCompleteProduct, setAutoCompleteProduct] = useState([]);
     const fields = form1.getFieldsValue();
     const [buttonTitle, setButtonTitle] = useState('Save');
-    const location = useLocation();
-    const indentId = location.state.IndentId;
     const [isTableVisible, setIsTableVisible] = useState(false);
     const [uhId, setUhId] = useState();
     const [indentStatus, setIndentStatus] = useState(false);
@@ -126,7 +143,8 @@ const CreatePatientIndent = () => {
 
     const AddProduct = async () => {
         setAutoCompleteProduct([])
-        await form1.validateFields();
+        const fieldsToValidate = data.map(record => [record.key, 'ProductName']);
+        await form2.validateFields(fieldsToValidate);
         setData([
             ...data,
             {
@@ -147,15 +165,18 @@ const CreatePatientIndent = () => {
 
     const getPanelValue1 = (value, key) => {
         if (value === "") {
-            form1.setFieldsValue({ [key]: { uom: '' } });
-            form1.setFieldsValue({ [key]: { RequestQty: '' } });
-            form1.setFieldsValue({ [key]: { Favourite: false } });
-            form1.setFieldsValue({ [key]: { IssuingStoreStock: '' } });
+            form2.setFieldsValue({ [key]: { uom: '' } });
+            form2.setFieldsValue({ [key]: { RequestQty: '' } });
+            form2.setFieldsValue({ [key]: { Favourite: false } });
+            form2.setFieldsValue({ [key]: { IssuingStoreStock: '' } });
         }
         try {
             customAxios.get(`${urlAutocompleteProduct}?Product=${value}`).then((response) => {
                 const apiData = response.data.data;
-                const newOptions = apiData.map(item => ({ value: item.LongName, key: item.ProductId, UomId: item.UOMPrimaryUOM }));
+                const filteredApiData = apiData.filter(apiItem =>
+                    !data.some(option => option.ProductId === apiItem.ProductId && option.ActiveFlag)
+                );
+                const newOptions = filteredApiData.map(item => ({ value: item.LongName, key: item.ProductId, UomId: item.UOMPrimaryUOM }));
                 setAutoCompleteProduct(newOptions);
             });
         } catch (error) {
@@ -164,8 +185,8 @@ const CreatePatientIndent = () => {
     }
 
     const handleSelect1 = (value, option, key) => {
-        form1.setFieldsValue({ [key]: { UomId: option.UomId } });
-        form1.setFieldsValue({ [key]: { ProductId: option.key } });
+        form2.setFieldsValue({ [key]: { UomId: option.UomId } });
+        form2.setFieldsValue({ [key]: { ProductId: option.key } });
         customAxios.get(`${urlGetProductDetailsById}?ProductId=${option.key}`).then((response) => {
             const apiData = response.data.data;
             let reqstr = form1.getFieldValue('IssuingStore');
@@ -175,7 +196,22 @@ const CreatePatientIndent = () => {
                     qty += value.Quantity;
                 }
             })
-            form1.setFieldsValue({ [key]: { IssuingStoreStock: qty } });
+            const newData = data.map((item) => {
+                if (item.key === key) {
+                    const updatedItem = {
+                        ...item,
+                        // [column]: option.key,
+                        // LongName: option.value,
+                        UomId: option.UomId,
+                        ProductId: option.key,
+                        // PoRate: apiData.PORate !== null ? apiData.PORate.PoRate : 0,
+                    };
+                    return updatedItem;
+                }
+                return item;
+            });
+            setData(newData);
+            form2.setFieldsValue({ [key]: { IssuingStoreStock: qty } });
         });
     }
 
@@ -277,10 +313,7 @@ const CreatePatientIndent = () => {
             render: (text, record) => (
                 <>
                     <Form.Item name={[record.key, 'Favourite']} initialValue={record.Favourite} valuePropName="checked">
-                        <Checkbox onChange={FavouriteChanged}></Checkbox>
-                    </Form.Item>
-                    <Form.Item name={[record.key, 'ActiveFlag']} initialValue={record.ActiveFlag} hidden>
-                        <Checkbox valuePropName="checked"></Checkbox>
+                        <Checkbox onChange={() => FavouriteChanged(record)}></Checkbox>
                     </Form.Item>
                 </>
             )
@@ -356,6 +389,7 @@ const CreatePatientIndent = () => {
 
     const handleOnFinish = async (values) => {
         debugger;
+        await form2.validateFields()
         const products = [];
         if (data.length == 0) {
             setIsProductAvailable(true)
@@ -368,27 +402,45 @@ const CreatePatientIndent = () => {
                 return false;
             }
         }
+        const formData = form2.getFieldsValue();
 
-        for (let i = 0; i <= counter; i++) {
-            if (data[i] !== undefined && values[i] !== undefined) {
-                const product = {
-                    ProductId: values[i].ProductId,
-                    UomId: values[i].UomId ? values[i].UomId : values[i].UomId,
-                    IssuingStoreStock: values[i].IssuingStoreStock,
-                    RequestQty: values[i].RequestQty,
-                    Favourite: values[i].Favourite === false ? 'N' : 'Y',
-                    IndentLineId: values[i].IndentLineId ? values[i].IndentLineId : 0,
-                    ActiveFlag: values[i].ActiveFlag
-                }
-                products.push(product);
+        const mergedData = data.map(item => {
+            const matchingFormItem = formData[item.key];
+            if (matchingFormItem) {
+                return { ...item, ...matchingFormItem };
             }
-            else {
-                if (data[i] != undefined) {
-                    data[i].Favourite = data[i].Favourite == false ? 'N' : 'Y'
-                    products.push(data[i])
-                }
+            return item;
+        });
+
+        setData(mergedData);
+        for (let i = 0; i < mergedData.length; i++) {
+            if (mergedData[i].ProductId != '') {
+                mergedData[i].RequestQty = mergedData[i].RequestQty == '' ? 0 : mergedData[i].RequestQty
+                mergedData[i].Favourite = mergedData[i].Favourite == false ? 'N' : 'Y'
+                mergedData[i].IndentLineId = mergedData[i].IndentLineId ? mergedData[i].IndentLineId : 0
+                products.push(mergedData[i])
             }
         }
+        // for (let i = 0; i <= data.length; i++) {
+        //     if (data[i] !== undefined && va[i] !== undefined) {
+        //         const product = {
+        //             ProductId: va[i].ProductId != '' ? va[i].ProductId : 0,
+        //             UomId: va[i].UomId != '' ? va[i].UomId : 0,
+        //             IssuingStoreStock: va[i].IssuingStoreStock,
+        //             RequestQty: va[i].RequestQty ? va[i].RequestQty : 0,
+        //             Favourite: va[i].Favourite === false ? 'N' : 'Y',
+        //             IndentLineId: va[i].IndentLineId ? va[i].IndentLineId : 0,
+        //             ActiveFlag: data[i].ActiveFlag
+        //         }
+        //         products.push(product);
+        //     }
+        // else {
+        //     if (data[i] != undefined) {
+        //         // data[i].Favourite = data[i].Favourite == false ? 'N' : 'Y'
+        //         products.push(data[i])
+        //     }
+        // }
+        // }
 
         const Indent = {
             IndentId: values.IndentId ? values.IndentId : 0,
@@ -427,8 +479,8 @@ const CreatePatientIndent = () => {
         }
     };
 
-    const FavouriteChanged = (event) => {
-        setIndentStatus(event.target.checked)
+    const FavouriteChanged = (record) => {
+        record.Favourite = !record.Favourite
     }
 
     const SubmitChanged = (event) => {
@@ -466,9 +518,15 @@ const CreatePatientIndent = () => {
         });
     }
 
-    useEffect(() => {
-
-    }, [encounter]);
+    const handleStoreChange = (value) => {       
+        setData(initialDataSource);
+        form2.resetFields();
+        if (value !== undefined) {
+            setIsTableVisible(true);
+        } else {
+            setIsTableVisible(false);
+        }
+    }
 
     return (
         <Layout style={{ zIndex: '999999999' }}>
@@ -500,14 +558,6 @@ const CreatePatientIndent = () => {
                             IndentDate: dayjs(),
                             SubmitCheck: false
                         }}
-                        onValuesChange={(changedValues, allValues) => {
-                            if (allValues.IssuingStore !== undefined) {
-                                setIsTableVisible(true);
-                            } else {
-                                setData([]);
-                                setIsTableVisible(false);
-                            }
-                        }}
                     >
                         <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
                             <Col className="gutter-row" span={6}>
@@ -537,7 +587,7 @@ const CreatePatientIndent = () => {
                                         }
                                     ]}
                                 >
-                                    <Select allowClear placeholder='Select Value' disabled={!!indentId}>
+                                    <Select allowClear placeholder='Select Value' onChange={handleStoreChange} disabled={!!indentId}>
                                         {DropDown.StoreDetails.map((option) => (
                                             <Select.Option key={option.StoreId} value={option.StoreId}>
                                                 {option.LongName}
@@ -653,6 +703,16 @@ const CreatePatientIndent = () => {
                             </Col>
                         </Row>
                         <Divider style={{ marginTop: '0' }}></Divider>
+                    </Form>
+                    <Form
+                        onFinish={handleOnFinish}
+                        variant="outlined"
+                        size="default"
+                        style={{
+                            maxWidth: 1500
+                        }}
+                        form={form2}
+                    >
                         {isTableVisible ? (
                             <div>
                                 <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} scroll={{ x: 0 }} />
@@ -691,7 +751,7 @@ const CreatePatientIndent = () => {
                             onFinish={onFinishmodal}
                             onFinishFailed={onFinishFailed}
                             autoComplete="off"
-                            form={form2}
+                            form={form3}
                         >
                             <Table columns={Modelcolumns} dataSource={dataModal} scroll={{ x: 0 }} />
                         </Form>

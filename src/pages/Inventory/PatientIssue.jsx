@@ -4,7 +4,7 @@ import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from "@ant-design/ic
 import dayjs from 'dayjs';
 import {
     AutoComplete,
-    Skeleton,
+    Spin,
     Tag,
     Typography,
     Select,
@@ -21,7 +21,7 @@ import {
 } from "antd";
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
-
+import CustomTable from "../../components/customTable/index.jsx";
 import { urlGetPurshaseOrderDetails, urlSearchPatientIssue, urlSearchUHID, urlGetLastEncounter } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
 //import { format } from 'prettier';
@@ -35,7 +35,7 @@ const PatientIssue = () => {
         DateFormat: [],
         Patient: []
     });
-    const [paginationSize, setPaginationSize] = useState(5);
+    const [loading, setLoading] = useState(false);
     const [filteredData, setFilteredData] = useState([]);
     const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
     const [isSearchLoading, setIsSearchLoading] = useState(false);
@@ -52,13 +52,13 @@ const PatientIssue = () => {
     useEffect(() => {
         try {
             customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-                debugger;
                 const apiData = response.data.data;
                 setPatientIssueDropDown(apiData);
             });
         } catch (error) {
             console.error("Error fetching purchase order details:", error);
         }
+        form.submit();
     }, []);
 
     const colorMapping = {
@@ -90,14 +90,19 @@ const PatientIssue = () => {
 
     const handleIndentId = (text, record, index) => {
         const IndentId = record.IndentId
-        navigate("/UpdatePatientIssue", { state: { IndentId } });
+        if (record.Exists == 'Exists') {
+            alert('Indent Issue with same Indent Number already exists!!Please finalize previous Indent Issue.')
+        }
+        else {
+            navigate("/UpdatePatientIssue", { state: { IndentId } });
+        }        
     };
 
     const columns = [
         {
             title: "Sl No",
-            key: "index",
-            render: (text, record, index) => index + 1,
+            key: 'key',
+            dataIndex: 'key',
         },
         {
             title: "Issue Number",
@@ -113,13 +118,14 @@ const PatientIssue = () => {
             sorter: (a, b) => a.IndentNumber.localeCompare(b.IndentNumber),
             sortDirections: ["descend", "ascend"],
             render: (text, record, index) => {
-                if (record.IssueStatus !== "Finalize") {
+                if ((record.IndentStatus == "Pending" || record.IndentStatus == "Partially Pending" || record.IndentStatus == "Completed") && record.IssueStatus != "Finalize") {
                     return (<Button type="link" onClick={() => handleIndentId(text, record, index)}>
                         {text}
                     </Button>
                     )
+                } else if (record.IssueStatus == "Finalize" || record.IndentStatus == "Completed") {
+                    return (<Tag style={{ marginLeft: '15px' }}>{text}</Tag>);
                 }
-                return (<Tag style={{ marginLeft: '15px' }}>{text}</Tag>);
             },
         },
         {
@@ -199,13 +205,11 @@ const PatientIssue = () => {
     }
 
     const handleSelect = (value, option) => {
-        debugger;
         form.setFieldsValue({ PatientName: option.Name })
         form.setFieldsValue({ PatientId: option.PatientId })
         setPatientName(option.Name);
         try {
             customAxios.get(`${urlGetLastEncounter}?Uhid=${option.key}`).then((response) => {
-                debugger;
                 const apiData = response.data.data;
                 if (apiData.length > 0) {
                     setEncounter(apiData);
@@ -245,6 +249,15 @@ const PatientIssue = () => {
        return Promise.resolve();
      };*/
 
+    const handleUHId = (value) => {
+        if (value == undefined) {
+            setEncounter([])
+            form.setFieldsValue({ Encounter: undefined });
+            form.setFieldsValue({ PatientId: undefined });
+            form.setFieldsValue({ PatientName: undefined });
+        }
+    }
+
     const handleSubmit = (values) => {
         // Handle form submission logic here
         console.log("Form submitted with values:", values);
@@ -265,7 +278,8 @@ const PatientIssue = () => {
         return inputDate; // Return as is if not in the expected format
     }
     const onFinish = async (values) => {
-        debugger;
+        debugger
+        setLoading(true)
         const postData1 = {
             IssueNumber: values.OrderId,
             IndentNumber: values.IndentNumber,
@@ -283,11 +297,19 @@ const PatientIssue = () => {
         };
         try {
             const response = await customAxios.post(urlSearchPatientIssue, postData1);
-            debugger;
-            setFilteredData(response.data.data.newIndentIssueModel);
+            const ApiData = response.data.data.newIndentIssueModel.filter(
+                (item) => item.IndentStatus != "Created" && item.IndentCategory == "PatientIndent")
+            const ApiData1 = ApiData.map((item, index) => {
+                return {
+                    ...item,
+                    key: index + 1
+                }
+            })
+            setFilteredData(ApiData1);
         } catch (error) {
 
         }
+        setLoading(false)
     };
 
     const onReset = () => {
@@ -343,9 +365,9 @@ const PatientIssue = () => {
                                 <Form.Item name="UHID" label="UHID">
                                     <AutoComplete
                                         options={autoCompleteOptions}
-                                        // options={autoCompleteOptions[record.key]}
                                         onSearch={getPanelValue}
                                         onSelect={(value, option) => handleSelect(value, option)}
+                                        onChange={handleUHId}
                                         placeholder="Search for a Uhid"
                                         allowClear
                                     />
@@ -453,7 +475,16 @@ const PatientIssue = () => {
                             </Col>
                         </Row>
                     </Form>
-                    <Table display={setIsTable} dataSource={filteredData} columns={columns}
+                    <Spin spinning={loading}>
+                        <CustomTable
+                            dataSource={filteredData}
+                            columns={columns}
+                            isFilter={true}
+                            size="small"
+                            bordered
+                        />
+                    </Spin>
+                    {/* <Table display={setIsTable} dataSource={filteredData} columns={columns}
                         pagination={{
                             onChange: (current, pageSize) => {
                                 setPage(current);
@@ -468,7 +499,7 @@ const PatientIssue = () => {
                         rowKey={(row) => row.AppUserId}
                         size="small"
                         bordered
-                    />
+                    /> */}
                 </Card>
             </div>
         </Layout>
