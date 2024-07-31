@@ -25,6 +25,7 @@ const CustomTable = ({
   rowkey,
   actionColumnName,
   loading,
+ 
 }) => {
   const [searchText, setSearchText] = useState("");
 
