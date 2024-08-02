@@ -639,73 +639,65 @@ const Patient = () => {
           )}
       </ConfigProvider>
 
-      <ConfigProvider
-        theme={{
-          token: {
-            zIndexPopupBase: 3000,
-          },
-        }}
+      {/* {contextHolder} */}
+      <Modal
+        width="60%"
+        title="More Details"
+        open={isMoreModalVisible}
+        // onOk={handleOk}
+        // okButtonProps={{ disabled: IsVisitCreated }}
+        onCancel={handleMoreModalCancel}
+        maskClosable={false}
+        footer={null}
       >
-        {/* {contextHolder} */}
-        <Modal
-          width={700}
-          title="More Details"
-          open={isMoreModalVisible}
-          // onOk={handleOk}
-          // okButtonProps={{ disabled: IsVisitCreated }}
-          onCancel={handleMoreModalCancel}
-          maskClosable={false}
-          footer={null}
-        >
-          <PatientHeader patient={patientHeaderDetails}></PatientHeader>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            <Col span={12}>
-              <div
-                style={{
-                  padding: "5px 5px",
-                  margin: "10px 10px",
-                }}
-              >
-                <strong style={{ fontSize: "15px" }}>
-                  <EnvironmentOutlined /> Present address
-                </strong>
-                <br></br>
-                <span>
-                  {selectedRecord && selectedRecord.PermanentAddress1
-                    ? selectedRecord.PermanentAddress1
-                    : "N/A"}
-                </span>
-                <br></br>
-                <span>{selectedRecord && selectedRecord.AreaName}</span>
-                <br></br>
-                <span>{selectedRecord && selectedRecord.PlaceName}</span>
-                <br></br>
-                <span>{selectedRecord && selectedRecord.StateName}</span>
-                <br></br>
-                <span>{selectedRecord && selectedRecord.CountryName}</span>
-              </div>
-            </Col>
-            <Col span={8}>
-              <div style={{ padding: "5px 5px", margin: "10px 10px" }}>
-                <strong>Marital Status : </strong>
-                <span>
-                  {selectedRecord && selectedRecord.MaritalStatusString
-                    ? selectedRecord.MaritalStatusString
-                    : "N/A"}
-                </span>
-                <br></br>
-                <strong>Father / Spouse name : </strong>
-                <span>
-                  {selectedRecord && selectedRecord.FatherHusbandName
-                    ? selectedRecord.FatherHusbandName
-                    : "N/A"}
-                </span>
-                <br></br>
-              </div>
-            </Col>
-          </Row>
-        </Modal>
-      </ConfigProvider>
+        <PatientHeader patient={patientHeaderDetails}></PatientHeader>
+        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+          <Col span={12}>
+            <div
+              style={{
+                padding: "5px 5px",
+                margin: "10px 10px",
+              }}
+            >
+              <strong style={{ fontSize: "15px" }}>
+                <EnvironmentOutlined /> Present address
+              </strong>
+              <br></br>
+              <span>
+                {selectedRecord && selectedRecord.PermanentAddress1
+                  ? selectedRecord.PermanentAddress1
+                  : "N/A"}
+              </span>
+              <br></br>
+              <span>{selectedRecord && selectedRecord.AreaName}</span>
+              <br></br>
+              <span>{selectedRecord && selectedRecord.PlaceName}</span>
+              <br></br>
+              <span>{selectedRecord && selectedRecord.StateName}</span>
+              <br></br>
+              <span>{selectedRecord && selectedRecord.CountryName}</span>
+            </div>
+          </Col>
+          <Col span={8}>
+            <div style={{ padding: "5px 5px", margin: "10px 10px" }}>
+              <strong>Marital Status : </strong>
+              <span>
+                {selectedRecord && selectedRecord.MaritalStatusString
+                  ? selectedRecord.MaritalStatusString
+                  : "N/A"}
+              </span>
+              <br></br>
+              <strong>Father / Spouse name : </strong>
+              <span>
+                {selectedRecord && selectedRecord.FatherHusbandName
+                  ? selectedRecord.FatherHusbandName
+                  : "N/A"}
+              </span>
+              <br></br>
+            </div>
+          </Col>
+        </Row>
+      </Modal>
     </>
   );
 };
