@@ -38,8 +38,6 @@ import { Table, InputNumber } from "antd";
 import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import customAxios from "../../components/customAxios/customAxios";
-import { FaPlusCircle } from "react-icons/fa";
-import { some, sum } from "lodash";
 
 const CreatePurchaseOrder = () => {
   const [DropDown, setDropDown] = useState({
@@ -71,6 +69,7 @@ const CreatePurchaseOrder = () => {
   const [deliveryDate, setDeliveryDate] = useState(dayjs());
   const [deliveryRecord, setDeliveryRecord] = useState([]);
   const [poStatus, setPoStatus] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const initialDataSource =
     PoHeaderId === 0
@@ -131,76 +130,51 @@ const CreatePurchaseOrder = () => {
 
   useEffect(() => {
     debugger;
-    const fetchData = async () => {
-      if (PoHeaderId > 0) {
-        setButtonTitle("Update");
-        try {
-          const response = await customAxios.get(
-            `${urlEditPurchaseOrder}?Id=${PoHeaderId}`
-          );
-          if (response.status == 200 && response.data.data != null) {
-            const editeddata = response.data.data;
-            const products = editeddata.PurchaseOrderDetails.map(
-              (item, index) => ({
-                ...item,
-                key: index + 1,
-              })
-            );
-            setData(products);
-            const formdata = editeddata.newPurchaseOrderModel;
-
-            form1.setFieldsValue({
-              SupplierId: formdata.VendorId,
-              StoreId: formdata.ProcurementStoreId,
-              DocumentType: formdata.DocumentType,
-              TotalAmount: formdata.PoPurchaseValue,
-              TotalPoAmount: formdata.PoPurchaseValue,
-            });
-            setCounter(products.length + 1);
-            const delivery = editeddata.DeliveryDetails.map((item, index) => ({
-              ...item,
-              key: index + 1,
-            }));
-            setCounterDelivery(editeddata.DeliveryDetails.length + 1);
-            // const updatedSchedule = delivery.map((item) => {
-            //   const key = item.key;
-            //   const prod = editeddata.PurchaseOrderDetails.filter(
-            //     (item1) => item1.PoLineId === item.PoLineId
-            //   );
-            //   if (delivery[key - 1] != undefined) {
-            //     if (
-            //       delivery[key - 1].DeliveryQuantity ||
-            //       delivery[key - 1].DelDate ||
-            //       delivery[key - 1].DeliveryLocation
-            //     ) {
-            //       return {
-            //         ...item,
-            //         ProductId: prod[0].ProductId,
-            //         DeliveryQuantity: delivery[key - 1].DeliveryQuantity,
-            //         // DeliveryDate: DateBindtoDatepicker(
-            //         //   delivery[key - 1].DeliveryDate
-            //         // ),
-            //         DelDate:delivery[key-1].DelDate ? dayjs(delivery[key-1].DelDate).format("DD-MM-YYYY") : "",
-
-            //         DeliveryLocation: delivery[key - 1].DeliveryLocation,
-            //         UomId: prod[0].UomId,
-            //         Uom: prod[0].Uom,
-            //       };
-            //     }
-            //     return item;
-            //   }
-            //   return item;
-            // });
-            setSchedule(delivery);
-          }
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      }
-    };
+    
     fetchData();
   }, []);
 
+  const fetchData = async () => {
+    if (PoHeaderId > 0) {
+      setButtonTitle("Update");
+      setLoading(true);
+      try {
+        const response = await customAxios.get(
+          `${urlEditPurchaseOrder}?Id=${PoHeaderId}`
+        );
+        if (response.status == 200 && response.data.data != null) {
+          const editeddata = response.data.data;
+          const products = editeddata.PurchaseOrderDetails.map(
+            (item, index) => ({
+              ...item,
+              key: index + 1,
+            })
+          );
+          setData(products);
+          const formdata = editeddata.newPurchaseOrderModel;
+
+          form1.setFieldsValue({
+            SupplierId: formdata.VendorId,
+            StoreId: formdata.ProcurementStoreId,
+            DocumentType: formdata.DocumentType,
+            TotalAmount: formdata.PoPurchaseValue,
+            TotalPoAmount: formdata.PoPurchaseValue,
+          });
+          setCounter(products.length + 1);
+          const delivery = editeddata.DeliveryDetails.map((item, index) => ({
+            ...item,
+            key: index + 1,
+          }));
+          setCounterDelivery(editeddata.DeliveryDetails.length + 1);
+          
+          setSchedule(delivery);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+  };
   const handleCancel = () => {
     const url = "/purchaseOrder";
     navigate(url);
@@ -497,7 +471,7 @@ const CreatePurchaseOrder = () => {
 
   const handleOpenModal = async (record) => {
     debugger;
-
+    setLoading(true);
     await form1.validateFields([
       "StoreId",
       "SupplierId",
@@ -507,6 +481,7 @@ const CreatePurchaseOrder = () => {
     ]);
     setDeliveryRecord(record);
     setModalVisible(true);
+    setLoading(false);
   };
 
   const handleCloseModal = () => {
@@ -1045,15 +1020,7 @@ const CreatePurchaseOrder = () => {
           Delivery
         </Button>
       ),
-      title: "Delivery Schedule",
-      dataIndex: "deliverySchedule",
-      key: "deliverySchedule",
-      width: 100,
-      render: (text, record, index) => (
-        <Button type="link" onClick={() => handleOpenModal(record)}>
-          Delivery
-        </Button>
-      ),
+   
     },
     {
       title: (
@@ -1303,6 +1270,7 @@ const CreatePurchaseOrder = () => {
               </Col>
             </Row>
             <Divider style={{ marginTop: "0" }}></Divider>
+            <Spin spinning={loading}>
             <Table
               bordered
               columns={columns}
@@ -1313,6 +1281,7 @@ const CreatePurchaseOrder = () => {
                 x: 2000,
               }}
             />
+            </Spin>
             <div
               style={{
                 display: "flex",
@@ -1383,6 +1352,7 @@ const CreatePurchaseOrder = () => {
               </span>
             </div>
           </Col>
+          <Spin spinning={loading}>
           <Table
             columns={columnsModel}
             size="small"
@@ -1398,6 +1368,7 @@ const CreatePurchaseOrder = () => {
                 : initialDeliveryDataSource
             }
           />
+          </Spin>
         </Form>
       </Modal>
     </Layout>

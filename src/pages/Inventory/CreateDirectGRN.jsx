@@ -22,6 +22,7 @@ import {
   Divider,
   Row,
   AutoComplete,
+  Spin,
 } from "antd";
 import Input from "antd/es/input";
 import Form from "antd/es/form";
@@ -119,6 +120,7 @@ const CreateDirectGRN = () => {
   const [buttonTitle, setButtonTitle] = useState("Save");
   const [grnStatus, setGrnStatus] = useState(false);
   const [dropDownLoad, setDropDownLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     customAxios.get(urlCreatePurchaseOrder).then((response) => {
@@ -130,83 +132,72 @@ const CreateDirectGRN = () => {
 
   useEffect(() => {
     debugger;
-    const fetchData = async () => {
-      if (grnHeaderId > 0) {
-        setButtonTitle("Update");
-        try {
-          const response = await customAxios.get(
-            `${urlEditGRNDirect}?GrnHeaderId=${grnHeaderId}`
-          );
-          if (response.status == 200 && response.data.data != null) {
-            const editeddata = response.data.data;
-            const products = editeddata.GRNAgainstPODetails.map(
-              (item, index) => ({
-                ...item,
-                key: index + 1,
-                Replaceable: item.Replaceable === "Y" ? true : false,
-              })
-            );
-            setData(products);
-            const formdata = editeddata.newGRNAgainstPOModel;
 
-            form1.setFieldsValue({
-              SupplierId: formdata.SupplierId,
-              StoreId: formdata.StoreId,
-              DocumentType: formdata.DocumentType,
-              InvoiceNumber: formdata.InvoiceNumber,
-
-              InvoiceDateString: formdata.InvoiceDateString
-                ? dayjs(formdata.InvoiceDateString, "DD-MM-YYYY")
-                : null,
-
-              DCChallanDateString: formdata.DCChallanDateString
-                ? dayjs(formdata.DCChallanDateString, "DD-MM-YYYY")
-                : null,
-              ReceivingDateString: formdata.ReceivingDateString
-                ? dayjs(formdata.ReceivingDateString, "DD-MM-YYYY")
-                : null,
-              GRNDatestring: formdata.GRNDatestring
-                ? dayjs(formdata.GRNDatestring, "DD-MM-YYYY")
-                : null,
-
-              // InvoiceDateString: formdata.InvoiceDateString
-              //   ? dayjs(formdata.InvoiceDateString).format("DD-MM-YYYY")
-              //   : null,
-              // DCChallanDateString: formdata.DCChallanDateString
-              //   ? dayjs(formdata.DCChallanDateString).format("DD-MM-YYYY")
-              //   : null,
-              DCChallanNumber: formdata.DCChallanNumber,
-              // ReceivingDateString: formdata.ReceivingDateString
-              //   ? dayjs(formdata.ReceivingDateString).format("DD-MM-YYYY")
-              //   : null,
-              InvoiceAmount: formdata.InvoiceAmount,
-              TotalAmount: formdata.TotalAmount,
-              TotalPoAmount: formdata.TotalPoAmount,
-              // GRNDatestring: formdata.GRNDatestring
-              //   ? dayjs(formdata.GRNDatestring).format("DD-MM-YYYY")
-              //   : null,
-              Remarks: formdata.Remarks,
-              GRNStatus:
-                formdata.GRNStatus === "Created" ? "" : formdata.GRNStatus,
-              GRNHeaderId: formdata.GRNHeaderId,
-              PoHeaderId: formdata.PoHeaderId,
-            });
-            setCounter(products.length + 1);
-            const batch = editeddata.BatchDetails.map((item, index) => ({
-              ...item,
-              key: index + 1,
-            }));
-            setDataModel(batch);
-            setCounterModel(editeddata.BatchDetails.length + 1);
-          }
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      }
-    };
     fetchData();
   }, []);
 
+  const fetchData = async () => {
+    if (grnHeaderId > 0) {
+      setLoading(true);
+      setButtonTitle("Update");
+      try {
+        const response = await customAxios.get(
+          `${urlEditGRNDirect}?GrnHeaderId=${grnHeaderId}`
+        );
+        if (response.status == 200 && response.data.data != null) {
+          const editeddata = response.data.data;
+          const products = editeddata.GRNAgainstPODetails.map(
+            (item, index) => ({
+              ...item,
+              key: index + 1,
+              Replaceable: item.Replaceable === "Y" ? true : false,
+            })
+          );
+          setData(products);
+          const formdata = editeddata.newGRNAgainstPOModel;
+
+          form1.setFieldsValue({
+            SupplierId: formdata.SupplierId,
+            StoreId: formdata.StoreId,
+            DocumentType: formdata.DocumentType,
+            InvoiceNumber: formdata.InvoiceNumber,
+            InvoiceDateString: formdata.InvoiceDateString
+              ? dayjs(formdata.InvoiceDateString, "DD-MM-YYYY")
+              : null,
+            DCChallanDateString: formdata.DCChallanDateString
+              ? dayjs(formdata.DCChallanDateString, "DD-MM-YYYY")
+              : null,
+            ReceivingDateString: formdata.ReceivingDateString
+              ? dayjs(formdata.ReceivingDateString, "DD-MM-YYYY")
+              : null,
+            GRNDatestring: formdata.GRNDatestring
+              ? dayjs(formdata.GRNDatestring, "DD-MM-YYYY")
+              : null,
+            DCChallanNumber: formdata.DCChallanNumber,
+            InvoiceAmount: formdata.InvoiceAmount,
+            TotalAmount: formdata.TotalAmount,
+            TotalPoAmount: formdata.TotalPoAmount,
+            Remarks: formdata.Remarks,
+            GRNStatus:
+              formdata.GRNStatus === "Created" ? "" : formdata.GRNStatus,
+            GRNHeaderId: formdata.GRNHeaderId,
+            PoHeaderId: formdata.PoHeaderId,
+          });
+          setCounter(products.length + 1);
+          const batch = editeddata.BatchDetails.map((item, index) => ({
+            ...item,
+            key: index + 1,
+          }));
+          setDataModel(batch);
+          setCounterModel(editeddata.BatchDetails.length + 1);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setLoading(false);
+      }
+    }
+  };
   function calculateTotalAmount(data) {
     let totalAmount = 0;
     data.forEach((item) => {
@@ -322,17 +313,19 @@ const CreateDirectGRN = () => {
                 ? values[key].MFGDateString.format("DD-MM-YYYY")
                 : null,
               BatchNo: values[key].BatchNo,
-              EXPDateString:
-                batchRecord.Expiry === "Month wise"
-                  ? values[key].EXPDateString
-                    ? `01-${String(values[key].EXPDateString.$M + 1).padStart(
-                        2,
-                        "0"
-                      )}-${values[key].EXPDateString.$y}`
-                    : null
-                  : values[key].EXPDateString
-                  ? values[key].EXPDateString.format("DD-MM-YYYY")
-                  : null,
+              EXPDateString: values[key].GrnBatchId
+                ? values[key].EXPDateString &&
+                  values[key].EXPDateString.format("DD-MM-YYYY")
+                : batchRecord.Expiry === "Month wise"
+                ? values[key].EXPDateString &&
+                  `01-${String(values[key].EXPDateString.$M + 1).padStart(
+                    2,
+                    "0"
+                  )}-${values[key].EXPDateString.$y}`
+                : batchRecord.Expiry === "Date wise"
+                ? values[key].EXPDateString &&
+                  values[key].EXPDateString.format("DD-MM-YYYY")
+                : null,
               rate: values[key].rate,
               MRP: values[key].MRP,
               DiscountRate:
@@ -386,6 +379,7 @@ const CreateDirectGRN = () => {
 
   const handleOpenModal = async (value, record) => {
     debugger;
+    setLoading(true);
     record.BonusQuantity = form1.getFieldValue([record.key, "BonusQuantity"]);
     await form1.validateFields([
       "StoreId",
@@ -396,6 +390,7 @@ const CreateDirectGRN = () => {
     ]);
     setBatchRecord(record);
     setModalVisible(true);
+    setLoading(false);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -454,147 +449,7 @@ const CreateDirectGRN = () => {
     };
   };
 
-  // const handleOnFinish = async (values) => {
-  //   debugger;
-
-  //   const isAnyIdNotNull = dataModel.some(
-  //     (item) => item.ProductId !== "" && item.ActiveFlag
-  //   );
-  //   const va = form1.getFieldsValue();
-  //   if (isAnyIdNotNull) {
-  //     const products = [];
-  //     for (let i = 0; i <= data.length; i++) {
-  //       if (data[i] !== undefined) {
-  //         const product = {
-  //           ProductId: data[i].ProductId,
-  //           UomId: data[i].UomId,
-
-  //           ReceivedQty: data[i].ReceivedQty,
-  //           BonusQuantity: data[i].BonusQty ?? 0,
-  //           PoRate: data[i].PoRate,
-  //           DiscountRate:
-  //             data[i].DiscountRate == "" ||
-  //             data[i].DiscountRate == null ||
-  //             data[i].DiscountRate == undefined
-  //               ? 0
-  //               : data[i].DiscountRate,
-  //           DiscountAmount: data[i].DiscountAmount ?? 0,
-  //           TaxAmount1:
-  //             data[i].TaxAmount == "" || data[i].TaxAmount == undefined
-  //               ? 0
-  //               : data[i].TaxAmount,
-  //           TotalAmount: data[i].LineAmount,
-  //           Replaceable:
-  //             data[i].Replaceable === true || data[i].Replaceable == "Y"
-  //               ? "Y"
-  //               : "N",
-  //           LineAmount: data[i].LineAmount,
-  //           PoLineId: data[i].PoLineId == null ? 0 : data[i].PoLineId,
-  //           GrnLineId:
-  //             data[i].GrnLineId == "" ||
-  //             data[i].GrnLineId == null ||
-  //             data[i].GrnLineId == undefined
-  //               ? 0
-  //               : data[i].GrnLineId,
-  //           ActiveFlag: data[i].ActiveFlag,
-  //         };
-  //         products.push(product);
-  //       }
-  //     }
-
-  //     const activeProducts = products.filter((product) => product.ActiveFlag);
-
-  //     const result = checkActiveBatches(activeProducts, dataModel);
-  //     if (!result.allActiveProductsHaveActiveBatch) {
-  //       message.warning('Please Add BatchDeatils');
-  //       return false;
-  //     }
-
-  //     const DirectGRN = {
-  //       SupplierId: values.SupplierId,
-  //       StoreId: values.StoreId,
-  //       DocumentType: values.DocumentType,
-  //       DCChallanDateString: values.DCChallanDateString
-  //         ? values.DCChallanDateString.format("DD-MM-YYYY")
-  //         : "",
-  //       GRNDatestring: values.GRNDatestring.format("DD-MM-YYYY"),
-  //       InvoiceDateString: values.InvoiceDateString.format("DD-MM-YYYY"),
-  //       ReceivingDateString: values.ReceivingDateString.format("DD-MM-YYYY"),
-  //       RoundOff: values.RoundOff,
-  //       InvoiceNumber: values.InvoiceNumber,
-  //       DCChallanNumber: values.DCChallanNumber,
-  //       Remarks: values.Remarks,
-  //       GRNStatus: !grnStatus ? "Created" : values.GRNStatus,
-  //       InvoiceAmount: values.InvoiceAmount,
-  //       TotalAmount: values.TotalAmount,
-  //       TotalPoAmount: values.TotalPoAmount,
-  //       TaxAmount1: values.TaxAmount1 ?? 0,
-  //       GRNHeaderId: values.GRNHeaderId,
-  //       PoHeaderId: values.PoHeaderId,
-  //     };
-
-  //     const filteredbatch = dataModel.filter((item) => item.ProductId);
-
-  //     const postData = {
-  //       newGRNAgainstPOModel: DirectGRN,
-  //       GRNAgainstPODetails: products,
-  //       BatchDetails: filteredbatch === undefined ? [] : filteredbatch,
-  //     };
-
-  //     const sumProducts = (key) => {
-  //       return products.reduce((sum, product) => sum + parseInt(product[key] || 0), 0);
-  //     };
-
-  //     const sumBatchDetails = (key) => {
-  //       return filteredbatch ? filteredbatch.reduce((sum, batch) => sum + parseInt(batch[key] || 0, 10), 0) : 0;
-  //     };
-
-  //     const totalReceivedQty = sumProducts("ReceivedQty");
-  //   const totalBonusQuantity = sumProducts("BonusQuantity");
-
-  //   const totalBatchQuantity = sumBatchDetails("Quantity");
-  //   const totalBatchBonusQty = sumBatchDetails("BatchBonusQty");
-
-  //   if (totalReceivedQty !== totalBatchQuantity) {
-  //     message.warning("Total ReceivedQty does not match total Batch Quantity.");
-  //     return false;
-  //   }
-
-  //   if (totalBonusQuantity !== totalBatchBonusQty) {
-  //     message.warning("Total BonusQuantity does not match total Batch BonusQty.");
-  //     return false;
-  //   }
-
-  //     if (grnHeaderId == 0) {
-  //       const response = await customAxios.post(urlAddNewGRNDirect, postData, {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       });
-  //       if (response.status == 200) {
-  //         message.success("GRN Created Successfully");
-  //         handleCancel();
-  //       } else {
-  //         message.error("Something went wrong");
-  //       }
-  //     } else {
-  //       const response = await customAxios.post(urlUpdateGRNDirect, postData, {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       });
-  //       if (response.status == 200) {
-  //         message.success("GRN Updated Successfully");
-  //         handleCancel();
-  //       } else {
-  //         message.error("Something went wrong");
-  //       }
-  //     }
-  //     onCancelModel();
-  //   } else {
-  //     message.warning("Please add Batch details");
-  //   }
-  // };
+  
   const handleOnFinish = async (values) => {
     debugger;
     const isAnyIdNotNull = dataModel.some(
@@ -1865,12 +1720,14 @@ const CreateDirectGRN = () => {
             </Col>
           </Row>
           <Divider style={{ marginTop: "0" }}></Divider>
+          <Spin spinning={loading}>
           <Table
             columns={columns}
             pagination={false}
             dataSource={data.filter((item) => item.ActiveFlag !== false)}
             scroll={{ x: 2000 }}
           />
+          </Spin>
           <div
             style={{
               display: "flex",
@@ -1964,6 +1821,7 @@ const CreateDirectGRN = () => {
                   </Form.Item>
                 </Col>
               </Row>
+              <Spin spinning={loading}>
               <Table
                 columns={columnsModel}
                 dataSource={
@@ -1978,6 +1836,7 @@ const CreateDirectGRN = () => {
                 }
                 scroll={{ x: 2000 }}
               />
+              </Spin>
             </Form>
           </Modal>
         </ConfigProvider>

@@ -31,12 +31,8 @@ import {
   urlSearchPurchaseOrder,
 } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
-import { render } from "react-dom";
-import FormItem from "antd/es/form/FormItem/index.js";
 import CustomTable from "../../components/customTable/index.jsx";
 import moment from "moment";
-//import { format } from 'prettier';
-//import { useLocation } from 'react-router-dom';
 
 const PurchaseOrder = () => {
   const [purchaseOrderDropdown, setPurchaseOrderDropDown] = useState({

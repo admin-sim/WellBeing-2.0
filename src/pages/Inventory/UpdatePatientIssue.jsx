@@ -142,7 +142,6 @@ const UpdatePatientIssue = () => {
               };
             });
             setDataModal(batch);
-            setModelCounter(batch.length);
             setIsTableVisible(true);
           }
 
@@ -226,21 +225,26 @@ const UpdatePatientIssue = () => {
   };
 
   
-  const OpenBatch = useCallback(
-    async (record) => {
-      debugger;
-      await form1.validateFields();
-      const va = form1.getFieldsValue();
-      record.IssueQty = va[record.key].IssueQty;
-      setProductDetails(record);
+  
 
+  const OpenBatch = async (record) => {
+    try {
+      // Validate and get form values
+      await form1.validateFields();
+      const formValues = form1.getFieldsValue();
+  
+      // Update the record with the form value
+      record.IssueQty = formValues[record.key].IssueQty;
+      setProductDetails(record);
+  
+      // Construct the product object
       const product = {
         IssueQty: record.IssueQty,
         ProductId: record.ProductId,
         IssueId: record.IssueingStoreId,
         StoreId: record.IssueingStoreId,
       };
-
+  
       // Filter dataModel based on ProductId and ActiveFlag
       const filteredDataModel = dataModal.filter(
         (item) =>
@@ -248,80 +252,73 @@ const UpdatePatientIssue = () => {
           item.ActiveFlag === true &&
           item.IssueBatchId > 0
       );
-
+  
+      // Construct the post object
       const post1 = {
         newIndentModel: product,
         Batch: filteredDataModel,
       };
-
-      try {
-        const response = await customAxios.post(
-          urlShowPatientIssueBatchDetails,
-          post1,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        const ApiData = response.data.data;
-        setBatchRecord(record);
-        setDataModal([]);
-        setBatchDetails(ApiData.BatchDetails);
-
-        // if (ApiData.Batch.length > 0) {
-        //   const batch = ApiData.Batch.map((Item, Index) => ({
-        //     ...Item,
-        //     key: Index + 1,
-        //     amount: Item.IssueRate * Item.IssueQty,
-        //   }));
-
-        //   setDataModel(batch);
-
-        if (ApiData.Batch.length > 0) {
-          const batch = ApiData.Batch.map((item, index) => {
-            if (
-              item.ProductId ==
-                ApiData.ProductDefinitionModel.ProductDefinitionId &&
-              item.ActiveFlag != false
-            ) {
-              if (item.IssueBatchId != 0) {
-                const newitem = {
-                  ...item,
-                  key: index + 1,
-                  Amount: item.IssueRate * item.IssueQty,
-                };
-                return newitem;
-              }
-              return item;
+  
+      // Make an API call
+      const response = await customAxios.post(
+        urlShowPatientIssueBatchDetails,
+        post1,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      const ApiData = response.data.data;
+      setDataModal([]);
+      setBatchRecord(record);
+      setBatchDetails(ApiData.BatchDetails);
+      setModelCounter(ApiData.BatchDetails.length + 1);
+  
+      // Process batch data
+      if (ApiData.Batch.length > 0) {
+        const batch = ApiData.Batch.map((item, index) => {
+          if (
+            item.ProductId ===
+              ApiData.ProductDefinitionModel.ProductDefinitionId &&
+            item.ActiveFlag !== false
+          ) {
+            if (item.IssueBatchId !== 0) {
+              return {
+                ...item,
+                key: index + 1,
+                Amount: item.IssueRate * item.IssueQty,
+              };
             }
             return item;
+          }
+          return item;
+        });
+        setDataModal(batch);
+      } else {
+        // Calculate quantities and amounts based on batch details
+        const calculateQuantitiesAndAmounts = (issueQty) => {
+          let totalQty = 0;
+          const sortedBatchDetails = [...ApiData.BatchDetails].sort(
+            (a, b) => new Date(a.EXPDate) - new Date(b.EXPDate)
+          );
+          const updatedBatchDetails = sortedBatchDetails.map((item) => {
+            let qty = 0;
+            let amount = 0;
+  
+            if (!item.IsProductBatchExpired && totalQty < issueQty) {
+              qty = Math.min(item.BalanceQty, issueQty - totalQty);
+              totalQty += qty;
+              amount = qty * item.MRP;
+            }
+            return { ...item, qty, amount };
           });
-          setDataModal(batch);
-          setModelCounter(ApiData.BatchDetails.length + 1);
-        } else {
-          const calculateQuantitiesAndAmounts = (issueQty) => {
-            let totalQty = 0;
-            const sortedBatchDetails = [...ApiData.BatchDetails].sort(
-              (a, b) => new Date(a.EXPDate) - new Date(b.EXPDate)
-            );
-            const updatedBatchDetails = sortedBatchDetails.map((item) => {
-              let qty = 0;
-              let amount = 0;
-
-              if (!item.IsProductBatchExpired && totalQty < issueQty) {
-                qty = Math.min(item.BalanceQty, issueQty - totalQty);
-                totalQty += qty;
-                amount = qty * item.MRP;
-              }
-              return { ...item, qty, amount };
-            });
-            return updatedBatchDetails.filter((item) => item.qty > 0);
-          };
-          const updatedBatch = calculateQuantitiesAndAmounts(
-            record.IssueQty
-          ).map((item, index) => ({
+          return updatedBatchDetails.filter((item) => item.qty > 0);
+        };
+  
+        const updatedBatch = calculateQuantitiesAndAmounts(record.IssueQty).map(
+          (item, index) => ({
             ...item,
             key: index + 1,
             IssueQty: item.qty, // Update IssueQty with qty
@@ -329,38 +326,39 @@ const UpdatePatientIssue = () => {
             LineAmount: item.amount,
             EXPDate: item.EXPDate ? dayjs(item.EXPDate) : undefined,
             RequestQty: item.qty,
-          }));
-
-          // Reset the form with the new values
-          form2.setFieldsValue(
-            updatedBatch.reduce((acc, item) => {
-              acc[item.key] = {
-                IssueQty: item.IssueQty, // Set IssueQty with qty
-                BatchNo: item.BatchNo,
-                IssueRate: item.IssueRate,
-                LineAmount: item.LineAmount,
-                BalanceQty: item.BalanceQty,
-                EXPDate: item.EXPDate,
-                MRP: item.MRP,
-                qty: item.qty,
-                Amount: item.amount,
-                // Add other fields as necessary
-              };
-              return acc;
-            }, {})
-          );
-
-          setDataModal(updatedBatch);
-        }
-
-        setBatchOpen(true);
-      } catch (error) {
-        console.error("Error in OpenModel:", error);
-        // Handle error if needed
+          })
+        );
+  
+        // Reset the form with the new values
+        form2.setFieldsValue(
+          updatedBatch.reduce((acc, item) => {
+            acc[item.key] = {
+              IssueQty: item.IssueQty, // Set IssueQty with qty
+              BatchNo: item.BatchNo,
+              IssueRate: item.IssueRate,
+              LineAmount: item.LineAmount,
+              BalanceQty: item.BalanceQty,
+              EXPDate: item.EXPDate,
+              MRP: item.MRP,
+              qty: item.qty,
+              Amount: item.amount,
+              // Add other fields as necessary
+            };
+            return acc;
+          }, {})
+        );
+  
+        setDataModal(updatedBatch);
       }
-    },
-    [dataModal] // Add dataModel to the dependency array
-  );
+  
+      setBatchOpen(true);
+    } catch (error) {
+      console.error("Error in OpenBatch:", error);
+      // Optionally, show a user-friendly message or perform other error handling
+    }
+  };
+  
+  
 
   const validateNotGreaterValue = (record, value) => {
     if (value > record.PendingQty || value > record.AvlQtyatIssue) {
@@ -376,13 +374,7 @@ const UpdatePatientIssue = () => {
     }
   };
 
-  const validateEqualValue = (record, value) => {
-    debugger;
-    if (record.IssueQty <= record.AvlQty) {
-      return Promise.resolve();
-    }
-    return Promise.reject(new Error("Equals to Issued Qty!"));
-  };
+ 
 
   const columns = [
     {
@@ -536,21 +528,17 @@ const UpdatePatientIssue = () => {
     },
   ];
 
-  // const handleDelete = (record) => {
-  //     const newData = data.map((item) => {
-  //         if (item.key === record.key) {
-  //             return { ...item, ActiveFlag: false };
-  //         }
-  //         return item;
-  //     });
-  //     setData(newData);
-  // };
+
 
   const handleAddBatch = async () => {
     debugger;
     //await form2.validateFields();
-    setDataModal([
-      ...dataModal,
+    await form2.validateFields();
+    form2.resetFields();
+    
+
+    setDataModal((prevDataModal) => [
+      ...prevDataModal,
       {
         key: modelCounter,
         ProductId: "",
@@ -567,7 +555,8 @@ const UpdatePatientIssue = () => {
         ActiveFlag: true,
       },
     ]);
-    setModelCounter(modelCounter + 1);
+    setModelCounter((prevCounter) => prevCounter + 1);
+
   };
 
   // 
@@ -600,7 +589,7 @@ const UpdatePatientIssue = () => {
               IssueRate: selectedBatch.MRP,
               //LineAmount:item.LineAmount,
               // BalanceQty:item.BalanceQty,
-              EXPDate: selectedBatch.EXPDate ? dayjs(item.EXPDate) : undefined,
+              EXPDate: selectedBatch.EXPDate ? dayjs(item.EXPDate) : null,
               MRP: selectedBatch.MRP,
               // qty:item.qty,
               Amount: selectedBatch.amount,
@@ -620,7 +609,7 @@ const UpdatePatientIssue = () => {
           BalanceQty: selectedBatch.BalanceQty,
           EXPDate: selectedBatch.EXPDate
             ? dayjs(selectedBatch.EXPDate)
-            : undefined,
+            : null,
           IssueRate: selectedBatch.MRP,
           //qty:selectedBatch.qty,
           Amount: 0.0,
@@ -734,25 +723,30 @@ const UpdatePatientIssue = () => {
       ),
     },
     {
-      title: "Exp Date",
+      title: "EXP Date",
       dataIndex: "EXPDate",
-      width: 100,
       key: "EXPDate",
-      render: (text, record, index) => (
+      width: 150,
+      render: (text, record) => (
         <Form.Item
           name={[record.key, "EXPDate"]}
-          initialValue={
-            record.EXPDate == ""
-              ? undefined
-              : DateBindtoDatepicker(record.EXPDate)
-          }
-          rules={[{ required: true, message: "Required" }]}
         >
-          <DatePicker
-            style={{ width: 100 }}
-            disabled
-            format="MMMM YYYY"
-          ></DatePicker>
+          {batchRecord.Expiry === "Not applicable" ? (
+            <span>Is Not Applicable</span>
+          ) : (
+            <DatePicker
+              format={
+                batchRecord.Expiry === "Month wise"
+                  ? "MMMM YYYY"
+                  : batchRecord.Expiry === "Date wise"
+                  ? "DD-MM-YYYY"
+                  : null
+              }
+              defaultValue={dayjs(record.EXPDate)}
+              disabled
+              style={{ width: "100%" }}
+            />
+          )}
         </Form.Item>
       ),
     },
@@ -828,25 +822,28 @@ const UpdatePatientIssue = () => {
     setDataModal(newData);
   };
 
-  const DateBindtoDatepicker = (value) => {
-    const isoDateString = value;
-    const dateValue = new Date(isoDateString);
-    const formattedDate = dayjs(dateValue).format("DD-MM-YYYY");
-    return dayjs(formattedDate, "DD-MM-YYYY");
-  };
 
   const onCancelmodal = () => {
     debugger;
-    const newData = dataModal.map((item) => {
-      if (item.ProductId === "") {
-        return { ...item, ActiveFlag: false };
-      }
-      return item;
+    // const newData = dataModal.map((item) => {
+    //   if (item.ProductId === "") {
+    //     return { ...item, ActiveFlag: false };
+    //   }
+    //   return item;
+    // });
+
+    // setDataModal(newData);
+    // setBatchOpen(false);
+    // form2.resetFields();
+
+    const newData = dataModal.filter((item) => {
+      // Keep the item if item.ProductId is not an empty string
+      return item.ProductId !== "";
     });
 
+    form2.resetFields();
     setDataModal(newData);
     setBatchOpen(false);
-    form2.resetFields();
   };
 
   const calculateAmount = (key, quantity, rate) => {
@@ -893,67 +890,7 @@ const UpdatePatientIssue = () => {
   //         });
   // }
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
-
-  // const handleOnFinish = async (values) => {
-  //   debugger;
-
-  //   if (dataModal.length == 0) {
-  //     message.warning("Please Add Batch Details!");
-  //     return false;
-  //   }
-
-  //   const products = [];
-
-  //   for (let i = 0; i <= counter; i++) {
-  //     if (data[i] !== undefined && values[i] !== undefined) {
-  //       const product = {
-  //         ProductId: data[i].ProductId,
-  //         UomId: data[i].UomId,
-  //         RequestQty: data[i].RequestQty,
-  //         IssueQty: values[i].IssueQty,
-  //         PendingQty: values[i].PendingQty - values[i].IssueQty,
-  //         PatientIssueLineId: data[i].PatientIssueLineId,
-  //         Remarks: values[i].Remarks,
-  //       };
-  //       products.push(product);
-  //     }
-  //   }
-
-  //   const Indent = {
-  //     FacilityId: 1,
-  //     IssueingStoreId: values.IssuingStore,
-  //     IssueDateString: values.IssueDate
-  //       ? values.IssueDate.format("DD-MM-YYYY")
-  //       : "",
-  //     IndentId: values.IndentId,
-  //     PatientId: values.PatientId,
-  //     EncounterId: values.EncounterId,
-  //     IssueStatus: !issueStatus ? "Created" : values.IssueStatus,
-  //     IssueId: values.IssueId ? values.IssueId : 0,
-  //     IndentType: values.IndentType,
-  //     IndentCategory: "PatientIssue",
-  //   };
-  //   const postData = {
-  //     newIndentModel: Indent,
-  //     IndentDetails: products,
-  //     Batch: dataModal,
-  //   };
-  //   if (indentId > 0) {
-  //     const response = await customAxios.post(
-  //       urlAddNewIndentPatientIssue,
-  //       postData,
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-  //     handleCancel();
-  //   }
-  // };
+ 
   const handleOnFinish = async (values) => {
     debugger;
     const products = [];
@@ -1034,24 +971,7 @@ const UpdatePatientIssue = () => {
     setIssueStatus(event.target.checked);
   };
 
-  const GetUHID = (value) => {
-    if (value !== "") {
-      customAxios.get(`${urlSearchUHID}?Uhid=${value}`).then((response) => {
-        const apiData = response.data.data;
-        const newOptions = apiData.map((item) => ({
-          value: item.UhId,
-          key: item.UhId,
-          PatientId: item.PatientId,
-          PatientName: item.PatientFirstName + "" + item.PatientLastName,
-        }));
-        setAutoCompleteOptions(newOptions);
-      });
-    } else {
-      setEncounter([]);
-      form1.setFieldsValue({ Encounter: "" });
-      form1.setFieldsValue({ Name: "" });
-    }
-  };
+
 
   return (
     <Layout style={{ zIndex: "999999999" }}>

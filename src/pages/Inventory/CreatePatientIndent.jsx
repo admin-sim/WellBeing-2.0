@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
 import { urlCreatePurchaseOrder, urlSearchUHID, urlGetLastEncounter, urlAutocompleteProduct, urlUpdatePatientIndent, urlEditPatientIndent, urlGetProductDetailsById, urlAddNewPatientIndent } from '../../../endpoints.js';
 import Select from 'antd/es/select';
-import { ConfigProvider, Card, Typography, Checkbox, Tooltip, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
+import { ConfigProvider, Card, Typography, Checkbox, Tooltip, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete, message } from 'antd';
 import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
@@ -31,7 +31,8 @@ const CreatePatientIndent = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const indentId = location.state.IndentId;
-
+    const [dropDownLoad, setDropDownLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const initialDataSource =
         indentId === 0
             ? [
@@ -71,10 +72,19 @@ const CreatePatientIndent = () => {
 
     useEffect(() => {
         customAxios.get(urlCreatePurchaseOrder).then((response) => {
-            const apiData = response.data.data;
-            setDropDown(apiData);
+          const apiData = response.data.data;
+          setDropDown(apiData);
         });
+        setDropDownLoading(false);
+      }, []);
+      useEffect(() => {
+        debugger;
+    
+        fetchData();
+      }, []);
+      const fetchData = async () => {
         if (indentId > 0) {
+            setLoading(true);
             setButtonTitle('Update');
             customAxios.get(`${urlEditPatientIndent}?IndentId=${indentId}`).then((response) => {
                 const apiData = response.data.data;
@@ -104,8 +114,10 @@ const CreatePatientIndent = () => {
                     IndentId: formdata.IndentId
                 })
             });
+            setLoading(false);
         }
-    }, []);
+      }
+
 
     const onOkModal = () => {
         form2
@@ -389,6 +401,10 @@ const CreatePatientIndent = () => {
 
     const handleOnFinish = async (values) => {
         debugger;
+        if(!values.EncounterId){
+            message.warning("Selected Patient Encounter Is Not Created");
+            return false;
+          }
         await form2.validateFields()
         const products = [];
         if (data.length == 0) {
@@ -421,26 +437,7 @@ const CreatePatientIndent = () => {
                 products.push(mergedData[i])
             }
         }
-        // for (let i = 0; i <= data.length; i++) {
-        //     if (data[i] !== undefined && va[i] !== undefined) {
-        //         const product = {
-        //             ProductId: va[i].ProductId != '' ? va[i].ProductId : 0,
-        //             UomId: va[i].UomId != '' ? va[i].UomId : 0,
-        //             IssuingStoreStock: va[i].IssuingStoreStock,
-        //             RequestQty: va[i].RequestQty ? va[i].RequestQty : 0,
-        //             Favourite: va[i].Favourite === false ? 'N' : 'Y',
-        //             IndentLineId: va[i].IndentLineId ? va[i].IndentLineId : 0,
-        //             ActiveFlag: data[i].ActiveFlag
-        //         }
-        //         products.push(product);
-        //     }
-        // else {
-        //     if (data[i] != undefined) {
-        //         // data[i].Favourite = data[i].Favourite == false ? 'N' : 'Y'
-        //         products.push(data[i])
-        //     }
-        // }
-        // }
+  
 
         const Indent = {
             IndentId: values.IndentId ? values.IndentId : 0,
@@ -586,7 +583,7 @@ const CreatePatientIndent = () => {
                                         }
                                     ]}
                                 >
-                                    <Select allowClear placeholder='Select Value' onChange={handleStoreChange} disabled={!!indentId}>
+                                    <Select  loading={dropDownLoad} placeholder='Select Value' onChange={handleStoreChange} disabled={!!indentId}>
                                         {DropDown.StoreDetails.map((option) => (
                                             <Select.Option key={option.StoreId} value={option.StoreId}>
                                                 {option.LongName}
@@ -711,11 +708,13 @@ const CreatePatientIndent = () => {
                         }}
                         form={form2}
                     >
+                         <Spin spinning={loading}>
                         {isTableVisible ? (
                             <div>
                                 <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} scroll={{ x: 0 }} />
                             </div>
                         ) : null}
+                        </Spin>
                     </Form>
                 </Card>
                 <ConfigProvider

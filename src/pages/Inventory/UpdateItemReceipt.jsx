@@ -62,13 +62,14 @@ const UpdateItemReceipt = () => {
   const [batchDetails, setBatchDetails] = useState([]);
   const [productDetails, setProductDetails] = useState([]);
 
-
   const [istablevisible, setIstablevisible] = useState(false);
   const fields = form1.getFieldsValue();
   const location = useLocation();
   const issueId = location.state.IssueId;
   const indentReceiptId = location.state.IndentReceiptId;
   const [indentStatus, setIndentStatus] = useState(false);
+  const [indentid, setIndentId] = useState(null);
+
 
   useEffect(() => {
     debugger;
@@ -83,11 +84,9 @@ const UpdateItemReceipt = () => {
         )
         .then((response) => {
           const apiData = response.data.data;
-          //   setIndentDetails(apiData.IndentDetails);
-          //   setnewIndentIssueDetails(apiData.newIndentIssueModel);
-          //   setIndentIssueDetails(apiData.IndentIssueModel)
 
           if (apiData.IndentIssueModel.IndentId != null) {
+                 setIndentId(apiData.IndentIssueModel.IndentId);
             const dataSource = apiData.IndentDetails.map((item) => {
               let issueqty = 0,
                 remarks = "",
@@ -125,36 +124,110 @@ const UpdateItemReceipt = () => {
               };
             });
             setData(dataSource);
-          }
 
-          setIstablevisible(true);
-          const formdata = apiData.newIndentModel;
-          form1.setFieldsValue({
-            RequestingStoreId: formdata.RequestingStoreId,
-            IndentNumber: formdata.IndentNumber,
-            IndentDate: DateBindtoDatepicker(formdata.IndentDate),
-            IssueingStoreId: formdata.IssueingStoreId,
-            IndentType: formdata.IndentType,
-            IndentCategory: formdata.IndentCategory,
-            Remarks: formdata.Remarks,
-            IndentStatus:
-              formdata.IndentStatus === "Created" ? "" : formdata.IndentStatus,
-            IndentId: formdata.IndentId,
-            IndentTemplateId: formdata.IndentTemplateId,
-            IssueId:
-              apiData.newIndentIssueModel == null
-                ? undefined
-                : apiData.newIndentIssueModel[0].IssueId,
-            IndentReceiptId:
-              apiData.newIndentReceiptModel != null
-                ? apiData.newIndentReceiptModel.IndentReceiptId
-                : 0,
-          });
-          const batch = apiData.Batch.map((Item, Index) => ({
-            ...Item,
-            key: Index + 1,
-          }));
-          setDataModel(batch);
+            setIstablevisible(true);
+            const formdata = apiData.newIndentModel;
+            form1.setFieldsValue({
+              RequestingStoreId: formdata.RequestingStoreId,
+              IndentNumber: formdata.IndentNumber,
+              IndentDate: DateBindtoDatepicker(formdata.IndentDate),
+              IssueingStoreId: formdata.IssueingStoreId,
+              IndentType: formdata.IndentType,
+              IndentCategory: formdata.IndentCategory,
+              Remarks: formdata.Remarks,
+              IndentStatus:
+                formdata.IndentStatus === "Created"
+                  ? ""
+                  : formdata.IndentStatus,
+              IndentId: formdata.IndentId,
+              IndentTemplateId: formdata.IndentTemplateId,
+              IssueId:
+                apiData.newIndentIssueModel == null
+                  ? undefined
+                  : apiData.newIndentIssueModel[0].IssueId,
+              IndentReceiptId:
+                apiData.newIndentReceiptModel != null
+                  ? apiData.newIndentReceiptModel.IndentReceiptId
+                  : 0,
+            });
+            const batch = apiData.Batch.map((Item, Index) => ({
+              ...Item,
+              key: Index + 1,
+            }));
+            setDataModel(batch);
+          } else {
+            if (apiData.IndentIssueModel.IndentId == null) {
+              const dataSource = apiData.newIndentIssueModel.map((item) => {
+                let issueqty = 0,
+                  remarks = "",
+                  pending = item.PendingQty,
+                  receiptlineid = 0;
+                let avlqty = item.AvlIssueQuantity;
+
+                apiData.newIndentIssueModel.forEach((items) => {
+                  if (items.ProductId === item.ProductId) {
+                    issueqty = items.IssueQty;
+                    avlqty = item.StockBalanceQty;
+                    remarks = items.Remarks;
+                  }
+                });
+
+                apiData.IndentReceiptList.forEach((list) => {
+                  if (list.ProductId === item.ProductId) {
+                    receiptlineid = list.IndentReceiptLineId;
+                  }
+                });
+
+                return {
+                  key: item.ProductId,
+                  ProductName: item.ProductName,
+                  ProductId: item.ProductId,
+                  uom: item.Uom,
+                  UomId: item.UomId,
+                  RequestQty: item.RequestQty,
+                  IssueQty: issueqty,
+                  AvlIssueQuantity: avlqty,
+                  AvlReqQuantity: item.AvlReqQuantity,
+                  remarks: remarks,
+                  IndentReceiptLineId: receiptlineid,
+                  PendingQty: pending,
+                };
+              });
+              setData(dataSource);
+
+              setIstablevisible(true);
+              const formdata = apiData.newIndentModel;
+              const formdata1 = apiData.IndentIssueModel;
+              form1.setFieldsValue({
+                RequestingStoreId: formdata1.RequestingStoreId,
+                IndentNumber: formdata?.IndentNumber,
+                //IndentDate: DateBindtoDatepicker(formdata.IndentDate),
+                IssueingStoreId: formdata1.IssueingStoreId,
+                IndentType: formdata?.IndentType,
+                IndentCategory: formdata?.IndentCategory,
+                Remarks: formdata?.Remarks,
+                // IndentStatus:
+                //   formdata.IndentStatus === "Created"
+                //     ? ""
+                //     : formdata.IndentStatus,
+                IndentId: formdata?.IndentId,
+                IndentTemplateId: formdata?.IndentTemplateId,
+                IssueId:
+                  apiData.newIndentIssueModel == null
+                    ? undefined
+                    : apiData.newIndentIssueModel[0].IssueId,
+                IndentReceiptId:
+                  apiData.newIndentReceiptModel != null
+                    ? apiData.newIndentReceiptModel.IndentReceiptId
+                    : 0,
+              });
+              const batch = apiData.Batch.map((Item, Index) => ({
+                ...Item,
+                key: Index + 1,
+              }));
+              setDataModel(batch);
+            }
+          }
         });
     }
   }, []);
@@ -660,8 +733,8 @@ const UpdateItemReceipt = () => {
   const handleOnFinish = async (values) => {
     debugger;
 
-    const product=data;
-    
+    const product = data;
+
     // const products = [];
     // for (let i = 0; i <= productCount; i++) {
     //   if (values[i] !== undefined) {
@@ -681,7 +754,9 @@ const UpdateItemReceipt = () => {
     // }
     if (dataModel.length > 0) {
       const Indent = {
-        IssueDateString: values.IssueDate ? values.IssueDate.format("DD-MM-YYYY") : "",
+        IssueDateString: values.IssueDate
+          ? values.IssueDate.format("DD-MM-YYYY")
+          : "",
         IndentId: values.IndentId,
         IssueId: values.IssueId,
         Remarks: values.Remarks ? values.Remarks : "",
@@ -689,13 +764,13 @@ const UpdateItemReceipt = () => {
         RequestingStoreId: values.RequestingStoreId,
         IssueingStoreId: values.IssueingStoreId,
         ReceiptStatus: !indentStatus ? "Created" : values.ReceiptStatus,
-        IndentReceiptId:values.IndentReceiptId ?  values.IndentReceiptId : 0,
+        IndentReceiptId: values.IndentReceiptId ? values.IndentReceiptId : 0,
       };
-      const formattedDataBatchModal = dataModel.map(item => ({
+      const formattedDataBatchModal = dataModel.map((item) => ({
         ...item,
         ExpDateString: dayjs(item.EXPDate).format("DD-MM-YYYY"),
       }));
-      
+
       const postData = {
         newIndentModel: Indent,
         IndentDetails: data,
@@ -792,7 +867,7 @@ const UpdateItemReceipt = () => {
                 name="IndentNumber"
                 rules={[
                   {
-                    required: true,
+                    required: indentid !== null,
                     message: "input!",
                   },
                 ]}
@@ -815,7 +890,7 @@ const UpdateItemReceipt = () => {
                 name="IndentType"
                 rules={[
                   {
-                    required: true,
+                    required: indentid !== null,
                     message: "input!",
                   },
                 ]}

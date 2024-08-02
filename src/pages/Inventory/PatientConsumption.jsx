@@ -307,7 +307,6 @@ const PatientConsumption = () => {
             name="control-hooks"
             layout="vertical"
             variant="outlined"
-            size="Default"
             style={{
               maxWidth: 1500,
             }}
@@ -431,24 +430,6 @@ const PatientConsumption = () => {
               bordered
             />
           </Spin>
-          {/* <Table display={isTable}
-            dataSource={filteredData}
-            columns={columns}
-            pagination={{
-              onChange: (current, pageSize) => {
-                setPage(current);
-                setPaginationSize(pageSize);
-              },
-              defaultPageSize: 5, 
-              hideOnSinglePage: true,
-              showSizeChanger: true,
-              showTotal: (total, range) =>
-                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-            }}
-            rowKey={(row) => row.AppUserId} 
-            size="small"
-            bordered
-          /> */}
         </Card>
       </div>
     </Layout>
