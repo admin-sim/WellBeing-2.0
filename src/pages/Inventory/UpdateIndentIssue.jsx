@@ -37,6 +37,7 @@ import dayjs from "dayjs";
 import FormItem from "antd/es/form/FormItem/index.js";
 import { count } from "ckeditor5";
 //import { useParams } from 'react-router-dom';
+import { v4 as uuidv4 } from "uuid";
 
 const UpdateIndentIssue = () => {
   const [DropDown, setDropDown] = useState({
@@ -175,11 +176,9 @@ const UpdateIndentIssue = () => {
 
     // Filter dataModel based on ProductId and ActiveFlag
     const filteredDataModel = dataModel.filter(
-      (item) =>
-        item.ProductId === record.ProductId &&
-        item.ActiveFlag === true 
-        //&&
-        //item.IssueBatchId > 0
+      (item) => item.ProductId === record.ProductId && item.ActiveFlag === true
+      //&&
+      //item.IssueBatchId > 0
     );
 
     const post1 = {
@@ -198,24 +197,26 @@ const UpdateIndentIssue = () => {
 
       // setDataModel([]);
       setBatchDetails(ApiData.BatchDetails);
-      const highestKey1 = dataModel.reduce((max, item) => (item.key > max ? item.key : max), 0);
-     ///// setBatchCount(ApiData.BatchDetails.length + 1);
+      const highestKey1 = dataModel.reduce(
+        (max, item) => (item.key > max ? item.key : max),
+        0
+      );
+      ///// setBatchCount(ApiData.BatchDetails.length + 1);
       if (ApiData.Batch.length > 0) {
         const batch = ApiData.Batch.map((Item, Index) => ({
           ...Item,
-          key: highestKey1 ? highestKey1  + 1 : Index + 1,
+          key: uuidv4(),
           amount: Item.IssueRate * Item.IssueQty,
         }));
 
-        const filteredBstchProductId = batch.map(item => item.ProductId);
+        const filteredBstchProductId = batch.map((item) => item.ProductId);
 
         const updatedbatch = dataModel.filter(
           (item) => !filteredBstchProductId.includes(item.ProductId)
         );
-      
+
         // Append the new filteredDataModel to the updated final batch details
         setDataModel([...updatedbatch, ...batch]);
-
 
         //setDataModel(batch);
       } else {
@@ -237,12 +238,15 @@ const UpdateIndentIssue = () => {
           });
           return updatedBatchDetails.filter((item) => item.qty > 0);
         };
-        const highestKey = dataModel.reduce((max, item) => (item.key > max ? item.key : max), 0);
+        const highestKey = dataModel.reduce(
+          (max, item) => (item.key > max ? item.key : max),
+          0
+        );
 
         const updatedBatch = calculateQuantitiesAndAmounts(record.IssueQty).map(
           (item, index) => ({
             ...item,
-            key: highestKey ? highestKey  + 1 : index + 1,
+            key: uuidv4(),
             IssueQty: item.qty, // Update IssueQty with qty
             IssueRate: item.MRP,
             LineAmount: item.amount,
@@ -271,7 +275,8 @@ const UpdateIndentIssue = () => {
         );
 
         //setDataModel(updatedBatch);
-        setDataModel((prevDataModel) => {return [...prevDataModel, ...updatedBatch];
+        setDataModel((prevDataModel) => {
+          return [...prevDataModel, ...updatedBatch];
         });
       }
 
@@ -282,8 +287,7 @@ const UpdateIndentIssue = () => {
     }
   };
 
-
- const BatchSelect = (selectedStockId, recordKey) => {
+  const BatchSelect = (selectedStockId, recordKey) => {
     debugger;
 
     // Check if selectedStockId already exists in dataModel with ActiveFlag true
@@ -310,15 +314,17 @@ const UpdateIndentIssue = () => {
               IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
               IssueRate: selectedBatch.MRP,
               //LineAmount:item.LineAmount,
-               BalanceQty:selectedBatch.BalanceQty,
-              EXPDate: selectedBatch.EXPDate ? dayjs(selectedBatch.EXPDate) : null,
+              BalanceQty: selectedBatch.BalanceQty,
+              EXPDate: selectedBatch.EXPDate
+                ? dayjs(selectedBatch.EXPDate)
+                : null,
               MRP: selectedBatch.MRP,
               // qty:item.qty,
               amount: selectedBatch.amount,
             }
           : item
       );
-     // setDataModel(updatedDataModel);
+      // setDataModel(updatedDataModel);
 
       // Update form2 with the respective values
       form2.setFieldsValue({
@@ -340,7 +346,7 @@ const UpdateIndentIssue = () => {
       // const updatedbatch = dataModel.filter(
       //   (item) => !filteredBstchProductId.includes(item.ProductId)
       // );
-    
+
       // Append the new filteredDataModel to the updated final batch details
       setDataModel(updatedDataModel);
     }
@@ -367,7 +373,7 @@ const UpdateIndentIssue = () => {
       return item;
     });
 
-     setDataModel(updatedDataModel);
+    setDataModel(updatedDataModel);
     const stockIdCounts = activeItems.reduce((acc, item) => {
       acc[item.StockId] = (acc[item.StockId] || 0) + 1;
       return acc;
@@ -400,21 +406,18 @@ const UpdateIndentIssue = () => {
             return item.ActiveFlag === true; // only include items with IssueBatchId = 0 or null and ActiveFlag = true
           }
         })
-        .map((item) => ({ ...item, ProductId: batchRecord.ProductId}));
+        .map((item) => ({ ...item, ProductId: batchRecord.ProductId }));
 
-   
-      
-     
+      const filteredProductIds = filteredDataModel.map(
+        (item) => item.ProductId
+      );
 
-        const filteredProductIds = filteredDataModel.map(item => item.ProductId);
+      const updatedFinalBatchDetails = finalBatchDetails.filter(
+        (item) => !filteredProductIds.includes(item.ProductId)
+      );
 
-        const updatedFinalBatchDetails = finalBatchDetails.filter(
-          (item) => !filteredProductIds.includes(item.ProductId)
-        );
-      
-        // Append the new filteredDataModel to the updated final batch details
-        setFinalBatchDetails([...updatedFinalBatchDetails, ...filteredDataModel]);
-    
+      // Append the new filteredDataModel to the updated final batch details
+      setFinalBatchDetails([...updatedFinalBatchDetails, ...filteredDataModel]);
 
       setIsModalOpen(false);
     } else {
@@ -424,8 +427,8 @@ const UpdateIndentIssue = () => {
 
   const handleOnFinish = async (values) => {
     debugger;
-    console.log('finalbatcth',finalBatchDetails);
-    console.log('datamodel',dataModel);
+    console.log("finalbatcth", finalBatchDetails);
+    console.log("datamodel", dataModel);
     const products = [];
     for (let i = 0; i <= productCount; i++) {
       if (values[i] !== undefined) {
@@ -552,8 +555,6 @@ const UpdateIndentIssue = () => {
     };
   };
 
-  
-
   const validateIssueQty = (record, value) => {
     if (parseInt(value) <= record.PendingQty) {
       return Promise.resolve();
@@ -562,8 +563,6 @@ const UpdateIndentIssue = () => {
       new Error("Issue Qty must not Greater Than Pending Qty!")
     );
   };
-
- 
 
   const columns = [
     {
@@ -740,12 +739,15 @@ const UpdateIndentIssue = () => {
     //await form2.validateFields();
     await form2.validateFields();
     form2.resetFields();
-    const highestKey = dataModel.reduce((max, item) => (item.key > max ? item.key : max), 0);
+    const highestKey = dataModel.reduce(
+      (max, item) => (item.key > max ? item.key : max),
+      0
+    );
 
     setDataModel((prevDataModal) => [
       ...prevDataModal,
       {
-        key:highestKey ? highestKey + 1 : batchCount,
+        key: uuidv4(),
         BatchNo: "",
         ProductId: "",
         IssueQty: 0,
