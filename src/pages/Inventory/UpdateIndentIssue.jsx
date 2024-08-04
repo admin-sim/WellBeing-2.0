@@ -176,7 +176,8 @@ const UpdateIndentIssue = () => {
 
     // Filter dataModel based on ProductId and ActiveFlag
     const filteredDataModel = dataModel.filter(
-      (item) => item.ProductId === record.ProductId && item.ActiveFlag === true
+      (item) => item.ProductId === record.ProductId 
+      //&& item.ActiveFlag === true
       //&&
       //item.IssueBatchId > 0
     );
@@ -197,10 +198,7 @@ const UpdateIndentIssue = () => {
 
       // setDataModel([]);
       setBatchDetails(ApiData.BatchDetails);
-      const highestKey1 = dataModel.reduce(
-        (max, item) => (item.key > max ? item.key : max),
-        0
-      );
+
       ///// setBatchCount(ApiData.BatchDetails.length + 1);
       if (ApiData.Batch.length > 0) {
         const batch = ApiData.Batch.map((Item, Index) => ({
@@ -238,10 +236,6 @@ const UpdateIndentIssue = () => {
           });
           return updatedBatchDetails.filter((item) => item.qty > 0);
         };
-        const highestKey = dataModel.reduce(
-          (max, item) => (item.key > max ? item.key : max),
-          0
-        );
 
         const updatedBatch = calculateQuantitiesAndAmounts(record.IssueQty).map(
           (item, index) => ({
@@ -362,18 +356,6 @@ const UpdateIndentIssue = () => {
 
     const activeItems = dataModel.filter((item) => item.ActiveFlag);
 
-    // // Map and update ProductId where it's an empty string
-    const updatedDataModel = dataModel.map((item) => {
-      if (activeItems.includes(item) && item.ProductId === "") {
-        return {
-          ...item,
-          ProductId: batchRecord.ProductId, // Map the ProductId
-        };
-      }
-      return item;
-    });
-
-    setDataModel(updatedDataModel);
     const stockIdCounts = activeItems.reduce((acc, item) => {
       acc[item.StockId] = (acc[item.StockId] || 0) + 1;
       return acc;
@@ -387,16 +369,13 @@ const UpdateIndentIssue = () => {
       message.error("Same Batch Number should not be selected.");
       return false;
     }
+
     // Sum the IssueQty values
     const totalIssueQty = valueArray.reduce((sum, item) => {
       // Ensure IssueQty is a number
       const issueQty = Number(item.IssueQty);
       return sum + (isNaN(issueQty) ? 0 : issueQty);
     }, 0);
-
-    console.log("Total IssueQty: ", totalIssueQty);
-    //setDataModel((prevDetails) => [...prevDetails, dataModel]);
-
     if (parseInt(totalIssueQty) == productDetails.IssueQty) {
       const filteredDataModel = dataModel
         .filter((item) => {
@@ -406,21 +385,17 @@ const UpdateIndentIssue = () => {
             return item.ActiveFlag === true; // only include items with IssueBatchId = 0 or null and ActiveFlag = true
           }
         })
-        .map((item) => ({ ...item, ProductId: batchRecord.ProductId }));
-
-      const filteredProductIds = filteredDataModel.map(
-        (item) => item.ProductId
-      );
-
-      const updatedFinalBatchDetails = finalBatchDetails.filter(
-        (item) => !filteredProductIds.includes(item.ProductId)
-      );
-
-      // Append the new filteredDataModel to the updated final batch details
-      setFinalBatchDetails([...updatedFinalBatchDetails, ...filteredDataModel]);
-
+        .map((item) => {
+          // Append ProductId only if it's an empty string
+          if (item.ProductId === "") {
+            return { ...item, ProductId: batchRecord.ProductId };
+          }
+          return item;
+        });
+      setDataModel(filteredDataModel);
       setIsModalOpen(false);
-    } else {
+    }
+    else {
       message.warning("Total Quantity should be equal to Issued Quantity");
     }
   };
@@ -439,9 +414,9 @@ const UpdateIndentIssue = () => {
           IssueQty: values[i].IssueQty,
           IndentLineId: values[i].IndentLineId,
           IndentIssueLineId:
-            values[i].IndentIssueLineId === undefined
-              ? 0
-              : values[i].IndentIssueLineId,
+            values[i].IndentIssueLineId 
+              ? values[i].IndentIssueLineId
+              : 0,
           StockId: values[i].StockId,
           PendingQty:
             values.IssueStatus == "Finalize"
@@ -452,7 +427,7 @@ const UpdateIndentIssue = () => {
       }
     }
 
-    const result = checkActiveBatches(products, finalBatchDetails);
+    const result = checkActiveBatches(products, dataModel);
     if (!result.allActiveProductsHaveActiveBatch) {
       message.warning("Please Add BatchDeatils");
       return false;
@@ -461,62 +436,58 @@ const UpdateIndentIssue = () => {
     const sumItems = (items, key) =>
       items.reduce((sum, item) => sum + parseInt(item[key] || 0, 10), 0);
 
+    const activeItems = dataModel.filter((item) => item.ActiveFlag);
+
     const totalReceivedQty = sumItems(products, "IssueQty");
-    const totalBatchQuantity = sumItems(finalBatchDetails, "IssueQty");
+    const totalBatchQuantity = sumItems(activeItems, "IssueQty");
 
     if (totalReceivedQty !== totalBatchQuantity) {
       message.warning("Please enter valid batch details..");
       return false;
     }
 
-    if (finalBatchDetails.length > 0) {
-      const Indent = {
-        IssueDateString: values.IssueDateString
-          ? values.IssueDateString.format("DD-MM-YYYY")
-          : "",
-        IndentId: values.IndentId,
-        IssueId: values.IssueId,
-        Remarks: values.Remarks === undefined ? null : values.Remarks,
-        RequestingStoreId: values.RequestingStoreId,
-        IssueingStoreId: values.IssueingStoreId,
-        IssueStatus: !indentStatus ? "Created" : values.IssueStatus,
-        IndentCategory: "Indent Issue",
-      };
-      const defaultDateTime = new Date().toISOString();
-      const finalBatchDetailsWithDefaultExpdate = finalBatchDetails.map(
-        (batch) => ({
-          ...batch,
-          EXPDate: defaultDateTime,
-          StockLocator: batch.StockLocator ? batch.StockLocator : 0,
-        })
-      );
-      const postData = {
-        newIndentModel: Indent,
-        IndentDetails: products,
-        Batch: finalBatchDetailsWithDefaultExpdate,
-      };
-      console.log("postData", postData);
-      // try {
-      //   if (indentId > 0) {
-      //     const response = await customAxios.post(
-      //       urlAddNewIndentIssue,
-      //       postData,
-      //       {
-      //         headers: {
-      //           "Content-Type": "application/json",
-      //         },
-      //       }
-      //     );
+    const Indent = {
+      IssueDateString: values.IssueDateString
+        ? values.IssueDateString.format("DD-MM-YYYY")
+        : "",
+      IndentId: values.IndentId,
+      IssueId: values.IssueId,
+      Remarks: values.Remarks === undefined ? null : values.Remarks,
+      RequestingStoreId: values.RequestingStoreId,
+      IssueingStoreId: values.IssueingStoreId,
+      IssueStatus: !indentStatus ? "Created" : values.IssueStatus,
+      IndentCategory: "Indent Issue",
+    };
+    const defaultDateTime = new Date().toISOString();
+    const finalBatchDetailsWithDefaultExpdate = dataModel.map((batch) => ({
+      ...batch,
+      EXPDate: defaultDateTime,
+      StockLocator: batch.StockLocator ? batch.StockLocator : 0,
+    }));
+    const postData = {
+      newIndentModel: Indent,
+      IndentDetails: products,
+      Batch: finalBatchDetailsWithDefaultExpdate,
+    };
+    console.log("postData", postData);
+    try {
+      if (indentId > 0) {
+        const response = await customAxios.post(
+          urlAddNewIndentIssue,
+          postData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      //     handleCancel();
-      //   }
-      // } catch (error) {
-      //   // Handle error
-      // }
-      //setIsSearchLoading(false);
-    } else {
-      message.warning("Please add Batch Details");
+        handleCancel();
+      }
+    } catch (error) {
+      // Handle error
     }
+    //setIsSearchLoading(false);
   };
 
   const onCancelmodal = () => {
@@ -541,7 +512,7 @@ const UpdateIndentIssue = () => {
     });
 
     form2.resetFields();
-    setDataModel(newData);
+     setDataModel(newData);
     setIsModalOpen(false);
   };
   const checkActiveBatches = (products, batches) => {
@@ -736,13 +707,8 @@ const UpdateIndentIssue = () => {
 
   const BatchAdd = async () => {
     debugger;
-    //await form2.validateFields();
     await form2.validateFields();
     form2.resetFields();
-    const highestKey = dataModel.reduce(
-      (max, item) => (item.key > max ? item.key : max),
-      0
-    );
 
     setDataModel((prevDataModal) => [
       ...prevDataModal,
