@@ -21,7 +21,7 @@ import { FcDocument, FcInfo, FcOpenedFolder } from "react-icons/fc";
 import { DollarTwoTone, FolderOpenTwoTone } from "@ant-design/icons";
 import PatientHeader from "../../../../components/PatientHeader";
 
-function RecordExpectedDischarge({ bed, open, handleClose }) {
+function RecordExpectedDischarge({ bed, patient, Dropdown, open, handleClose }) {
   const [form] = Form.useForm();
   console.log("bed info", bed);
   const handleCancel = () => {
@@ -45,7 +45,7 @@ function RecordExpectedDischarge({ bed, open, handleClose }) {
         footer={null}
         onCancel={handleCancel}
       >
-        <PatientHeader patient={bed} />
+        <PatientHeader patient={patient} />
         <Row gutter={16}>
           <Col span={10}>
             <div
@@ -132,7 +132,13 @@ function RecordExpectedDischarge({ bed, open, handleClose }) {
                       },
                     ]}
                   >
-                    <Select style={{ width: "100%" }} />
+                    <Select style={{ width: "100%" }}>
+                      {Dropdown.FacilityDepartmentProvider.map((option) => (
+                        <Select.Option key={option.ProviderId} value={option.ProviderId}>
+                          {option.ProviderName}
+                        </Select.Option>
+                      ))}
+                    </Select>
                   </Form.Item>
                 </Col>
                 <Col span={24}>

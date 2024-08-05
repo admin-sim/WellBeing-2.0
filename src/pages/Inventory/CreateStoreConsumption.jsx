@@ -1,7 +1,7 @@
 import customAxios from '../../components/customAxios/customAxios.jsx';
 import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
-import { urlGetPurshaseOrderDetails, urlAutocompleteProduct, urlGetProductDetailsById, urlShowBatchDetails } from '../../../endpoints';
+import { urlCreatePurchaseOrder, urlStoreConsumptionEdit, urlAutocompleteProduct, urlGetProductDetailsById, urlStoreConsumptionShowBatchDetails, urlAddNewConsumption } from '../../../endpoints';
 import Select from 'antd/es/select';
 import { ConfigProvider, Typography, Checkbox, message, Modal, Popconfirm, Spin, Col, Card, Row, AutoComplete } from 'antd';
 import Input from 'antd/es/input';
@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router';
 import { Table, InputNumber } from 'antd';
 import { PlusOutlined, DeleteOutlined, CloseSquareFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { useLocation } from "react-router-dom";
 //import { Calculate } from '@mui/icons-material';
 
 const CreateStoreConsumption = () => {
@@ -26,15 +27,17 @@ const CreateStoreConsumption = () => {
     DateFormat: []
   });
 
-  let [counter, setCounter] = useState(0);
+  const location = useLocation();
+  let [counter, setCounter] = useState(1);
   let [counterModel, setCounterModel] = useState(0);
-  const StoreConsupmtionId = 0
+  const StoreConsupmtionId = location.state.StoreConsupmtionId;
+
 
   const initialBatchDataSource =
     StoreConsupmtionId === 0
       ? [
         {
-          key: 1,
+          key: 0,
           BatchNo: '',
           Quantity: '',
           AvlQuantity: '',
@@ -69,80 +72,66 @@ const CreateStoreConsumption = () => {
   const [form3] = Form.useForm();
   const { Title } = Typography;
   const { TextArea } = Input;
-  const { Option } = Select;
   const navigate = useNavigate();
   const [data, setData] = useState(initialDataSource);
-  const currentDate = new Date();
   //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');
-  const [isLoading, setIsLoading] = useState(true);
-  const [inputValues, setInputValues] = useState({});
-  const [shouldValidate, setShouldValidate] = useState(false);
   const [productOptions, setProductOptions] = useState(null);
   const [selectedUom, setSelectedUom] = useState({});
   const [batchDetails, setBatchDetails] = useState([]);
   const [productDetails, setProductDetails] = useState({});
-  const [dataModel, setDataModel] = useState(initialBatchDataSource);
-  const [formData, setFormData] = useState({});
+  const [dataModal, setDataModal] = useState([]);
   const [selectedUomText, setSelectedUomText] = useState({});
-  const [selectedProductId, setSelectedProductId] = useState({});
-  const [selectedUomId, setSelectedUomId] = useState({});
-  const [recordKeys, setRecordKeys] = useState();
-  const [delivery, setDelivery] = useState([]);
-  const [productIds, setProductIds] = useState({});
-  const [isSubmit, setIsSubmit] = useState(false);
-  const fields = form1.getFieldsValue();
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [isTable, setIsTable] = useState(false);
-  const [isModelOpen, setIsModelOpen] = useState(false)
   const [issueStatus, setIssueStatus] = useState()
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [buttonTitle, setButtonTitle] = useState('Save')
   // const tableRef = useRef(null);
 
   useEffect(() => {
-    customAxios.get(urlGetPurshaseOrderDetails).then((response) => {
+    customAxios.get(urlCreatePurchaseOrder).then((response) => {
       const apiData = response.data.data;
       setDropDown(apiData);
     });
+    if (StoreConsupmtionId > 0) {
+      debugger
+      setButtonTitle('Update')
+      customAxios.get(`${urlStoreConsumptionEdit}?StoreConsumptionId=${StoreConsupmtionId}`).then((response) => {
+        const apiData = response.data.data;
+        if (apiData.newIndentIssueModel != null && apiData.newIndentIssueModel.length > 0) {
+          const products = apiData.newIndentIssueModel.map((item, index) => ({
+            ...item,
+            key: index,
+            Quantity: item.BalanceQty,
+            index: index + 1
+          }))
+          setData(products)
+          setCounter(products.length)
+          setIsTable(true)
+          const formdata = apiData.newPatientIssueModel
+          form1.setFieldsValue({
+            IssuingStore: formdata.IssueingStoreId,
+            Remarks: formdata.Remarks,
+            IssueId: formdata.IssueId,
+            ConsumptionStatus: formdata.IssueStatus == 'Created' || formdata.IssueStatus == 'Pending' ? undefined : formdata.IssueStatus,
+          })
+        }
+        const newData = apiData.BatchDetails.map((item => {
+          return {
+            ...item,
+            RequestQty: item.IssueQty
+          }
+        }))
+        setDataModal(newData)
+      })
+    }
   }, []);
 
-  const getPanelValue = async (searchText) => {
-    //     debugger;
-    //     try {
-    //       customAxios.get(`${urlAutocompleteProduct}?Product=${searchText}`).then((response) => {
-    //         const apiData = response.data.data;
-    //         const newOptions = apiData.map(item => ({ value: item.LongName, key: item.ProductDefinitionId, UomId: item.UOMPrimaryUOM }));
-    //         setAutoCompleteOptions(newOptions);
-    //       });
-    //     } catch (error) {
-    //       //console.error("Error fetching purchase order details:", error);
-    //       // Handle the error as needed
-    //     }
-  }
-  // useEffect(() => {
-  //   debugger;
-  //   const fetchData = async () => {
-  //     try {
-  //       Object.entries(inputValues).forEach(async ([key, value]) => {
-  //         if (value) {
-  //           const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${value}`);
-  //           const apiData = response.data.data;
-  //           const newOptions = apiData.map((item) => ({ value: item.LongName, key: item.ProductDefinitionId, UomId: item.UOMPrimaryUOM }));
-  //           setAutoCompleteOptions((prevState) => ({ ...prevState, [key]: newOptions }));
-  //         }
-  //       });
-  //     } catch (error) {
-  //       // Handle the error as needed
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [inputValues]);
-
-  const onOkModal = () => {
+  const handleSaveModal = () => {
     debugger;
     form3
       .validateFields()
       .then(() => {
-        // If validation succeeds, submit the form
         form3.submit();
       })
       .catch((error) => {
@@ -152,62 +141,19 @@ const CreateStoreConsumption = () => {
 
   const onFinishModel = (values) => {
     debugger;
-    const deliveries = [];
-    for (let i = 0; i < idCounterModel; i++) {
-      const delivery = {
-        ProductId: values.Product,
-        DeliveryQuantity: values[i].quantity,
-        UomId: values[i].uom,
-        DelDate: values.FromDate === null ? '' : (values[i].datedelivery.$D.toString().padStart(2, '0') + '-' + (values[i].datedelivery.$M + 1).toString().padStart(2, '0') + '-' + values[i].datedelivery.$y).toString(),
-        DeliveryLocation: values[i].deliveryloc === undefined ? null : values[i].deliveryloc,
-      }
-      deliveries.push(delivery);
-      setDelivery(deliveries);
-      setIsModelOpen(false);
+    const total = dataModal.reduce((sum, item) => sum + item.IssueQty, 0)
+    if (productDetails.IssueQty != total) {
+      message.warning('Issue Qty is equals to Issued Qty')
+      return false
     }
-    onCancelModel();
-  }
-
-  const onCancelModel = () => {
-    debugger;
-    form3.resetFields();
-    for (let i = idCounterModel; i > 0; i--) {
-      ModelDelete(i);
-    }
-    setIsModelOpen(false);
-  }
-
-  const handleCancel = () => {
-    const url = '/StoreConsumption';
-    navigate(url);
-    // form1.resetFields();
-    // form2.resetFields();
-    // setDelivery([]);
-    // setData([]);
-    // for (let i = idCounter; i > 0; i--) {
-    //   handleDelete(i);
-    // }
-  };
-
-  const ModelOpen = (value, record) => {
-    debugger;
-    form1
-      .validateFields()
-      .then(() => {
-        // If validation succeeds, submit the form
-        setRecordKeys(record.key)
-        setIsModelOpen(true);
-      })
-      .catch((error) => {
-        console.log('Validation error:', error);
-      });
+    setIsModalOpen(false)
   }
 
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
 
-  const handleToPurchaseOrder = () => {
+  const handleToStoreConsumption = () => {
     const url = '/StoreConsumption';
     navigate(url);
   };
@@ -223,70 +169,69 @@ const CreateStoreConsumption = () => {
   };
 
   const ModelDelete = (record) => {
-    const newData = dataModel.map((item) => {
+    const newData = dataModal.map((item) => {
       if (item.key === record.key) {
         return { ...item, ActiveFlag: false };
       }
       return item;
     });
-    setDataModel(newData);
+    setDataModal(newData);
   };
 
   const handleOnFinish = async (values) => {
-    //     debugger;
-    //     setIsSearchLoading(true);
-    //     const products = [];
-    //     for (let i = 0; i <= idCounter; i++) {
-    //       if (values[i] !== undefined) {
-    //         const product = {
-    //           ProductId: productIds[i],
-    //           UomId: values[i].uom,
-    //           PoQuantity: values[i].poQty,
-    //           BonusQuantity: values[i].bounsQty === "" ? 0 : values[i].bounsQty,
-    //           PoRate: values[i].poRate === "" ? null : values[i].poRate.toFixed(4),
-    //           DiscountRate: values[i].discount === "" ? 0 : values[i].discount.toFixed(4),
-    //           DiscountAmount: values[i].discountAmt === "" ? 0 : parseFloat(values[i].discountAmt).toFixed(4),
-    //           // DiscountAmount: values[i].discountAmt === "" ? 0 : (form1.getFieldValue([i, 'discountAmt'])).toFixed(4),          
-    //           MrpExpected: values[i].expectedMRP === "" ? 0 : values[i].expectedMRP.toFixed(4),
-    //           TaxType1: values[i].cgst === "" ? 0 : values[i].cgst,
-    //           TaxAmount1: values[i].cgstAmt === "" ? 0 : values[i].cgstAmt.toFixed(4),
-    //           TaxType2: values[i].sgst === "" ? 0 : values[i].sgst,
-    //           TaxAmount2: values[i].sgstAmt === "" ? 0 : values[i].sgstAmt.toFixed(4),
-    //           LineAmount: values[i].amount === "" ? null : values[i].amount.toFixed(4),
-    //           PoTotalAmount: values[i].totalAmount === "" ? null : values[i].totalAmount,
-    //           AvailableQuantity: values[i].avlQty === "" ? null : values[i].avlQty,
-    //         }
-    //         products.push(product);
-    //       }
-    //     }
+    debugger;
+    const form2data = form2.getFieldsValue()
+    if (dataModal.length == 0) {
+      message.warning('Please Add Batch Details!')
+      return false
+    }
+    for (const item of data) {
+      const match = dataModal.find(item1 => item.ProductId === item1.ProductId && item.IssueQty === item1.IssueQty);
+      if (!match) {
+        message.warning('Please Add Batch Details!');
+        return false;
+      }
+    }
 
-    //     const purchaseOrder = {
-    //       SupplierId: values.SupplierList === undefined ? '' : values.SupplierList,
-    //       ProcurementStoreId: values.StoreDetails === undefined ? '' : values.StoreDetails,
-    //       DocumentType: values.DocumentType === undefined ? '' : values.DocumentType,
-    //       PurchaseDate: values.PODate === undefined ? dayjs(`${currentDate}`).format(dateFormat) : values.PODate,
-    //       PoStatus: values.POStatus === undefined ? null : values.POStatus,
-    //       Remarks: values.Remarks === undefined ? null : values.Remarks,
-    //       PoPurchaseValue: values.Amount === undefined ? null : values.Amount,
-    //       PoTotalAmount: values.totalpoAmount === undefined ? null : values.totalpoAmount,
-    //       PoTaxAmount: values.PoTaxAmount === undefined ? 0 : values.PoTaxAmount,
-    //     }
-    //     const postData = {
-    //       newPurchaseOrderModel: purchaseOrder,
-    //       PurchaseOrderDetails: products,
-    //       Delivery: delivery
-    //     }
-    //     try {
-    //       const response = await customAxios.post(urlAddNewPurchaseOrder, postData, {        
-    //         headers: {
-    //           'Content-Type': 'application/json'
-    //         }        
-    //       });
-    //       form1.resetFields();
-    //     } catch (error) {
-    //       // Handle error      
-    //     }
-    //     setIsSearchLoading(false);
+    setIsSearchLoading(true);
+    const products = [];
+    for (let i = 0; i <= data.length; i++) {
+      if (data[i] !== undefined) {
+        const product = {
+          ProductId: data[i].ProductId,
+          UomId: data[i].UomId,
+          IssueQty: data[i].IssueQty,
+          Remarks: data[i].Remarks,
+          PatientIssueLineId: data[i].PatientIssueLineId
+        }
+        products.push(product);
+      }
+    }
+
+    const StoreConsumption = {
+      IssueingStoreId: values.IssuingStore,
+      IssueDateString: values.ConsumptionDate ? values.ConsumptionDate.format("DD-MM-YYYY") : '',
+      IssueStatus: issueStatus ? values.ConsumptionStatus : 'Created',
+      Remarks: values.Remarks,
+      ReceiptRate: 0,
+      IssueId: values.IssueId ? values.IssueId : 0
+    }
+    const postData = {
+      newIndentModel: StoreConsumption,
+      IndentDetails: products,
+      Batch: dataModal
+    }
+    try {
+      const response = await customAxios.post(urlAddNewConsumption, postData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      handleToStoreConsumption()
+    } catch (error) {
+      // Handle error      
+    }
+    setIsSearchLoading(false);
   };
 
   const handleSelect = (value, option, column, record) => {
@@ -295,11 +240,13 @@ const CreateStoreConsumption = () => {
       .get(`${urlGetProductDetailsById}?ProductId=${option.key}`)
       .then((response) => {
         const apiData = response.data.data;
-        const valuesArray = apiData.Stock.filter((item) => item.StoreId = form1.getFieldValue('IssuingStore'))
-        const qty = valuesArray.reduce(
-          (total, item) => total + (item.Quantity || 0),
-          0
-        );
+        const store = form1.getFieldValue('IssuingStore')
+        let qty = 0;
+        apiData.Stock.forEach(value => {
+          if (value.StoreId === store) {
+            qty += value.Quantity;
+          }
+        })
         form2.setFieldsValue({ [record.key]: { ProductId: option.key } });
         form2.setFieldsValue({ [record.key]: { Quantity: qty } });
         const newData = data.map((item) => {
@@ -319,11 +266,6 @@ const CreateStoreConsumption = () => {
         setData(newData);
       });
   };
-
-  useEffect(() => {
-    console.log(selectedUom);
-    console.log(selectedUomText);
-  }, [selectedUom], [selectedUomText]);
 
   const handleAdd = async () => {
     setProductOptions([]);
@@ -345,12 +287,10 @@ const CreateStoreConsumption = () => {
   };
 
   const handleSearch = async (searchText) => {
-    debugger;
     if (searchText) {
       const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${searchText}`);
       const apiData = response.data.data;
 
-      // Filter apiData with productOptions
       const filteredApiData = apiData.filter(apiItem =>
         !data.some(option => option.ProductId === apiItem.ProductId)
       );
@@ -365,17 +305,16 @@ const CreateStoreConsumption = () => {
   }
 
   const validateEqualValue = (record, value) => {
-    debugger
-    const va = form1.getFieldsValue()
+    const newData = data.map((item => {
+      if (record.key == item.key) {
+        return {
+          ...item,
+          IssueQty: value
+        }
+      }
+    }))
+    setData(newData)
     if (value <= record.Quantity) {
-      // const newdata = data.map((item) => {
-      //     if (item.ProductId === record.ProductId) {
-      //         const updated = { ...item, RequestingQty: value }
-      //         return updated
-      //     }
-      //     return item
-      // })
-      // setData(newdata)
       return Promise.resolve();
     }
     return Promise.reject(new Error('Must Not Greater than Available Qty'));
@@ -393,11 +332,7 @@ const CreateStoreConsumption = () => {
           <Form.Item
             name={[record.key, "ProductName"]}
             rules={[{ required: true, message: "Required" }]}
-            initialValue={
-              record.LongName == undefined
-                ? record.ProductName
-                : record.LongName
-            }
+            initialValue={record.ProductName}
           >
             <AutoComplete
               options={productOptions}
@@ -413,7 +348,7 @@ const CreateStoreConsumption = () => {
               allowClear={{
                 clearIcon: <CloseSquareFilled />,
               }}
-              disabled={!!record.PoLineId}
+              disabled={!!record.IssueId}
             />
           </Form.Item>
           <Form.Item
@@ -424,9 +359,9 @@ const CreateStoreConsumption = () => {
             <Input defaultValue={record.ProductId}></Input>
           </Form.Item>
           <Form.Item
-            name={[record.key, "StoreConsumptionId"]}
+            name={[record.key, "PatientIssueLineId"]}
             hidden
-            initialValue={record.PoLineId}
+            initialValue={record.PatientIssueLineId}
           >
             <Input></Input>
           </Form.Item>
@@ -439,12 +374,12 @@ const CreateStoreConsumption = () => {
       key: 'UomId',
       render: (text, record) => (
         <Form.Item name={[record.key, 'UomId']} initialValue={record.UomId}>
-          <Select value={selectedUom[record.key]} style={{ width: '100%' }} disabled>
-            {/* {DropDown.UOM.map((option) => (
+          <Select disabled>
+            {DropDown.UOM.map((option) => (
               <Select.Option key={option.UomId} value={option.UomId}>
                 {option.ShortName}
               </Select.Option>
-            ))} */}
+            ))}
           </Select>
         </Form.Item>
       )
@@ -512,54 +447,128 @@ const CreateStoreConsumption = () => {
   ];
 
   const handleCloseModal = () => {
-    setIsModelOpen(false)
+    setIsModalOpen(false)
     form3.resetFields()
+  }
+
+  function isExpired(dateString) {
+    if (new Date() > new Date(dateString)) {
+      return false
+    }
+    else {
+      return true
+    }
   }
 
   const OpenBatch = async (record) => {
     debugger
-    const va = form2.getFieldsValue();
-    for (let i = 1; i <= dataModel.length; i++) {
-      if (va[i].ProductId = record.ProductId) {
-        record.IssueQty = va[i].IssueQty
-      }
-    }
-    // record.IssueQty = temp.IssueQty
-    setProductDetails(record)
+    await form1.validateFields()
     await form2.validateFields()
-    const va1 = form1.getFieldsValue()
+    setProductDetails(record)
     const batch = {
+      IssueQty: record.IssueQty,
       ProductId: record.ProductId,
-      StoreId: va1.IssuingStore
+      // IssueId: record.IssueingStoreId,
+      StoreId: form1.getFieldValue('IssuingStore')
     }
     const post1 = {
       newIndentModel: batch,
+      Batch: dataModal
     }
     try {
-      const response = await customAxios.post(urlShowBatchDetails, post1, {
+      const response = await customAxios.post(urlStoreConsumptionShowBatchDetails, post1, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
       const ApiData = response.data.data;
-      // setBatchRecord(ApiData);
-      // form1.setFieldsValue({ [productCount - 1]: { StockId: ApiData.BatchDetails[productCount - 1].StockId } })            
-      setBatchDetails(ApiData.BatchDetails)
+      if (ApiData.Batch.length > 0) {
+        const batchs = ApiData.Batch.map((item, index) => {
+          if (item.ProductId == ApiData.ProductDefinitionModel.ProductDefinitionId && item.ActiveFlag != false) {
+            if (item.IssueBatchId != 0) {
+              const newitem = {
+                ...item,
+                key: index,
+                BatchNo: item.BatchNo,
+                IssueQty: item.IssueQty,
+                AvlQuantity: item.BalanceQty,
+                Uom: item.Uom,
+                EXPDate: item.EXPDate,
+                IssueRate: item.IssueRate,
+                Amount: item.IssueRate * item.IssueQty,
+                StockLocator: item.StockLocatorName,
+                index: index + 1
+              };
+              return newitem
+            }
+            return item
+          }
+          return item
+        })
+        setDataModal(batchs)
+        setCounterModel(batchs.length)
+      }
+      else if (ApiData.BatchDetails.length > 0) {
+        let qty = 0; let amount = 0; let totalbatchqty = 0; let total = 0;
+        const batchs = ApiData.BatchDetails.map((item, index) => {
+          total += qty;
+          qty = item.PendingQty;
+          totalbatchqty += qty;
+
+          if (totalbatchqty > ApiData.newIndentModel.IssueQty) {
+            qty = ApiData.newIndentModel.IssueQty - total;
+          }
+
+          amount = qty * item.MRP;
+
+          if (isExpired(item.EXPDate)) {
+            if (qty > 0) {
+              const newitem = {
+                ...item,
+                key: index,
+                BatchNo: item.BatchNo,
+                IssueQty: qty,
+                AvlQuantity: item.PendingQty,
+                Uom: item.Uom,
+                EXPDate: item.EXPDate,
+                IssueRate: item.MRP,
+                Amount: amount,
+                StockLocator: item.StockLocatorName,
+                index: index + 1
+              };
+              return newitem
+            }
+            return null
+          }
+          return null;
+        }).filter(item => item !== null);
+        setDataModal(batchs);
+        setCounterModel(batchs.length)
+      }
+      const batchs = ApiData.BatchDetails.map((item, index) => {
+        return {
+          ...item,
+          key: index,
+          index: index + 1
+        }
+      })
+      setBatchDetails(batchs)
+      // setCounter(ApiData.Batch.length > 0 ? ApiData.Batch.length + 1 : ApiData.BatchDetails.length + 1)
     } catch (error) {
 
     }
-    setIsModelOpen(true)
+    setIsModalOpen(true)
   }
 
   const ModelAdd = async () => {
     debugger;
     await form3.validateFields();
-    setDataModel([
-      ...dataModel,
+    setDataModal([
+      ...dataModal,
       {
         key: counterModel,
         BatchNo: '',
-        Quantity: '',
+        IssueQty: '',
         AvlQuantity: '',
         UomId: '',
         EXPDate: '',
@@ -583,31 +592,36 @@ const CreateStoreConsumption = () => {
       key: 'BatchNo',
       width: 100,
       render: (_, record) => (
-        <Form.Item name={[record.key, 'BatchNo']}
-          rules={[
-            {
-              required: true,
-              message: 'Please input!'
-            },
-          ]}
-          initialValue={record.BatchNo}
-        >
-          <Select allowClear onChange={(record) => BatchSelect(record)} style={{ width: 100 }}>
-            {batchDetails.map((option) => (
-              <Select.Option key={option.BatchNo} value={option.BatchNo}>{option.BatchNo}</Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
+        <>
+          <Form.Item name={[record.key, 'BatchNo']}
+            rules={[
+              {
+                required: true,
+                message: 'Please input!'
+              },
+            ]}
+            initialValue={record.BatchNo}
+          >
+            <Select allowClear onChange={(record) => BatchSelect(record)} style={{ width: 100 }}>
+              {batchDetails.map((option) => (
+                <Select.Option key={option.BatchNo} value={option.BatchNo}>{option.BatchNo}</Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item hidden name={[record.key, 'IssueBatchId']} initialValue={record.IssueBatchId}>
+            <Input />
+          </Form.Item>
+        </>
       )
     },
     {
       title: 'Quantity',
-      dataIndex: 'Quantity',
-      key: 'Quantity',
+      dataIndex: 'IssueQty',
+      key: 'IssueQty',
       width: 100,
       render: (text, record) => {
         return (
-          <Form.Item name={[record.key, 'Quantity']} initialValue={record.Quantity}
+          <Form.Item name={[record.key, 'IssueQty']} initialValue={record.IssueQty}
             rules={[
               {
                 required: true,
@@ -626,7 +640,7 @@ const CreateStoreConsumption = () => {
       key: 'AvlQuantity',
       width: 100,
       render: (text, record) => (
-        <Form.Item name={[record.key, 'AvlQuantity']}>
+        <Form.Item name={[record.key, 'AvlQuantity']} initialValue={record.AvlQuantity}>
           <InputNumber disabled />
         </Form.Item>
       )
@@ -638,7 +652,7 @@ const CreateStoreConsumption = () => {
       width: 100,
       render: (text, record) => (
         <Form.Item name={[record.key, 'UomId']} >
-          {record.UomId}
+          {record.Uom}
         </Form.Item>
       )
     },
@@ -648,7 +662,7 @@ const CreateStoreConsumption = () => {
       key: 'EXPDate',
       width: 100,
       render: (text, record) => (
-        <Form.Item name={[record.key, 'EXPDate']} initialValue={record.EXPDate}>
+        <Form.Item name={[record.key, 'EXPDate']} initialValue={record.EXPDate == '' ? undefined : DateBindtoDatepicker(record.EXPDate)}>
           <DatePicker style={{ width: 100 }} disabled format="MMMM-YYYY" />
         </Form.Item>
       )
@@ -668,7 +682,7 @@ const CreateStoreConsumption = () => {
       dataIndex: 'Amount',
       key: 'Amount',
       render: (text, record) => (
-        <Form.Item name={[record.key, 'Amount']}>
+        <Form.Item name={[record.key, 'Amount']} initialValue={record.Amount}>
           <InputNumber disabled />
         </Form.Item>
       )
@@ -679,7 +693,7 @@ const CreateStoreConsumption = () => {
       key: 'StockLocator',
       render: (text, record) => (
         <Form.Item name={[record.key, 'StockLocator']}>
-          <Input style={{ width: 100 }} allowClear />
+          <Input style={{ width: 100 }} disabled allowClear />
         </Form.Item>
       )
     },
@@ -701,7 +715,7 @@ const CreateStoreConsumption = () => {
 
   const BatchSelect = (record) => {
     debugger
-    const IsExist = dataModel.filter((item) => item.BatchNo == record)
+    const IsExist = dataModal.filter((item) => item.BatchNo == record)
     const temp = batchDetails.filter((item) => item.BatchNo === record)
     const newdata = temp.map((item) => {
       return {
@@ -714,14 +728,10 @@ const CreateStoreConsumption = () => {
         amount: 0
       }
     })
-    setDataModel(newdata)
+    setDataModal(newdata)
     if (IsExist.length > 0) {
       message.warning('Same Batch No should not be selected.')
     }
-  }
-
-  const handleSaveModal = () => {
-
   }
 
   const handleStore = (value) => {
@@ -742,7 +752,7 @@ const CreateStoreConsumption = () => {
             </Title>
           </Col>
           <Col offset={6} span={2}>
-            <Button icon={<LeftOutlined />} style={{ marginBottom: 0 }} onClick={handleToPurchaseOrder}>
+            <Button icon={<LeftOutlined />} style={{ marginBottom: 0 }} onClick={handleToStoreConsumption}>
               Back
             </Button>
           </Col>
@@ -778,6 +788,9 @@ const CreateStoreConsumption = () => {
                       </Select.Option>
                     ))}
                   </Select>
+                </Form.Item>
+                <Form.Item name="IssueId" hidden>
+                  <Input />
                 </Form.Item>
               </div>
             </Col>
@@ -824,13 +837,13 @@ const CreateStoreConsumption = () => {
             <Col style={{ marginRight: '10px' }}>
               <Form.Item>
                 <Button type="primary" loading={isSearchLoading} htmlType="submit">
-                  Submit
+                  {buttonTitle}
                 </Button>
               </Form.Item>
             </Col>
             <Col>
               <Form.Item>
-                <Button type="primary" onClick={handleCancel}>
+                <Button type="primary" onClick={handleToStoreConsumption}>
                   Cancel
                 </Button>
               </Form.Item>
@@ -864,7 +877,7 @@ const CreateStoreConsumption = () => {
           width={1000}
           maskClosable={false}
           title="Product Batch Details"
-          open={isModelOpen}
+          open={isModalOpen}
           onOk={handleSaveModal}
           onCancel={handleCloseModal}
           okText={"Save"}
@@ -910,7 +923,7 @@ const CreateStoreConsumption = () => {
               columns={columnsModel}
               size="small"
               locale={{ emptyText: "Nodata " }}
-              dataSource={dataModel}
+              dataSource={dataModal}
             //   deliveryRecord.ProductId
             //     ? schedule.filter(
             //       (item) =>

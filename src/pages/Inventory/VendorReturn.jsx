@@ -24,6 +24,7 @@ import { useNavigate } from "react-router";
 
 import { urlGetPurshaseOrderDetails, urlSearchVendorReturn } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
+import { render } from "react-dom";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -52,91 +53,79 @@ const VendorReturn = () => {
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
+    form.submit()
   }, []);
 
   const navigate = useNavigate();
-  const handleAddTemplate = () => {
-    navigate(`/CreateVendorReturn`);
-  };
 
   const colorMapping = {
     Created: "blue",
     Draft: "geekblue",
     Pending: "volcano",
     "Partially Pending": "orange",
+    Finalize: "green",
     Completed: "green",
   };
 
-  const GetModelDetails = (text, record, index) => {
+  const GetModelDetails = (ReturnHeaderId) => {
     debugger;
-    console.log("welcome");
+    navigate("/CreateVendorReturn", { state: { ReturnHeaderId } });
   };
+
   const columns = [
     {
-      title: "Sl No",
-      key: "index",
-      render: (text, record, index) => index + 1,
-    },
-    {
-      title: "PO Number",
-      dataIndex: "PONumber",
-      key: "PONumber",
-      sorter: (a, b) => a.PONumber - b.PONumber,
+      title: "Returned ID",
+      dataIndex: "ReturnNumber",
+      key: "ReturnNumber",
+      sorter: (a, b) => a.ReturnNumber - b.ReturnNumber,
       sortDirections: ["descend", "ascend"],
-      render: (text, record, index) => (
-        <Button type="link" onClick={() => GetModelDetails(text, record, index)}>
-          {text}
-        </Button>
-      ),
-    },
-    {
-      title: "Document Type",
-      dataIndex: "DocumentTypeName",
-      key: "DocumentTypeName",
-      sorter: (a, b) => a.DocumentTypeName.localeCompare(b.DocumentTypeName),
-      sortDirections: ["descend", "ascend"],
-    },
-    {
-      title: "Po Date",
-      dataIndex: "PoDate",
-      key: "PoDate",
-      sorter: (a, b) => new Date(a.PoDate) - new Date(b.PoDate),
-      sortDirections: ["descend", "ascend"],
-      render: (text) => {
-        //const poDate = new Date(text);
-        //const formattedDate = text;
-        return text;
+      render: (text, record, index) => {
+        if (record.ReturnStatus === "Created" || record.ReturnStatus === "Draft") {
+          return (
+            <Button type="link" onClick={() => GetModelDetails(record.ReturnHeaderId)}>
+              {text}
+            </Button>
+          );
+        }
+        return <Tag style={{ marginLeft: "15px" }}>{text}</Tag>;
       },
     },
     {
-      title: "Supplier Name",
+      title: "Returned Date",
+      dataIndex: "ReturnDate",
+      key: "ReturnDate",
+      sorter: (a, b) => a.ReturnDate.localeCompare(b.ReturnDate),
+      sortDirections: ["descend", "ascend"],
+      render: (text) => {
+        const dateParts = text.split('T')[0].split('-');
+        const year = dateParts[0];
+        const month = dateParts[1];
+        const day = dateParts[2];
+
+        return `${day}-${month}-${year}`;
+      },
+    },
+    {
+      title: "Returning Location",
+      dataIndex: "StoreName",
+      key: "StoreName",
+      sorter: (a, b) => new Date(a.StoreName) - new Date(b.StoreName),
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Returned to Vendor",
       dataIndex: "SupplierName",
       key: "SupplierName",
       sorter: (a, b) => a.SupplierName.localeCompare(b.SupplierName),
       sortDirections: ["descend", "ascend"],
     },
     {
-      title: "Store Name",
-      dataIndex: "StoreName",
-      key: "StoreName",
-      sorter: (a, b) => a.StoreName.localeCompare(b.StoreName),
-      sortDirections: ["descend", "ascend"],
-    },
-    {
-      title: "PO Raised By",
-      dataIndex: "PORaisedBy",
-      key: "PORaisedBy",
-      sorter: (a, b) => a.VendorReturnId.localeCompare(b.VendorReturnId),
-      sortDirections: ["descend", "ascend"],
-    },
-    {
-      title: "Po Status",
-      dataIndex: "PoStatus",
-      key: "PoStatus",
-      sorter: (a, b) => a.PoStatus.localeCompare(b.PoStatus),
+      title: "Status",
+      dataIndex: "ReturnStatus",
+      key: "ReturnStatus",
+      sorter: (a, b) => a.ReturnStatus.localeCompare(b.ReturnStatus),
       sortDirections: ["descend", "ascend"],
       render: (text) => {
-        // let color = text === 'Pending' ? 'volcano' : text === 'Completed' ? 'green' : text === '';
         return (
           <Tag color={colorMapping[`${text}`]} key={text}>
             {text.toUpperCase()}
@@ -145,19 +134,12 @@ const VendorReturn = () => {
       },
     },
     {
-      title: "Actions",
-      dataIndex: "actions",
-      key: "actions",
-      render: (_, row) => (
-        <>
-          <Tooltip title="Edit">
-            <Button icon={<EditOutlined />} onClick={() => handleEdit(row)} />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button icon={<DeleteOutlined />} onClick={() => handleDelete(row)} />
-          </Tooltip>
-        </>
-      ),
+      title: "Report",
+      dataIndex: "Report",
+      key: "Report",
+      render: (record) => {
+        return <Button type="link">Report</Button>
+      }
     },
   ];
   // const handleSearch = (value) => {
@@ -209,15 +191,15 @@ const VendorReturn = () => {
     setLoading(true);
     try {
       const postData1 = {
-        Store: values.ReturningStore === undefined ? 0 : values.ReturningStore,
-        Supplier: values.Supplier === undefined ? 0 : values.Supplier,
-        Status: values.POStatus === undefined ? null : values.POStatus,
-        FromDate: values.FromDate,
-        ToDate: values.ToDate,
+        Store: values.ReturningStore ? values.ReturningStore : 0,
+        Supplier: values.ReturnedToVendor ? values.ReturnedToVendor : 0,
+        Status: values.Status === 0 ? 'null' : values.Status,
+        FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : null,
+        ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : null
       };
       customAxios
         .get(
-          `${urlSearchVendorReturn}?Store=${postData1.Store}&Supplier=${postData1.Supplier}&Status=${postData1.Status}&FromDate=${postData1.FromDate}&ToDate=${postData1.ToDate}`,
+          `${urlSearchVendorReturn}?Store=${postData1.Store}&Supplier=${postData1.Supplier}&Status=${postData1.Status}&FromDateString=${postData1.FromDate}&ToDateString=${postData1.ToDate}`,
           null,
           {
             params: postData1,
@@ -229,7 +211,7 @@ const VendorReturn = () => {
         .then((response) => {
           debugger;
           setFilteredData(response.data.data.ReturnDetails);
-        })        
+        })
     } catch (error) {
       // Handle any errors here      
     }
@@ -250,7 +232,7 @@ const VendorReturn = () => {
             </Title>
           </Col>
           <Col offset={5} span={2}>
-            <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={handleAddTemplate}>
+            <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={() => GetModelDetails(0)}>
               Add Vendor Return
             </Button>
           </Col>
@@ -261,7 +243,7 @@ const VendorReturn = () => {
             name="control-hooks"
             layout="vertical"
             variant="outlined"
-            size="Default"
+            // size="Default"
             style={{
               maxWidth: 1500,
             }}

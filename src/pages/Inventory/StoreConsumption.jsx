@@ -24,6 +24,7 @@ import { useNavigate } from "react-router";
 import CustomTable from "../../components/customTable/index.jsx";
 import { urlGetPurshaseOrderDetails, urlSearchStoreConsumption } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
+import { render } from "react-dom";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -52,11 +53,12 @@ const StoreConsumption = () => {
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
+    form.submit()
   }, []);
 
   const navigate = useNavigate();
-  const handleAddTemplate = () => {
-    navigate(`/CreateStoreConsumption`);
+  const handleAddTemplate = (StoreConsupmtionId) => {
+    navigate("/CreateStoreConsumption", { state: { StoreConsupmtionId } });
   };
 
   const colorMapping = {
@@ -67,96 +69,64 @@ const StoreConsumption = () => {
     Completed: "green",
   };
 
-  const GetModelDetails = (text, record, index) => {
-    debugger;
-    console.log("welcome");
-  };
   const columns = [
     {
       title: "Sl No",
-      key: "index",
-      render: (text, record, index) => index + 1,
+      key: "key",
+      dataIndex: 'key',
     },
     {
-      title: "PO Number",
-      dataIndex: "PONumber",
-      key: "PONumber",
-      sorter: (a, b) => a.PONumber - b.PONumber,
+      title: "Consumption Number",
+      dataIndex: "IssueNumber",
+      key: "IssueNumber",
+      sorter: (a, b) => a.IssueNumber - b.IssueNumber,
       sortDirections: ["descend", "ascend"],
-      render: (text, record, index) => (
-        <Button type="link" onClick={() => GetModelDetails(text, record, index)}>
-          {text}
-        </Button>
-      ),
+      render: (text, record) => {
+        if (record.IssueStatus == "Finalize") {
+          return <Tag style={{ marginLeft: '15px' }}>{text}</Tag>;
+        }
+        return <Button type='link' onClick={() => handleAddTemplate(record.IssueId)}>{text}</Button>
+      }
     },
     {
-      title: "Document Type",
-      dataIndex: "DocumentTypeName",
-      key: "DocumentTypeName",
-      sorter: (a, b) => a.DocumentTypeName.localeCompare(b.DocumentTypeName),
-      sortDirections: ["descend", "ascend"],
-    },
-    {
-      title: "Po Date",
-      dataIndex: "PoDate",
-      key: "PoDate",
-      sorter: (a, b) => new Date(a.PoDate) - new Date(b.PoDate),
+      title: "Consumption Date",
+      dataIndex: "IssueDate",
+      key: "IssueDate",
+      sorter: (a, b) => a.IssueDate.localeCompare(b.IssueDate),
       sortDirections: ["descend", "ascend"],
       render: (text) => {
-        return text;
+        const dateParts = text.split('T')[0].split('-');
+        const year = dateParts[0];
+        const month = dateParts[1];
+        const day = dateParts[2];
+
+        return `${day}-${month}-${year}`;
       },
     },
     {
-      title: "Supplier Name",
-      dataIndex: "SupplierName",
-      key: "SupplierName",
-      sorter: (a, b) => a.SupplierName.localeCompare(b.SupplierName),
+      title: "Issuing Store",
+      dataIndex: "IssueStoreName",
+      key: "IssueStoreName",
+      sorter: (a, b) => new Date(a.IssueStoreName) - new Date(b.IssueStoreName),
       sortDirections: ["descend", "ascend"],
     },
     {
-      title: "Store Name",
-      dataIndex: "StoreName",
-      key: "StoreName",
-      sorter: (a, b) => a.StoreName.localeCompare(b.StoreName),
-      sortDirections: ["descend", "ascend"],
-    },
-    {
-      title: "PO Raised By",
-      dataIndex: "PORaisedBy",
-      key: "PORaisedBy",
-      sorter: (a, b) => a.StoreConsumptionId.localeCompare(b.StoreConsumptionId),
-      sortDirections: ["descend", "ascend"],
-    },
-    {
-      title: "Po Status",
-      dataIndex: "PoStatus",
-      key: "PoStatus",
-      sorter: (a, b) => a.PoStatus.localeCompare(b.PoStatus),
+      title: "Consumption Status",
+      dataIndex: "IssueStatus",
+      key: "IssueStatus",
+      sorter: (a, b) => a.IssueStatus.localeCompare(b.IssueStatus),
       sortDirections: ["descend", "ascend"],
       render: (text) => {
         return (
           <Tag color={colorMapping[`${text}`]} key={text}>
-            {text.toUpperCase()}
+            {text}
           </Tag>
         );
       },
     },
     {
-      title: "Actions",
-      dataIndex: "actions",
-      key: "actions",
       render: (_, row) => (
-        <>
-          <Tooltip title="Edit">
-            <Button icon={<EditOutlined />} onClick={() => handleEdit(row)} />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(row)}
-            />
-          </Tooltip>
-        </>
+        <Button type="link">Report</Button>
       ),
     },
   ];
@@ -184,27 +154,8 @@ const StoreConsumption = () => {
      return Promise.resolve();
    };*/
 
-  const handleSubmit = (values) => {
-    // Handle form submission logic here
-    console.log("Form submitted with values:", values);
 
-    console.log("Form Values:", values);
-    //const uhid = selectedUhId ? selectedUhId.UhId : '';
-
-    // ... Repeat for other parameters
-  };
-  const [formatedFromDate, setFormatedFromDate] = useState();
-  const [formatedToDate, setFormatedToDate] = useState();
-  function formatDate(inputDate) {
-    const dateParts = inputDate.split("/");
-    if (dateParts.length === 3) {
-      const [year, month, day] = dateParts;
-      return `${day}-${month}-${year}`;
-    }
-    return inputDate; // Return as is if not in the expected format
-  }
   const onFinish = async (values) => {
-    debugger;
     setIsSearchLoading(true);
     setLoading(true);
     try {
@@ -226,10 +177,13 @@ const StoreConsumption = () => {
           }
         )
         .then((response) => {
-          console.log("Response:", response.data);
-          //resetForm();
-          setFilteredData(response.data.data.StoreConsumptionDetails);
-          // setCurrentPage1(1);
+          const ApiData = response.data.data.newIndentIssueModel.map((item, index) => {
+            return {
+              ...item,
+              key: index + 1
+            }
+          })
+          setFilteredData(ApiData);
         })
         .finally(() => {
           setLoading(false);
@@ -255,7 +209,7 @@ const StoreConsumption = () => {
             </Title>
           </Col>
           <Col offset={4} span={2}>
-            <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={handleAddTemplate}>
+            <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={() => handleAddTemplate(0)}>
               Add Store Consumption
             </Button>
           </Col>
