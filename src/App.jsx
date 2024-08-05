@@ -106,6 +106,24 @@ import UpdatePatientIssue from "./pages/Inventory/UpdatePatientIssue";
 import ShowCreateEditDefinition from "./pages/Masters/InventoryManagement/ShowCreateEditDefinition";
 import Templates from "./pages/Masters/GeneralMasters/TemplateMaster";
 import ShowAddNewTemplate from "./pages/Masters/GeneralMasters/TemplateMaster/ShowAddNewTemplate.jsx";
+import Enterprise from "./pages/Masters/Identity Management/Enterprise/index.jsx";
+import Department from "./pages/Masters/Identity Management/Department/index.jsx";
+import ServiceLocation from "./pages/Masters/Identity Management/ServiceLocation/index.jsx";
+import FacilityDepartment from "./pages/Masters/Identity Management/FacilityDepartment/index.jsx";
+import FacilityDepartmentServiceLocation from "./pages/Masters/Identity Management/FacilityDepartmentServiceLocation/index.jsx";
+import Facility from "./pages/Masters/Identity Management/Facility/index.jsx";
+import EditEnterprise from "./pages/Masters/Identity Management/Enterprise/EditEnterprise.jsx";
+import CreateFacility from "./pages/Masters/Identity Management/Facility/CreateFacility.jsx";
+import Ward from "./pages/Masters/Ward Management/Ward/index.jsx";
+import Bed from "./pages/Masters/Ward Management/Bed/index.jsx";
+import CreateBed from "./pages/Masters/Ward Management/Bed/CreateBed.jsx";
+import DischargeClearanceSetup from "./pages/Masters/Ward Management/Discharge Clearance Setup/index.jsx";
+import EditBed from "./pages/Masters/Ward Management/Bed/EditBed.jsx";
+import CreateEditDischargeClearanceSetup from "./pages/Masters/Ward Management/Discharge Clearance Setup/CreateEditDischargeClearanceSetup.jsx";
+import Configuration from "./pages/Masters/Configuration Management/Configuration/index.jsx";
+import WorkflowManager from "./pages/Masters/Configuration Management/CreateWorkflow/index.jsx";
+import CreateEditWorkFlow from "./pages/Masters/Configuration Management/CreateWorkflow/CreateEditWorkFlow.jsx";
+import Frequency from "./pages/Masters/SystemParameterSetup/Frequency/index.jsx";
 
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
@@ -547,6 +565,70 @@ function App() {
               }
             />
             <Route
+              path="Enterprise"
+              element={
+                <ProtectedRoute>
+                  <Enterprise />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Enterprise/EditEnterprise"
+              element={
+                <ProtectedRoute>
+                  <EditEnterprise />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Facility"
+              element={
+                <ProtectedRoute>
+                  <Facility />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Facility/CreateFacility"
+              element={
+                <ProtectedRoute>
+                  <CreateFacility />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="DepartmentManager"
+              element={
+                <ProtectedRoute>
+                  <Department />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="ServiceLocation"
+              element={
+                <ProtectedRoute>
+                  <ServiceLocation />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="FacilityDepartment"
+              element={
+                <ProtectedRoute>
+                  <FacilityDepartment />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="FacilityDepartmentServiceLocation"
+              element={
+                <ProtectedRoute>
+                  <FacilityDepartmentServiceLocation />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="ProviderRegistration"
               element={
                 <ProtectedRoute>
@@ -591,6 +673,54 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PayerSearch />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Ward"
+              element={
+                <ProtectedRoute>
+                  <Ward />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Bed"
+              element={
+                <ProtectedRoute>
+                  <Bed />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Bed/CreateBed"
+              element={
+                <ProtectedRoute>
+                  <CreateBed />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Bed/EditBed"
+              element={
+                <ProtectedRoute>
+                  <EditBed />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="DischargeClearanceSetup"
+              element={
+                <ProtectedRoute>
+                  <DischargeClearanceSetup />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="DischargeClearanceSetup/CreateEditDischargeClearanceSetup"
+              element={
+                <ProtectedRoute>
+                  <CreateEditDischargeClearanceSetup />
                 </ProtectedRoute>
               }
             />
@@ -903,6 +1033,38 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ContainerDefinition />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Configuration"
+              element={
+                <ProtectedRoute>
+                  <Configuration />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Workflow"
+              element={
+                <ProtectedRoute>
+                  <WorkflowManager />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Workflow/CreateEditWorkFlow"
+              element={
+                <ProtectedRoute>
+                  <CreateEditWorkFlow />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Frequency"
+              element={
+                <ProtectedRoute>
+                  <Frequency />
                 </ProtectedRoute>
               }
             />

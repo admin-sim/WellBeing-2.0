@@ -40,7 +40,7 @@ import { useLocation } from "react-router-dom";
 import { MdOutlineWifiTetheringError } from "react-icons/md";
 import CustomTable from "../../components/customTable/index.jsx";
 //import { useParams } from 'react-router-dom';
-
+import moment from 'moment';
 const CreateGRNAgainstPO = () => {
   const [DropDown, setDropDown] = useState({
     DocumentType: [],
@@ -53,7 +53,7 @@ const CreateGRNAgainstPO = () => {
 
   let [counter, setCounter] = useState(2);
   let [productCount, setProductcount] = useState(1);
-
+  const [grnStatus, setGrnStatus] = useState(false);
   // const initialProductDataSource = [
   //   {
   //     key: 1,
@@ -148,107 +148,75 @@ const CreateGRNAgainstPO = () => {
 
   useEffect(() => {
     debugger;
-    const fetchData = async () => {
-      if (GrnHeaderId > 0) {
-        setButtonTitle("Update");
-        setLoading(true);
-        try {
-          const response = await customAxios.get(
-            `${urlEditGRNAgainstPO}?GrnHeaderId=${GrnHeaderId}`
-          );
-          if (response.status == 200 && response.data.data != null) {
-            const editeddata = response.data.data;
-            const products = editeddata.GRNAgainstPODetails.map(
-              (item, index) => ({
-                ...item,
-                key: index + 1,
-              })
-            );
-            setData(products);
-            const formdata = editeddata.newGRNAgainstPOModel;
-            form1.setFieldsValue({
-              SupplierId: formdata.SupplierId,
-              StoreId: formdata.StoreId,
-              DocumentType: formdata.DocumentType,
-              TotalAmount: formdata.TotalPoAmount,
-              TotalPoAmount: formdata.TotalPoAmount,
-              PoHeaderId: formdata.PoHeaderId,
-              GRNHeaderId: formdata.GRNHeaderId,
-              InvoiceNumber: formdata.InvoiceNumber,
-              InvoiceAmount: formdata.InvoiceAmount,
-
-              InvoiceDateString: formdata.InvoiceDateString
-                ? dayjs(formdata.InvoiceDateString, "DD-MM-YYYY")
-                : null,
-              DCChallanDateString: formdata.DCChallanDateString
-                ? dayjs(formdata.DCChallanDateString, "DD-MM-YYYY")
-                : null,
-              ReceivingDateString: formdata.ReceivingDateString
-                ? dayjs(formdata.ReceivingDateString, "DD-MM-YYYY")
-                : null,
-              GRNDatestring: formdata.GRNDatestring
-                ? dayjs(formdata.GRNDatestring, "DD-MM-YYYY")
-                : null,
-              DCChallanNumber: formdata.DCChallanNumber,
-              GRNStatus:
-                formdata.GRNStatus == "Created"
-                  ? undefined
-                  : formdata.GRNStatus,
-              Remarks: formdata.Remarks,
-            });
-            setProductcount(products.length + 1);
-            // const batch = editeddata.BatchDetails.map((item, index) => ({
-            //   ...item,
-            //   key: index + 1,
-            // }));
-            // setCounter(editeddata.BatchDetails.length + 1);
-            // setdataBatchModal(editeddata.BatchDetails);
-            // const updatedBatch = batch.map((item) => {
-            //   const key = item.key - 1;
-            //   const prod = editeddata.GRNAgainstPODetails.filter(
-            //     (item1) => item1.GrnLineId === item.GrnLineId
-            //   );
-            //   if (batch[key] != undefined) {
-            //     if (
-            //       batch[key].Quantity ||
-            //       batch[key].EXPDate ||
-            //       batch[key].BatchNo
-            //     ) {
-            //       return {
-            //         ...item,
-            //         ProductId: prod[0].ProductId,
-            //         Quantity: batch[key].Quantity,
-            //         EXPDate: DateBindtoDatepicker(batch[key].EXPDate),
-            //         BarCode: batch[key].BarCode,
-            //         BatchNo: batch[key].BatchNo,
-            //         UomId: prod[0].UomId,
-            //         Uom: prod[0].Uom,
-            //       };
-            //     }
-            //     return item;
-            //   }
-            //   return item;
-            // });
-            // setdataBatchModal(updatedBatch);
-
-            // setCounter(products.length + 1);
-            const batch = editeddata.BatchDetails.map((item, index) => ({
-              ...item,
-              key: index + 1,
-            }));
-            setdataBatchModal(batch);
-            setCounter(editeddata.BatchDetails.length + 1);
-          }
-          setLoading(false);
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      }
-    };
+    
 
     fetchData();
     // setLoading(false);
   }, []);
+
+  const fetchData = async () => {
+    if (GrnHeaderId > 0) {
+      setButtonTitle("Update");
+      setLoading(true);
+      try {
+        const response = await customAxios.get(
+          `${urlEditGRNAgainstPO}?GrnHeaderId=${GrnHeaderId}`
+        );
+        if (response.status == 200 && response.data.data != null) {
+          const editeddata = response.data.data;
+          const products = editeddata.GRNAgainstPODetails.map(
+            (item, index) => ({
+              ...item,
+              key: index + 1,
+            })
+          );
+          setData(products);
+          const formdata = editeddata.newGRNAgainstPOModel;
+          form1.setFieldsValue({
+            SupplierId: formdata.SupplierId,
+            StoreId: formdata.StoreId,
+            DocumentType: formdata.DocumentType,
+            TotalAmount: formdata.TotalPoAmount,
+            TotalPoAmount: formdata.TotalPoAmount,
+            PoHeaderId: formdata.PoHeaderId,
+            GRNHeaderId: formdata.GRNHeaderId,
+            InvoiceNumber: formdata.InvoiceNumber,
+            InvoiceAmount: formdata.InvoiceAmount,
+
+            InvoiceDateString: formdata.InvoiceDateString
+              ? dayjs(formdata.InvoiceDateString, "DD-MM-YYYY")
+              : null,
+            DCChallanDateString: formdata.DCChallanDateString
+              ? dayjs(formdata.DCChallanDateString, "DD-MM-YYYY")
+              : null,
+            ReceivingDateString: formdata.ReceivingDateString
+              ? dayjs(formdata.ReceivingDateString, "DD-MM-YYYY")
+              : null,
+            GRNDatestring: formdata.GRNDatestring
+              ? dayjs(formdata.GRNDatestring, "DD-MM-YYYY")
+              : null,
+            DCChallanNumber: formdata.DCChallanNumber,
+            GRNStatus:
+              formdata.GRNStatus == "Created"
+                ? undefined
+                : formdata.GRNStatus,
+            Remarks: formdata.Remarks,
+          });
+          setProductcount(products.length + 1);
+          
+          const batch = editeddata.BatchDetails.map((item, index) => ({
+            ...item,
+            key: index + 1,
+          }));
+          setdataBatchModal(batch);
+          setCounter(editeddata.BatchDetails.length + 1);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+  };
 
   const onOkModal = () => {
     debugger;
@@ -363,17 +331,22 @@ const CreateGRNAgainstPO = () => {
 
   const BatchmodalOpen = async (record) => {
     debugger;
+    
     const fieldsToValidate = [[record.key, "ReceivedQty"]];
     const va = form1.getFieldsValue();
     await form1.validateFields(fieldsToValidate);
+    setLoading(true);
     if (va[record.key].ReceivedQty <= va[record.key].PoBalanceQty) {
       record.ReceivedQty = va[record.key].ReceivedQty;
       setBatchRecord(record);
       setBatches([]);
       setProductLineId(parseInt(record.key));
       setIsBatchModalOpen(true);
+      setLoading(false);
     } else {
+      setLoading(false);
       message.warning("Recieved Qty should not greater than Pending Qty.");
+   
     }
   };
 
@@ -817,7 +790,7 @@ const CreateGRNAgainstPO = () => {
       const updatedBatch = dataBatchModal.map((item) => {
         const key = item.key;
         if (values[key] != undefined) {
-          if (values[key].Quantity || values[key].EXPDate || values[key].mrp) {
+          if (values[key].Quantity || values[key].EXPDateString || values[key].mrp) {
             return {
               ...item,
               ProductId: batchRecord.ProductId,
@@ -829,9 +802,25 @@ const CreateGRNAgainstPO = () => {
                 ? values[key].MFGDateString.format("DD-MM-YYYY")
                 : null,
               BatchNo: values[key].BatchNo,
-              EXPDateString: values[key].EXPDateString
-                ? values[key].EXPDateString.format("DD-MM-YYYY")
-                : null,
+              // EXPDateString: batchRecord.Expiry === "Month wise"
+              // ? values[key].EXPDateString
+              //   ? `01-${moment(values[key].EXPDateString).format("MM-YYYY")}`
+              //   : null
+              // : values[key].EXPDateString
+              // ? values[key].EXPDateString.format("DD-MM-YYYY")
+              // : null,
+              EXPDateString: (values[key].GrnBatchId)
+              ? (values[key].EXPDateString && values[key].EXPDateString.format("DD-MM-YYYY"))
+              : batchRecord.Expiry === "Month wise"
+              ? values[key].EXPDateString &&
+                `01-${String(values[key].EXPDateString.$M + 1).padStart(
+                  2,
+                  "0"
+                )}-${values[key].EXPDateString.$y}`
+              : batchRecord.Expiry === "Date wise"
+              ? values[key].EXPDateString &&
+                values[key].EXPDateString.format("DD-MM-YYYY")
+              : null,
               Rate: values[key].Rate,
               MRP: values[key].MRP,
               StockLocator: 0,
@@ -860,7 +849,18 @@ const CreateGRNAgainstPO = () => {
     setdataBatchModal(newData);
     //setIsModalOpen(false);
     setIsBatchModalOpen(false);
-    form3.resetFields();
+    //form3.resetFields();
+    form3.resetFields({
+      // Add a callback function to resetFields to handle invalid dates
+      callback: (name, value) => {
+        if (name === "MFGDateString" || name === "EXPDateString") {
+          if (!value || !dayjs(value).isValid()) {
+            return null; // Return null to reset the field to its initial value
+          }
+        }
+        return value;
+      },
+    });
   };
 
   const checkActiveBatches = (products, batches) => {
@@ -1076,7 +1076,7 @@ const CreateGRNAgainstPO = () => {
       InvoiceDateString: values.InvoiceDateString.format("DD-MM-YYYY"),
       ReceivingDateString: values.ReceivingDateString.format("DD-MM-YYYY"),
       Remarks: values.Remarks || null,
-      GrnStatus: values.GRNStatus || "Created",
+      GrnStatus:  grnStatus ? values.GRNStatus : "Created",
       InvoiceNumber: values.InvoiceNumber || null,
       InvoiceAmount: values.InvoiceAmount || 0,
       DCChallanNumber: values.DCChallanNumber,
@@ -1149,7 +1149,7 @@ const CreateGRNAgainstPO = () => {
 
   const BatchAdd = async () => {
     debugger;
-    //await form2.validateFields();
+    await form3.validateFields();
     setdataBatchModal([
       ...dataBatchModal,
       {
@@ -1248,6 +1248,16 @@ const CreateGRNAgainstPO = () => {
               required: true,
               message: "input!",
             },
+            {
+              validator: (_, value) => {
+                if (value <= 0) {
+                  return Promise.reject(
+                    new Error("Quantity should be greater than zero.")
+                  );
+                }
+                return Promise.resolve();
+              },
+            },
           ]}
         >
           <InputNumber
@@ -1312,32 +1322,36 @@ const CreateGRNAgainstPO = () => {
         </Form.Item>
       ),
     },
+   
     {
       title: "Exp Date",
       dataIndex: "EXPDateString",
       key: "EXPDateString",
+      width: 150,
       render: (text, record) => (
         <Form.Item
-          name={[record.key, "EXPDateString"]}
           initialValue={
-            record.EXPDateString
-              ? dayjs(record.EXPDateString, "DD-MM-YYYY")
-              : null
+            record.EXPDateString? 
+              moment(record.EXPDateString, 'DD-MM-YYYY') : 
+              null 
           }
+          name={[record.key, "EXPDateString"]}
           rules={[
             {
-              required: true,
+              required: batchRecord.Expiry === "Month wise" || batchRecord.Expiry === "Date wise",
               message: "input!",
             },
           ]}
+          width={150}
         >
           <DatePicker
-            style={{ width: "100%" }}
-            format="DD-MM-YYYY"
-            disabled={!!GrnHeaderId && record.GrnBatchId}
+            format={batchRecord.Expiry === "Month wise"? "MMMM YYYY" : batchRecord.Expiry === "Date wise"? "DD-MM-YYYY" : null}
+            disabled={!!GrnHeaderId && record.GrnBatchId || batchRecord.Expiry !== "Month wise" && batchRecord.Expiry !== "Date wise"}
+           // disabled={record.Expiry!== "Month wise" && record.Expiry!== "Date wise"}
+            style={{ width: 100 }}
             disabledDate={(current) => {
               // Disable past dates
-              return current && current < dayjs().startOf("day");
+              return current && current < moment().startOf('day');
             }}
           />
         </Form.Item>
@@ -1507,6 +1521,9 @@ const CreateGRNAgainstPO = () => {
       return item;
     });
     setdataBatchModal(newData);
+  };
+  const SubmitChanged = (event) => {
+    setGrnStatus(event.target.checked);
   };
 
   return (
@@ -1679,12 +1696,12 @@ const CreateGRNAgainstPO = () => {
               <Form.Item
                 label="GRNStatus"
                 name="GRNStatus"
-                // rules={[
-                //     {
-                //         required: true,
-                //         message: 'Please input!'
-                //     }
-                // ]}
+                rules={[
+                  {
+                    required: grnStatus,
+                    message: "Please input!",
+                  },
+                ]}
               >
                 <Select allowClear placeholder="Select Value">
                   <Option value="Draft">Draft</Option>
@@ -1694,7 +1711,7 @@ const CreateGRNAgainstPO = () => {
             </Col>
             <Col className="gutter-row" span={2} style={{ paddingTop: 35 }}>
               <Form.Item name="SubmitCheck">
-                <Checkbox>Submit</Checkbox>
+                <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
               </Form.Item>
             </Col>
             <Col className="gutter-row" span={6}>
@@ -1780,12 +1797,14 @@ const CreateGRNAgainstPO = () => {
           </Row>
           <Divider style={{ marginTop: "0" }}></Divider>
           <div>
+            <Spin spinning={loading}>
             <Table
-              loading={loading}
+            //loading={loading}
               columns={columns}
               dataSource={data}
               scroll={{ x: 0 }}
             />
+            </Spin>
             <div
               style={{
                 display: "flex",
@@ -1994,6 +2013,7 @@ const CreateGRNAgainstPO = () => {
                   </Form.Item>
                 </Col>
               </Row>
+              <Spin spinning={loading}>
               <Table
                 columns={Batchmodal}
                 dataSource={
@@ -2006,8 +2026,8 @@ const CreateGRNAgainstPO = () => {
                       )
                     : initialModelDataSource
                 }
-                // dataSource={dataBatchModal}
               />
+              </Spin>
             </Form>
           </Modal>
         </ConfigProvider>

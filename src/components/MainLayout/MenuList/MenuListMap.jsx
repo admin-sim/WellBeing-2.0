@@ -10,13 +10,21 @@ import {
   ScheduleOutlined,
   ExperimentOutlined,
 } from "@ant-design/icons";
-import { FaClipboardUser } from "react-icons/fa6";
+import { RiSettingsFill } from "react-icons/ri";
+import { FaClipboardUser, FaFlaskVial } from "react-icons/fa6";
 import { GoDotFill } from "react-icons/go";
 import { FaUserFriends, FaUserPlus } from "react-icons/fa";
 import { CiSettings } from "react-icons/ci";
-import { MdInventory } from "react-icons/md";
+import {
+  MdInventory,
+  MdManageHistory,
+  MdOutlineInventory2,
+} from "react-icons/md";
 import { GrSchedule } from "react-icons/gr";
 import Bed from "../../../assets/bed.png";
+import { GiBed } from "react-icons/gi";
+import { FaHospitalUser } from "react-icons/fa";
+import { TbCalendarCog, TbReportMoney, TbSettingsPlus } from "react-icons/tb";
 const { SubMenu } = Menu;
 
 export default function MenuList({ menuData, onClose }) {
@@ -30,6 +38,8 @@ export default function MenuList({ menuData, onClose }) {
         return <FaUserFriends style={{ fontSize: "1.2rem" }} />;
       case "CodepenOutlined":
         return <CodepenOutlined />;
+      case "FaHospitalUser":
+        return <FaHospitalUser style={{ fontSize: "1.1rem" }} />;
       case "GrSchedule":
         return <GrSchedule />;
       case "bed":
@@ -46,6 +56,22 @@ export default function MenuList({ menuData, onClose }) {
         return <CiSettings />;
       case "MdInventory":
         return <MdInventory />;
+      case "TbCalendarCog":
+        return <TbCalendarCog style={{ fontSize: "1.2rem" }} />;
+      case "TbSettingsPlus":
+        return <TbSettingsPlus style={{ fontSize: "1.2rem" }} />;
+      case "GiBed":
+        return <GiBed style={{ fontSize: "1.3rem" }} />;
+      case "RiSettingsFill":
+        return <RiSettingsFill style={{ fontSize: "1.1rem" }} />;
+      case "TbReportMoney":
+        return <TbReportMoney style={{ fontSize: "1.2rem" }} />;
+      case "MdManageHistory":
+        return <MdManageHistory style={{ fontSize: "1.2rem" }} />;
+      case "MdOutlineInventory2":
+        return <MdOutlineInventory2 style={{ fontSize: "1.2rem" }} />;
+      case "FaFlaskVial":
+        return <FaFlaskVial style={{ fontSize: "1.1rem" }} />;
       case "FaClipboardUser":
         return <FaClipboardUser style={{ fontSize: "1.1rem" }} />;
       default:

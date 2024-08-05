@@ -16,7 +16,7 @@ const menuData = [
     children: [
       {
         key: "GeneralMasters",
-        icon: "CiSettings",
+        icon: "RiSettingsFill",
         title: "General Masters",
         children: [
           {
@@ -76,8 +76,138 @@ const menuData = [
         ],
       },
       {
+        key: "IdentityManagement",
+        icon: "FaHospitalUser",
+        title: "Identity Management",
+        children: [
+          {
+            key: "Enterprise",
+            icon: "GoDotFill",
+            title: "Enterprise",
+            link: "/Enterprise",
+          },
+          {
+            key: "Facility",
+            icon: "GoDotFill",
+            title: "Facility",
+            link: "/Facility",
+          },
+          {
+            key: "DepartmentManager",
+            icon: "GoDotFill",
+            title: "Department Manager",
+            link: "/DepartmentManager",
+          },
+          {
+            key: "ServiceLocation",
+            icon: "GoDotFill",
+            title: "Service Location",
+            link: "/ServiceLocation",
+          },
+          {
+            key: "FacilityDepartment",
+            icon: "GoDotFill",
+            title: "Facility Department",
+            link: "/FacilityDepartment",
+          },
+          {
+            key: "FacilityDepartmentServiceLocation",
+            icon: "GoDotFill",
+            title: "Facility Department Service Location",
+            link: "/FacilityDepartmentServiceLocation",
+          },
+        ],
+      },
+      {
+        key: "MastersResourceScheduling",
+        icon: "TbCalendarCog",
+        title: "Resource Scheduling",
+        children: [
+          {
+            key: "ScheduleTemplate",
+            icon: "GoDotFill",
+            title: "Schedule Template",
+            link: "/ScheduleTemplate",
+          },
+          {
+            key: "ProviderSchedule",
+            icon: "GoDotFill",
+            title: "Provider Schedule",
+            link: "/ProviderSchedule",
+          },
+          {
+            key: "PublishCalender",
+            icon: "GoDotFill",
+            title: "Publish Calender",
+            link: "/PublishCalender",
+          },
+          {
+            key: "ProviderAbsence",
+            icon: "GoDotFill",
+            title: "Provider Absence",
+            link: "/ProviderAbsence",
+          },
+          {
+            key: "SpecialEvent",
+            icon: "GoDotFill",
+            title: "Special Event",
+            link: "/SpecialEvent",
+          },
+          {
+            key: "Holiday",
+            icon: "GoDotFill",
+            title: "Holiday",
+            link: "/Holiday",
+          },
+        ],
+      },
+      {
+        key: "ConfigurationManagement",
+        icon: "MdManageHistory",
+        title: "Configuration Management",
+        children: [
+          {
+            key: "Configuration",
+            icon: "GoDotFill",
+            title: "Configuration",
+            link: "/Configuration",
+          },
+          {
+            key: "CreateWorkflow",
+            icon: "GoDotFill",
+            title: "Create Workflow",
+            link: "/Workflow",
+          },
+        ],
+      },
+      {
+        key: "WardManagement",
+        icon: "GiBed",
+        title: "Ward Management",
+        children: [
+          {
+            key: "Ward",
+            icon: "GoDotFill",
+            title: "Ward",
+            link: "/Ward",
+          },
+          {
+            key: "Bed",
+            icon: "GoDotFill",
+            title: "Bed",
+            link: "/Bed",
+          },
+          {
+            key: "DischargeClearanceSetup",
+            icon: "GoDotFill",
+            title: "Discharge Clearance Setup",
+            link: "/DischargeClearanceSetup",
+          },
+        ],
+      },
+      {
         key: "Accountmanagement",
-        icon: "CiSettings",
+        icon: "TbReportMoney",
 
         title: "Account Management",
         children: [
@@ -143,52 +273,10 @@ const menuData = [
           },
         ],
       },
-      {
-        key: "MastersResourceScheduling",
-        icon: "CiSettings",
-        title: "Resource Scheduling",
-        children: [
-          {
-            key: "ScheduleTemplate",
-            icon: "GoDotFill",
-            title: "Schedule Template",
-            link: "/ScheduleTemplate",
-          },
-          {
-            key: "ProviderSchedule",
-            icon: "GoDotFill",
-            title: "Provider Schedule",
-            link: "/ProviderSchedule",
-          },
-          {
-            key: "PublishCalender",
-            icon: "GoDotFill",
-            title: "Publish Calender",
-            link: "/PublishCalender",
-          },
-          {
-            key: "ProviderAbsence",
-            icon: "GoDotFill",
-            title: "Provider Absence",
-            link: "/ProviderAbsence",
-          },
-          {
-            key: "SpecialEvent",
-            icon: "GoDotFill",
-            title: "Special Event",
-            link: "/SpecialEvent",
-          },
-          {
-            key: "Holiday",
-            icon: "GoDotFill",
-            title: "Holiday",
-            link: "/Holiday",
-          },
-        ],
-      },
+
       {
         key: "Inventorymanagement",
-        icon: "CiSettings",
+        icon: "MdOutlineInventory2",
         title: "Inventory Management",
         children: [
           {
@@ -224,8 +312,39 @@ const menuData = [
         ],
       },
       {
+        key: "SystemParameterSetup",
+        icon: "TbSettingsPlus",
+        title: "System/Parameter Setup",
+        children: [
+          // {
+          //   key: "ParameterIdentityManagement",
+          //   icon: "GoDotFill",
+          //   title: "Identity Management",
+          //   link: "/IdentityManagement",
+          // },
+          // {
+          //   key: "ParameterAccountManagement",
+          //   icon: "GoDotFill",
+          //   title: "Account Management",
+          //   link: "/AccountManagement",
+          // },
+          // {
+          //   key: "ParameterClinicalSetup",
+          //   icon: "GoDotFill",
+          //   title: "Clinical Setup",
+          //   link: "/ClinicalSetup",
+          // },
+          {
+            key: "ParameterFrequency",
+            icon: "GoDotFill",
+            title: "Frequency",
+            link: "/Frequency",
+          },
+        ],
+      },
+      {
         key: "LaboratoryManagement",
-        icon: "MdInventory",
+        icon: "FaFlaskVial",
         title: "Laboratory Management",
         children: [
           {
@@ -295,7 +414,7 @@ const menuData = [
 
   {
     key: "Account",
-    icon: "ExperimentOutlined",
+    icon: "TbReportMoney",
     title: "Account Management",
     children: [
       {

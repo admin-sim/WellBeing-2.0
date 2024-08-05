@@ -236,7 +236,7 @@ const VisitModal = (
     >
       {/* {contextHolder} */}
       <Modal
-        width={1000}
+        width={"75%"}
         title="Create Visit"
         open={details.open}
         onOk={details.handleOk}

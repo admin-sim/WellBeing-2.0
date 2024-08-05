@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
 import { urlCreatePurchaseOrder, urlSearchUHID, urlGetLastEncounter, urlAutocompleteProduct, urlUpdatePatientIndent, urlEditPatientIndent, urlGetProductDetailsById, urlAddNewPatientIndent } from '../../../endpoints.js';
 import Select from 'antd/es/select';
-import { ConfigProvider, Card, Typography, Checkbox, Tooltip, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
+import { ConfigProvider, Card, Typography, Checkbox, Tooltip, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete, message } from 'antd';
 import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
@@ -31,7 +31,8 @@ const CreatePatientIndent = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const indentId = location.state.IndentId;
-
+    const [dropDownLoad, setDropDownLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const initialDataSource =
         indentId === 0
             ? [
@@ -71,10 +72,19 @@ const CreatePatientIndent = () => {
 
     useEffect(() => {
         customAxios.get(urlCreatePurchaseOrder).then((response) => {
-            const apiData = response.data.data;
-            setDropDown(apiData);
+          const apiData = response.data.data;
+          setDropDown(apiData);
         });
+        setDropDownLoading(false);
+      }, []);
+      useEffect(() => {
+        debugger;
+    
+        fetchData();
+      }, []);
+      const fetchData = async () => {
         if (indentId > 0) {
+            setLoading(true);
             setButtonTitle('Update');
             customAxios.get(`${urlEditPatientIndent}?IndentId=${indentId}`).then((response) => {
                 const apiData = response.data.data;
@@ -104,8 +114,10 @@ const CreatePatientIndent = () => {
                     IndentId: formdata.IndentId
                 })
             });
+            setLoading(false);
         }
-    }, []);
+      }
+
 
     const onOkModal = () => {
         form2
@@ -389,6 +401,10 @@ const CreatePatientIndent = () => {
 
     const handleOnFinish = async (values) => {
         debugger;
+        if(!values.EncounterId){
+            message.warning("Selected Patient Encounter Is Not Created");
+            return false;
+          }
         await form2.validateFields()
         const products = [];
         if (data.length == 0) {
@@ -421,26 +437,7 @@ const CreatePatientIndent = () => {
                 products.push(mergedData[i])
             }
         }
-        // for (let i = 0; i <= data.length; i++) {
-        //     if (data[i] !== undefined && va[i] !== undefined) {
-        //         const product = {
-        //             ProductId: va[i].ProductId != '' ? va[i].ProductId : 0,
-        //             UomId: va[i].UomId != '' ? va[i].UomId : 0,
-        //             IssuingStoreStock: va[i].IssuingStoreStock,
-        //             RequestQty: va[i].RequestQty ? va[i].RequestQty : 0,
-        //             Favourite: va[i].Favourite === false ? 'N' : 'Y',
-        //             IndentLineId: va[i].IndentLineId ? va[i].IndentLineId : 0,
-        //             ActiveFlag: data[i].ActiveFlag
-        //         }
-        //         products.push(product);
-        //     }
-        // else {
-        //     if (data[i] != undefined) {
-        //         // data[i].Favourite = data[i].Favourite == false ? 'N' : 'Y'
-        //         products.push(data[i])
-        //     }
-        // }
-        // }
+  
 
         const Indent = {
             IndentId: values.IndentId ? values.IndentId : 0,
@@ -454,7 +451,7 @@ const CreatePatientIndent = () => {
             UHID: values.UHID === undefined ? 0 : values.UHID,
             SubmitCheck: values.SubmitCheck,
             PatientId: values.PatientId,
-            EncounterId: !!indentId ? values.EncounterId : values.Encounter,
+            EncounterId:  values.EncounterId,
             IndentCategory: 'PatientIndent',
             RequestingStoreId: 0
         }
@@ -508,24 +505,22 @@ const CreatePatientIndent = () => {
             const apiData = response.data.data;
             if (apiData.length > 0) {
                 setEncounter(apiData);
-                form1.setFieldsValue({ Encounter: apiData[0].EncounterId });
+                form1.setFieldsValue({ EncounterId: apiData[0].EncounterId });
                 form1.setFieldsValue({ PatientId: option.PatientId });
             } else {
                 setEncounter([]);
-                form1.setFieldsValue({ Encounter: '' });
+                form1.setFieldsValue({ EncounterId: '' });
                 form1.setFieldsValue({ PatientId: '' });
             }
         });
     }
 
     const handleStoreChange = (value) => {       
-        setData(initialDataSource);
+        setData([]);
+        setAutoCompleteProduct([]);
         form2.resetFields();
-        if (value !== undefined) {
-            setIsTableVisible(true);
-        } else {
-            setIsTableVisible(false);
-        }
+        setIsTableVisible(true);
+      
     }
 
     return (
@@ -548,7 +543,6 @@ const CreatePatientIndent = () => {
                         layout="vertical"
                         onFinish={handleOnFinish}
                         variant="outlined"
-                        size="default"
                         style={{
                             maxWidth: 1500
                         }}
@@ -559,7 +553,7 @@ const CreatePatientIndent = () => {
                             SubmitCheck: false
                         }}
                     >
-                        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
+                        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} align="Bottom">
                             <Col className="gutter-row" span={6}>
                                 <Form.Item label="Indent Date" name="IndentDate"
                                     rules={[
@@ -587,7 +581,7 @@ const CreatePatientIndent = () => {
                                         }
                                     ]}
                                 >
-                                    <Select allowClear placeholder='Select Value' onChange={handleStoreChange} disabled={!!indentId}>
+                                    <Select  loading={dropDownLoad} placeholder='Select Value' onChange={handleStoreChange} disabled={!!indentId}>
                                         {DropDown.StoreDetails.map((option) => (
                                             <Select.Option key={option.StoreId} value={option.StoreId}>
                                                 {option.LongName}
@@ -674,7 +668,7 @@ const CreatePatientIndent = () => {
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
-                                <Form.Item label="Encounter" name="Encounter">
+                                <Form.Item label="Encounter" name="EncounterId">
                                     <Select disabled={encounter.length > 1 ? false : true}>
                                         {encounter.map((option) => (
                                             <Select.Option key={option.EncounterId} value={option.EncounterId}>{option.GeneratedEncounterId}</Select.Option>
@@ -707,17 +701,18 @@ const CreatePatientIndent = () => {
                     <Form
                         onFinish={handleOnFinish}
                         variant="outlined"
-                        size="default"
                         style={{
                             maxWidth: 1500
                         }}
                         form={form2}
                     >
+                         <Spin spinning={loading}>
                         {isTableVisible ? (
                             <div>
                                 <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} scroll={{ x: 0 }} />
                             </div>
                         ) : null}
+                        </Spin>
                     </Form>
                 </Card>
                 <ConfigProvider

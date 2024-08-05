@@ -70,14 +70,26 @@ const CreateIndent = () => {
   const [buttonTitle, setButtonTitle] = useState("Save");
   const [indentStatus, setIndentStatus] = useState(false);
   const [data, setData] = useState([]);
+  const [dropDownLoad, setDropDownLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    debugger;
     customAxios.get(urlCreatePurchaseOrder).then((response) => {
       const apiData = response.data.data;
       setDropDown(apiData);
     });
+    setDropDownLoading(false);
+  }, []);
+
+  useEffect(() => {
+    debugger;
+
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
     if (indentId > 0) {
+      setLoading(true);
       setButtonTitle("Update");
       customAxios
         .get(`${urlEditIndent}?IndentId=${indentId}`)
@@ -111,9 +123,12 @@ const CreateIndent = () => {
             IndentId: formdata.IndentId,
             IndentTemplateId: ""
           });
+          setLoading(false);
         });
     }
-  }, []);
+  }
+
+
 
   const handleToIndent = () => {
     const url = "/Indent";
@@ -235,11 +250,11 @@ const CreateIndent = () => {
     debugger;
     setAutoCompleteOptions([]);
 
-    const allFields = ["IndentType"];
-    const fieldsToValidate = allFields.filter(
-      (field) => field !== "IndentType"
-    );
-    await form1.validateFields(fieldsToValidate);
+    // const allFields = ["IndentType"];
+    // const fieldsToValidate = allFields.filter(
+    //   (field) => field !== "IndentType"
+    // );
+    await form1.validateFields();
     setData([
       ...data,
       {
@@ -677,6 +692,7 @@ const CreateIndent = () => {
                   ]}
                 >
                   <Select
+                  loading={dropDownLoad}
                     allowClear
                     placeholder="Select Value"
                     onChange={handleSelect}
@@ -705,6 +721,7 @@ const CreateIndent = () => {
                   ]}
                 >
                   <Select
+                  loading={dropDownLoad}
                     allowClear
                     placeholder="Select Value"
                     onChange={handleSelect}
@@ -805,6 +822,7 @@ const CreateIndent = () => {
               </Col>
             </Row>
             <Divider style={{ marginTop: "0" }}></Divider>
+            <Spin spinning={loading}>
             {istablevisible ? (
               <div>
                 <Table
@@ -815,6 +833,7 @@ const CreateIndent = () => {
                 />
               </div>
             ) : null}
+            </Spin>
           </Form>
         </Card>
       </div>

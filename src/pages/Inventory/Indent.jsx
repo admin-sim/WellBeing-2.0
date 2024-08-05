@@ -151,13 +151,7 @@ const Indent = () => {
       key: "PatientName",
       sorter: (a, b) => a.PatientName.localeCompare(b.PatientName),
       sortDirections: ["descend", "ascend"],
-      render: (text) => {
-        return (
-          <Tag color={colorMapping[`${text}`]} key={text}>
-            {text}
-          </Tag>
-        );
-      },
+     
     },
     {
       title: "Status",
@@ -165,6 +159,13 @@ const Indent = () => {
       key: "IndentStatus",
       sorter: (a, b) => a.IndentStatus.localeCompare(b.IndentStatus),
       sortDirections: ["descend", "ascend"],
+      render: (text) => {
+        return (
+          <Tag color={colorMapping[`${text}`]} key={text}>
+            {text}
+          </Tag>
+        );
+      },
     },
     {
       render: (_, row) => <Button type="link">Report</Button>,

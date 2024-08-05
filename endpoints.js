@@ -177,6 +177,7 @@ export const urlSaveVerification = `${baseURL}/api/Laboratory/SaveTestVerifyStat
 export const urlGetSelectedTestDataForResEntered = `${baseURL}/api/Laboratory/GetSelectedTestDataForResEntered`;
 export const urlLoadAllDropDownsTemplate = `${baseURL}/api/Template/GetAllDropDownDataForTemplates`;
 export const urlSaveNewTemplate = `${baseURL}/api/Template/SaveNewMasterTemplate`;
+export const urlDeleteTemplateByTempId = `${baseURL}/api/Template/DeleteTemplateByTempId`;
 export const urlGetAllTemplates = `${baseURL}/api/Template/GetAllTemplates`;
 export const urlEditTemplate = `${baseURL}/api/Template/EditTemplate`;
 export const urlGetAllUsers = `${baseURL}/api/User/GetAllUsers`;

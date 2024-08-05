@@ -5,7 +5,6 @@ import {
   StopOutlined,
 } from "@ant-design/icons";
 import "./style.css";
-
 import {
   Button,
   Carousel,
@@ -261,26 +260,28 @@ function InPatientManagement() {
           <Spin spinning={tableLoading}>
             <Row style={{ padding: "0 1rem" }}>
               <Col span={17}>
-                <div style={{ overflow: "auto" }}>
-                  <Collapse defaultActiveKey={[firstWardKey]} ghost>
-                    {Object.keys(groupedBeds).map((wardName, index) => (
-                      <Collapse.Panel header={wardName} key={wardName}>
-                        <Row justify="center">
-                          <Col xs={24}>
-                            <Row gutter={[32, 32]} justify="start">
-                              {groupedBeds[wardName].map((bed) => (
-                                <WardBed key={bed.BedID} bed={bed} />
-                              ))}
-                            </Row>
-                          </Col>
-                        </Row>
-                      </Collapse.Panel>
-                    ))}
-                  </Collapse>
-                </div>
+                <Collapse
+                  defaultActiveKey={[firstWardKey]}
+                  ghost
+                  className="InpatientManagement"
+                >
+                  {Object.keys(groupedBeds).map((wardName, index) => (
+                    <Collapse.Panel header={wardName} key={wardName}>
+                      <Row justify="center">
+                        <Col xs={24}>
+                          <Row gutter={[32, 32]} justify="start">
+                            {groupedBeds[wardName].map((bed) => (
+                              <WardBed key={bed.BedID} bed={bed} />
+                            ))}
+                          </Row>
+                        </Col>
+                      </Row>
+                    </Collapse.Panel>
+                  ))}
+                </Collapse>
               </Col>
               <Col span={7}>
-                <div style={{ width: "100%", marginTop: "2rem" }}>
+                <div style={{ width: "100%", marginTop: "1rem" }}>
                   <Divider orientation="left">Tasks</Divider>
                   <Collapse>
                     <Collapse.Panel
@@ -313,7 +314,7 @@ function InPatientManagement() {
                     ></Collapse.Panel>
                   </Collapse>
                 </div>
-                <div style={{ marginTop: "3rem" }}>
+                <div style={{ marginTop: "1rem", paddingBottom: "1.5rem" }}>
                   <Divider orientation="left"></Divider>
                   <Collapse>
                     <Collapse.Panel

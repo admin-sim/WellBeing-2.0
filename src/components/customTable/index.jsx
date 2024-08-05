@@ -24,6 +24,8 @@ const CustomTable = ({
   rowSelection,
   rowkey,
   actionColumnName,
+  loading,
+ 
 }) => {
   const [searchText, setSearchText] = useState("");
 
@@ -153,6 +155,7 @@ const CustomTable = ({
         }}
       >
         <Table
+          loading={loading}
           style={style}
           columns={tableColumns}
           size={size ? size : "small"}

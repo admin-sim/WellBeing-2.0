@@ -172,39 +172,9 @@ const PatientConsumption = () => {
       ),
     },
   ];
-  // const handleSearch = (value) => {
-  //   setSearchText(value);
-  //   if (value === '') {
-  //     setFilteredData(loadUsers);
-  //   } else {
-  //     const filtered = loadUsers.filter(entry =>
-  //       Object.values(entry).some(val =>
-  //         val && val.toString().toLowerCase().includes(value.toLowerCase())
-  //       )
-  //     );
-  //     setFilteredData(filtered);
-  //   }
-  // };
 
-  /* const validateUserRole = (rule, value) => {
-     if (value) {
-       const existsInOptions = originalOptions.some(option => option.LookupDescription === value);
-       if (!existsInOptions) {
-         return Promise.reject('Please select a valid UserRole from the list.');
-       }
-     }
-     return Promise.resolve();
-   };*/
 
-  const handleSubmit = (values) => {
-    // Handle form submission logic here
-    console.log("Form submitted with values:", values);
 
-    console.log("Form Values:", values);
-    //const uhid = selectedUhId ? selectedUhId.UhId : '';
-
-    // ... Repeat for other parameters
-  };
 
   const onFinish = async (values) => {
     debugger;
@@ -307,7 +277,6 @@ const PatientConsumption = () => {
             name="control-hooks"
             layout="vertical"
             variant="outlined"
-            size="Default"
             style={{
               maxWidth: 1500,
             }}
@@ -431,24 +400,6 @@ const PatientConsumption = () => {
               bordered
             />
           </Spin>
-          {/* <Table display={isTable}
-            dataSource={filteredData}
-            columns={columns}
-            pagination={{
-              onChange: (current, pageSize) => {
-                setPage(current);
-                setPaginationSize(pageSize);
-              },
-              defaultPageSize: 5, 
-              hideOnSinglePage: true,
-              showSizeChanger: true,
-              showTotal: (total, range) =>
-                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-            }}
-            rowKey={(row) => row.AppUserId} 
-            size="small"
-            bordered
-          /> */}
         </Card>
       </div>
     </Layout>

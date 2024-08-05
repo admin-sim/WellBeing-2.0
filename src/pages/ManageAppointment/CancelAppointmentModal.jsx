@@ -69,16 +69,16 @@ function CancelAppointmentModal({
             <Col span={24}>
               <b>Date:</b>
             </Col>
-            <Col
-              span={24}
-            >{`${appointmentDetails?.FromTime}-${appointmentDetails?.ToTime}`}</Col>
+            <Col span={24}>
+              {moment(appointmentDetails?.AppointmentDate).format("DD-MM-YYYY")}
+            </Col>
           </Col>
           <Col span={8}>
             <Col span={24}>
               <b>Time:</b>
             </Col>
             <Col span={24}>
-              {moment(appointmentDetails?.AppointmentDate).format("DD-MM-YYYY")}
+              {`${appointmentDetails?.FromTime}-${appointmentDetails?.ToTime}`}
             </Col>
           </Col>
         </Row>
@@ -114,15 +114,16 @@ function CancelAppointmentModal({
                 `${urlCancelSelectedAppointment}?Id=${appointmentDetails?.AppointmentId}&AppCancel=${values?.reason}&ProviderId=${appointmentDetails?.ProviderId}`
               );
               if (response.data != null) {
-                console.log("si", response.data.data);
                 setAppointmentsData(
-                  response.data.data.ScheduleProviderAppointments.map(
-                    (appointment, index) => ({
-                      ...appointment,
-                      SlNo: index + 1,
-                      key: index,
-                    })
-                  )
+                  response.data.data.ScheduleProviderAppointments.filter(
+                    (item) =>
+                      item.AppointmentDate ==
+                      appointmentDetails?.AppointmentDate
+                  ).map((appointment, index) => ({
+                    ...appointment,
+                    SlNo: index + 1,
+                    key: index,
+                  }))
                 );
                 message.success("Appointment Cancelled Successfully");
                 onCancel();
