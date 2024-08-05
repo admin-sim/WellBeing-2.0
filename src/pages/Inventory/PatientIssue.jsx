@@ -261,35 +261,6 @@ const PatientIssue = () => {
   const onFinish = async (values) => {
     debugger;
     setLoading(true);
-    // const postData1 = {
-    //   IssueNumber: values.OrderId ? values.OrderId : "" ,
-    //   IndentNumber: values.IndentNumber ?  values.IndentNumber : "" ,
-    //   IndentType: values.IndentType ?  values.IndentType : "",
-    //   IssueingStoreId: values.IssuingStore ? values.IssuingStore : "",
-    //   PatientType: values.PatientType ? values.PatientType : "",
-    //   FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : "",
-    //   ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
-    //   PatientId: values.PatientId ? values.PatientId  : "" ,
-    //   EncounterId: values.Encounter ? values.Encounter : "",
-    //   PatientName: values.PatientName  ?  values.PatientName  : "",
-    //   IndentStatus: values.IndentStatus  ? values.IndentStatus : "",
-    //   IssueStatus: values.IssueStatus ? values.IssueStatus : "",
-    // };
-    // try {
-    //   const response = await customAxios.post(urlSearchPatientIssue, postData1);
-    //   const ApiData = response.data.data.newIndentIssueModel.filter(
-    //     (item) =>
-    //       item.IndentStatus != "Created" &&
-    //       item.IndentCategory == "PatientIndent"
-    //   );
-    //   const ApiData1 = ApiData.map((item, index) => {
-    //     return {
-    //       ...item,
-    //       key: index + 1,
-    //     };
-    //   });
-    //   setFilteredData(ApiData1);
-    // } catch (error) {}
     try {
       const postData1 = {
         IssueNumber: values.IssueNumber ? values.IssueNumber : "",

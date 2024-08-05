@@ -179,6 +179,7 @@ const UpdatePatientIssue = () => {
   
 
   const OpenBatch = async (record) => {
+    debugger;
     try {
       // Validate and get form values
       await form1.validateFields();
@@ -336,7 +337,7 @@ const UpdatePatientIssue = () => {
               IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
               IssueRate: selectedBatch.MRP,
               //LineAmount:item.LineAmount,
-              // BalanceQty:item.BalanceQty,
+               BalanceQty:selectedBatch.BalanceQty,
               EXPDate: selectedBatch.EXPDate
                 ? dayjs(selectedBatch.EXPDate)
                 : null,
@@ -447,7 +448,10 @@ const UpdatePatientIssue = () => {
         products.push(product);
       }
     }
-    const result = checkActiveBatches(products, dataModal);
+    const filteredProducts = products.filter(product => 
+      !(product.IssueQty === 0 && product.PendingQty === 0)
+    );
+    const result = checkActiveBatches(filteredProducts, dataModal);
     if (!result.allActiveProductsHaveActiveBatch) {
       message.warning("Please Add BatchDeatils");
       return false;
@@ -457,7 +461,7 @@ const UpdatePatientIssue = () => {
 
     const activeItems = dataModal.filter((item) => item.ActiveFlag);
 
-    const totalReceivedQty = sumItems(products, "IssueQty");
+    const totalReceivedQty = sumItems(filteredProducts, "IssueQty");
     const totalBatchQuantity = sumItems(activeItems, "IssueQty");
 
     if (totalReceivedQty !== totalBatchQuantity) {

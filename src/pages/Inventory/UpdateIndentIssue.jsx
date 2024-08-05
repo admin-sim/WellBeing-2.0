@@ -426,8 +426,11 @@ const UpdateIndentIssue = () => {
         products.push(product);
       }
     }
+    const filteredProducts = products.filter(product => 
+      !(product.IssueQty === 0 && product.PendingQty === 0)
+    );
 
-    const result = checkActiveBatches(products, dataModel);
+    const result = checkActiveBatches(filteredProducts, dataModel);
     if (!result.allActiveProductsHaveActiveBatch) {
       message.warning("Please Add BatchDeatils");
       return false;
@@ -438,7 +441,7 @@ const UpdateIndentIssue = () => {
 
     const activeItems = dataModel.filter((item) => item.ActiveFlag);
 
-    const totalReceivedQty = sumItems(products, "IssueQty");
+    const totalReceivedQty = sumItems(filteredProducts, "IssueQty");
     const totalBatchQuantity = sumItems(activeItems, "IssueQty");
 
     if (totalReceivedQty !== totalBatchQuantity) {
