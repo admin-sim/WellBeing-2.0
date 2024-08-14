@@ -55,6 +55,7 @@ function InPatientManagement() {
   }, []);
 
   const handleMenuClick = async (e) => {
+    debugger
     setTableLoading(true);
     if (e !== undefined) {
       const response = await customAxios.get(

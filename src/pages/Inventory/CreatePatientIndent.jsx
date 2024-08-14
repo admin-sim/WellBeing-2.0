@@ -451,7 +451,7 @@ const CreatePatientIndent = () => {
             UHID: values.UHID === undefined ? 0 : values.UHID,
             SubmitCheck: values.SubmitCheck,
             PatientId: values.PatientId,
-            EncounterId: !!indentId ? values.EncounterId : values.Encounter,
+            EncounterId:  values.EncounterId,
             IndentCategory: 'PatientIndent',
             RequestingStoreId: 0
         }
@@ -505,24 +505,22 @@ const CreatePatientIndent = () => {
             const apiData = response.data.data;
             if (apiData.length > 0) {
                 setEncounter(apiData);
-                form1.setFieldsValue({ Encounter: apiData[0].EncounterId });
+                form1.setFieldsValue({ EncounterId: apiData[0].EncounterId });
                 form1.setFieldsValue({ PatientId: option.PatientId });
             } else {
                 setEncounter([]);
-                form1.setFieldsValue({ Encounter: '' });
+                form1.setFieldsValue({ EncounterId: '' });
                 form1.setFieldsValue({ PatientId: '' });
             }
         });
     }
 
     const handleStoreChange = (value) => {       
-        setData(initialDataSource);
+        setData([]);
+        setAutoCompleteProduct([]);
         form2.resetFields();
-        if (value !== undefined) {
-            setIsTableVisible(true);
-        } else {
-            setIsTableVisible(false);
-        }
+        setIsTableVisible(true);
+      
     }
 
     return (
@@ -670,7 +668,7 @@ const CreatePatientIndent = () => {
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
-                                <Form.Item label="Encounter" name="Encounter">
+                                <Form.Item label="Encounter" name="EncounterId">
                                     <Select disabled={encounter.length > 1 ? false : true}>
                                         {encounter.map((option) => (
                                             <Select.Option key={option.EncounterId} value={option.EncounterId}>{option.GeneratedEncounterId}</Select.Option>

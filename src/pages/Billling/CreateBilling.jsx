@@ -416,28 +416,39 @@ const CreateBilling = () => {
           title: "LL Disc",
           dataIndex: "Discount",
           key: "Discount",
-          render: (_, row) => (
-            <Tooltip title="Discount">
-              <Button type="link" onClick={() => handleDiscount(row)}>
-                <CiDiscount1 style={{ fontSize: "1.2rem" }} />
-              </Button>
-            </Tooltip>
-          ),
+          render: (_, row) => {
+            if (row.ServiceType.trim() === "P") {
+              return null; // Hide the discount button if ServiceType is "P"
+            }
+            return (
+              <Tooltip title="Discount">
+                <Button type="link" onClick={() => handleDiscount(row)}>
+                  <CiDiscount1 style={{ fontSize: "1.2rem" }} />
+                </Button>
+              </Tooltip>
+            );
+          },
         },
         {
           title: "",
           dataIndex: "actions",
           key: "actions",
-          render: (_, row) => (
-            <span style={{ display: "flex" }}>
-              <Tooltip title="Delete">
-                <Button type="danger" onClick={() => handleEdit(row)}>
-                  <DeleteOutlined style={{ fontSize: ".8rem" }} />
-                </Button>
-              </Tooltip>
-            </span>
-          ),
-        },
+          render: (_, row) => {
+            if (row.ServiceType.trim() === "P") {
+              return null; // Hide the delete button if ServiceType is "P"
+            }
+            return (
+              <span style={{ display: "flex" }}>
+                <Tooltip title="Delete">
+                  <Button type="danger" onClick={() => handleEdit(row)}>
+                    <DeleteOutlined style={{ fontSize: ".8rem" }} />
+                  </Button>
+                </Tooltip>
+              </span>
+            );
+          },
+        }
+        
       ],
     },
   ];

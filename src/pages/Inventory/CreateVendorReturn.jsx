@@ -1,9 +1,9 @@
 import customAxios from '../../components/customAxios/customAxios.jsx';
 import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
-import { urlGetPurshaseOrderDetails } from '../../../endpoints';
+import { urlGetPurshaseOrderDetails, urlAutocompleteProduct, urlVendorReturnSearchGrn, urlVenderReturnEdit, urlShowGrnList, urlAddNewVendorReturn } from '../../../endpoints';
 import Select from 'antd/es/select';
-import { ConfigProvider, Typography, Checkbox, Tag, Modal, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
+import { ConfigProvider, Typography, Checkbox, Tag, Modal, Popconfirm, Spin, Col, Divider, Row, AutoComplete, Radio, message } from 'antd';
 import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
@@ -14,7 +14,8 @@ import { useNavigate } from 'react-router';
 import { Table, InputNumber } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-//import { Calculate } from '@mui/icons-material';
+import { render } from 'react-dom';
+import { useLocation } from "react-router-dom";
 
 const CreateVendorReturn = () => {
   const [DropDown, setDropDown] = useState({
@@ -25,143 +26,167 @@ const CreateVendorReturn = () => {
     TaxType: [],
     DateFormat: []
   });
-  
-  let [idCounterModel, setCounterModel] = useState(0);
-  
+
+  const location = useLocation();
+  const ReturnHeaderId = location.state.ReturnHeaderId;
   const [form1] = Form.useForm();
   const [form2] = Form.useForm();
+  const [form3] = Form.useForm();
   const { Title } = Typography;
-  const { TextArea } = Input;
-  const { Option } = Select;
   const navigate = useNavigate();
   const [data, setData] = useState([]);
-  const currentDate = new Date();
   //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');
-  const [isLoading, setIsLoading] = useState(true);
-  const [inputValues, setInputValues] = useState({});
-  const [shouldValidate, setShouldValidate] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [selectedUom, setSelectedUom] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
-  const [shouldValidateModel, setShouldValidateModel] = useState(false);
-  const [dataModel, setDataModel] = useState([]);
-  const [formData, setFormData] = useState({});
-  const [selectedUomText, setSelectedUomText] = useState({});
-  const [selectedProductId, setSelectedProductId] = useState({});
-  const [selectedUomId, setSelectedUomId] = useState({});
-  const [recordKeys, setRecordKeys] = useState();
-  const [delivery, setDelivery] = useState([]);
-  const [productIds, setProductIds] = useState({});
-  const [isSubmit, setIsSubmit] = useState(false);
+  // const [data, setData] = useState([])
+  const [dataModal, setDataModal] = useState([]);
   const fields = form1.getFieldsValue();
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const [productOptions, setProductOptions] = useState()
+  const [issueStatus, setIssueStatus] = useState()
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRadio, setSelectedRadio] = useState('option1');
+  const [buttonTitle, setButtonTitle] = useState('Save')
+
   // const tableRef = useRef(null);
 
   useEffect(() => {
     customAxios.get(urlGetPurshaseOrderDetails).then((response) => {
       const apiData = response.data.data;
-      setDropDown(apiData);      
+      setDropDown(apiData);
     });
   }, []);
 
-  const getPanelValue = async (searchText) => {
-    //     debugger;
-    //     try {
-    //       customAxios.get(`${urlAutocompleteProduct}?Product=${searchText}`).then((response) => {
-    //         const apiData = response.data.data;
-    //         const newOptions = apiData.map(item => ({ value: item.LongName, key: item.ProductDefinitionId, UomId: item.UOMPrimaryUOM }));
-    //         setAutoCompleteOptions(newOptions);
-    //       });
-    //     } catch (error) {
-    //       //console.error("Error fetching purchase order details:", error);
-    //       // Handle the error as needed
-    //     }
-  }
-  // useEffect(() => {
-  //   debugger;
-  //   const fetchData = async () => {
-  //     try {
-  //       Object.entries(inputValues).forEach(async ([key, value]) => {
-  //         if (value) {
-  //           const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${value}`);
-  //           const apiData = response.data.data;
-  //           const newOptions = apiData.map((item) => ({ value: item.LongName, key: item.ProductDefinitionId, UomId: item.UOMPrimaryUOM }));
-  //           setAutoCompleteOptions((prevState) => ({ ...prevState, [key]: newOptions }));
-  //         }
-  //       });
-  //     } catch (error) {
-  //       // Handle the error as needed
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [inputValues]);
-
-  const onOkModal = () => {
+  useEffect(() => {
     debugger;
-    form2
-      .validateFields()
-      .then(() => {
-        // If validation succeeds, submit the form
-        form2.submit();
-      })
-      .catch((error) => {
-        console.log('Validation error:', error);
-      });
-  }
+    const fetchData = async () => {
+      if (ReturnHeaderId > 0) {
+        setButtonTitle("Update");
+        try {
+          const response = await customAxios.get(
+            `${urlVenderReturnEdit}?ReturnHeaderId=${ReturnHeaderId}`
+          );
+          if (response.status == 200 && response.data.data != null) {
+            const editeddata = response.data.data;
+            const products = editeddata.ReturnDetails.map(
+              (item, index) => ({
+                ...item,
+                key: index,
+                ProductName: item.Product,
+                BatchBonusQty: item.BonusQuantity ? item.BonusQuantity : 0,
+                PoBalanceQty: item.AvlQuantity,
+                BonusQuantity: item.ReturnedQuantity ? item.ReturnedQuantity : 0,
+                index: index + 1
+              })
+            );
+            setData(products);
 
-  const onFinishModel = (values) => {
-    debugger;
-    const deliveries = [];
-    for (let i = 0; i < idCounterModel; i++) {
-      const delivery = {
-        ProductId: values.Product,
-        DeliveryQuantity: values[i].quantity,
-        UomId: values[i].uom,
-        DelDate: values.FromDate === null ? '' : (values[i].datedelivery.$D.toString().padStart(2, '0') + '-' + (values[i].datedelivery.$M + 1).toString().padStart(2, '0') + '-' + values[i].datedelivery.$y).toString(),
-        DeliveryLocation: values[i].deliveryloc === undefined ? null : values[i].deliveryloc,
+            const formdata = editeddata.newReturnModel;
+            form1.setFieldsValue({
+              ReceivingStore: formdata.ReturnStatus == 'Created' ? undefined : formdata.ReturnStatus,
+              StoreId: formdata.StoreId,
+              SupplierId: formdata.SupplierId,
+              ReturnHeaderId: formdata.ReturnHeaderId
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
       }
-      deliveries.push(delivery);
-      setDelivery(deliveries);
-      setIsModalOpen(false);
+    };
+    fetchData();
+  }, []);
+
+  const handleSearch = async (searchText) => {
+    debugger
+    if (searchText) {
+      const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${searchText}`);
+      const apiData = response.data.data;
+
+      const filteredApiData = apiData.filter(apiItem =>
+        !data.some(option => option.ProductId === apiItem.ProductId)
+      );
+
+      const newOptions = filteredApiData.map((item) => ({
+        value: item.LongName,
+        key: item.ProductId,
+        UomId: item.UOMPrimaryUOM,
+      }));
+      setProductOptions(newOptions);
     }
-    onCancelModel();
+    else {
+      form2.setFieldsValue({ ProductId: 0 })
+    }
+  }
+
+  const onOkModal = async () => {
+    debugger;
+    if (selectedRowKeys.length == 0) {
+      message.warning('Please Select Alteast one Batch!')
+      return false
+    }
+    else {
+      const newdata = selectedRowKeys.map((item) => {
+        return {
+          GRNHeaderId: item.GRNHeaderId,
+          GrnLineId: item.GrnLineId,
+          GrnBatchId: item.GrnBatchId,
+          StoreId: item.StoreId,
+          GRNNumber: item.GRNNumber
+        }
+      })
+      selectedRowKeys
+      // const url = PoHeaderId === 0 ? urlAddNewPurchaseOrder : urlUpdatePurchaseOrder;
+      const response = await customAxios.post(urlShowGrnList, newdata, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const newData = response.data.data.GRNDetails.map((item, index) => {
+        return {
+          ...item,
+          key: index,
+          index: index + 1
+        }
+      })
+      setData(newData)
+      form2.resetFields();
+      setDataModal([])
+      setSelectedRowKeys([])
+      setIsModalOpen(false)
+    }
+  }
+
+  const onFinishModel = async (values) => {
+    debugger;
+    setDataModal([])
+    const VendorReturn = {
+      GRNDateFrom: values.GRNDateFrom && selectedRadio == 'option1' ? values.GRNDateFrom.format("DD-MM-YYYY") : null,
+      GRNDateTo: values.ExpiryDateTo && selectedRadio == 'option1' ? values.ExpiryDateTo.format("DD-MM-YYYY") : null,
+      ExpiryDateTo: values.ExpiryDateTo && selectedRadio == 'option2' ? values.ExpiryDateTo.format("DD-MM-YYYY") : null,
+      ExpiryDateFrom: values.ExpiryDateFrom && selectedRadio == 'option2' ? values.ExpiryDateFrom.format("DD-MM-YYYY") : null,
+      Store: form1.getFieldValue('StoreId'),
+      SupplierId: values.SupplierId && selectedRadio == 'option2' ? values.SupplierId : 0,
+      ProductId: values.ProductId && selectedRadio == 'option1' ? values.ProductId : 0,
+    }
+    const response = await customAxios.get(`${urlVendorReturnSearchGrn}?Store=${VendorReturn.Store}&Product=${VendorReturn.ProductId}&Supplier=${VendorReturn.SupplierId}&ExpToString=${VendorReturn.ExpiryDateTo}&ExpFromString=${VendorReturn.ExpiryDateFrom}&FromDateString=${VendorReturn.GRNDateFrom}&ToDateString=${VendorReturn.GRNDateTo}`);
+    debugger
+    const newColumnData = response.data.data.GRNDetails.map((item, index) => {
+      return { ...item, key: item.GRNHeaderId };
+    });
+    setDataModal(newColumnData)
   }
 
   const onCancelModel = () => {
     debugger;
     form2.resetFields();
-    for (let i = idCounterModel; i > 0; i--) {
-      ModelDelete(i);
-    }
+    setDataModal([])
+    setSelectedRowKeys([])
     setIsModalOpen(false);
   }
-  const handleCancel = () => {
-    const url = '/VendorReturn';
-    navigate(url);
-    // form1.resetFields();
-    // form2.resetFields();
-    // setDelivery([]);
-    // setData([]);
-    // for (let i = idCounter; i > 0; i--) {
-    //   handleDelete(i);
-    // }
-  };
 
-  const ModelOpen = (value, record) => {
+  const handleSelect = (value, option, column) => {
     debugger;
-    form1
-      .validateFields()
-      .then(() => {
-        // If validation succeeds, submit the form
-        setRecordKeys(record.key)
-        setIsModalOpen(true);
-      })
-      .catch((error) => {
-        console.log('Validation error:', error);
-      });
-  }
+    form2.setFieldsValue({ ProductId: option.key });
+  };
 
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
@@ -172,270 +197,303 @@ const CreateVendorReturn = () => {
     navigate(url);
   };
 
-  const handleDelete = (record) => {
-    debugger;
-    const newData = data.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
-    Object.keys(fields).forEach(fieldName => {
-      if (fieldName.startsWith(`${record.key}.`)) {
-        form1.resetFields([fieldName]);
-      }
-    });
-    setData(newData);
-    // if (tableRef.current) {
-    //   tableRef.current.scrollLeft = 0;
-    // }    
-  };
-
-  const ModelDelete = (record) => {
-    debugger;
-    const newData = dataModel.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
-    setDataModel(newData);
-  };
-
-  const handleInputChange = (value, option, key) => {
-    setInputValues((prevState) => ({ ...prevState, [key]: value }));
-  };
-
-  const OpenModel = () => {
-    form1
-      .validateFields()
-      .then(() => {
-        // setRecordKeys(record.key)
-        setIsModalOpen(true);
-      })
-      .catch((error) => {
-        console.log('Validation error:', error);
-      });
+  const OpenModel = async () => {
+    await form1.validateFields(['StoreId'])
+    setIsModalOpen(true)
   }
   const handleOnFinish = async (values) => {
-    //     debugger;
-    //     setIsSearchLoading(true);
-    //     const products = [];
-    //     for (let i = 0; i <= idCounter; i++) {
-    //       if (values[i] !== undefined) {
-    //         const product = {
-    //           ProductId: productIds[i],
-    //           UomId: values[i].uom,
-    //           PoQuantity: values[i].poQty,
-    //           BonusQuantity: values[i].bounsQty === "" ? 0 : values[i].bounsQty,
-    //           PoRate: values[i].poRate === "" ? null : values[i].poRate.toFixed(4),
-    //           DiscountRate: values[i].discount === "" ? 0 : values[i].discount.toFixed(4),
-    //           DiscountAmount: values[i].discountAmt === "" ? 0 : parseFloat(values[i].discountAmt).toFixed(4),
-    //           // DiscountAmount: values[i].discountAmt === "" ? 0 : (form1.getFieldValue([i, 'discountAmt'])).toFixed(4),          
-    //           MrpExpected: values[i].expectedMRP === "" ? 0 : values[i].expectedMRP.toFixed(4),
-    //           TaxType1: values[i].cgst === "" ? 0 : values[i].cgst,
-    //           TaxAmount1: values[i].cgstAmt === "" ? 0 : values[i].cgstAmt.toFixed(4),
-    //           TaxType2: values[i].sgst === "" ? 0 : values[i].sgst,
-    //           TaxAmount2: values[i].sgstAmt === "" ? 0 : values[i].sgstAmt.toFixed(4),
-    //           LineAmount: values[i].amount === "" ? null : values[i].amount.toFixed(4),
-    //           PoTotalAmount: values[i].totalAmount === "" ? null : values[i].totalAmount,
-    //           AvailableQuantity: values[i].avlQty === "" ? null : values[i].avlQty,
-    //         }
-    //         products.push(product);
-    //       }
-    //     }
-
-    //     const purchaseOrder = {
-    //       SupplierId: values.SupplierList === undefined ? '' : values.SupplierList,
-    //       ProcurementStoreId: values.StoreDetails === undefined ? '' : values.StoreDetails,
-    //       DocumentType: values.DocumentType === undefined ? '' : values.DocumentType,
-    //       PurchaseDate: values.PODate === undefined ? dayjs(`${currentDate}`).format(dateFormat) : values.PODate,
-    //       PoStatus: values.POStatus === undefined ? null : values.POStatus,
-    //       Remarks: values.Remarks === undefined ? null : values.Remarks,
-    //       PoPurchaseValue: values.Amount === undefined ? null : values.Amount,
-    //       PoTotalAmount: values.totalpoAmount === undefined ? null : values.totalpoAmount,
-    //       PoTaxAmount: values.PoTaxAmount === undefined ? 0 : values.PoTaxAmount,
-    //     }
-    //     const postData = {
-    //       newPurchaseOrderModel: purchaseOrder,
-    //       PurchaseOrderDetails: products,
-    //       Delivery: delivery
-    //     }
-    //     try {
-    //       const response = await customAxios.post(urlAddNewPurchaseOrder, postData, {        
-    //         headers: {
-    //           'Content-Type': 'application/json'
-    //         }        
-    //       });
-    //       form1.resetFields();
-    //     } catch (error) {
-    //       // Handle error      
-    //     }
-    //     setIsSearchLoading(false);
-  };
-
-  const handleSelect = (value, option, key) => {
     debugger;
-    // Update the product value in the form
-    form1.setFieldsValue({ [key]: { product: value } });
-    setProductIds((prevState) => ({ ...prevState, [key]: option.key }));
-    setSelectedProductId((prevState) => {
-      const newState = { ...prevState, [key]: option.key };
-      return newState;
-    })
+    const newdata = data.filter((item) => item.ActiveFlag == true)
+    if (newdata.length == 0) {
+      message.warning('Please Add Product/Batch')
+      return false
+    }
 
-    // form1.setFieldsValue({option});
-    // Set the selected UOM based on the selected product
-    const matchingUom = DropDown.UOM.find((uomOption) => uomOption.UomId === option.UomId);
-    setSelectedUomText((prevState) => {
-      const newState = { ...prevState, [key]: matchingUom.LongName };
-      return newState;
-    });
-    setSelectedUomId((prevState) => {
-      const newState = { ...prevState, [key]: matchingUom.UomId };
-      console.log(selectedUomId);
-      return newState;
-    });
-    if (matchingUom) {
-      // If a matching UomId is found, set this as the selected Uom
-      setSelectedUom((prevState) => {
-        const newState = { ...prevState, [key]: matchingUom.UomId };
-        console.log(newState); // Log the new state
-        return newState;
+    const products = [];
+    for (let i = 0; i < newdata.length; i++) {
+      if (newdata[i] !== undefined) {
+        const product = {
+          ReturnQty: values[i].ReturnQty,
+          GRNHeaderId: newdata[i].GRNHeaderId,
+          ProductId: newdata[i].ProductId,
+          UomId: newdata[i].UomId,
+          BatchNo: newdata[i].BatchNo,
+          EXPDateString: newdata[i].EXPDateString,
+          ReturnLineId: newdata[i].ReturnLineId,
+          GRNHeaderId: newdata[i].GRNHeaderId,
+          ActiveFlag: newdata[i].ActiveFlag
+        }
+        products.push(product);
+      }
+    }
+    const VendorReturn = {
+      StoreId: values.StoreId,
+      SupplierId: values.SupplierId,
+      ReturnDatestring: values.ReturnDate ? values.ReturnDate.format("DD-MM-YYYY") : null,
+      ReturnStatus: !issueStatus ? 'Created' : values.ReturnStatus,
+      ReturnHeaderId: values.ReturnHeaderId ? values.ReturnHeaderId : 0
+    }
+    const postData = {
+      newReturnModel: VendorReturn,
+      ReturnDetails: products,
+    }
+    try {
+      const response = await customAxios.post(urlAddNewVendorReturn, postData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
-
-      // Update the UOM value in the form
-      form1.setFieldsValue({ [key]: { uom: matchingUom.UomId } });
-    } else {
-      // If no matching UomId is found, clear the selected Uom
-      setSelectedUom((prevState) => {
-        const newState = { ...prevState, [key]: null };
-        console.log(newState); // Log the new state
-        return newState;
-      });
-
-      // Clear the UOM value in the form
-      form1.setFieldsValue({ [key]: { uom: null } });
+      handleToBack();
+    } catch (error) {
+      // Handle error      
     }
   };
 
-  useEffect(() => {
-    console.log(selectedUom);
-    console.log(selectedUomText);// log the current state
-  }, [selectedUom], [selectedUomText]); // run this effect whenever selectedUom changes   
-
-  const ModelAdd = () => {
-    debugger;
-    setCounterModel(idCounterModel + 1);
-    if (shouldValidateModel) { //first time going to add row without validation, call from use useEffect      
-      form2
-        .validateFields()
-        .then(() => {
-          const newRow = {
-            key: idCounterModel.toString(),
-            quantity: '',
-            uom: '',
-            datedelivery: '',
-            deliveryloc: '',
-          }; // Define your new row data here
-          setDataModel([...dataModel, newRow]);
-        })
-    } else {
-      const newRow = {
-        key: idCounterModel.toString(),
-        quantity: '',
-        uom: '',
-        datedelivery: '',
-        deliveryloc: '',
-      };
-      setDataModel([...dataModel, newRow]);
-      setShouldValidateModel(true);
-    }
-    //setIsTableReady(false);
+  const handleCheckboxChange = (checked, record) => {
+    debugger
+    const newSelectedRowKeys = checked
+      ? [...selectedRowKeys, { GRNHeaderId: record.GRNHeaderId, GrnBatchId: record.GrnBatchId, GrnLineId: record.GrnLineId, GrnBatchId: record.GrnBatchId, StoreId: record.StoreId, GRNNumber: record.GRNNumber }]
+      : selectedRowKeys.filter(key => key.GRNHeaderId !== record.GRNHeaderId && key.GrnBatchId !== record.GrnBatchId);
+    setSelectedRowKeys(newSelectedRowKeys);
   };
-  const columnsModel = [
+
+  const isRowSelected = (record) => {
+    return selectedRowKeys.some(row => row.GRNHeaderId === record.GRNHeaderId && row.GrnBatchId === record.GrnBatchId);
+  };
+
+  const columns = [
     {
-      title: 'Quantity',
-      dataIndex: 'quantity',
-      key: 'quantity',
-      render: (_, record) => (
-        <Form.Item style={{ width: 100 }}
-          name={[record.key, 'quantity']}
-          rules={[
-            {
-              required: true,
-              message: 'Please input!'
-            },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value) {
-                  return Promise.resolve();
-                }
-                if (value === form1.getFieldValue([recordKeys, 'poQty'])) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(new Error(`Quantity must be equal to PO Qty is ${form1.getFieldValue([recordKeys, 'poQty'])}!`));
-              },
-            }),
-          ]}
-        >
-          <InputNumber min={0} style={{ width: '150%' }} allowClear />
-        </Form.Item>
-      )
+      title: "GRN Number",
+      dataIndex: "GRNNumber",
+      key: "GRNNumber",
+      sorter: (a, b) => a.GRNNumber - b.GRNNumber,
+      sortDirections: ["descend", "ascend"],
     },
     {
-      title: 'UOM',
-      // width: 150,
-      dataIndex: 'uom',
-      key: 'uom',
-      render: (text, record) => {
-        const recordKeyAsNumber = parseInt(recordKeys);
-        const uoms = selectedUomText[recordKeyAsNumber];
-        console.log(selectedUomText);
-        return (
-          <Form.Item style={{ width: 100 }}
-            name={[record.key, 'uom']}
-            initialValue={selectedUomId[recordKeyAsNumber]}
+      title: "Product",
+      dataIndex: "ProductName",
+      key: "ProductName",
+      width: 300,
+      sorter: (a, b) => a.ProductName.localeCompare(b.ProductName),
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "UOM",
+      dataIndex: "Uom",
+      key: "Uom",
+      sorter: (a, b) => new Date(a.Uom) - new Date(b.Uom),
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Batch No",
+      dataIndex: "BatchNo",
+      key: "BatchNo",
+      sorter: (a, b) => a.BatchNo.localeCompare(b.BatchNo),
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Expiry Date",
+      dataIndex: "EXPDateString",
+      width: 150,
+      key: "EXPDateString",
+      sorter: (a, b) => a.EXPDateString.localeCompare(b.EXPDateString),
+      sortDirections: ["descend", "ascend"],
+      // render: (text) => {
+      //   const dateParts = text.split('T')[0].split('-');
+      //   const year = dateParts[0];
+      //   const month = dateParts[1];
+      //   const day = dateParts[2];
+
+      //   return `${day}-${month}-${year}`;
+      // },
+    },
+    {
+      title: ReturnHeaderId > 0 ? 'Received Qty' : 'Grn Received Qty',
+      dataIndex: "Quantity",
+      key: "Quantity",
+      sorter: (a, b) => a.Quantity.localeCompare(b.Quantity),
+      sortDirections: ["descend", "ascend"],
+      render: (text) => {
+        return text
+      },
+    },
+    {
+      title: ReturnHeaderId > 0 ? 'Bonus Quantity' : 'GRN Bonus Qty',
+      dataIndex: "BatchBonusQty",
+      key: "BatchBonusQty",
+      sorter: (a, b) => a.BatchBonusQty.localeCompare(b.BatchBonusQty),
+      sortDirections: ["descend", "ascend"],
+      render: (text) => {
+        return text
+      },
+    },
+    {
+      title: "Returned Quantity",
+      dataIndex: "BonusQuantity",
+      key: "BonusQuantity",
+      sorter: (a, b) => a.BonusQuantity.localeCompare(b.BonusQuantity),
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Returnable Quantity",
+      dataIndex: "PoBalanceQty",
+      key: "PoBalanceQty",
+      sorter: (a, b) => a.PoBalanceQty.localeCompare(b.PoBalanceQty),
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Return Quantity",
+      dataIndex: "ReturnQty",
+      key: "ReturnQty",
+      render: (text, record) => (
+        <>
+          <Form.Item
+            name={[record.key, "ReturnQty"]} initialValue={record.ReturnQty}
             rules={[
               {
-                required: false,
-              }
+                required: true,
+                message: "Please input!",
+              },
+              {
+                validator: (_, value) => {
+                  if (value > record.PoBalanceQty) {
+                    return Promise.reject(
+                      new Error("Return Qty should not be Greater than Returnable.")
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
             ]}
           >
-            <Tag color="blue">{uoms}</Tag>
+            <InputNumber min={0} style={{ marginTop: 10 }} allowClear />
           </Form.Item>
-        );
-      }
+          <Form.Item hidden name={[record.key, "GRNHeaderId"]} initialValue={record.GRNHeaderId}>
+            <Input />
+          </Form.Item>
+          <Form.Item hidden name={[record.key, "ReturnLineId"]} initialValue={record.ReturnLineId}>
+            <Input />
+          </Form.Item>
+        </>
+      ),
     },
     {
-      title: 'Date of Delivery',
-      dataIndex: 'datedelivery',
-      // width: 150,
-      key: 'datedelivery',
+      // title: "GRN Bonus Qty",
+      // dataIndex: "GRNBonusQty",
+      // key: "GRNBonusQty",
       render: (text, record) => (
-        <Form.Item style={{ width: 200 }}
-          name={[record.key, 'datedelivery']}
-          initialValue={dayjs(`${currentDate}`)}
-          rules={[
-            {
-              required: true,
-            }
-          ]}
+        <Popconfirm
+          title="Sure to delete?"
+          onConfirm={() => handleDelete(record)}
         >
-          <DatePicker style={{ width: '150%' }} format="DD-MM-YYYY" /*format={dateFormat} */ />
-        </Form.Item>
-      )
+          <DeleteOutlined />
+        </Popconfirm>
+      ),
     },
+  ];
+
+  const handleDelete = (record) => {
+    debugger
+    const newData = data.map((item) => {
+      if (item.key === record.key) {
+        return { ...item, ActiveFlag: false };
+      }
+      return item;
+    });
+    setData(newData);
+  }
+
+  const Modalcolumns = [
     {
-      title: 'Delivery Location',
-      dataIndex: 'deliveryloc',
-      // width: 150,
-      key: 'deliveryloc',
+      // title: "Sl. No.",
+      dataIndex: "key",
+      key: "key",
       render: (text, record) => (
-        <Form.Item name={[record.key, 'deliveryloc']} initialValue={text} style={{ width: 200 }}>
-          <Input style={{ width: '150%' }} allowClear />
-        </Form.Item>
-      )
+        <Checkbox
+          checked={isRowSelected(record)}
+          onChange={(e) => handleCheckboxChange(e.target.checked, record)}
+        />
+      ),
     },
     {
-      title: <Button type="primary" icon={<PlusOutlined />} onClick={ModelAdd}></Button>,
-      dataIndex: 'add',
-      key: 'add',
-      width: 50,
-      render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => ModelDelete(record)}><DeleteOutlined /></Popconfirm>
-      //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>      
-    }
-  ]
+      title: "GRN Number",
+      dataIndex: "GRNNumber",
+      key: "GRNNumber",
+      sorter: (a, b) => a.GRNNumber - b.GRNNumber,
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Product",
+      dataIndex: "ProductName",
+      key: "ProductName",
+      sorter: (a, b) => a.ProductName.localeCompare(b.ProductName),
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Grn Qty",
+      dataIndex: "Quantity",
+      key: "Quantity",
+      sorter: (a, b) => new Date(a.Quantity) - new Date(b.Quantity),
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Returnable Quantity",
+      dataIndex: "PoBalanceQty",
+      key: "PoBalanceQty",
+      sorter: (a, b) => a.PoBalanceQty.localeCompare(b.PoBalanceQty),
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Grn Bonus Qty",
+      dataIndex: "BonusQuantity",
+      key: "BonusQuantity",
+      sorter: (a, b) => a.BonusQuantity.localeCompare(b.BonusQuantity),
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Batch No",
+      dataIndex: "BatchNo",
+      key: "BatchNo",
+      sorter: (a, b) => a.BatchNo.localeCompare(b.BatchNo),
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Expiry Date",
+      dataIndex: "EXPDate",
+      key: "EXPDate",
+      sorter: (a, b) => a.EXPDate.localeCompare(b.EXPDate),
+      sortDirections: ["descend", "ascend"],
+      render: (text) => {
+        const dateParts = text.split("T")[0].split("-");
+        const year = dateParts[0];
+        const month = dateParts[1];
+        const day = dateParts[2];
+
+        return `${day}-${month}-${year}`;
+      },
+    },
+  ];
+
+  const SubmitChanged = (event) => {
+    setIssueStatus(event.target.checked)
+  }
+
+  const handleReset = () => {
+    form2.resetFields()
+  }
+
+  const onFinishModel3 = (values) => {
+    debugger
+  }
+
+  const onFinishFailed3 = () => {
+
+  }
+
+  const handleRadioChange = (group, value) => {
+    debugger
+    setSelectedRadio(value);
+  };
 
   return (
     <Layout style={{ zIndex: '999999999' }}>
@@ -453,22 +511,22 @@ const CreateVendorReturn = () => {
           </Col>
         </Row>
         <Form
-          layout="vertical"
-          onFinish={handleOnFinish}
-          variant="outlined"
-          size="default"
-          style={{
-            maxWidth: 1500
-          }}
           form={form1}
-          initialValues={{
-            ReturningDate: dayjs(),
+          name="control-hooks"
+          layout="vertical"
+          variant="outlined"
+          style={{
+            maxWidth: 1500,
           }}
+          initialValues={{
+            ReturnDate: dayjs(),
+          }}
+          onFinish={handleOnFinish}
         >
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
             <Col className="gutter-row" span={8}>
               <div>
-                <Form.Item label="Returning Store" name="ReturningStore"
+                <Form.Item label="Returning Store" name="StoreId"
                   rules={[
                     {
                       required: true,
@@ -484,11 +542,14 @@ const CreateVendorReturn = () => {
                     ))}
                   </Select>
                 </Form.Item>
+                <Form.Item hidden name="ReturnHeaderId">
+                  <Input />
+                </Form.Item>
               </div>
             </Col>
             <Col className="gutter-row" span={8}>
               <div>
-                <Form.Item label="Returning To Vendor" name="ReturningToVendor"
+                <Form.Item label="Returning To Vendor" name="SupplierId"
                   rules={[
                     {
                       required: true,
@@ -508,7 +569,7 @@ const CreateVendorReturn = () => {
             </Col>
             <Col className="gutter-row" span={8}>
               <div>
-                <Form.Item label="Returning Date" name="ReturningDate"
+                <Form.Item label="Returning Date" name="ReturnDate"
                   rules={[
                     {
                       required: true,
@@ -522,24 +583,31 @@ const CreateVendorReturn = () => {
             </Col>
             <Col className="gutter-row" span={4}>
               <div>
-                <Form.Item label="Status" name="Status">
-                  <Select allowClear placeholder='Select Value'>                    
-                      <Select.Option key='Draft' value='Draft'></Select.Option>
-                      <Select.Option key='Finalize' value='Finalize'></Select.Option>
+                <Form.Item label="Status" name="ReturnStatus"
+                  rules={[
+                    {
+                      required: issueStatus,
+                      message: 'Please input!'
+                    }
+                  ]}
+                >
+                  <Select allowClear placeholder='Select Value'>
+                    <Select.Option key='Draft' value='Draft'></Select.Option>
+                    <Select.Option key='Finalize' value='Finalize'></Select.Option>
                   </Select>
                 </Form.Item>
               </div>
             </Col>
             <Col className="gutter-row" span={6}>
               <div>
-                <Form.Item name="Remarks" style={{ marginTop: '30px' }}>
-                  <Checkbox>Submit</Checkbox>
+                <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }} valuePropName='checked'>
+                  <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
                 </Form.Item>
               </div>
             </Col>
             <Col className="gutter-row" span={6}>
               <div>
-                <Form.Item name="Remarks" style={{ marginTop: '30px' }}>
+                <Form.Item style={{ marginTop: '30px' }}>
                   <Button type='link' onClick={OpenModel}>Search Product/Batch No</Button>
                 </Form.Item>
               </div>
@@ -548,8 +616,8 @@ const CreateVendorReturn = () => {
           <Row justify="end" style={{ padding: '0rem 1rem' }}>
             <Col style={{ marginRight: '10px' }}>
               <Form.Item>
-                <Button type="primary" loading={isSearchLoading} htmlType="submit">
-                  Submit
+                <Button type="primary" htmlType="submit">
+                  {buttonTitle}
                 </Button>
               </Form.Item>
             </Col>
@@ -561,63 +629,187 @@ const CreateVendorReturn = () => {
               </Form.Item>
             </Col>
           </Row>
+          {/* <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} /> */}
+          <Table
+            bordered
+            columns={columns}
+            size="small"
+            dataSource={data.filter((item) => item.ActiveFlag !== false)}
+            locale={{ emptyText: "nodata " }}
+          // scroll={{
+          //   x: 2000,
+          // }}
+          />
         </Form>
-        <ConfigProvider
-          theme={{
-            token: {
-              zIndexPopupBase: 3000
-            }
-          }}>
-          <Modal
-            title="Basic Modal"
-            onOk={onOkModal}
-            onCancel={onCancelModel}
-            width={1000}
-            open={isModalOpen}
+        <Modal
+          width={1200}
+          maskClosable={false}
+          title="Search for Product"
+          open={isModalOpen}
+          onCancel={onCancelModel}
+          onOk={onOkModal}
+          okText={"AddToList"}
+        >
+          <Form
+            name="basic"
+            labelCol={{
+              span: 8,
+            }}
+            wrapperCol={{
+              span: 16,
+            }}
+            style={{
+              width: '100%',
+            }}
+            initialValues={{
+              GRNDateTo: dayjs(),
+              GRNDateFrom: dayjs().subtract(1, "day"),
+              ExpiryDateFrom: dayjs().subtract(1, "day"),
+              ExpiryDateTo: dayjs(),
+              Radio1: true,
+            }}
+            onFinish={onFinishModel}
+            onFinishFailed={onFinishFailed}
+            autoComplete="off"
+            form={form2}
           >
-            <Form
-              name="basic"
-              labelCol={{
-                span: 8,
-              }}
-              wrapperCol={{
-                span: 16,
-              }}
-              style={{
-                width: '100%',
-              }}
-              initialValues={{
-                remember: true,
-              }}
-              onFinish={onFinishModel}
-              onFinishFailed={onFinishFailed}
-              autoComplete="off"
-              form={form2}
-            >
-              <Col className="gutter-row" span={6}>
-                <div>
+            <Row>
+              <Col className="gutter-row" span={10}>
+                <>
                   <Form.Item
                     label="Product"
                     name="Product"
-                    initialValue={selectedProductId[recordKeys]}
                     style={{ marginLeft: '10px' }}
-                    rules={[
-                      {
-                        required: false,
-                      }
-                    ]}
                   >
-                    <Tag color="blue">{form1.getFieldValue([recordKeys, 'product'])}</Tag>
+                    <AutoComplete
+                      options={productOptions}
+                      onSearch={handleSearch}
+                      onSelect={(value, option) =>
+                        handleSelect(value, option, "Product")
+                      }
+                      placeholder="Search for a product"
+                      allowClear
+                    />
                   </Form.Item>
-                </div>
+                  <Form.Item hidden name='ProductId'><Input></Input></Form.Item>
+                </>
               </Col>
-              <Table columns={columnsModel} dataSource={dataModel} />
-            </Form>
-          </Modal>
-        </ConfigProvider>
+              <Col className="gutter-row" span={2}>
+                <Form.Item
+                  name="Radio1"
+                  style={{ marginLeft: '10px' }}
+                >
+                  <Radio
+                    checked={selectedRadio === 'option1'}
+                    onClick={() => handleRadioChange('group1', 'option1')}
+                  >
+                  </Radio>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item
+                  title='GRN Date From'
+                  name="GRNDateFrom"
+                  style={{ marginLeft: '10px' }}
+                >
+                  <DatePicker format='DD-MM-YYYY' />
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item
+                  title='GRN Date To'
+                  name="GRNDateTo"
+                  style={{ marginLeft: '10px' }}
+                >
+                  <DatePicker format='DD-MM-YYYY' />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row>
+              <Col className="gutter-row" span={10}>
+                <Form.Item
+                  label="Vendor"
+                  name="SupplierId"
+                  style={{ marginLeft: '10px' }}
+                >
+                  <Select allowClear placeholder='Select Value'>
+                    {DropDown.SupplierList.map((option) => (
+                      <Select.Option key={option.VendorId} value={option.VendorId}>
+                        {option.LongName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={2}>
+                <Form.Item
+                  name="Radio2"
+                  style={{ marginLeft: '10px' }}
+                >
+                  <Radio
+                    checked={selectedRadio === 'option2'}
+                    onClick={() => handleRadioChange('group2', 'option2')}
+                  >
+                  </Radio>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item
+                  title='Expiry Date From'
+                  name="ExpiryDateFrom"
+                  style={{ marginLeft: '10px' }}
+                >
+                  <DatePicker format='DD-MM-YYYY' />
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item
+                  title='Expiry Date To'
+                  name="ExpiryDateTo"
+                  style={{ marginLeft: '10px' }}
+                >
+                  <DatePicker format='DD-MM-YYYY' />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row justify="end" style={{ padding: '0rem 1rem' }}>
+              <Col style={{ marginRight: '10px' }}>
+                <Form.Item>
+                  <Button type="primary" htmlType="SearchList">
+                    Submit
+                  </Button>
+                </Form.Item>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button type="primary" onClick={handleReset}>
+                    Reset
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+          <Form
+            name="basic"
+            labelCol={{
+              span: 8,
+            }}
+            wrapperCol={{
+              span: 16,
+            }}
+            style={{
+              width: '100%',
+            }}
+            onFinish={onFinishModel3}
+            onFinishFailed={onFinishFailed3}
+            form={form3}>
+            <Table columns={Modalcolumns} dataSource={dataModal} />
+          </Form>
+        </Modal>
       </div>
     </Layout >
   );
 }
+
 
 export default CreateVendorReturn;

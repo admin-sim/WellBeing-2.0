@@ -27,7 +27,7 @@ import { TfiReload } from "react-icons/tfi";
 import ColumnGroup from "antd/es/table/ColumnGroup";
 import { render } from "react-dom";
 
-function OrderEntry({ bed, open, handleClose }) {
+function OrderEntry({ bed, patient, Dropdown, open, handleClose }) {
   const [form1] = Form.useForm();
   const [form2] = Form.useForm();
   const [form3] = Form.useForm(); // Initialize form3
@@ -417,7 +417,7 @@ function OrderEntry({ bed, open, handleClose }) {
         footer={null}
         onCancel={handleCancel}
       >
-        <PatientHeader patient={bed} />
+        <PatientHeader patient={patient} />
         <Tabs
           size="small"
           onChange={onChange}

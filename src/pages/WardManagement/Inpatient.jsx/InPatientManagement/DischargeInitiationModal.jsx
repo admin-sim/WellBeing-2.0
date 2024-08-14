@@ -15,7 +15,7 @@ import {
 import React from "react";
 import PatientHeader from "../../../../components/PatientHeader";
 
-function DischargeInitiation({ bed, open, handleClose }) {
+function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose }) {
   const [form] = Form.useForm();
 
   const handleCancel = () => {
@@ -39,7 +39,7 @@ function DischargeInitiation({ bed, open, handleClose }) {
         footer={null}
         onCancel={handleCancel}
       >
-        <PatientHeader patient={bed} />
+        <PatientHeader patient={patient} />
         <Row gutter={16}>
           <Col span={10}>
             <div
@@ -63,7 +63,6 @@ function DischargeInitiation({ bed, open, handleClose }) {
                     <b>General Medicine</b>
                   </Col>
                 </Col>
-
                 <Col span={12}>
                   <Col span={24}>Service Location</Col>
                   <Col span={24}>
@@ -78,7 +77,6 @@ function DischargeInitiation({ bed, open, handleClose }) {
                     <b>Dr. Clement Atlee</b>
                   </Col>
                 </Col>
-
                 <Col span={12}>
                   <Col span={24}>Ward Category</Col>
                   <Col span={24}>
@@ -93,7 +91,6 @@ function DischargeInitiation({ bed, open, handleClose }) {
                     <b>Female Ward First Floor</b>
                   </Col>
                 </Col>
-
                 <Col span={12}>
                   <Col span={24}>Bed</Col>
                   <Col span={24}>
@@ -116,7 +113,7 @@ function DischargeInitiation({ bed, open, handleClose }) {
               <Row gutter={16}>
                 <Col span={24}>
                   <Form.Item
-                    style={{ marginBottom: "0.9rem" }}
+                    // style={{ marginBottom: "0.9rem" }}
                     name="DateTimeDischarge"
                     label="Expected Date and Time of Discharge"
                     rules={[
@@ -136,7 +133,7 @@ function DischargeInitiation({ bed, open, handleClose }) {
                 </Col>
                 <Col span={24}>
                   <Form.Item
-                    style={{ marginBottom: "0.9rem" }}
+                    // style={{ marginBottom: "0.9rem" }}
                     name="Department"
                     label="Discharge Advised By"
                     rules={[
@@ -146,12 +143,18 @@ function DischargeInitiation({ bed, open, handleClose }) {
                       },
                     ]}
                   >
-                    <Select style={{ width: "100%" }} />
+                    <Select style={{ width: "100%" }}>
+                      {Dropdown.FacilityDepartmentProvider.map((option) => (
+                        <Select.Option key={option.ProviderId} value={option.ProviderId}>
+                          {option.ProviderName}
+                        </Select.Option>
+                      ))}
+                    </Select>
                   </Form.Item>
                 </Col>
                 <Col span={24}>
                   <Form.Item
-                    style={{ marginBottom: "0" }}
+                    // style={{ marginBottom: "0" }}
                     name="Provider"
                     label="Disposition Type"
                     rules={[
@@ -161,7 +164,13 @@ function DischargeInitiation({ bed, open, handleClose }) {
                       },
                     ]}
                   >
-                    <Select style={{ width: "100%" }} />
+                    <Select style={{ width: "100%" }}>
+                      {Dropdown.DispositionType.map((option) => (
+                        <Select.Option key={option.LookupID} value={option.LookupID}>
+                          {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
                   </Form.Item>
                 </Col>
               </Row>
@@ -189,4 +198,4 @@ function DischargeInitiation({ bed, open, handleClose }) {
   );
 }
 
-export default DischargeInitiation;
+export default DischargeInitiationModal;

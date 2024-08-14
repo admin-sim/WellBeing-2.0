@@ -37,7 +37,7 @@ import { Table, InputNumber } from "antd";
 import { useLocation } from "react-router-dom";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import moment from "moment";
+import { v4 as uuidv4 } from "uuid";
 //import { useParams } from 'react-router-dom';
 
 const CreateUrgentIssue = () => {
@@ -78,10 +78,8 @@ const CreateUrgentIssue = () => {
   const { Option } = Select;
   const navigate = useNavigate();
   const [buttonTitle, setButtonTitle] = useState("Save");
-  const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [data, setData] = useState([]);
   const [dataModal, setDataModal] = useState([]);
-  const [dataBatchModal, setdataBatchModal] = useState([]);
   const [istablevisible, setIstablevisible] = useState(false);
   const [autoCompleteProduct, setAutoCompleteProduct] = useState([]);
   const [productDetails, setProductDetails] = useState([]);
@@ -89,9 +87,9 @@ const CreateUrgentIssue = () => {
   const [batchDetails, setBatchDetails] = useState();
   const [issueStatus, setIssueStatus] = useState();
   const [batchRecord, setBatchRecord] = useState();
-  const [finalBatchDetails, setFinalBatchDetails] = useState([]);
 
   useEffect(() => {
+    debugger;
     customAxios.get(urlCreatePurchaseOrder).then((response) => {
       const apiData = response.data.data;
       setDropDown(apiData);
@@ -130,7 +128,7 @@ const CreateUrgentIssue = () => {
 
           const batch = apiData.BatchDetails.map((Item, Index) => ({
             ...Item,
-            key: Index + 1,
+            //key: Index + 1,
             // amount: Item.IssueRate * Item.IssueQty,
             RequestQty: Item.IssueQty,
           }));
@@ -220,7 +218,7 @@ const CreateUrgentIssue = () => {
     setData([
       ...data,
       {
-        key: counter,
+        key: uuidv4(),
         ProductName: "",
         ProductId: "",
         UomId: "",
@@ -236,17 +234,16 @@ const CreateUrgentIssue = () => {
   
   const OpenBatch = async (record) => {
     debugger;
-    setBatchRecord(null);
-    setProductDetails(null);
-    setDataModal([]);
     try {
       // Validate and get form values
       await form1.validateFields();
+      form2.resetFields();
       const formValues = form1.getFieldsValue();
   
       // Update the record with the form value
       record.IssueQty = formValues[record.key].IssueQty;
       setProductDetails(record);
+      setBatchRecord(record);
   
       // Construct the product object
       const product = {
@@ -259,9 +256,10 @@ const CreateUrgentIssue = () => {
       // Filter dataModel based on ProductId and ActiveFlag
       const filteredDataModel = dataModal.filter(
         (item) =>
-          item.ProductId === record.ProductId &&
-          item.ActiveFlag === true &&
-          item.IssueBatchId > 0
+          item.ProductId === record.ProductId 
+        // &&
+        //   item.ActiveFlag === true &&
+        //   item.IssueBatchId > 0
       );
   
       // Construct the post object
@@ -269,8 +267,6 @@ const CreateUrgentIssue = () => {
         newIndentModel: product,
         Batch: filteredDataModel,
       };
-      setBatchDetails([]);
-      setDataModal([]);
       // Make an API call
       const response = await customAxios.post(
         urlUrgentIssueShowBatchDetails,
@@ -284,9 +280,8 @@ const CreateUrgentIssue = () => {
   
       const ApiData = response.data.data;
  
-      setBatchRecord(record);
       setBatchDetails(ApiData.BatchDetails);
-      setModalCounter(ApiData.BatchDetails.length + 1);
+      ///setModalCounter(ApiData.BatchDetails.length + 1);
   
       // Process batch data
       if (ApiData.Batch.length > 0) {
@@ -299,7 +294,7 @@ const CreateUrgentIssue = () => {
             if (item.IssueBatchId !== 0) {
               return {
                 ...item,
-                key: index + 1,
+                key: uuidv4(),
                 amount: item.IssueRate * item.IssueQty,
               };
             }
@@ -307,7 +302,16 @@ const CreateUrgentIssue = () => {
           }
           return item;
         });
-        setDataModal(batch);
+
+        const filteredBstchProductId = batch.map((item) => item.ProductId);
+
+        const updatedbatch = dataModal.filter(
+          (item) => !filteredBstchProductId.includes(item.ProductId)
+        );
+
+        // Append the new filteredDataModel to the updated final batch details
+        setDataModal([...updatedbatch, ...batch]);
+       // setDataModal(batch);
       } else {
         // Calculate quantities and amounts based on batch details
         const calculateQuantitiesAndAmounts = (issueQty) => {
@@ -332,7 +336,7 @@ const CreateUrgentIssue = () => {
         const updatedBatch = calculateQuantitiesAndAmounts(record.IssueQty).map(
           (item, index) => ({
             ...item,
-            key: index + 1,
+            key:  uuidv4(),
             IssueQty: item.qty, // Update IssueQty with qty
             IssueRate: item.MRP,
             LineAmount: item.amount,
@@ -360,7 +364,9 @@ const CreateUrgentIssue = () => {
           }, {})
         );
   
-        setDataModal(updatedBatch);
+        setDataModal((prevDataModel) => {
+          return [...prevDataModel, ...updatedBatch];
+        });
       }
   
       setIsModelOpen(true);
@@ -370,6 +376,224 @@ const CreateUrgentIssue = () => {
     }
   };
  
+  const BatchSelect = (selectedStockId, recordKey) => {
+    debugger;
+
+    // Check if selectedStockId already exists in dataModel with ActiveFlag true
+    const existingBatch = dataModal.find(
+      (item) => item.StockId === selectedStockId && item.ActiveFlag === true
+    );
+
+    if (existingBatch) {
+      message.warning("Same Batch Number should not be selected.");
+      //  return;
+    }
+    const selectedBatch = batchDetails.find(
+      (batch) => batch.StockId === selectedStockId
+    );
+
+    if (selectedBatch) {
+      const updatedDataModel = dataModal.map((item) =>
+        item.key === recordKey
+          ? {
+              ...item,
+              BatchNo: selectedBatch.BatchNo,
+              StockId: selectedBatch.StockId,
+              IssueBatchId: selectedBatch.IssueBatchId,
+              IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
+              IssueRate: selectedBatch.MRP,
+              //LineAmount:item.LineAmount,
+              BalanceQty: selectedBatch.BalanceQty,
+              EXPDate: selectedBatch.EXPDate
+                ? dayjs(selectedBatch.EXPDate)
+                : null,
+              MRP: selectedBatch.MRP,
+              // qty:item.qty,
+              amount: selectedBatch.amount,
+            }
+          : item
+      );
+      // setDataModel(updatedDataModel);
+
+      // Update form2 with the respective values
+      form2.setFieldsValue({
+        [recordKey]: {
+          StockId: selectedBatch.StockId,
+          IssueBatchId: selectedBatch.IssueBatchId,
+          IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
+          BatchNo: selectedBatch.BatchNo,
+          // LineAmount:item.LineAmount,
+          BalanceQty: selectedBatch.BalanceQty,
+          EXPDate: selectedBatch.EXPDate ? dayjs(selectedBatch.EXPDate) : null,
+          IssueRate: selectedBatch.MRP,
+          //qty:selectedBatch.qty,
+          amount: 0.0,
+        },
+      });
+      // const filteredBstchProductId = updatedDataModel.map(item => item.ProductId && item.ActiveFlag);
+
+      // const updatedbatch = dataModel.filter(
+      //   (item) => !filteredBstchProductId.includes(item.ProductId)
+      // );
+
+      // Append the new filteredDataModel to the updated final batch details
+      setDataModal(updatedDataModel);
+    }
+  };
+
+  const handleOnFinish = async (values) => {
+    debugger;
+   
+    const newdata = data.filter((item) => item.ProductId && item.ActiveFlag);
+    if(newdata.length===0){
+      message.warning("Please Add Product");
+      return false;
+    }
+
+    const products = newdata
+      .filter((item) => item !== undefined)
+      .map((item) => ({
+        ProductId: item.ProductId,
+        UomId: item.UomId,
+        IssueQty: item.IssueQty,
+        IndentIssueLineId:
+          item.IndentIssueLineId === undefined ? 0 : item.IndentIssueLineId,
+        Remarks: item.Remarks ? item.Remarks : "",
+        ActiveFlag: item.ActiveFlag,
+      }));
+
+    const activeProducts = products.filter((product) => product.ActiveFlag);
+    const result = checkActiveBatches(activeProducts, dataModal);
+    if (!result.allActiveProductsHaveActiveBatch) {
+      message.warning("Please Add BatchDeatils");
+      return false;
+    }
+    const sumItems = (items, key) =>
+      items.reduce((sum, item) => sum + parseInt(item[key] || 0, 10), 0);
+
+  
+    const defaultDateTime = new Date().toISOString();
+    const finalBatchDetailsWithDefaultExpdate = dataModal.map((batch) => ({
+      ...batch,
+      EXPDate: defaultDateTime,
+      StockLocator: batch.StockLocator ? batch.StockLocator : 0,
+    }));
+
+    const activeItems = finalBatchDetailsWithDefaultExpdate.filter((item) => item.ActiveFlag);
+    const totalReceivedQty = sumItems(activeProducts, "IssueQty");
+    const totalBatchQuantity = sumItems(activeItems, "IssueQty");
+
+    if (totalReceivedQty !== totalBatchQuantity) {
+      message.warning("Please enter valid batch details..");
+      return false;
+    }
+    
+     
+      const UrgentIssue = {
+        IssueDateString: values.IssuingDate
+          ? values.IssuingDate.format("DD-MM-YYYY")
+          : "",
+        RequestingStoreId: values.RequestingStoreId,
+        IssueingStoreId: values.IssueingStoreId,
+        IssueId: values.IssueId ? values.IssueId : 0,
+        IssueStatus: !issueStatus ? "Created" : values.IssueStatus,
+        Remarks: values.Remarks ? values.Remarks : "",
+      };
+    
+
+    const filteredBatchDataModel = finalBatchDetailsWithDefaultExpdate
+    .filter((item) => {
+      if (item.IssueBatchId > 0) {
+        return true; // include all items with IssueBatchId > 0
+      } else {
+        return item.ActiveFlag === true; // only include items with IssueBatchId = 0 or null and ActiveFlag = true
+      }
+    })
+
+      const postData = {
+        newIndentModel: UrgentIssue,
+        IndentDetails:
+          issueId === 0
+            ? activeProducts
+            : products.filter(
+                (product) =>
+                  product.IndentIssueLineId > 0 ||
+                  (product.IndentIssueLineId === 0 &&
+                    product.ActiveFlag === true)
+              ),
+
+        Batch: issueId === 0 ? activeItems : filteredBatchDataModel,
+      };
+      console.log("postData", postData);
+      try {
+        const response = await customAxios.post(
+          urlAddNewUrgentIssue,
+          postData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        handleCancel();
+      } catch (error) {
+        // Handle error
+      }
+     
+  };
+
+  const onFinishModel = async () => {
+    debugger;
+    await form2.validateFields();
+    const values = form2.getFieldsValue();
+    // Extract the values from the object as an array
+    const valueArray = Object.values(values);
+
+    const activeItems = dataModal.filter((item) => item.ActiveFlag);
+    const stockIdCounts = activeItems.reduce((acc, item) => {
+      acc[item.StockId] = (acc[item.StockId] || 0) + 1;
+      return acc;
+    }, {});
+
+    const duplicateStockIds = Object.keys(stockIdCounts).filter(
+      (stockId) => stockIdCounts[stockId] > 1
+    );
+
+    if (duplicateStockIds.length > 0) {
+      message.error("Same Batch Number should not be selected.");
+      return false;
+    }
+    // Sum the IssueQty values
+    const totalIssueQty = valueArray.reduce((sum, item) => {
+      // Ensure IssueQty is a number
+      const issueQty = Number(item.IssueQty);
+      return sum + (isNaN(issueQty) ? 0 : issueQty);
+    }, 0);
+
+    if (parseInt(totalIssueQty) == productDetails.IssueQty) {
+      const filteredDataModel = dataModal
+        .filter((item) => {
+          if (item.IssueBatchId > 0) {
+            return true; // include all items with IssueBatchId > 0
+          } else {
+            return item.ActiveFlag === true; // only include items with IssueBatchId = 0 or null and ActiveFlag = true
+          }
+        })
+        .map((item) => {
+          // Append ProductId only if it's an empty string
+          if (item.ProductId === "") {
+            return { ...item, ProductId: batchRecord.ProductId };
+          }
+          return item;
+        });
+      setDataModal(filteredDataModel);
+      setIsModelOpen(false);
+    }
+    else {
+      message.warning("Total Quantity should be equal to Issued Quantity");
+    }
+  };
 
   const handleCloseModal = () => {
     debugger;
@@ -379,7 +603,7 @@ const CreateUrgentIssue = () => {
     });
 
     form2.resetFields();
-    setDataModal([]);
+    setDataModal(newData);
     setIsModelOpen(false);
   };
 
@@ -540,21 +764,27 @@ const CreateUrgentIssue = () => {
           type="primary"
           icon={<PlusOutlined />}
           onClick={AddProduct}
-        ></Button>
+        />
       ),
-      // title: <Button type="primary" icon={<PlusOutlined />} onClick={AddProduct}></Button>,
       dataIndex: "add",
       key: "add",
       width: 50,
-      render: (text, record) => (
-        <Popconfirm
-          title="Sure to delete?"
-          onConfirm={() => handleDelete(record)}
-        >
-          <DeleteOutlined />
-        </Popconfirm>
-      ),
-    },
+      render: (text, record) => {
+        if (record.IndentIssueLineId > 0) {
+          return null; // Don't render the delete button if the condition is true
+        }
+        return (
+          <Popconfirm
+            title="Sure to delete?"
+            onConfirm={() => handleDelete(record)}
+          >
+            <DeleteOutlined />
+          </Popconfirm>
+        );
+      },
+    }
+    
+    
   ];
 
   const handleDelete = (record) => {
@@ -652,56 +882,57 @@ const CreateUrgentIssue = () => {
           <Select
             style={{ width: 100 }}
             disabled={record?.IssueBatchId > 0}
-            onSelect={(value, option) => {
-              const selectedBatch = batchDetails.find(
-                (batch) => batch.StockId === value
-              );
+            onChange={(value) => BatchSelect(value, record.key)}
+            // onSelect={(value, option) => {
+            //   const selectedBatch = batchDetails.find(
+            //     (batch) => batch.StockId === value
+            //   );
 
      
-              record.StockId = selectedBatch.StockId;
-              record.IssueBatchId = selectedBatch.IssueBatchId;
-              record.IssueQty = selectedBatch.IssueQty; // Set IssueQty with qty
-              record.BatchNo = selectedBatch.BatchNo;
-              //record.BalanceQty = selectedBatch.BalanceQty;
-              record.EXPDate = selectedBatch.EXPDate
-                ? dayjs(selectedBatch.EXPDate)
-                : null;
-              record.IssueRate = selectedBatch.MRP;
-              record.MRP = selectedBatch.MRP;
-              record.amount = selectedBatch.amount;
+            //   record.StockId = selectedBatch.StockId;
+            //   record.IssueBatchId = selectedBatch.IssueBatchId;
+            //   record.IssueQty = selectedBatch.IssueQty; // Set IssueQty with qty
+            //   record.BatchNo = selectedBatch.BatchNo;
+            //   //record.BalanceQty = selectedBatch.BalanceQty;
+            //   record.EXPDate = selectedBatch.EXPDate
+            //     ? dayjs(selectedBatch.EXPDate)
+            //     : null;
+            //   record.IssueRate = selectedBatch.MRP;
+            //   record.MRP = selectedBatch.MRP;
+            //   record.amount = selectedBatch.amount;
 
-              // Update the form with new values
-              form2.setFieldsValue({
-                [record.key]: {
-                  StockId: selectedBatch.StockId,
-                  IssueBatchId: selectedBatch.IssueBatchId,
-                  IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
-                  BatchNo: selectedBatch.BatchNo,
-                  // LineAmount:item.LineAmount,
-                  BalanceQty: selectedBatch.BalanceQty,
-                  EXPDate: selectedBatch.EXPDate
-                    ? dayjs(selectedBatch.EXPDate)
-                    : undefined,
-                  IssueRate: selectedBatch.MRP,
-                  //qty:selectedBatch.qty,
-                  amount: 0.0,
-                },
-              });
+            //   // Update the form with new values
+            //   form2.setFieldsValue({
+            //     [record.key]: {
+            //       StockId: selectedBatch.StockId,
+            //       IssueBatchId: selectedBatch.IssueBatchId,
+            //       IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
+            //       BatchNo: selectedBatch.BatchNo,
+            //       // LineAmount:item.LineAmount,
+            //       BalanceQty: selectedBatch.BalanceQty,
+            //       EXPDate: selectedBatch.EXPDate
+            //         ? dayjs(selectedBatch.EXPDate)
+            //         : undefined,
+            //       IssueRate: selectedBatch.MRP,
+            //       //qty:selectedBatch.qty,
+            //       amount: 0.0,
+            //     },
+            //   });
 
-              // Update the data source
-              const updatedDataModal = dataModal.map((item) => {
-                if (item.key === record.key) {
-                  return {
-                    ...item,
-                    ...record, // update with new record details
-                  };
-                }
-                return item;
-              });
+            //   // Update the data source
+            //   const updatedDataModal = dataModal.map((item) => {
+            //     if (item.key === record.key) {
+            //       return {
+            //         ...item,
+            //         ...record, // update with new record details
+            //       };
+            //     }
+            //     return item;
+            //   });
 
-              // Update the data source state
-              setDataModal(updatedDataModal);
-            }}
+            //   // Update the data source state
+            //   setDataModal(updatedDataModal);
+            // }}
           >
             {batchDetails.map((option) => (
               <Select.Option key={option.StockId} value={option.StockId}>
@@ -887,153 +1118,8 @@ const CreateUrgentIssue = () => {
       allActiveProductsHaveActiveBatch,
     };
   };
-  const handleOnFinish = async (values) => {
-    debugger;
-    const isAnyIdNotNull = finalBatchDetails.some(
-      (item) => item.ProductId !== "" && item.ActiveFlag
-    );
-    if (!isAnyIdNotNull) {
-      message.warning("Please add Batch details");
-      return false;
-    }
-    const newdata = data.filter((item) => item.ProductId);
 
-    const products = newdata
-      .filter((item) => item !== undefined)
-      .map((item) => ({
-        ProductId: item.ProductId,
-        UomId: item.UomId,
-        IssueQty: item.IssueQty,
-        IndentIssueLineId:
-          item.IndentIssueLineId === undefined ? 0 : item.IndentIssueLineId,
-        Remarks: item.Remarks ? item.Remarks : "",
-        ActiveFlag: item.ActiveFlag,
-      }));
-
-    const activeProducts = products.filter((product) => product.ActiveFlag);
-    const result = checkActiveBatches(activeProducts, finalBatchDetails);
-    if (!result.allActiveProductsHaveActiveBatch) {
-      message.warning("Please Add BatchDeatils");
-      return false;
-    }
-
-    if (finalBatchDetails.length > 0) {
-      const defaultDateTime = new Date().toISOString();
-      const finalBatchDetailsWithDefaultExpdate = finalBatchDetails.map(
-        (batch) => ({
-          ...batch,
-          EXPDate: defaultDateTime,
-          StockLocator: batch.StockLocator ? batch.StockLocator : 0,
-        })
-      );
-      const filteredBatch = finalBatchDetailsWithDefaultExpdate.filter(
-        (item) => item.ProductId
-      );
-      const filteredBatchwithactive =
-        finalBatchDetailsWithDefaultExpdate.filter(
-          (item) => item.ProductId && item.ActiveFlag
-        );
-      const UrgentIssue = {
-        IssueDateString: values.IssuingDate
-          ? values.IssuingDate.format("DD-MM-YYYY")
-          : "",
-        RequestingStoreId: values.RequestingStoreId,
-        IssueingStoreId: values.IssueingStoreId,
-        IssueId: values.IssueId ? values.IssueId : 0,
-        IssueStatus: !issueStatus ? "Created" : values.IssueStatus,
-        Remarks: values.Remarks ? values.Remarks : "",
-      };
-
-      const postData = {
-        newIndentModel: UrgentIssue,
-        IndentDetails:
-          issueId === 0
-            ? activeProducts
-            : products.filter(
-                (product) =>
-                  product.IndentIssueLineId > 0 ||
-                  (product.IndentIssueLineId === 0 &&
-                    product.ActiveFlag === true)
-              ),
-
-        Batch: issueId === 0 ? filteredBatchwithactive : filteredBatch,
-      };
-      console.log("postData", postData);
-      try {
-        const response = await customAxios.post(
-          urlAddNewUrgentIssue,
-          postData,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        handleCancel();
-      } catch (error) {
-        // Handle error
-      }
-    } else {
-      message.warning("Please add Batch Details");
-    }
-  };
-
-  const onFinishModel = async () => {
-    debugger;
-    await form2.validateFields();
-    const values = form2.getFieldsValue();
-    // Extract the values from the object as an array
-    const valueArray = Object.values(values);
-
-    const activeItems = dataModal.filter((item) => item.ActiveFlag);
-    const stockIdCounts = activeItems.reduce((acc, item) => {
-      acc[item.StockId] = (acc[item.StockId] || 0) + 1;
-      return acc;
-    }, {});
-
-    const duplicateStockIds = Object.keys(stockIdCounts).filter(
-      (stockId) => stockIdCounts[stockId] > 1
-    );
-
-    if (duplicateStockIds.length > 0) {
-      message.error("Same Batch Number should not be selected.");
-      return false;
-    }
-    // Sum the IssueQty values
-    const totalIssueQty = valueArray.reduce((sum, item) => {
-      // Ensure IssueQty is a number
-      const issueQty = Number(item.IssueQty);
-      return sum + (isNaN(issueQty) ? 0 : issueQty);
-    }, 0);
-
-    console.log("Total IssueQty: ", totalIssueQty);
-    const updatedDataModal = dataModal.map((item) => {
-      if (!item.ProductId) {
-        return { ...item, ProductId: productDetails.ProductId };
-      }
-      return item;
-    });
-    setDataModal(updatedDataModal);
-
-    if (parseInt(totalIssueQty) == productDetails.IssueQty) {
-      const filteredDataModel = dataModal
-        .filter((item) => {
-          if (item.IssueBatchId > 0) {
-            return true; // include all items with IssueBatchId > 0
-          } else {
-            return item.ActiveFlag === true; // only include items with IssueBatchId = 0 or null and ActiveFlag = true
-          }
-        })
-        .map((item) => ({ ...item, ProductId: productDetails.ProductId }));
-
-      setFinalBatchDetails(filteredDataModel);
-
-      setIsModelOpen(false);
-    } else {
-      message.warning("Total Quantity should be equal to Issued Quantity");
-    }
-  };
+  
 
   const handleSaveModal = () => {
     form2.submit();

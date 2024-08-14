@@ -19,7 +19,7 @@ import React from "react";
 
 import PatientHeader from "../../../../components/PatientHeader";
 
-function Movement({ bed, open, handleClose }) {
+function Movement({ bed, patient, Dropdown, open, handleClose }) {
   const [form] = Form.useForm();
 
   const handleCancel = () => {
@@ -43,7 +43,7 @@ function Movement({ bed, open, handleClose }) {
         footer={null}
         onCancel={handleCancel}
       >
-        <PatientHeader patient={bed} />
+        <PatientHeader patient={patient} />
         <Row gutter={16}>
           <Col span={10}>
             <div
@@ -130,7 +130,13 @@ function Movement({ bed, open, handleClose }) {
                       },
                     ]}
                   >
-                    <Select style={{ width: "100%" }} />
+                    <Select style={{ width: "100%" }}>
+                      {Dropdown.FacilityDepartment.map((option) => (
+                        <Select.Option key={option.DepartmentId} value={option.DepartmentId}>
+                          {option.DepartmentName}
+                        </Select.Option>
+                      ))}
+                    </Select>
                   </Form.Item>
                 </Col>
 
@@ -146,7 +152,13 @@ function Movement({ bed, open, handleClose }) {
                       },
                     ]}
                   >
-                    <Select style={{ width: "100%" }} />
+                    <Select style={{ width: "100%" }} >
+                      {Dropdown.FacilityDeptServiceLocation.map((option) => (
+                        <Select.Option key={option.ServiceLocationId} value={option.ServiceLocationId}>
+                          {option.ServiceLocationName}
+                        </Select.Option>
+                      ))}
+                    </Select>
                   </Form.Item>
                 </Col>
                 <Col span={24}>
@@ -161,7 +173,13 @@ function Movement({ bed, open, handleClose }) {
                       },
                     ]}
                   >
-                    <Select style={{ width: "100%" }} />
+                    <Select style={{ width: "100%" }} >
+                      {Dropdown.ReasonForTransfer.map((option) => (
+                        <Select.Option key={option.LookupID} value={option.LookupID}>
+                          {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
                   </Form.Item>
                 </Col>
 

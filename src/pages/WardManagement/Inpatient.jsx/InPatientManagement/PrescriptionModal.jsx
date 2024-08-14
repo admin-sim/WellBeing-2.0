@@ -16,8 +16,9 @@ import { DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
 
 import PatientHeader from "../../../../components/PatientHeader";
 import CustomTable from "../../../../components/customTable";
+import dayjs from "dayjs";
 
-function Prescription({ bed, open, handleClose }) {
+function Prescription({ bed, patient, Dropdown, open, handleClose }) {
   const [form1] = Form.useForm();
   const [form2] = Form.useForm();
   const [form3] = Form.useForm(); // Initialize form3
@@ -346,7 +347,7 @@ function Prescription({ bed, open, handleClose }) {
         footer={null}
         onCancel={handleCancel}
       >
-        <PatientHeader patient={bed} />
+        <PatientHeader patient={patient} />
         <Tabs
           size="small"
           onChange={onChange}
@@ -376,6 +377,9 @@ function Prescription({ bed, open, handleClose }) {
                 console.log(values);
                 handleCancel();
               }}
+              initialValues={{
+                IndentDate: dayjs()
+              }}
             >
               <Row gutter={16}>
                 <Col span={8}>
@@ -389,7 +393,7 @@ function Prescription({ bed, open, handleClose }) {
                       },
                     ]}
                   >
-                    <DatePicker style={{ width: "100%" }} />
+                    <DatePicker style={{ width: "100%" }} format='DD-MM-YYYY' />
                   </Form.Item>
                 </Col>
 
@@ -462,6 +466,10 @@ function Prescription({ bed, open, handleClose }) {
                 console.log(values);
                 handleCancel();
               }}
+              initialValues={{
+                FromDate: dayjs().subtract(1, 'day'),
+                ToDate: dayjs()
+              }}
             >
               <Row gutter={16}>
                 <Col span={6}>
@@ -475,7 +483,7 @@ function Prescription({ bed, open, handleClose }) {
                       },
                     ]}
                   >
-                    <DatePicker style={{ width: "100%" }} />
+                    <DatePicker style={{ width: "100%" }} format='DD-MM-YYYY' />
                   </Form.Item>
                 </Col>
                 <Col span={6}>
@@ -489,7 +497,7 @@ function Prescription({ bed, open, handleClose }) {
                       },
                     ]}
                   >
-                    <DatePicker style={{ width: "100%" }} />
+                    <DatePicker style={{ width: "100%" }} format='DD-MM-YYYY' />
                   </Form.Item>
                 </Col>
 
