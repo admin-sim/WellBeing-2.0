@@ -1,7 +1,7 @@
-import config from "./appSettings.json";
+// import config from "./appSettings.json";
 
-const baseURL = config.baseUrl;
-// const baseURL = process.env.REACT_APP_API_URL;
+// const baseURL = config.baseUrl;
+ const baseURL = import.meta.env.VITE_API_URL;
 export const urlAddNewVisit1 = `${baseURL}/api/Encounter/SaveNewEncounter1`;
 
 export const urlGetServiceCharge = `${baseURL}/api/Billing/GetServiceCharge`;
