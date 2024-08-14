@@ -321,7 +321,7 @@ const NewVisit = () => {
 
   const handleOk = async () => {
     debugger;
-   
+
     try {
       await form1.validateFields();
       const values = form1.getFieldsValue();
@@ -432,7 +432,11 @@ const NewVisit = () => {
       title: "UHID",
       dataIndex: "UhId",
       key: "UhId",
-      sorter: (a, b) => a.UhId - b.UhId,
+      sorter: (a, b) => {
+        const numA = parseInt(a.UhId.split("/")[1], 10);
+        const numB = parseInt(b.UhId.split("/")[1], 10);
+        return numA - numB;
+      },
       sortDirections: ["descend", "ascend"],
       render: (text, record) => (
         <span style={{ fontWeight: "bold" }}>{record.UhId}</span>

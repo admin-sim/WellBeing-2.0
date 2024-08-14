@@ -494,6 +494,12 @@ const menuData = [
         title: "Clinical Chart",
         link: "/ClinicalChart",
       },
+      {
+        key: "patientTrackingBoard",
+        icon: "GoDotFill",
+        title: "Patient Tracking Board",
+        link: "/PatientTrackingBoard",
+      },
     ],
   },
   {

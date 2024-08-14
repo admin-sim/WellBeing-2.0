@@ -1,20 +1,20 @@
 import { Avatar, Button, Col, Row, Tabs } from "antd";
 import React from "react";
-import male from "../../assets/m.png";
+import male from "../../../assets/m.png";
 import { RxExit } from "react-icons/rx";
 
-import ChiefComplaint from "./Components/ChiefComplaint.jsx";
-import MedicalHistory from "./Components/MedicalHistory.jsx";
-import SurgicalHistory from "./Components/SurgicalHistory.jsx";
-import FamilyHistory from "./Components/FamilyHistory.jsx";
-import SocialHistory from "./Components/SocialHistory.jsx";
-import Allergy from "./Components/Allergy.jsx";
-import PatientHeader from "../../components/PatientHeader/index.jsx";
-import VitalSigns from "./Components/VitalSigns.jsx";
-import PhysicalExamination from "./Components/PhysicalExamination.jsx";
-import ProvisionalDiagnosis from "./Components/ProvisionalDiagnosis.jsx";
-import Prescription from "./Components/Prescription.jsx";
-import Investigation from "./Components/Investigation.jsx";
+import ChiefComplaint from "../Components/ChiefComplaint.jsx";
+import MedicalHistory from "../Components/MedicalHistory.jsx";
+import SurgicalHistory from "../Components/SurgicalHistory.jsx";
+import FamilyHistory from "../Components/FamilyHistory.jsx";
+import SocialHistory from "../Components/SocialHistory.jsx";
+import Allergy from "../Components/Allergy.jsx";
+import PatientHeader from "../../../components/PatientHeader/index.jsx";
+import VitalSigns from "../Components/VitalSigns.jsx";
+import PhysicalExamination from "../Components/PhysicalExamination.jsx";
+import ProvisionalDiagnosis from "../Components/ProvisionalDiagnosis.jsx";
+import Prescription from "../Components/Prescription.jsx";
+import Investigation from "../Components/Investigation.jsx";
 
 function ClinicalChart() {
   const clinicalHeaders = [
