@@ -142,49 +142,9 @@ const VendorReturn = () => {
       }
     },
   ];
-  // const handleSearch = (value) => {
-  //   setSearchText(value);
-  //   if (value === '') {
-  //     setFilteredData(loadUsers);
-  //   } else {
-  //     const filtered = loadUsers.filter(entry =>
-  //       Object.values(entry).some(val =>
-  //         val && val.toString().toLowerCase().includes(value.toLowerCase())
-  //       )
-  //     );
-  //     setFilteredData(filtered);
-  //   }
-  // };
 
-  /* const validateUserRole = (rule, value) => {
-     if (value) {
-       const existsInOptions = originalOptions.some(option => option.LookupDescription === value);
-       if (!existsInOptions) {
-         return Promise.reject('Please select a valid UserRole from the list.');
-       }
-     }
-     return Promise.resolve();
-   };*/
 
-  const handleSubmit = (values) => {
-    // Handle form submission logic here
-    console.log("Form submitted with values:", values);
 
-    console.log("Form Values:", values);
-    //const uhid = selectedUhId ? selectedUhId.UhId : '';
-
-    // ... Repeat for other parameters
-  };
-  const [formatedFromDate, setFormatedFromDate] = useState();
-  const [formatedToDate, setFormatedToDate] = useState();
-  function formatDate(inputDate) {
-    const dateParts = inputDate.split("/");
-    if (dateParts.length === 3) {
-      const [year, month, day] = dateParts;
-      return `${day}-${month}-${year}`;
-    }
-    return inputDate; // Return as is if not in the expected format
-  }
   const onFinish = async (values) => {
     debugger;
     setIsSearchLoading(true);

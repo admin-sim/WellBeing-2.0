@@ -309,4 +309,13 @@ export const urlShowModal = `${baseURL}/api/WardManagement/ShowModal`;
 export const urlGetBeds = `${baseURL}/api/WardManagement/GetBeds`;
 export const urlSaveModal = `${baseURL}/api/WardManagement/SaveModal`;
 export const urlGetServiceLocation = `${baseURL}/api/WardManagement/GetServiceLocation`;
+export const urlCreateStoreReturn=`${baseURL}/api/StoreReturn/StoreReturnIndex`;
+export const urlGetStoreProductDetails=`${baseURL}/api/UrgentIssue/GetStoreProductDetails`;
+export const urlSearchReceipt=`${baseURL}/api/StoreReturn/SearchReceipt`;
+export const urlAddNewStoreReturn=`${baseURL}/api/StoreReturn/AddNewStoreReturn`;
+export const urlSearchStoreReturn=`${baseURL}/api/StoreReturn/SearchStoreReturn`;
+export const urlStoreReturnEdit=`${baseURL}/api/StoreReturn/StoreReturnEdit`;
+export const urlSearchAcknowledgeReturn=`${baseURL}/api/AcknowledgeReturn/SearchAcknowledgeReturn`;
+export const urlAcknowledgeReturnCreate=`${baseURL}/api/AcknowledgeReturn/AcknowledgeReturnCreate`;
+export const urlAddNewAcknowledgeReturn=`${baseURL}/api/AcknowledgeReturn/AddNewAcknowledgeReturn`;
 

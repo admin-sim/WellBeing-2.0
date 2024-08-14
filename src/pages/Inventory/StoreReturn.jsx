@@ -21,7 +21,7 @@ import {
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
 
-import { urlGetPurshaseOrderDetails } from "../../../endpoints.js";
+import { urlGetPurshaseOrderDetails, urlSearchStoreReturn } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
@@ -33,26 +33,22 @@ const StoreReturn = () => {
     SupplierList: [],
     DateFormat: []
   });
-  const [paginationSize, setPaginationSize] = useState(5);
+
   const [filteredData, setFilteredData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
-  const [page, setPage] = useState(1);
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
   const { Title } = Typography;
 
   useEffect(() => {
     try {
       customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-        debugger;
         const apiData = response.data.data;
         setStoreReturnDropDown(apiData);
-        setIsLoading(false);
       });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
+    form.submit()
   }, []);
 
   const navigate = useNavigate();
@@ -68,79 +64,62 @@ const StoreReturn = () => {
     Completed: "green",
   };
 
-  const GetModelDetails = (text, record, index) => {
+  const GetModelDetails = (ReturnHeaderId) => {
     debugger;
-    console.log("welcome");
+    navigate("/CreateStoreReturn", { state: { ReturnHeaderId } });
   };
   const columns = [
     {
-      title: "Sl No",
-      key: "index",
-      render: (text, record, index) => index + 1,
-    },
-    {
-      title: "PO Number",
-      dataIndex: "PONumber",
-      key: "PONumber",
-      sorter: (a, b) => a.PONumber - b.PONumber,
+      title: "Returned ID",
+      dataIndex: "ReturnNumber",
+      key: "ReturnNumber",
+      sorter: (a, b) => a.ReturnNumber - b.ReturnNumber,
       sortDirections: ["descend", "ascend"],
-      render: (text, record, index) => (
-        <Button
-          type="link"
-          onClick={() => GetModelDetails(text, record, index)}
-        >
-          {text}
-        </Button>
-      ),
-    },
-    {
-      title: "Document Type",
-      dataIndex: "DocumentTypeName",
-      key: "DocumentTypeName",
-      sorter: (a, b) => a.DocumentTypeName.localeCompare(b.DocumentTypeName),
-      sortDirections: ["descend", "ascend"],
-    },
-    {
-      title: "Po Date",
-      dataIndex: "PoDate",
-      key: "PoDate",
-      sorter: (a, b) => new Date(a.PoDate) - new Date(b.PoDate),
-      sortDirections: ["descend", "ascend"],
-      render: (text) => {
-        //const poDate = new Date(text);
-        //const formattedDate = text;
-        return text;
+      render: (text, record, index) => {
+        if (record.ReturnStatus === "Created" || record.ReturnStatus === "Draft") {
+          return (
+            <Button type="link" onClick={() => GetModelDetails(record.ReturnHeaderId)}>
+              {text}
+            </Button>
+          );
+        }
+        return <Tag style={{ marginLeft: "15px" }}>{text}</Tag>;
       },
     },
     {
-      title: "Supplier Name",
-      dataIndex: "SupplierName",
-      key: "SupplierName",
-      sorter: (a, b) => a.SupplierName.localeCompare(b.SupplierName),
-      sortDirections: ["descend", "ascend"],
-    },
-    {
-      title: "Store Name",
-      dataIndex: "StoreName",
-      key: "StoreName",
-      sorter: (a, b) => a.StoreName.localeCompare(b.StoreName),
-      sortDirections: ["descend", "ascend"],
-    },
-    {
-      title: "PO Raised By",
-      dataIndex: "PORaisedBy",
-      key: "PORaisedBy",
-      sorter: (a, b) => a.StoreReturnId.localeCompare(b.StoreReturnId),
-      sortDirections: ["descend", "ascend"],
-    },
-    {
-      title: "Po Status",
-      dataIndex: "PoStatus",
-      key: "PoStatus",
-      sorter: (a, b) => a.PoStatus.localeCompare(b.PoStatus),
+      title: "Returned Date",
+      dataIndex: "ReturnDate",
+      key: "ReturnDate",
+      sorter: (a, b) => a.ReturnDate.localeCompare(b.ReturnDate),
       sortDirections: ["descend", "ascend"],
       render: (text) => {
-        // let color = text === 'Pending' ? 'volcano' : text === 'Completed' ? 'green' : text === '';
+        const dateParts = text.split('T')[0].split('-');
+        const year = dateParts[0];
+        const month = dateParts[1];
+        const day = dateParts[2];
+
+        return `${day}-${month}-${year}`;
+      },
+    },
+    {
+      title: "Returning Location",
+      dataIndex: "StoreName",
+      key: "StoreName",
+      sorter: (a, b) => new Date(a.StoreName) - new Date(b.StoreName),
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Returned to Vendor",
+      dataIndex: "ReturnStoreName",
+      key: "ReturnStoreName",
+    },
+    {
+      title: "Status",
+      dataIndex: "ReturnStatus",
+      key: "ReturnStatus",
+      sorter: (a, b) => a.ReturnStatus.localeCompare(b.ReturnStatus),
+      sortDirections: ["descend", "ascend"],
+      render: (text) => {
         return (
           <Tag color={colorMapping[`${text}`]} key={text}>
             {text.toUpperCase()}
@@ -149,93 +128,50 @@ const StoreReturn = () => {
       },
     },
     {
-      title: "Actions",
-      dataIndex: "actions",
-      key: "actions",
-      render: (_, row) => (
-        <>
-          <Tooltip title="Edit">
-            <Button icon={<EditOutlined />} onClick={() => handleEdit(row)} />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(row)}
-            />
-          </Tooltip>
-        </>
-      ),
+      title: "Report",
+      dataIndex: "Report",
+      key: "Report",
+      render: (record) => {
+        return <Button type="link">Report</Button>
+      }
     },
   ];
-
-  function formatDate(inputDate) {
-    const dateParts = inputDate.split("/");
-    if (dateParts.length === 3) {
-      const [year, month, day] = dateParts;
-      return `${day}-${month}-${year}`;
-    }
-    return inputDate; 
-  }
-  
   const onFinish = async (values) => {
     debugger;
     setIsSearchLoading(true);
-    setLoading(true);
+    
     try {
       const postData1 = {
-        DocumentType:
-          values.DocumentType === undefined ? "" : values.DocumentType, // Set to empty string when left blank
-        Supplier: values.Supplier === undefined ? "" : values.Supplier,
-        ProcurementStore:
-          values.ProcurementStore === undefined ? "" : values.ProcurementStore,
-        POStatus: values.POStatus === undefined ? "" : values.POStatus,
-        FromDate:
-          values.FromDate === undefined || values.FromDate === null
-            ? ""
-            : (
-              values.FromDate.$D.toString().padStart(2, "0") +
-              "-" +
-              (values.FromDate.$M + 1).toString().padStart(2, "0") +
-              "-" +
-              values.FromDate.$y
-            ).toString(),
-        ToDate:
-          values.ToDate === undefined || values.ToDate === null
-            ? ""
-            : (
-              values.ToDate.$D.toString().padStart(2, "0") +
-              "-" +
-              (values.ToDate.$M + 1).toString().padStart(2, "0") +
-              "-" +
-              values.ToDate.$y
-            ).toString(), // A sample value
-        PONumber: values.PONumber === undefined ? "" : values.PONumber, // A sample value
+        Store: values.ReturningStore ? values.ReturningStore : 0,
+        ReturnedToStore: values.ReturnedToLocation ? values.ReturnedToLocation : 0,
+        Status: values.Status ?  values.Status : "",
+        FromDateString: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : null,
+        ToDateString: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : null
       };
       customAxios
-        .post(
-          `${'http://localhost:901/api/ReportsApi/GetAdmissionRpt'}?DocumentType=${postData1.DocumentType}&Supplier=${postData1.Supplier}&ProcurementStore=${postData1.ProcurementStore}&DocumentStatus=${postData1.POStatus}&FromDate=${postData1.FromDate}&ToDate=${postData1.ToDate}&PoNumber=${postData1.PONumber}`,
+        .get(
+          `${urlSearchStoreReturn}?Store=${postData1.Store}&ReturnedToStore=${postData1.ReturnedToStore}&Status=${postData1.Status}&FromDateString=${postData1.FromDateString}&ToDateString=${postData1.ToDateString}`,
           null,
           {
             params: postData1,
             headers: {
-              "Content-Type": "application/json", 
+              "Content-Type": "application/json", // Replace with the appropriate content type if needed
             },
           }
         )
         .then((response) => {
-          console.log("Response:", response.data);
-          //resetForm();
-          setFilteredData(response.data.data.StoreReturnDetails);
-          // setCurrentPage1(1);
+          debugger;
+          setFilteredData(response.data.data.ReturnDetails);
+          setIsSearchLoading(false);
         })
-        .finally(() => {
-          setLoading(false);
-        });
     } catch (error) {
-      console.error("Error:", error);
+      // Handle any errors here      
     }
-    setIsSearchLoading(false);
   };
+
+
+  
+  
 
   const onReset = () => {
     form.resetFields();
@@ -251,7 +187,7 @@ const StoreReturn = () => {
             </Title>
           </Col>
           <Col offset={5} span={2}>
-            <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={handleAddTemplate}>
+            <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={() => GetModelDetails(0)}>
               Add Store Return
             </Button>
           </Col>
@@ -269,13 +205,13 @@ const StoreReturn = () => {
             initialValues={{
               FromDate: dayjs().subtract(1, 'day'),
               ToDate: dayjs(),
-              Status: 'All',
+              Status: '',
             }}
             onFinish={onFinish}
           >
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={6}>
-                <Form.Item label="Returning Location" name="ReturningLocation">
+                <Form.Item label="Returning Location" name="ReturningStore">
                   <Select allowClear placeholder='Select Value'>
                     {StoreReturnDropdown.StoreDetails.map((option) => (
                       <Select.Option key={option.StoreId} value={option.StoreId}>
