@@ -116,7 +116,7 @@ function InPatientManagement() {
           <span>{bed.PatientName}</span>
           <Dropdown
             arrow
-            overlay={
+            menu={
               <Menu>
                 <Menu.Item key="1" onClick={() => alert("clicked 1st option")}>
                   Option 1

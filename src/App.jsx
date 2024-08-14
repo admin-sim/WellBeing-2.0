@@ -18,7 +18,7 @@ import NewVisit from "./pages/Patient/NewVisit";
 import PatientEdit from "./pages/Patient/EditPatientReg";
 import LabDashboard from "./pages/Laboratory/LabDashboard";
 import SampleCollection from "./pages/Laboratory/LabDashboard/SampleCollection";
-import ClinicalChart from "./pages/ClinicalChart";
+import ClinicalChart from "./pages/ClinicalDocuments/ClinicalChart/index.jsx";
 import PurchaseOrder from "./pages/Inventory/PurchaseOrder";
 import Lookup from "./pages/Masters/GeneralMasters/Lookup";
 import States from "./pages/Masters/GeneralMasters/States";
@@ -124,6 +124,7 @@ import Configuration from "./pages/Masters/Configuration Management/Configuratio
 import WorkflowManager from "./pages/Masters/Configuration Management/CreateWorkflow/index.jsx";
 import CreateEditWorkFlow from "./pages/Masters/Configuration Management/CreateWorkflow/CreateEditWorkFlow.jsx";
 import Frequency from "./pages/Masters/SystemParameterSetup/Frequency/index.jsx";
+import PatientTrackingBoard from "./pages/ClinicalDocuments/PatientTrackingBoard/index.jsx";
 
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
@@ -233,6 +234,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ClinicalChart />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/PatientTrackingBoard"
+              element={
+                <ProtectedRoute>
+                  <PatientTrackingBoard />
                 </ProtectedRoute>
               }
             />
