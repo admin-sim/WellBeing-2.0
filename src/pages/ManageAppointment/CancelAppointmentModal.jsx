@@ -49,10 +49,15 @@ function CancelAppointmentModal({
       maskClosable={false}
       onCancel={onCancel}
       footer={[
-        <Button key="submit" type="primary" onClick={() => form.submit()}>
-          Save
+        <Button
+          key="submit"
+          danger
+          type="primary"
+          onClick={() => form.submit()}
+        >
+          Delete
         </Button>,
-        <Button danger key="back" onClick={onCancel}>
+        <Button key="back" onClick={onCancel}>
           Cancel
         </Button>,
       ]}
