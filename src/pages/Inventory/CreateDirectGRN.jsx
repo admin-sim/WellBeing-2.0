@@ -95,7 +95,7 @@ const CreateDirectGRN = () => {
             BatchMrp: 0,
             DiscountRate: 0,
             BatchTaxType1: "",
-            BatchTaxAmount1: 0,
+      
             BatchTaxType2: "",
             BatchTaxAmount1: 0,
             BatchStockLocator: "",
@@ -1009,7 +1009,7 @@ setLoading(true);
         BatchMrp: 0,
         DiscountRate: 0,
         BatchTaxType1: "",
-        BatchTaxAmount1: 0,
+  
         BatchTaxType2: "",
         BatchTaxAmount1: 0,
         BatchStockLocator: "",
