@@ -379,7 +379,7 @@ const CreateDirectGRN = () => {
 
   const handleOpenModal = async (value, record) => {
     debugger;
-    setLoading(true);
+    
     record.BonusQuantity = form1.getFieldValue([record.key, "BonusQuantity"]);
     await form1.validateFields([
       "StoreId",
@@ -388,6 +388,7 @@ const CreateDirectGRN = () => {
       [record.key, "ReceivedQty"],
       [record.key, "PoRate"],
     ]);
+    setLoading(true);
     setBatchRecord(record);
     setModalVisible(true);
     setLoading(false);
@@ -460,7 +461,7 @@ const CreateDirectGRN = () => {
       message.warning("Please add Batch details");
       return false;
     }
-
+setLoading(true);
     const newdata = data.filter((item) => item.ProductId);
 
     const products = newdata
@@ -565,6 +566,7 @@ const CreateDirectGRN = () => {
       message.success(
         `GRN ${grnHeaderId == 0 ? "Created" : "Updated"} Successfully`
       );
+      setLoading(false);
       handleCancel();
     } else {
       message.error("Something went wrong");
@@ -1706,7 +1708,7 @@ const CreateDirectGRN = () => {
           <Row justify="end" style={{ padding: "0rem 1rem" }}>
             <Col style={{ marginRight: "10px" }}>
               <Form.Item>
-                <Button type="primary" htmlType="submit">
+                <Button  loading={loading}  type="primary" htmlType="submit">
                   {buttonTitle}
                 </Button>
               </Form.Item>
