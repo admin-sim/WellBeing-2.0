@@ -160,6 +160,11 @@ function CreateBillAgrement() {
   //       fetchData1(); // Call the fetchData function
   //     }
   //   }, []);
+  const [isChecked, setIsChecked] = useState(false);
+
+  const handleCheckboxChange = (e) => {
+    setIsChecked(e.target.checked);
+  };
 
   const handleChange = (nextTargetKeys) => {
     if (nextTargetKeys.length > 0) {
@@ -405,7 +410,7 @@ function CreateBillAgrement() {
                 <Col className="gutter-row" span={6}>
                   <Form.Item name="EmployerId" label="Employer">
                     <Select>
-                      {facilities.map((option) => (
+                      {facilities?.map((option) => (
                         <Select.Option
                           key={option.PayerId}
                           value={option.PayerId}
@@ -435,22 +440,35 @@ function CreateBillAgrement() {
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={6}>
-                  <Form.Item label={<Checkbox />} name="ValidToDate">
+                  <Form.Item
+                    label={
+                      <span>
+                        <Checkbox onChange={handleCheckboxChange} />
+                        <span style={{ marginRight: 8 }}>
+                          Restricted Authorisation Limit
+                        </span>
+                      </span>
+                    }
+                    name="restrict"
+                  >
                     <Space.Compact>
-                      <Select defaultValue="Zhejiang" />
-                      <Input defaultValue="Xihu District, Hangzhou" />
+                      <Input disabled={!isChecked} />
+                      <Select disabled={!isChecked} />
                     </Space.Compact>
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={6}>
-                  <Form.Item name="Remarks" label="Remarks">
-                    <TextArea
-                      placeholder="Remarks"
-                      autoSize={{
-                        minRows: 1,
-                        maxRows: 3,
-                      }}
-                    />
+                  <Form.Item name="InsuranceProvider" label="InsuranceProvider">
+                  <Select>
+                      {facilities?.map((option) => (
+                        <Select.Option
+                          key={option.PayerId}
+                          value={option.PayerId}
+                        >
+                          {option.PayerName}
+                        </Select.Option>
+                      ))}
+                    </Select>
                   </Form.Item>
                 </Col>
               </Row>
