@@ -472,7 +472,7 @@ const CreatePurchaseOrder = () => {
 
   const handleOpenModal = async (record) => {
     debugger;
-    setLoading(true);
+    
     await form1.validateFields([
       "StoreId",
       "SupplierId",
@@ -480,6 +480,7 @@ const CreatePurchaseOrder = () => {
       [record.key, "UomId"],
       [record.key, "ProductName"],
     ]);
+    setLoading(true);
     setDeliveryRecord(record);
     setModalVisible(true);
     setLoading(false);
