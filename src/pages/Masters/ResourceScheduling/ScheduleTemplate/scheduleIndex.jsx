@@ -1,42 +1,18 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Checkbox,
-  Col,
-  DatePicker,
-  Divider,
-  Form,
-  Input,
-  Layout,
-  Row,
-  Spin,
-  Select,
-  Space,
-  Popconfirm,
-  Table,
-  Modal,
-  notification,
-} from "antd";
-import {
-  ArrowLeftOutlined,
-  SearchOutlined,
-  PlusCircleOutlined,
-  EditOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
+import { Button, Col, Layout, Row, Spin, notification } from "antd";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import CustomTable from "../../../../components/customTable";
-import { useForm } from "antd/es/form/Form";
+
 import Title from "antd/es/typography/Title";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   urlDeleteScheduleTemplate,
   urlGetAllScheduleTemplates,
-  urlGetScheduleTemplateDetailsBasedOnId,
 } from "../../../../../endpoints";
 import customAxios from "../../../../components/customAxios/customAxios";
+import PageHeader from "../../../../components/PageHeader";
 
 function ScheduleIndex() {
- 
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [columnData, setColumnData] = useState();
@@ -46,7 +22,6 @@ function ScheduleIndex() {
   }, []);
 
   const fetchData = async () => {
-    debugger;
     setLoading(true);
     try {
       const response = await customAxios.get(`${urlGetAllScheduleTemplates}`);
@@ -73,7 +48,7 @@ function ScheduleIndex() {
       title: "Sl. No.",
       dataIndex: "key",
       key: "key",
-      width: 200,
+      width: 80,
     },
     {
       title: "Template",
@@ -83,7 +58,6 @@ function ScheduleIndex() {
   ];
 
   const HandleEditScheduleTemplate = async (record) => {
-    debugger;
     const url = `/ScheduleTemplate/ScheduleEdit`;
 
     // Navigate to the new URL
@@ -96,7 +70,6 @@ function ScheduleIndex() {
   };
 
   const handleDeleteTemplate = (record) => {
-    debugger;
     try {
       customAxios
         .delete(`${urlDeleteScheduleTemplate}?TemplateId=${record.TemplateId}`)
@@ -137,36 +110,12 @@ function ScheduleIndex() {
           borderRadius: "10px",
         }}
       >
-        <Row
-          style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
-          }}
-        >
-          <Col span={16}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              Schedule Template
-            </Title>
-          </Col>
-          <Col offset={5} span={3}>
-            <Button
-              style={{ padding: "4px 8px" }}
-              icon={<PlusCircleOutlined />}
-              onClick={handleAddScheduleTemplate}
-            >
-              Add New Template
-            </Button>
-          </Col>
-        </Row>
+        <PageHeader
+          title={"Schedule Template"}
+          buttonLabel={"Add New Template"}
+          buttonIcon={<PlusCircleOutlined style={{ fontSize: "1.1rem" }} />}
+          onButtonClick={handleAddScheduleTemplate}
+        />
 
         <Spin spinning={loading}>
           <CustomTable

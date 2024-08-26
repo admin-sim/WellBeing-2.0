@@ -3,10 +3,8 @@ import PageHeader from "../../../../components/PageHeader/index.jsx";
 import CustomTable from "../../../../components/customTable/index.jsx";
 import { useNavigate } from "react-router-dom";
 import { PlusCircleOutlined } from "@ant-design/icons";
-import CreateWardModal from "../Ward/CreateWardModal.jsx";
 
 function Bed() {
-  const [createWardModal, setCreateWardModal] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
 
   const navigate = useNavigate();
@@ -16,21 +14,25 @@ function Bed() {
       title: "Sl No",
       dataIndex: "SlNo",
       key: "1",
+      width: 80,
     },
     {
       title: "Service Location",
       dataIndex: "ServiceLocation",
       key: "2",
+      width: 140,
     },
     {
       title: "Ward",
       dataIndex: "Ward",
       key: "3",
+      width: 200,
     },
     {
       title: "Bed",
       dataIndex: "Bed",
       key: "4",
+      width: 300,
     },
   ];
 

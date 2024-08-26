@@ -23,14 +23,14 @@ function CreateFacility() {
     >
       <PageHeader title={"Facility Manager"} button={false} />
       <Form
-        style={{ padding: "0.5rem 1rem" }}
+        style={{ margin: "1rem" }}
         layout="vertical"
         form={form}
         onFinish={(values) => {
           console.log("Form Values", values);
         }}
       >
-        <Row gutter={32}>
+        <Row gutter={16}>
           <ColWithSixSpan>
             <Form.Item name="FacilityCode" label="Facility Code">
               <Input allowClear />
@@ -52,11 +52,14 @@ function CreateFacility() {
             </Form.Item>
           </ColWithSixSpan>
         </Row>
-        <Divider style={{ marginTop: 0 }} />
-        <Row gutter={32}>
+
+        <Row gutter={16}>
           <Col span={12}>
-            <strong>Address Details</strong>
-            <Row gutter={32} style={{ marginTop: "0.5rem" }}>
+            {/* <strong>Address Details</strong>   */}
+            <Divider style={{ marginTop: 0 }} orientation="left">
+              Address Details
+            </Divider>
+            <Row gutter={16} style={{ marginTop: "0.5rem" }}>
               <ColWithTwelveSpan>
                 <Form.Item name="AddressLine1" label="Address Line 1">
                   <Input allowClear />
@@ -90,7 +93,10 @@ function CreateFacility() {
             </Row>
           </Col>
           <Col span={12}>
-            <strong>Contact Details</strong>
+            {/* <strong>Contact Details</strong> */}
+            <Divider style={{ marginTop: 0 }} orientation="left">
+              Contact Details
+            </Divider>
             <Row gutter={32} style={{ marginTop: "0.5rem" }}>
               <ColWithTwelveSpan>
                 <Form.Item name="ContactName" label="Contact Name">
@@ -126,10 +132,9 @@ function CreateFacility() {
           </Col>
         </Row>
         <Row gutter={32}>
-          <Divider style={{ margin: "0 0 1rem 0" }} />
-          <Col span={24} style={{ marginBottom: "0.5rem" }}>
-            <strong>Status Details</strong>
-          </Col>
+          <Divider style={{ marginTop: 0 }} orientation="left">
+            Status Details
+          </Divider>
           <ColWithSixSpan>
             <Form.Item name="Status" label="Status">
               <Select allowClear />

@@ -29,16 +29,12 @@ const WeeklyView = ({
           : undefined;
 
         return (
-          <Row
-            align="middle"
-            key={day.LookupID}
-            style={{ marginBottom: "10px" }}
-          >
+          <Row align="middle" key={day.LookupID}>
             <Col span={6}>
               <label>{day.LookupDescription}</label>
             </Col>
             <Col span={12} style={{ margin: "20px 0px 0px 0px" }}>
-              <Form.Item name={`schedule-${day.LookupID}`} >
+              <Form.Item name={`schedule-${day.LookupID}`}>
                 <Select
                   placeholder="Select a session"
                   onChange={(value) => handleSelectChange(day.LookupID, value)}

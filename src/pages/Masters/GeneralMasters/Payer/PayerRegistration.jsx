@@ -22,6 +22,7 @@ import {
   Modal,
   notification,
 } from "antd";
+import CustomTable from "../../../../components/customTable/index";
 import { useForm } from "antd/es/form/Form";
 import TextArea from "antd/es/input/TextArea";
 import Title from "antd/es/typography/Title";
@@ -45,6 +46,7 @@ import {
   ColWithSixSpan,
   ColWithThreeSpan,
 } from "../../../../components/customGridColumns";
+import PageHeader from "../../../../components/PageHeader";
 
 function PayerRegistration() {
   const navigate = useNavigate();
@@ -76,8 +78,6 @@ function PayerRegistration() {
   const [selectedPayerId, setSelectedPayerId] = useState();
 
   useEffect(() => {
-    debugger;
-
     // Determine edit mode based on location.state
     const isEdit =
       location.state !== null && location.state.isEditPayerRegistration;
@@ -203,13 +203,11 @@ function PayerRegistration() {
   };
 
   const handleExpiryDate = (date, dateString) => {
-    debugger;
     setExpiryDate(dateString);
   };
 
   const handleCountriesChange = async (value) => {
     // setCountrySelectValue(value);
-    debugger;
 
     try {
       // Update the options for the second select based on the value of the first select
@@ -249,7 +247,7 @@ function PayerRegistration() {
 
   const handleStatesChange = async (value) => {
     // setCountrySelectValue(value);
-    debugger;
+
     try {
       // Update the options for the second select based on the value of the first select
       if (value != null) {
@@ -276,7 +274,7 @@ function PayerRegistration() {
 
   const handlePlacesChange = async (value) => {
     // setCountrySelectValue(value);
-    debugger;
+
     try {
       // Update the options for the second select based on the value of the first select
       if (value != null) {
@@ -302,7 +300,6 @@ function PayerRegistration() {
   };
 
   const handleOnFinish = async (values) => {
-    debugger;
     setLoading(true);
     console.log("Received values from form: ", values);
 
@@ -435,7 +432,6 @@ function PayerRegistration() {
   };
 
   const onEdit = (record) => {
-    debugger;
     if (isEditPayerRegistration) {
       customAxios
         .get(
@@ -527,7 +523,6 @@ function PayerRegistration() {
   };
 
   const handleSaveIdentification = async () => {
-    debugger;
     const values = identifierForm.getFieldsValue();
     console.log("To save Identification", values);
 
@@ -666,55 +661,31 @@ function PayerRegistration() {
       title: "Sl No",
       dataIndex: "key",
       key: "key",
-      width: "5rem",
+      width: 80,
     },
     {
       title: "Card Type",
       dataIndex: "IdentificationTypeName",
       key: "IdentificationTypeName",
+      width: 150,
     },
     {
       title: "Card No",
       dataIndex: "IdentityReferenceNo",
       key: "IdentityReferenceNo",
+      width: 150,
     },
     {
       title: "Expiry Date",
       dataIndex: "ExpiryDateString",
       key: "ExpiryDateString",
+      width: 150,
     },
     {
       title: "Remarks",
       dataIndex: "Remarks",
       key: "Remarks",
-    },
-    {
-      title: "Action",
-      key: "action",
-      fixed: "right",
-      width: "4rem",
-      render: (text, record) => (
-        <Space size="small">
-          <Button
-            size="small"
-            onClick={() => onEdit(record)}
-            icon={<EditOutlined style={{ fontSize: "0.9rem" }} />}
-          ></Button>
-
-          <Popconfirm
-            title="Are you sure to delete this item?"
-            onConfirm={() => onDelete(record)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button
-              size="small"
-              danger
-              icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
-            ></Button>
-          </Popconfirm>
-        </Space>
-      ),
+      width: 150,
     },
   ];
 
@@ -729,41 +700,14 @@ function PayerRegistration() {
             borderRadius: "10px",
           }}
         >
-          <Row
-            style={{
-              padding: "0.5rem 1.5rem 0.5rem 1.5rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col
-              span={24}
-              style={{ display: "flex", justifyContent: "space-between" }}
-            >
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Payer Registration
-              </Title>
-
-              <Button
-                className="dfja"
-                icon={<SearchOutlined style={{ fontSize: "1.1rem" }} />}
-                onClick={searchPayer}
-              >
-                Search Payer
-              </Button>
-            </Col>
-          </Row>
-
+          <PageHeader
+            title={"Payer Registration"}
+            buttonLabel={"Search Payer"}
+            buttonIcon={<SearchOutlined style={{ fontSize: "1.1rem" }} />}
+            onButtonClick={searchPayer}
+          />
           <Form
-            style={{ margin: "1rem 2rem" }}
+            style={{ margin: "1rem" }}
             layout="vertical"
             form={form}
             initialValues={{ Status: "A" }}
@@ -882,8 +826,6 @@ function PayerRegistration() {
                   />
                 </Form.Item>
               </ColWithSixSpan>
-            </Row>
-            <Row gutter={18}>
               <ColWithSixSpan>
                 <Form.Item
                   name="ContactPerson"
@@ -912,7 +854,7 @@ function PayerRegistration() {
               </ColWithThreeSpan>
             </Row>
             <Divider orientation="left">Address Details</Divider>
-            <Row gutter={18}>
+            <Row gutter={16}>
               <ColWithSixSpan>
                 <Form.Item
                   name="Address"
@@ -1008,9 +950,8 @@ function PayerRegistration() {
                   </Select>
                 </Form.Item>
               </ColWithSixSpan>
-            </Row>
-            <Row gutter={18}>
-              <Col span={6}>
+
+              <ColWithSixSpan>
                 <Form.Item
                   name="Area"
                   label="Area"
@@ -1032,7 +973,7 @@ function PayerRegistration() {
                     ))}
                   </Select>
                 </Form.Item>
-              </Col>
+              </ColWithSixSpan>
               <ColWithSixSpan>
                 <Form.Item
                   name="Zip"
@@ -1098,13 +1039,13 @@ function PayerRegistration() {
               </ColWithEightSpan>
             </Row>
             <Divider orientation="left">Financial Attributes</Divider>
-            <Row gutter={18}>
+            <Row gutter={16}>
               <ColWithEightSpan>
                 <Form.Item name="credit" label="Credit Days">
                   <Input style={{ width: "100%" }} allowClear />
                 </Form.Item>
               </ColWithEightSpan>
-              <ColWithSixSpan>
+              <ColWithEightSpan>
                 <Form.Item
                   name="IsDunning"
                   label="Is Dunning Applicable"
@@ -1112,56 +1053,29 @@ function PayerRegistration() {
                 >
                   <Checkbox style={{ width: "100%" }} />
                 </Form.Item>
-              </ColWithSixSpan>
+              </ColWithEightSpan>
             </Row>
-            <Table
+            <CustomTable
               pagination={false}
               title={() => (
-                <>
-                  <Row
-                    style={{
-                      backgroundColor: "#40A2E3",
-                      padding: "0.3rem 0rem 0.3rem 1.5rem",
-                      color: "white",
-                      borderRadius: "5px",
-                    }}
-                  >
-                    <Col
-                      span={5}
-                      style={{
-                        fontWeight: 500,
-                        letterSpacing: "0.5px",
-                        fontSize: "1.2rem",
-                      }}
-                    >
-                      Payer Identifiers
-                    </Col>
-                    <Col
-                      offset={15}
-                      span={4}
-                      style={{
-                        fontWeight: 500,
-                        letterSpacing: "0.5px",
-                        fontSize: "1.2rem",
-                      }}
-                    >
-                      <Button onClick={handleAddIdentification}>
-                        <PlusCircleOutlined />
-                        Add Identifiers
-                      </Button>
-                    </Col>
-                  </Row>
-                </>
+                <PageHeader
+                  title={"Payer Identifiers"}
+                  buttonLabel={"Add Identifiers"}
+                  buttonIcon={
+                    <PlusCircleOutlined style={{ fontSize: "1.1rem" }} />
+                  }
+                  onButtonClick={handleAddIdentification}
+                />
               )}
               columns={identifierColumns}
-              bordered
               dataSource={identifierDetails}
-              size="small"
-              locale={{ emptyText: "there is no details of Payer Identifiers" }}
+              locale={{ emptyText: "Add Payer Identifiers" }}
               style={{
                 margin: "0 0 1.5rem 0",
                 boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
               }}
+              onDelete={() => onDelete(record)}
+              onEdit={() => onEdit(record)}
             />
             <Modal
               title="Payer Identifiers"
@@ -1214,7 +1128,7 @@ function PayerRegistration() {
                         },
                       ]}
                     >
-                      <Input style={{ width: "100%" }} allowClear/>
+                      <Input style={{ width: "100%" }} allowClear />
                     </Form.Item>
                   </Col>
                   <Col span={12}>
@@ -1243,7 +1157,11 @@ function PayerRegistration() {
                   </Col>
                   <Col span={12}>
                     <Form.Item name="Status" label="Status">
-                      <Select style={{ width: "100%" }} options={options} allowClear/>
+                      <Select
+                        style={{ width: "100%" }}
+                        options={options}
+                        allowClear
+                      />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -1271,24 +1189,26 @@ function PayerRegistration() {
             </Modal>
 
             <Row
-              gutter={32}
               justify={"end"}
-              style={{ height: "1.8rem", paddingBottom: "2rem" }}
+              style={{
+                margin: "0 0.5rem",
+                paddingBottom: 0,
+              }}
             >
-              <ColWithThreeSpan>
+              <Col style={{ marginRight: "1rem" }}>
                 <Form.Item>
                   <Button type="primary" htmlType="submit">
                     Submit
                   </Button>
                 </Form.Item>
-              </ColWithThreeSpan>
-              <ColWithThreeSpan>
+              </Col>
+              <Col>
                 <Form.Item>
                   <Button type="default" danger>
                     Reset
                   </Button>
                 </Form.Item>
-              </ColWithThreeSpan>
+              </Col>
             </Row>
           </Form>
         </div>

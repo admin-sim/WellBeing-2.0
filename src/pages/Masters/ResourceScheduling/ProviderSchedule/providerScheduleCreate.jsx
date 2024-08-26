@@ -5,22 +5,17 @@ import {
   Col,
   Form,
   Button,
-  Input,
   Select,
-  message,
   notification,
   Radio,
   Space,
   Popconfirm,
-  Checkbox,
-  Card,
   Table,
   Modal,
 } from "antd";
 import Title from "antd/es/typography/Title";
-import { useForm } from "antd/es/form/Form";
+import CustomTable from "../../../../components/customTable/index";
 import {
-  SearchOutlined,
   PlusCircleOutlined,
   EditOutlined,
   DeleteOutlined,
@@ -28,7 +23,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import {
   urlGetScheduleTypesBasedOnTypeId,
-  urlGetAllQueueProviders,
   urlGetEditDayProviderSchedule,
   urlDeleteProviderScheduleBasedOnTypeID,
   urlGetScheduleCreateDetails,
@@ -39,6 +33,12 @@ import {
 } from "../../../../../endpoints";
 import customAxios from "../../../../components/customAxios/customAxios";
 import WeeklyView from "./WeeklyView";
+import PageHeader from "../../../../components/PageHeader";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+  ColWithTwelveSpan,
+} from "../../../../components/customGridColumns";
 
 function ProviderScheduleCreate() {
   const [form] = Form.useForm();
@@ -78,7 +78,6 @@ function ProviderScheduleCreate() {
   }, [form]);
 
   const fetchData = async () => {
-    debugger;
     setLoading(true);
     try {
       const response = await customAxios.get(`${urlGetScheduleCreateDetails}`);
@@ -94,7 +93,6 @@ function ProviderScheduleCreate() {
   };
 
   const handleProviderChange = (value) => {
-    debugger;
     setShowRadioButtons(true);
     if (!value && value === undefined) {
       setShowRadioButtons(false);
@@ -102,7 +100,6 @@ function ProviderScheduleCreate() {
   };
 
   const handleRadioChange = async (e) => {
-    debugger;
     form.resetFields(["FrequencyDay", "Day", "TemplateSession"]);
     const value = Number(e.target.value);
     const providerValue = await form.getFieldsValue();
@@ -173,7 +170,6 @@ function ProviderScheduleCreate() {
   };
 
   const onEditTemplate = (record) => {
-    console.log("edit values ", record);
     if (selectedScheduleType === "Days") {
       setIsEditingDayModal(true);
       setIsDailyTemplateModalOpen(true);
@@ -213,8 +209,6 @@ function ProviderScheduleCreate() {
   };
 
   const onDeleteTemplate = (record) => {
-    console.log("delate values of day template", record);
-
     try {
       customAxios
         .delete(
@@ -283,9 +277,8 @@ function ProviderScheduleCreate() {
   };
 
   const handleSubmit = async () => {
-    debugger;
     const values = await form.validateFields();
-    console.log("Form Values:", values, selectedSessions);
+
     setLoading(true);
 
     try {
@@ -512,47 +505,19 @@ function ProviderScheduleCreate() {
       title: "Sl. No.",
       dataIndex: "key",
       key: "key",
-      width: 120,
+      width: 80,
     },
     {
       title: "Template Name",
       dataIndex: "TemplateName",
       key: "TemplateName",
+      width: 200,
     },
     {
       title: "DayNo",
       dataIndex: "DayNo",
       key: "DayNo",
-      width: 400,
-    },
-
-    {
-      title: "Action",
-      key: "action",
-      fixed: "right",
-      width: "4rem",
-      render: (text, record) => (
-        <Space size="small">
-          <Button
-            size="small"
-            onClick={() => onEditTemplate(record)}
-            icon={<EditOutlined style={{ fontSize: "0.9rem" }} />}
-          ></Button>
-
-          <Popconfirm
-            title="Are you sure to delete this item?"
-            onConfirm={() => onDeleteTemplate(record)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button
-              size="small"
-              danger
-              icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
-            ></Button>
-          </Popconfirm>
-        </Space>
-      ),
+      width: 80,
     },
   ];
 
@@ -561,345 +526,212 @@ function ProviderScheduleCreate() {
       title: "Sl. No.",
       dataIndex: "key",
       key: "key",
-      width: 120,
+      width: 80,
     },
     {
       title: "Template Name",
       dataIndex: "TemplateName",
       key: "TemplateName",
+      width: 180,
     },
     {
       title: "Day",
       dataIndex: "WeekDayName",
       key: "WeekDayName",
-      width: 400,
+      width: 180,
     },
     {
       title: "Every",
       dataIndex: "WeekDayFrequencyName",
       key: "WeekDayFrequencyName",
-      width: 400,
-    },
-
-    {
-      title: "Action",
-      key: "action",
-      fixed: "right",
-      width: "4rem",
-      render: (text, record) => (
-        <Space size="small">
-          <Button
-            size="small"
-            onClick={() => onEditTemplate(record)}
-            icon={<EditOutlined style={{ fontSize: "0.9rem" }} />}
-          ></Button>
-
-          <Popconfirm
-            title="Are you sure to delete this item?"
-            onConfirm={() => onDeleteTemplate(record)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button
-              size="small"
-              danger
-              icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
-            ></Button>
-          </Popconfirm>
-        </Space>
-      ),
+      width: 180,
     },
   ];
 
   return (
     <>
-      <Layout>
-        <div
-          style={{
-            width: "100%",
-            backgroundColor: "white",
-            minHeight: "max-content",
-            borderRadius: "10px",
-          }}
+      <Layout
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <PageHeader title={"Create Provider Schedule"} button={false} />
+        <Form
+          layout="vertical"
+          form={form}
+          style={{ margin: "1rem" }}
+          //  onFinish={handleSessionsForms}
         >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
+          <Row gutter={16}>
+            <ColWithEightSpan>
+              <Form.Item
+                name="Provider"
+                label="Provider"
+                rules={[{ required: true, message: "Enter Template Name" }]}
               >
-                Create Provider Schedule
-              </Title>
-            </Col>
-          </Row>
-          <Form
-            layout="vertical"
-            form={form}
-            //  onFinish={handleSessionsForms}
-          >
-            <Row
-              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              style={{ margin: "20px 15px" }}
-              // style={{ height: "1.8rem", paddingBottom: "2rem" }}
-            >
-              <Col span={6}>
-                <Form.Item
-                  name="Provider"
-                  label="Provider"
-                  rules={[{ required: true, message: "Enter Template Name" }]}
+                <Select
+                  showSearch
+                  placeholder="Select the provider"
+                  style={{ width: "100%" }}
+                  onChange={handleProviderChange}
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().includes(input.toLowerCase())
+                  }
+                  filterSort={(optionA, optionB) =>
+                    optionA.children
+                      .toLowerCase()
+                      .localeCompare(optionB.children.toLowerCase())
+                  }
+                  loading={Loading}
                 >
-                  <Select
-                    showSearch
-                    placeholder="Select the provider"
-                    style={{ width: "100%" }}
-                    onChange={handleProviderChange}
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                    filterSort={(optionA, optionB) =>
-                      optionA.children
-                        .toLowerCase()
-                        .localeCompare(optionB.children.toLowerCase())
-                    }
-                    loading={Loading}
-                  >
-                    {providersData.map((response) => (
-                      <Select.Option
-                        key={response.ProviderId}
-                        value={response.ProviderId}
-                      >
-                        {response.ProviderName}
-                      </Select.Option>
-                    ))}
-                  </Select>
+                  {providersData.map((response) => (
+                    <Select.Option
+                      key={response.ProviderId}
+                      value={response.ProviderId}
+                    >
+                      {response.ProviderName}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </ColWithEightSpan>
+          </Row>
+          <Row
+            gutter={16}
+            // style={{ margin: "0 1rem" }}
+            // style={{ height: "1.8rem", paddingBottom: "2rem" }}
+          >
+            {showRadioButtons && (
+              <ColWithTwelveSpan>
+                <Form.Item name="Schedule">
+                  <Radio.Group onChange={handleRadioChange} checked>
+                    <Space
+                      direction="horizontal"
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-around",
+                      }}
+                    >
+                      <Radio value={1}>Weekly</Radio>
+
+                      <Radio value={2}>Daily</Radio>
+
+                      <Radio value={3}>Weekdays</Radio>
+                    </Space>
+                  </Radio.Group>
                 </Form.Item>
-              </Col>
-            </Row>
-            <Row
-              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              style={{ margin: "0px 15px" }}
-              // style={{ height: "1.8rem", paddingBottom: "2rem" }}
-            >
-              {showRadioButtons && (
-                <Col span={24}>
-                  <Form.Item name="Schedule">
-                    <Radio.Group onChange={handleRadioChange} checked>
-                      <Space direction="horizontal">
-                        <Radio value={1}>Weekly</Radio>
+              </ColWithTwelveSpan>
+            )}
+          </Row>
 
-                        <Radio value={2}>Daily</Radio>
-
-                        <Radio value={3}>Weekdays</Radio>
-                      </Space>
-                    </Radio.Group>
+          {weeklyView && (
+            <>
+              <Row style={{ margin: "0px 1rem" }}>
+                <ColWithTwelveSpan>
+                  <WeeklyView
+                    days={weeks}
+                    providerSchedule={providerSchedule}
+                    sessionsData={templateSessions}
+                    handleSelectChange={handleSelectChange}
+                  />
+                </ColWithTwelveSpan>
+              </Row>
+              <Row gutter={16} justify={"end"}>
+                <Col>
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      onClick={handleSubmit}
+                    >
+                      Save
+                    </Button>
                   </Form.Item>
                 </Col>
-              )}
-            </Row>
+                <Col>
+                  <Form.Item>
+                    <Button danger onClick={handleBack}>
+                      Cancel
+                    </Button>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </>
+          )}
 
-            {weeklyView && (
-              <>
-                <Row>
-                  <Col
-                    span={12}
-                    style={{ margin: "0px 10px", padding: "4px 20px" }}
-                  >
-                    <WeeklyView
-                      days={weeks}
-                      providerSchedule={providerSchedule}
-                      sessionsData={templateSessions}
-                      handleSelectChange={handleSelectChange}
-                    />
-                  </Col>
-                </Row>
-                <Row
-                  gutter={32}
-                  style={{
-                    height: "1.8rem",
-                    paddingBottom: "2rem",
-                    margin: "20px 0px",
-                  }}
-                >
-                  <Col offset={20} span={2}>
-                    <Form.Item>
-                      <Button
-                        type="primary"
-                        htmlType="submit"
-                        onClick={handleSubmit}
-                      >
-                        Save
-                      </Button>
-                    </Form.Item>
-                  </Col>
-                  <Col span={2} style={{ paddingLeft: "0px" }}>
-                    <Form.Item>
-                      <Button type="default" onClick={handleBack}>
-                        Cancel
-                      </Button>
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </>
-            )}
-
-            {dailyView && (
-              <>
-                <Row style={{ paddingLeft: "30px", paddingRight: "30px" }}>
-                  <Col span={24}>
-                    <Table
-                      pagination={false}
-                      title={() => (
-                        <>
-                          <Row
-                            style={{
-                              backgroundColor: "#40A2E3",
-                              padding: "0.3rem 0rem 0.3rem 1.5rem",
-                              color: "white",
-                              borderRadius: "5px",
-                            }}
-                          >
-                            <Col
-                              span={5}
-                              style={{
-                                fontWeight: 500,
-                                letterSpacing: "0.5px",
-                                fontSize: "1.2rem",
-                              }}
-                            >
-                              Day Schedule
-                            </Col>
-                            <Col
-                              offset={15}
-                              span={4}
-                              style={{
-                                fontWeight: 500,
-                                letterSpacing: "0.5px",
-                                fontSize: "1.2rem",
-                                // marginLeft:"0px"
-                              }}
-                            >
-                              <Button onClick={handleAddTemplate}>
-                                <PlusCircleOutlined />
-                                Add Template
-                              </Button>
-                            </Col>
-                          </Row>
-                        </>
-                      )}
-                      columns={DailyTemplateColumns}
-                      bordered
-                      dataSource={templateDayDetails}
-                      // rowKey={(row) => row.ProviderIdentityId}
-                      size="small"
-                      className="vitals-table"
-                      style={{
-                        margin: "0 0 1.5rem 0",
-                        boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
-                      }}
-                      locale={{
-                        emptyText: "There is no Provider credentials  to show",
-                      }}
-                    />
-                  </Col>
-                </Row>
-                <Row justify="end">
-                  <Col span={2} style={{ paddingLeft: "0px" }}>
-                    <Form.Item>
-                      <Button type="primary" onClick={handleBack}>
-                        Cancel
-                      </Button>
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </>
-            )}
-            {weekDayView && (
-              <>
-                <Row style={{ paddingLeft: "30px", paddingRight: "30px" }}>
-                  <Col span={24}>
-                    <Table
-                      pagination={false}
-                      title={() => (
-                        <>
-                          <Row
-                            style={{
-                              backgroundColor: "#40A2E3",
-                              padding: "0.3rem 0rem 0.3rem 1.5rem",
-                              color: "white",
-                              borderRadius: "5px",
-                            }}
-                          >
-                            <Col
-                              span={5}
-                              style={{
-                                fontWeight: 500,
-                                letterSpacing: "0.5px",
-                                fontSize: "1.2rem",
-                              }}
-                            >
-                              Week Day Schedule
-                            </Col>
-                            <Col
-                              offset={15}
-                              span={4}
-                              style={{
-                                fontWeight: 500,
-                                letterSpacing: "0.5px",
-                                fontSize: "1.2rem",
-                                // marginLeft:"0px"
-                              }}
-                            >
-                              <Button onClick={handleAddTemplate}>
-                                <PlusCircleOutlined />
-                                Add Template
-                              </Button>
-                            </Col>
-                          </Row>
-                        </>
-                      )}
-                      columns={WeekDayTemplateColumns}
-                      bordered
-                      dataSource={templatesWeekDayDetails}
-                      // rowKey={(row) => row.ProviderIdentityId}
-                      size="small"
-                      className="vitals-table"
-                      style={{
-                        margin: "0 0 1.5rem 0",
-                        boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
-                      }}
-                      locale={{
-                        emptyText: "There is no Schedules to show",
-                      }}
-                    />
-                  </Col>
-                </Row>
-                <Row justify="end">
-                  <Col span={2} style={{ paddingLeft: "0px" }}>
-                    <Form.Item>
-                      <Button type="primary" onClick={handleBack}>
-                        Cancel
-                      </Button>
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </>
-            )}
-          </Form>
-        </div>
+          {dailyView && (
+            <>
+              <Row>
+                <Col span={24}>
+                  <CustomTable
+                    pagination={false}
+                    title={() => (
+                      <PageHeader
+                        title={"Day Schedule"}
+                        buttonLabel={"Add Template"}
+                        buttonIcon={
+                          <PlusCircleOutlined style={{ fontSize: "1.1rem" }} />
+                        }
+                        onButtonClick={handleAddTemplate}
+                      />
+                    )}
+                    columns={DailyTemplateColumns}
+                    dataSource={templateDayDetails}
+                    onDelete={(record) => onDeleteTemplate(record)}
+                    onEdit={(record) => onEditTemplate(record)}
+                  />
+                </Col>
+              </Row>
+              <Row justify="end">
+                <Col style={{ marginRight: "0.5rem" }}>
+                  <Form.Item>
+                    <Button danger onClick={handleBack}>
+                      Cancel
+                    </Button>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </>
+          )}
+          {weekDayView && (
+            <>
+              <Row>
+                <Col span={24}>
+                  <CustomTable
+                    pagination={false}
+                    title={() => (
+                      <PageHeader
+                        title={"Week Day Schedule"}
+                        buttonLabel={"Add Template"}
+                        buttonIcon={
+                          <PlusCircleOutlined style={{ fontSize: "1.1rem" }} />
+                        }
+                        onButtonClick={handleAddTemplate}
+                      />
+                    )}
+                    onDelete={(record) => onDeleteTemplate(record)}
+                    onEdit={(record) => onEditTemplate(record)}
+                    columns={WeekDayTemplateColumns}
+                    dataSource={templatesWeekDayDetails}
+                  />
+                </Col>
+              </Row>
+              <Row justify="end" style={{ marginRight: "0.5rem" }}>
+                <Col>
+                  <Form.Item>
+                    <Button danger onClick={handleBack}>
+                      Cancel
+                    </Button>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </>
+          )}
+        </Form>
       </Layout>
       <Modal
         title="Add Template"
@@ -954,17 +786,17 @@ function ProviderScheduleCreate() {
             </Select>
           </Form.Item>
 
-          <Row gutter={32} style={{ height: "1.8rem" }}>
-            <Col offset={12} span={6}>
+          <Row gutter={16} justify={"end"} style={{ marginBottom: "-1.5rem" }}>
+            <Col>
               <Form.Item>
                 <Button type="primary" htmlType="submit">
                   Submit
                 </Button>
               </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col>
               <Form.Item>
-                <Button type="default" onClick={handleCloseDayTemplateModal}>
+                <Button danger onClick={handleCloseDayTemplateModal}>
                   Cancel
                 </Button>
               </Form.Item>
@@ -1053,20 +885,17 @@ function ProviderScheduleCreate() {
             </Select>
           </Form.Item>
 
-          <Row gutter={32} style={{ height: "1.8rem" }}>
-            <Col offset={12} span={6}>
+          <Row justify={"end"} gutter={16} style={{ marginBottom: "-1.5rem" }}>
+            <Col>
               <Form.Item>
                 <Button type="primary" htmlType="submit">
                   Submit
                 </Button>
               </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col>
               <Form.Item>
-                <Button
-                  type="default"
-                  onClick={handleCloseWeekDayTemplateModal}
-                >
+                <Button danger onClick={handleCloseWeekDayTemplateModal}>
                   Cancel
                 </Button>
               </Form.Item>

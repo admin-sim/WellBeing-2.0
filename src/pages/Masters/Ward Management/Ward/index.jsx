@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import PageHeader from "../../../../components/PageHeader/index.jsx";
 import CustomTable from "../../../../components/customTable/index.jsx";
-import { useNavigate } from "react-router-dom";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import CreateWardModal from "./CreateWardModal.jsx";
 
@@ -14,36 +13,43 @@ function Ward() {
       title: "Sl No",
       dataIndex: "SlNo",
       key: "1",
+      width: 80,
     },
     {
       title: "Ward Code",
       dataIndex: "WardCode",
       key: "2",
+      width: 120,
     },
     {
       title: "Ward Name",
       dataIndex: "WardName",
       key: "3",
+      width: 250,
     },
     {
       title: "Ward Category",
       dataIndex: "WardCategory",
       key: "4",
+      width: 150,
     },
     {
       title: "Service Location",
       dataIndex: "ServiceLocation",
       key: "5",
+      width: 150,
     },
     {
       title: "Gender",
       dataIndex: "Gender",
       key: "6",
+      width: 80,
     },
     {
       title: "Status",
       dataIndex: "Status",
       key: "7",
+      width: 80,
     },
   ];
 

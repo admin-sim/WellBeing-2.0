@@ -1,41 +1,17 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Checkbox,
-  Col,
-  DatePicker,
-  Divider,
-  Form,
-  Input,
-  Layout,
-  Row,
-  Spin,
-  Select,
-  Space,
-  Popconfirm,
-  Table,
-  Modal,
-  notification,
-} from "antd";
-import {
-  ArrowLeftOutlined,
-  SearchOutlined,
-  PlusCircleOutlined,
-  EditOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
+import { Button, Col, Layout, Row, Spin, notification } from "antd";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import CustomTable from "../../../../components/customTable";
-import { useForm } from "antd/es/form/Form";
 import Title from "antd/es/typography/Title";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   urlGetAllProviderSchedules,
   urlRemoveProviderScheduleBasedOnProviderId,
 } from "../../../../../endpoints";
 import customAxios from "../../../../components/customAxios/customAxios";
+import PageHeader from "../../../../components/PageHeader";
 
 function ProviderSchedule() {
-
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [columnData, setColumnData] = useState();
@@ -45,7 +21,6 @@ function ProviderSchedule() {
   }, []);
 
   const fetchData = async () => {
-    debugger;
     setLoading(true);
     try {
       const response = await customAxios.get(`${urlGetAllProviderSchedules}`);
@@ -72,7 +47,7 @@ function ProviderSchedule() {
       title: "Sl. No.",
       dataIndex: "key",
       key: "key",
-      width: 200,
+      width: 80,
     },
     {
       title: "Provider Name",
@@ -87,7 +62,6 @@ function ProviderSchedule() {
   ];
 
   const HandleEditScheduleTemplate = async (record) => {
-    debugger;
     const url = `/ProviderSchedule/ProviderScheduleEdit`;
     // Navigate to the new URL
     navigate(url, {
@@ -99,7 +73,6 @@ function ProviderSchedule() {
   };
 
   const handleDeleteTemplate = (record) => {
-    debugger;
     setLoading(true);
     try {
       customAxios
@@ -149,36 +122,12 @@ function ProviderSchedule() {
           borderRadius: "10px",
         }}
       >
-        <Row
-          style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
-          }}
-        >
-          <Col span={16}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              Provider Schedule
-            </Title>
-          </Col>
-          <Col offset={5} span={3}>
-            <Button
-              style={{ padding: "4px 8px" }}
-              icon={<PlusCircleOutlined />}
-              onClick={handleAddScheduleTemplate}
-            >
-              Add New Schedule
-            </Button>
-          </Col>
-        </Row>
+        <PageHeader
+          title={"Provider Schedule"}
+          buttonLabel={"Add New Schedule"}
+          buttonIcon={<PlusCircleOutlined style={{ fontSize: "1.1rem" }} />}
+          onButtonClick={handleAddScheduleTemplate}
+        />
 
         <Spin spinning={loading}>
           <CustomTable

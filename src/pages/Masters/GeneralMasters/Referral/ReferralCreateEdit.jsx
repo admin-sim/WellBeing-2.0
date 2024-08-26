@@ -4,6 +4,11 @@ import { useForm } from "antd/es/form/Form";
 import Title from "antd/es/typography/Title";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../../../../components/PageHeader";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+} from "../../../../components/customGridColumns";
 
 function ReferralCreateEdit() {
   const navigate = useNavigate();
@@ -33,39 +38,14 @@ function ReferralCreateEdit() {
             borderRadius: "10px",
           }}
         >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Referral Manager
-              </Title>
-            </Col>
-            <Col offset={5} span={3}>
-              <Button
-                className="dfja"
-                icon={<ArrowLeftOutlined style={{ fontSize: "1.1rem" }} />}
-                onClick={() => navigate("/Referral")}
-              >
-                Back to list
-              </Button>
-            </Col>
-          </Row>
-
+          <PageHeader
+            title={"Referral Manager"}
+            buttonLabel={"Back To List"}
+            buttonIcon={<ArrowLeftOutlined style={{ fontSize: "1.1rem" }} />}
+            onButtonClick={() => navigate("/Referral")}
+          />
           <Form
-            style={{ margin: "1rem 2rem" }}
+            style={{ margin: "1rem" }}
             layout="vertical"
             form={form}
             onFinish={(values) => {
@@ -73,8 +53,8 @@ function ReferralCreateEdit() {
               //   handleClose();
             }}
           >
-            <Row gutter={18}>
-              <Col span={8}>
+            <Row gutter={16}>
+              <ColWithSixSpan>
                 <Form.Item
                   name="ReferrerType"
                   label="Referrer Type"
@@ -87,8 +67,8 @@ function ReferralCreateEdit() {
                 >
                   <Select style={{ width: "100%" }} options={options} />
                 </Form.Item>
-              </Col>
-              <Col span={8}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="ReferrerTitle"
                   label="Referrer Title"
@@ -101,8 +81,8 @@ function ReferralCreateEdit() {
                 >
                   <Select style={{ width: "100%" }} options={options} />
                 </Form.Item>
-              </Col>
-              <Col span={8}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="ReferrerFirstName"
                   label="Referrer First Name"
@@ -115,23 +95,22 @@ function ReferralCreateEdit() {
                 >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={18}>
-              <Col span={8}>
+              </ColWithSixSpan>
+
+              <ColWithSixSpan>
                 <Form.Item
                   name="ReferrerMiddleName"
                   label="Referrer Middle Name"
                 >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-              <Col span={8}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="ReferrerLastName" label="Referrer Last Name">
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-              <Col span={8}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="Gender"
                   label="Gender"
@@ -144,10 +123,9 @@ function ReferralCreateEdit() {
                 >
                   <Select style={{ width: "100%" }} options={options} />
                 </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={18}>
-              <Col span={8}>
+              </ColWithSixSpan>
+
+              <ColWithSixSpan>
                 <Form.Item
                   name="Qualification"
                   label="Qualification"
@@ -160,8 +138,8 @@ function ReferralCreateEdit() {
                 >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-              <Col span={8}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="Address"
                   label="Address"
@@ -174,8 +152,8 @@ function ReferralCreateEdit() {
                 >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-              <Col span={8}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="Area"
                   label="Area"
@@ -188,10 +166,9 @@ function ReferralCreateEdit() {
                 >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={24}>
-              <Col span={8}>
+              </ColWithSixSpan>
+
+              <ColWithSixSpan>
                 <Form.Item
                   name="Pin"
                   label="Pin"
@@ -204,11 +181,11 @@ function ReferralCreateEdit() {
                 >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
+              </ColWithSixSpan>
             </Row>
             <Divider orientation="left">Contact Details</Divider>
-            <Row gutter={18}>
-              <Col span={8}>
+            <Row gutter={16}>
+              <ColWithEightSpan>
                 <Form.Item
                   name="MobileNumber"
                   label="Mobile Number"
@@ -221,13 +198,13 @@ function ReferralCreateEdit() {
                 >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-              <Col span={8}>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
                 <Form.Item name="Landline Number" label="Landline Number">
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-              <Col span={8}>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
                 <Form.Item
                   name="email"
                   label="Contact Email"
@@ -240,28 +217,30 @@ function ReferralCreateEdit() {
                 >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
+              </ColWithEightSpan>
             </Row>
             <Divider orientation="left">Status Details</Divider>
-            <Row gutter={18}>
-              <Col span={8}>
+            <Row gutter={16}>
+              <ColWithEightSpan>
                 <Form.Item name="status" label="Status">
                   <Select style={{ width: "100%" }} options={options} />
                 </Form.Item>
-              </Col>
+              </ColWithEightSpan>
             </Row>
 
-            <Row gutter={32} style={{ height: "1.8rem" }}>
-              <Col offset={20} span={2}>
+            <Row justify={"end"}>
+              <Col style={{ marginRight: "1rem" }}>
                 <Form.Item>
                   <Button type="primary" htmlType="submit">
                     Save
                   </Button>
                 </Form.Item>
               </Col>
-              <Col span={2}>
+              <Col>
                 <Form.Item>
-                  <Button type="default">Cancel</Button>
+                  <Button type="default" danger>
+                    Cancel
+                  </Button>
                 </Form.Item>
               </Col>
             </Row>

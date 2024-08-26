@@ -1,21 +1,15 @@
 import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader";
-import { PlusCircleOutlined } from "@ant-design/icons";
-import {
-  Button,
-  Checkbox,
-  Col,
-  Form,
-  Input,
-  Modal,
-  Row,
-  Select,
-  Table,
-} from "antd";
+import { Button, Checkbox, Col, Form, Input, Row, Select } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useLocation, useNavigate } from "react-router-dom";
 import TextArea from "antd/es/input/TextArea";
 import CustomTable from "../../../../components/customTable";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+} from "../../../../components/customGridColumns";
+import { BsFillPlusSquareFill } from "react-icons/bs";
 
 function CreateEditDischargeClearanceSetup() {
   const [form] = useForm();
@@ -42,9 +36,10 @@ function CreateEditDischargeClearanceSetup() {
       title: "Applicable Roles",
       dataIndex: "ApplicableRoles",
       key: "1",
+      width: 150,
       render: (_, row) => (
         <Select
-          style={{ width: "50%" }}
+          style={{ width: "100%" }}
           defaultValue={_}
           //   onChange={handleChange}
           options={[
@@ -90,108 +85,97 @@ function CreateEditDischargeClearanceSetup() {
           button={false}
         />
         <Form
-          style={{ padding: "1rem 1rem 0 1rem" }}
+          style={{ margin: "1rem" }}
           layout="vertical"
           form={form}
           onFinish={handleSubmit}
         >
-          <Row gutter={32}>
-            <Col span={16}>
-              <Row gutter={32}>
-                <Col span={12}>
-                  <Form.Item
-                    name="ShortName"
-                    label="Short Name"
-                    rules={[
-                      { required: true, message: "Please enter Short Name" },
-                    ]}
-                  >
-                    <Select />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    name="LongName"
-                    label="Long Name"
-                    rules={[
-                      { required: true, message: "Please enter Long Name" },
-                    ]}
-                  >
-                    <Select />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="ClearanceType"
-                    label="Clearance Type"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please select Clearance Type",
-                      },
-                    ]}
-                  >
-                    <Select />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="ClearanceSequence"
-                    label="Clearance Sequence"
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="Status" label="Status">
-                    <Select />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="PatientType" label="Patient Type">
-                    <Select />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item name="SelfAccess">
-                    <Checkbox>Is Self Access Only</Checkbox>
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={32}>
-                <Col span={12}>
-                  <CustomTable
-                    columns={columns}
-                    dataSource={tableData}
-                    onDelete={handleDelete}
-                    actionColumnName={
-                      <Button
-                        type="link"
-                        icon={
-                          <PlusCircleOutlined
-                            style={{ fontSize: "1.5rem" }}
-                            onClick={() => {
-                              setTableData([
-                                ...tableData,
-                                { ApplicableRoles: "Admin" },
-                              ]);
-                            }}
-                          />
-                        }
+          <Row gutter={16}>
+            <ColWithEightSpan>
+              <Form.Item
+                name="ShortName"
+                label="Short Name"
+                rules={[{ required: true, message: "Please enter Short Name" }]}
+              >
+                <Select />
+              </Form.Item>
+            </ColWithEightSpan>
+            <ColWithEightSpan>
+              <Form.Item
+                name="LongName"
+                label="Long Name"
+                rules={[{ required: true, message: "Please enter Long Name" }]}
+              >
+                <Select />
+              </Form.Item>
+            </ColWithEightSpan>
+            <ColWithEightSpan>
+              <Form.Item name="Remarks" label="Remarks">
+                <TextArea rows={2} />
+              </Form.Item>
+            </ColWithEightSpan>
+            <ColWithSixSpan>
+              <Form.Item
+                name="ClearanceType"
+                label="Clearance Type"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select Clearance Type",
+                  },
+                ]}
+              >
+                <Select />
+              </Form.Item>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
+              <Form.Item name="ClearanceSequence" label="Clearance Sequence">
+                <Input />
+              </Form.Item>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
+              <Form.Item name="Status" label="Status">
+                <Select />
+              </Form.Item>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
+              <Form.Item name="PatientType" label="Patient Type">
+                <Select />
+              </Form.Item>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
+              <Form.Item name="SelfAccess">
+                <Checkbox>Is Self Access Only</Checkbox>
+              </Form.Item>
+            </ColWithSixSpan>
+          </Row>
+          <Row gutter={16}>
+            <ColWithEightSpan>
+              <CustomTable
+                columns={columns}
+                dataSource={tableData}
+                onDelete={handleDelete}
+                actionColumnName={
+                  <Button
+                    type="link"
+                    icon={
+                      <BsFillPlusSquareFill
+                        style={{ fontSize: "1.5rem" }}
+                        onClick={() => {
+                          setTableData([
+                            ...tableData,
+                            { ApplicableRoles: "Admin" },
+                          ]);
+                        }}
                       />
                     }
                   />
-                </Col>
-              </Row>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="Remarks" label="Remarks">
-                <TextArea rows={4} />
-              </Form.Item>
-            </Col>
+                }
+              />
+            </ColWithEightSpan>
           </Row>
 
-          <Row gutter={32} justify="end" style={{ margin: "1.5rem 0 0 0" }}>
+          <Row gutter={16} justify="end">
             <Col>
               <Form.Item>
                 <Button

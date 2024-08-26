@@ -5,6 +5,7 @@ import { Col, Form, Row, Select } from "antd";
 import Title from "antd/es/typography/Title.js";
 import CustomTable from "../../../../components/customTable/index.jsx";
 import CreateEditFacilityDepartmentModal from "./CreateEditFacilityDepartmentModal.jsx";
+import { ColWithTwelveSpan } from "../../../../components/customGridColumns/index.jsx";
 
 function FacilityDepartment() {
   const [form] = Form.useForm();
@@ -15,22 +16,25 @@ function FacilityDepartment() {
       title: "Sl No",
       dataIndex: "SlNo",
       key: "1",
-      width: 100,
+      width: 80,
     },
     {
       title: "Department Name",
       dataIndex: "DepartmentName",
       key: "2",
+      width: 250,
     },
     {
       title: "Department Code",
       dataIndex: "DepartmentCode",
       key: "3",
+      width: 100,
     },
     {
       title: "Status",
       dataIndex: "Status",
       key: "4",
+      width: 100,
     },
   ];
 
@@ -90,12 +94,12 @@ function FacilityDepartment() {
             console.log(values);
           }}
         >
-          <Row gutter={32}>
-            <Col offset={3} span={15}>
+          <Row gutter={16}>
+            <ColWithTwelveSpan>
               <Form.Item name="FacilityName" label="Facility Name" required>
                 <Select />
               </Form.Item>
-            </Col>
+            </ColWithTwelveSpan>
           </Row>
         </Form>
         <div style={{ margin: "0 1rem" }}>
