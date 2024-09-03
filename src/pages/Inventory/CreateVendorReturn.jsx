@@ -10,11 +10,11 @@ import { DatePicker } from 'antd';
 import Layout from 'antd/es/layout/layout';
 import { LeftOutlined } from '@ant-design/icons';
 //import Typography from 'antd/es/typography';
-import { useNavigate } from 'react-router';
-import { Table, InputNumber } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
-import { render } from 'react-dom';
+import { useNavigate } from "react-router";
+import { Table, InputNumber } from "antd";
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
+import { render } from "react-dom";
 import { useLocation } from "react-router-dom";
 import CustomTable from "../../components/customTable/index.jsx";
 
@@ -25,7 +25,7 @@ const CreateVendorReturn = () => {
     SupplierList: [],
     UOM: [],
     TaxType: [],
-    DateFormat: []
+    DateFormat: [],
   });
 
   const location = useLocation();
@@ -41,11 +41,11 @@ const CreateVendorReturn = () => {
   // const [data, setData] = useState([])
   const [dataModal, setDataModal] = useState([]);
   const fields = form1.getFieldsValue();
-  const [productOptions, setProductOptions] = useState()
-  const [issueStatus, setIssueStatus] = useState()
+  const [productOptions, setProductOptions] = useState();
+  const [issueStatus, setIssueStatus] = useState();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [selectedRadio, setSelectedRadio] = useState('option1');
-  const [buttonTitle, setButtonTitle] = useState('Save')
+  const [selectedRadio, setSelectedRadio] = useState("option1");
+  const [buttonTitle, setButtonTitle] = useState("Save");
 
   // const tableRef = useRef(null);
 
@@ -67,25 +67,26 @@ const CreateVendorReturn = () => {
           );
           if (response.status == 200 && response.data.data != null) {
             const editeddata = response.data.data;
-            const products = editeddata.ReturnDetails.map(
-              (item, index) => ({
-                ...item,
-                key: index,
-                ProductName: item.Product,
-                BatchBonusQty: item.BonusQuantity ? item.BonusQuantity : 0,
-                PoBalanceQty: item.AvlQuantity,
-                BonusQuantity: item.ReturnedQuantity ? item.ReturnedQuantity : 0,
-                index: index + 1
-              })
-            );
+            const products = editeddata.ReturnDetails.map((item, index) => ({
+              ...item,
+              key: index,
+              ProductName: item.Product,
+              BatchBonusQty: item.BonusQuantity ? item.BonusQuantity : 0,
+              PoBalanceQty: item.AvlQuantity,
+              BonusQuantity: item.ReturnedQuantity ? item.ReturnedQuantity : 0,
+              index: index + 1,
+            }));
             setData(products);
 
             const formdata = editeddata.newReturnModel;
             form1.setFieldsValue({
-              ReceivingStore: formdata.ReturnStatus == 'Created' ? undefined : formdata.ReturnStatus,
+              ReceivingStore:
+                formdata.ReturnStatus == "Created"
+                  ? undefined
+                  : formdata.ReturnStatus,
               StoreId: formdata.StoreId,
               SupplierId: formdata.SupplierId,
-              ReturnHeaderId: formdata.ReturnHeaderId
+              ReturnHeaderId: formdata.ReturnHeaderId,
             });
           }
         } catch (error) {
@@ -97,13 +98,16 @@ const CreateVendorReturn = () => {
   }, []);
 
   const handleSearch = async (searchText) => {
-    debugger
+    debugger;
     if (searchText) {
-      const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${searchText}`);
+      const response = await customAxios.get(
+        `${urlAutocompleteProduct}?Product=${searchText}`
+      );
       const apiData = response.data.data;
 
-      const filteredApiData = apiData.filter(apiItem =>
-        !data.some(option => option.ProductId === apiItem.ProductId)
+      const filteredApiData = apiData.filter(
+        (apiItem) =>
+          !data.some((option) => option.ProductId === apiItem.ProductId)
       );
 
       const newOptions = filteredApiData.map((item) => ({
@@ -112,29 +116,27 @@ const CreateVendorReturn = () => {
         UomId: item.UOMPrimaryUOM,
       }));
       setProductOptions(newOptions);
+    } else {
+      form2.setFieldsValue({ ProductId: 0 });
     }
-    else {
-      form2.setFieldsValue({ ProductId: 0 })
-    }
-  }
+  };
 
   const onOkModal = async () => {
     debugger;
     if (selectedRowKeys.length == 0) {
-      message.warning('Please Select Alteast one Batch!')
-      return false
-    }
-    else {
+      message.warning("Please Select Alteast one Batch!");
+      return false;
+    } else {
       const newdata = selectedRowKeys.map((item) => {
         return {
           GRNHeaderId: item.GRNHeaderId,
           GrnLineId: item.GrnLineId,
           GrnBatchId: item.GrnBatchId,
           StoreId: item.StoreId,
-          GRNNumber: item.GRNNumber
-        }
-      })
-      selectedRowKeys
+          GRNNumber: item.GRNNumber,
+        };
+      });
+      selectedRowKeys;
       // const url = PoHeaderId === 0 ? urlAddNewPurchaseOrder : urlUpdatePurchaseOrder;
       const response = await customAxios.post(urlShowGrnList, newdata, {
         headers: {
@@ -145,44 +147,60 @@ const CreateVendorReturn = () => {
         return {
           ...item,
           key: index,
-          index: index + 1
-        }
-      })
-      setData(newData)
+          index: index + 1,
+        };
+      });
+      setData(newData);
       form2.resetFields();
-      setDataModal([])
-      setSelectedRowKeys([])
-      setIsModalOpen(false)
+      setDataModal([]);
+      setSelectedRowKeys([]);
+      setIsModalOpen(false);
     }
-  }
+  };
 
   const onFinishModel = async (values) => {
     debugger;
-    setDataModal([])
+    setDataModal([]);
     const VendorReturn = {
-      GRNDateFrom: values.GRNDateFrom && selectedRadio == 'option1' ? values.GRNDateFrom.format("DD-MM-YYYY") : null,
-      GRNDateTo: values.ExpiryDateTo && selectedRadio == 'option1' ? values.ExpiryDateTo.format("DD-MM-YYYY") : null,
-      ExpiryDateTo: values.ExpiryDateTo && selectedRadio == 'option2' ? values.ExpiryDateTo.format("DD-MM-YYYY") : null,
-      ExpiryDateFrom: values.ExpiryDateFrom && selectedRadio == 'option2' ? values.ExpiryDateFrom.format("DD-MM-YYYY") : null,
-      Store: form1.getFieldValue('StoreId'),
-      SupplierId: values.SupplierId && selectedRadio == 'option2' ? values.SupplierId : 0,
-      ProductId: values.ProductId && selectedRadio == 'option1' ? values.ProductId : 0,
-    }
-    const response = await customAxios.get(`${urlVendorReturnSearchGrn}?Store=${VendorReturn.Store}&Product=${VendorReturn.ProductId}&Supplier=${VendorReturn.SupplierId}&ExpToString=${VendorReturn.ExpiryDateTo}&ExpFromString=${VendorReturn.ExpiryDateFrom}&FromDateString=${VendorReturn.GRNDateFrom}&ToDateString=${VendorReturn.GRNDateTo}`);
-    debugger
+      GRNDateFrom:
+        values.GRNDateFrom && selectedRadio == "option1"
+          ? values.GRNDateFrom.format("DD-MM-YYYY")
+          : null,
+      GRNDateTo:
+        values.ExpiryDateTo && selectedRadio == "option1"
+          ? values.ExpiryDateTo.format("DD-MM-YYYY")
+          : null,
+      ExpiryDateTo:
+        values.ExpiryDateTo && selectedRadio == "option2"
+          ? values.ExpiryDateTo.format("DD-MM-YYYY")
+          : null,
+      ExpiryDateFrom:
+        values.ExpiryDateFrom && selectedRadio == "option2"
+          ? values.ExpiryDateFrom.format("DD-MM-YYYY")
+          : null,
+      Store: form1.getFieldValue("StoreId"),
+      SupplierId:
+        values.SupplierId && selectedRadio == "option2" ? values.SupplierId : 0,
+      ProductId:
+        values.ProductId && selectedRadio == "option1" ? values.ProductId : 0,
+    };
+    const response = await customAxios.get(
+      `${urlVendorReturnSearchGrn}?Store=${VendorReturn.Store}&Product=${VendorReturn.ProductId}&Supplier=${VendorReturn.SupplierId}&ExpToString=${VendorReturn.ExpiryDateTo}&ExpFromString=${VendorReturn.ExpiryDateFrom}&FromDateString=${VendorReturn.GRNDateFrom}&ToDateString=${VendorReturn.GRNDateTo}`
+    );
+    debugger;
     const newColumnData = response.data.data.GRNDetails.map((item, index) => {
       return { ...item, key: item.GRNHeaderId };
     });
-    setDataModal(newColumnData)
-  }
+    setDataModal(newColumnData);
+  };
 
   const onCancelModel = () => {
     debugger;
     form2.resetFields();
-    setDataModal([])
-    setSelectedRowKeys([])
+    setDataModal([]);
+    setSelectedRowKeys([]);
     setIsModalOpen(false);
-  }
+  };
 
   const handleSelect = (value, option, column) => {
     debugger;
@@ -190,24 +208,24 @@ const CreateVendorReturn = () => {
   };
 
   const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
+    console.log("Failed:", errorInfo);
   };
 
   const handleToBack = () => {
-    const url = '/VendorReturn';
+    const url = "/VendorReturn";
     navigate(url);
   };
 
   const OpenModel = async () => {
-    await form1.validateFields(['StoreId'])
-    setIsModalOpen(true)
-  }
+    await form1.validateFields(["StoreId"]);
+    setIsModalOpen(true);
+  };
   const handleOnFinish = async (values) => {
     debugger;
-    const newdata = data.filter((item) => item.ActiveFlag == true)
+    const newdata = data.filter((item) => item.ActiveFlag == true);
     if (newdata.length == 0) {
-      message.warning('Please Add Product/Batch')
-      return false
+      message.warning("Please Add Product/Batch");
+      return false;
     }
 
     const products = [];
@@ -221,45 +239,65 @@ const CreateVendorReturn = () => {
           BatchNo: newdata[i].BatchNo,
           EXPDateString: newdata[i].EXPDateString,
           ReturnLineId: newdata[i].ReturnLineId,
-          GRNHeaderId: newdata[i].GRNHeaderId,
-          ActiveFlag: newdata[i].ActiveFlag
-        }
+
+          ActiveFlag: newdata[i].ActiveFlag,
+        };
         products.push(product);
       }
     }
     const VendorReturn = {
       StoreId: values.StoreId,
       SupplierId: values.SupplierId,
-      ReturnDatestring: values.ReturnDate ? values.ReturnDate.format("DD-MM-YYYY") : null,
-      ReturnStatus: !issueStatus ? 'Created' : values.ReturnStatus,
-      ReturnHeaderId: values.ReturnHeaderId ? values.ReturnHeaderId : 0
-    }
+      ReturnDatestring: values.ReturnDate
+        ? values.ReturnDate.format("DD-MM-YYYY")
+        : null,
+      ReturnStatus: !issueStatus ? "Created" : values.ReturnStatus,
+      ReturnHeaderId: values.ReturnHeaderId ? values.ReturnHeaderId : 0,
+    };
     const postData = {
       newReturnModel: VendorReturn,
       ReturnDetails: products,
-    }
+    };
     try {
       const response = await customAxios.post(urlAddNewVendorReturn, postData, {
         headers: {
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       });
       handleToBack();
     } catch (error) {
-      // Handle error      
+      // Handle error
     }
   };
 
   const handleCheckboxChange = (checked, record) => {
-    debugger
+    debugger;
     const newSelectedRowKeys = checked
-      ? [...selectedRowKeys, { GRNHeaderId: record.GRNHeaderId, GrnBatchId: record.GrnBatchId, GrnLineId: record.GrnLineId, GrnBatchId: record.GrnBatchId, StoreId: record.StoreId, GRNNumber: record.GRNNumber }]
-      : selectedRowKeys.filter(key => key.GRNHeaderId !== record.GRNHeaderId && key.GrnBatchId !== record.GrnBatchId);
+      ? [
+          ...selectedRowKeys,
+          {
+            GRNHeaderId: record.GRNHeaderId,
+            GrnBatchId: record.GrnBatchId,
+            GrnLineId: record.GrnLineId,
+           
+            StoreId: record.StoreId,
+            GRNNumber: record.GRNNumber,
+          },
+        ]
+      : selectedRowKeys.filter(
+          (key) =>
+            key.GRNHeaderId !== record.GRNHeaderId &&
+            key.GrnBatchId !== record.GrnBatchId
+        );
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
   const isRowSelected = (record) => {
-    return selectedRowKeys.some(row => row.GRNHeaderId === record.GRNHeaderId && row.GrnBatchId === record.GrnBatchId);
+    return selectedRowKeys.some(
+      (row) =>
+        row.GRNHeaderId === record.GRNHeaderId &&
+        row.GrnBatchId === record.GrnBatchId
+    );
   };
 
   const columns = [
@@ -309,23 +347,23 @@ const CreateVendorReturn = () => {
       // },
     },
     {
-      title: ReturnHeaderId > 0 ? 'Received Qty' : 'Grn Received Qty',
+      title: ReturnHeaderId > 0 ? "Received Qty" : "Grn Received Qty",
       dataIndex: "Quantity",
       key: "Quantity",
       sorter: (a, b) => a.Quantity.localeCompare(b.Quantity),
       sortDirections: ["descend", "ascend"],
       render: (text) => {
-        return text
+        return text;
       },
     },
     {
-      title: ReturnHeaderId > 0 ? 'Bonus Quantity' : 'GRN Bonus Qty',
+      title: ReturnHeaderId > 0 ? "Bonus Quantity" : "GRN Bonus Qty",
       dataIndex: "BatchBonusQty",
       key: "BatchBonusQty",
       sorter: (a, b) => a.BatchBonusQty.localeCompare(b.BatchBonusQty),
       sortDirections: ["descend", "ascend"],
       render: (text) => {
-        return text
+        return text;
       },
     },
     {
@@ -349,7 +387,8 @@ const CreateVendorReturn = () => {
       render: (text, record) => (
         <>
           <Form.Item
-            name={[record.key, "ReturnQty"]} initialValue={record.ReturnQty}
+            name={[record.key, "ReturnQty"]}
+            initialValue={record.ReturnQty}
             rules={[
               {
                 required: true,
@@ -359,7 +398,9 @@ const CreateVendorReturn = () => {
                 validator: (_, value) => {
                   if (value > record.PoBalanceQty) {
                     return Promise.reject(
-                      new Error("Return Qty should not be Greater than Returnable.")
+                      new Error(
+                        "Return Qty should not be Greater than Returnable."
+                      )
                     );
                   }
                   return Promise.resolve();
@@ -369,10 +410,18 @@ const CreateVendorReturn = () => {
           >
             <InputNumber min={0} style={{ marginTop: 10 }} allowClear />
           </Form.Item>
-          <Form.Item hidden name={[record.key, "GRNHeaderId"]} initialValue={record.GRNHeaderId}>
+          <Form.Item
+            hidden
+            name={[record.key, "GRNHeaderId"]}
+            initialValue={record.GRNHeaderId}
+          >
             <Input />
           </Form.Item>
-          <Form.Item hidden name={[record.key, "ReturnLineId"]} initialValue={record.ReturnLineId}>
+          <Form.Item
+            hidden
+            name={[record.key, "ReturnLineId"]}
+            initialValue={record.ReturnLineId}
+          >
             <Input />
           </Form.Item>
         </>
@@ -394,7 +443,7 @@ const CreateVendorReturn = () => {
   ];
 
   const handleDelete = (record) => {
-    debugger
+    debugger;
     const newData = data.map((item) => {
       if (item.key === record.key) {
         return { ...item, ActiveFlag: false };
@@ -402,7 +451,7 @@ const CreateVendorReturn = () => {
       return item;
     });
     setData(newData);
-  }
+  };
 
   const Modalcolumns = [
     {
@@ -476,37 +525,60 @@ const CreateVendorReturn = () => {
   ];
 
   const SubmitChanged = (event) => {
-    setIssueStatus(event.target.checked)
-  }
+    setIssueStatus(event.target.checked);
+  };
 
   const handleReset = () => {
-    form2.resetFields()
-  }
+    form2.resetFields();
+  };
 
   const onFinishModel3 = (values) => {
-    debugger
-  }
+    debugger;
+  };
 
-  const onFinishFailed3 = () => {
-
-  }
+  const onFinishFailed3 = () => {};
 
   const handleRadioChange = (group, value) => {
-    debugger
+    debugger;
     setSelectedRadio(value);
   };
 
   return (
-    <Layout style={{ zIndex: '999999999' }}>
-      <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-        <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
+    <Layout style={{ zIndex: "999999999" }}>
+      <div
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <Row
+          style={{
+            padding: "0.5rem 2rem 0.5rem 2rem",
+            backgroundColor: "#40A2E3",
+            borderRadius: "10px 10px 0px 0px ",
+          }}
+        >
           <Col span={16}>
-            <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
+            <Title
+              level={4}
+              style={{
+                color: "white",
+                fontWeight: 500,
+                margin: 0,
+                paddingTop: 0,
+              }}
+            >
               Create Vendor Return
             </Title>
           </Col>
           <Col offset={6} span={2}>
-            <Button icon={<LeftOutlined />} style={{ marginBottom: 0 }} onClick={handleToBack}>
+            <Button
+              icon={<LeftOutlined />}
+              style={{ marginBottom: 0 }}
+              onClick={handleToBack}
+            >
               Back
             </Button>
           </Col>
@@ -668,7 +740,7 @@ const CreateVendorReturn = () => {
               span: 16,
             }}
             style={{
-              width: '100%',
+              width: "100%",
             }}
             initialValues={{
               GRNDateTo: dayjs(),
@@ -688,7 +760,7 @@ const CreateVendorReturn = () => {
                   <Form.Item
                     label="Product"
                     name="Product"
-                    style={{ marginLeft: '10px' }}
+                    style={{ marginLeft: "10px" }}
                   >
                     <AutoComplete
                       options={productOptions}
@@ -700,37 +772,35 @@ const CreateVendorReturn = () => {
                       allowClear
                     />
                   </Form.Item>
-                  <Form.Item hidden name='ProductId'><Input></Input></Form.Item>
+                  <Form.Item hidden name="ProductId">
+                    <Input></Input>
+                  </Form.Item>
                 </>
               </Col>
               <Col className="gutter-row" span={2}>
-                <Form.Item
-                  name="Radio1"
-                  style={{ marginLeft: '10px' }}
-                >
+                <Form.Item name="Radio1" style={{ marginLeft: "10px" }}>
                   <Radio
-                    checked={selectedRadio === 'option1'}
-                    onClick={() => handleRadioChange('group1', 'option1')}
-                  >
-                  </Radio>
+                    checked={selectedRadio === "option1"}
+                    onClick={() => handleRadioChange("group1", "option1")}
+                  ></Radio>
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item
-                  title='GRN Date From'
+                  title="GRN Date From"
                   name="GRNDateFrom"
-                  style={{ marginLeft: '10px' }}
+                  style={{ marginLeft: "10px" }}
                 >
-                  <DatePicker format='DD-MM-YYYY' />
+                  <DatePicker format="DD-MM-YYYY" />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item
-                  title='GRN Date To'
+                  title="GRN Date To"
                   name="GRNDateTo"
-                  style={{ marginLeft: '10px' }}
+                  style={{ marginLeft: "10px" }}
                 >
-                  <DatePicker format='DD-MM-YYYY' />
+                  <DatePicker format="DD-MM-YYYY" />
                 </Form.Item>
               </Col>
             </Row>
@@ -739,11 +809,14 @@ const CreateVendorReturn = () => {
                 <Form.Item
                   label="Vendor"
                   name="SupplierId"
-                  style={{ marginLeft: '10px' }}
+                  style={{ marginLeft: "10px" }}
                 >
-                  <Select allowClear placeholder='Select Value'>
+                  <Select allowClear placeholder="Select Value">
                     {DropDown.SupplierList.map((option) => (
-                      <Select.Option key={option.VendorId} value={option.VendorId}>
+                      <Select.Option
+                        key={option.VendorId}
+                        value={option.VendorId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -751,38 +824,34 @@ const CreateVendorReturn = () => {
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={2}>
-                <Form.Item
-                  name="Radio2"
-                  style={{ marginLeft: '10px' }}
-                >
+                <Form.Item name="Radio2" style={{ marginLeft: "10px" }}>
                   <Radio
-                    checked={selectedRadio === 'option2'}
-                    onClick={() => handleRadioChange('group2', 'option2')}
-                  >
-                  </Radio>
+                    checked={selectedRadio === "option2"}
+                    onClick={() => handleRadioChange("group2", "option2")}
+                  ></Radio>
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item
-                  title='Expiry Date From'
+                  title="Expiry Date From"
                   name="ExpiryDateFrom"
-                  style={{ marginLeft: '10px' }}
+                  style={{ marginLeft: "10px" }}
                 >
-                  <DatePicker format='DD-MM-YYYY' />
+                  <DatePicker format="DD-MM-YYYY" />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item
-                  title='Expiry Date To'
+                  title="Expiry Date To"
                   name="ExpiryDateTo"
-                  style={{ marginLeft: '10px' }}
+                  style={{ marginLeft: "10px" }}
                 >
-                  <DatePicker format='DD-MM-YYYY' />
+                  <DatePicker format="DD-MM-YYYY" />
                 </Form.Item>
               </Col>
             </Row>
-            <Row justify="end" style={{ padding: '0rem 1rem' }}>
-              <Col style={{ marginRight: '10px' }}>
+            <Row justify="end" style={{ padding: "0rem 1rem" }}>
+              <Col style={{ marginRight: "10px" }}>
                 <Form.Item>
                   <Button type="primary" htmlType="SearchList">
                     Submit
@@ -807,18 +876,18 @@ const CreateVendorReturn = () => {
               span: 16,
             }}
             style={{
-              width: '100%',
+              width: "100%",
             }}
             onFinish={onFinishModel3}
             onFinishFailed={onFinishFailed3}
-            form={form3}>
+            form={form3}
+          >
             <Table columns={Modalcolumns} dataSource={dataModal} />
           </Form>
         </Modal>
       </div>
-    </Layout >
+    </Layout>
   );
-}
-
+};
 
 export default CreateVendorReturn;

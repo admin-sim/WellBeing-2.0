@@ -19,14 +19,14 @@ function EditEnterprise() {
     >
       <PageHeader title={"Edit Enterprise"} button={false} />
       <Form
-        style={{ padding: "0.5rem 1rem" }}
+        style={{ margin: "1rem" }}
         layout="vertical"
         form={form}
         onFinish={(values) => {
           console.log("Form Values", values);
         }}
       >
-        <Row gutter={32}>
+        <Row gutter={16}>
           <ColWithSixSpan>
             <Form.Item name="EnterpriseName" label="Enterprise Name">
               <Input allowClear />
@@ -67,15 +67,8 @@ function EditEnterprise() {
               <Input allowClear />
             </Form.Item>
           </ColWithSixSpan>
-          <Divider style={{ marginTop: "0", marginBottom: "0.8rem" }} />
-          <Col
-            span={24}
-            style={{
-              marginBottom: "1rem",
-            }}
-          >
-            <strong>Contact Details</strong>
-          </Col>
+          <Divider orientation="left">Contact Details</Divider>
+
           <ColWithSixSpan>
             <Form.Item name="ContactName" label="Contact Name">
               <Input allowClear />

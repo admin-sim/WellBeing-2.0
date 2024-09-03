@@ -4,8 +4,8 @@ import React, { useEffect, useState } from "react";
 import {
   urlCancelSelectedAppointment,
   urlGetSlotCancelDetails,
-} from "../../../endpoints";
-import customAxios from "../../components/customAxios/customAxios";
+} from "../../../../endpoints";
+import customAxios from "../../../components/customAxios/customAxios";
 
 function CancelAppointmentModal({
   open,
@@ -39,7 +39,7 @@ function CancelAppointmentModal({
 
   return (
     <Modal
-      width={"40%"}
+      width={"35rem"}
       title={
         <span style={{ fontSize: "1.2rem", fontWeight: "600" }}>
           Cancel Appointment
@@ -49,10 +49,15 @@ function CancelAppointmentModal({
       maskClosable={false}
       onCancel={onCancel}
       footer={[
-        <Button key="submit" type="primary" onClick={() => form.submit()}>
-          Save
+        <Button
+          key="submit"
+          danger
+          type="primary"
+          onClick={() => form.submit()}
+        >
+          Delete
         </Button>,
-        <Button danger key="back" onClick={onCancel}>
+        <Button key="back" onClick={onCancel}>
           Cancel
         </Button>,
       ]}
@@ -137,7 +142,7 @@ function CancelAppointmentModal({
           }}
         >
           <Row style={{ marginTop: "1rem" }} gutter={32}>
-            <Col span={12}>
+            <Col span={24}>
               <Form.Item
                 name="reason"
                 label="Reason For Cancel"

@@ -85,28 +85,28 @@ const CreateDirectGRN = () => {
   const initialModelDataSource =
     grnHeaderId === 0
       ? [
-        {
-          key: 1,
-          BarCode: "",
-          BatchNo: "",
-          BatchQty: 0,
-          UomId: null,
-          BatchBonusQty: 0,
-          MFGDateString: "",
-          EXPDateString: "",
-          rate: 0,
-          BatchMrp: 0,
-          DiscountRate: 0,
-          BatchTaxType1: "",
-          BatchTaxAmount1: 0,
-          BatchTaxType2: "",
-          BatchTaxAmount1: 0,
-          BatchStockLocator: "",
-          ProductId: "",
-          GrnBatchId: 0,
-          ActiveFlag: true,
-        },
-      ]
+          {
+            key: 1,
+            BarCode: "",
+            BatchNo: "",
+            BatchQty: 0,
+            UomId: null,
+            BatchBonusQty: 0,
+            MFGDateString: "",
+            EXPDateString: "",
+            rate: 0,
+            BatchMrp: 0,
+            DiscountRate: 0,
+            BatchTaxType1: "",
+      
+            BatchTaxType2: "",
+            BatchTaxAmount1: 0,
+            BatchStockLocator: "",
+            ProductId: "",
+            GrnBatchId: 0,
+            ActiveFlag: true,
+          },
+        ]
       : [];
 
   const [form1] = Form.useForm();
@@ -382,6 +382,7 @@ const CreateDirectGRN = () => {
 
   const handleOpenModal = async (value, record) => {
     debugger;
+    
     record.BonusQuantity = form1.getFieldValue([record.key, "BonusQuantity"]);
     await form1.validateFields([
       "StoreId",
@@ -463,7 +464,7 @@ const CreateDirectGRN = () => {
       message.warning("Please add Batch details");
       return false;
     }
-
+setLoading(true);
     const newdata = data.filter((item) => item.ProductId);
 
     const products = newdata
@@ -568,6 +569,7 @@ const CreateDirectGRN = () => {
       message.success(
         `GRN ${grnHeaderId == 0 ? "Created" : "Updated"} Successfully`
       );
+      setLoading(false);
       handleCancel();
     } else {
       message.error("Something went wrong");
@@ -1012,7 +1014,7 @@ const CreateDirectGRN = () => {
         BatchMrp: 0,
         DiscountRate: 0,
         BatchTaxType1: "",
-        BatchTaxAmount1: 0,
+  
         BatchTaxType2: "",
         BatchTaxAmount1: 0,
         BatchStockLocator: "",

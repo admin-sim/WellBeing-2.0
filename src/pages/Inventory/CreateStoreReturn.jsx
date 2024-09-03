@@ -1,19 +1,39 @@
-import customAxios from '../../components/customAxios/customAxios.jsx';
-import React, { useEffect, useState } from 'react';
-import Button from 'antd/es/button';
-// import { urlCreateStoreReturn/*, urlAutocompleteProduct, urlAddNewStoreReturn*/ } from '../../../endpoints';
-import Select from 'antd/es/select';
-import { ConfigProvider, Typography, Checkbox, Tag, Modal, Popconfirm, Card, Col, Divider, Row, AutoComplete } from 'antd';
-import Input from 'antd/es/input';
-import Form from 'antd/es/form';
-import { DatePicker } from 'antd';
-import Layout from 'antd/es/layout/layout';
-import { LeftOutlined } from '@ant-design/icons';
+import customAxios from "../../components/customAxios/customAxios.jsx";
+import React, { useEffect, useState } from "react";
+import Button from "antd/es/button";
+import {
+  urlCreateStoreReturn,
+  urlSearchReceipt,
+  urlGetStoreProductDetails,
+  urlAddNewStoreReturn,
+  urlStoreReturnEdit,
+} from "../../../endpoints";
+import Select from "antd/es/select";
+import {
+  ConfigProvider,
+  Typography,
+  Checkbox,
+  Tag,
+  Modal,
+  Popconfirm,
+  Spin,
+  Col,
+  Divider,
+  Row,
+  AutoComplete,
+  message,
+} from "antd";
+import Input from "antd/es/input";
+import Form from "antd/es/form";
+import { DatePicker } from "antd";
+import Layout from "antd/es/layout/layout";
+import { LeftOutlined } from "@ant-design/icons";
 //import Typography from 'antd/es/typography';
-import { useNavigate } from 'react-router';
-import { Table, InputNumber } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
+import { useNavigate } from "react-router";
+import { Table, InputNumber } from "antd";
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
+import { useLocation } from "react-router-dom";
 //import { Calculate } from '@mui/icons-material';
 
 const CreateStoreReturn = () => {
@@ -21,183 +41,95 @@ const CreateStoreReturn = () => {
     DocumentType: [],
     StoreDetails: [],
     SupplierList: [],
+    ReturnStoreDetails: [],
     UOM: [],
     TaxType: [],
-    DateFormat: []
+    DateFormat: [],
   });
 
-  let [idCounter, setCounter] = useState(0);
-  let [idCounterModel, setCounterModel] = useState(0);
-
-  /*   const initialdata = [
-    {
-      key: idCounter.toString(),
-      product: '',
-      uom: '',
-      poQty: '',
-      bounsQty: '',
-      poRate: '',
-      discount: '',
-      discountAmt: '',
-      expectedMRP: '',
-      cgst: '',
-      cgstAmt: '',
-      sgst: '',
-      sgstAmt: '',
-      amount: '',
-      totalAmount: '',
-      avlQty: '',
-      deliverySchedule: ''
-    }
-  ];
- */
   const [form1] = Form.useForm();
   const [form2] = Form.useForm();
+  const [form3] = Form.useForm();
   const { Title } = Typography;
-  const { TextArea } = Input;
-  const { Option } = Select;
-  const navigate = useNavigate();
-  const [data, setData] = useState([]);
-  const currentDate = new Date();
-  //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');
-  const [isLoading, setIsLoading] = useState(true);
-  const [inputValues, setInputValues] = useState({});
-  const [shouldValidate, setShouldValidate] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [selectedUom, setSelectedUom] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
-  const [shouldValidateModel, setShouldValidateModel] = useState(false);
-  const [dataModel, setDataModel] = useState([]);
-  const [formData, setFormData] = useState({});
-  const [selectedUomText, setSelectedUomText] = useState({});
-  const [selectedProductId, setSelectedProductId] = useState({});
-  const [selectedUomId, setSelectedUomId] = useState({});
-  const [recordKeys, setRecordKeys] = useState();
-  const [delivery, setDelivery] = useState([]);
-  const [productIds, setProductIds] = useState({});
-  const [isSubmit, setIsSubmit] = useState(false);
-  const fields = form1.getFieldsValue();
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
-  // const tableRef = useRef(null);
-
+  const [dataModal, setDataModal] = useState([]);
+  const [data, setData] = useState([]);
+  const [issueStatus, setIssueStatus] = useState();
+  const [productOptions, setProductOptions] = useState();
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]); 
+  const location = useLocation();
+  const ReturnHeaderId = location.state.ReturnHeaderId;
+  const navigate = useNavigate();
+  const [buttonTitle, setButtonTitle] = useState('Save')
   useEffect(() => {
-    // customAxios.get(urlCreateStoreReturn).then((response) => {
-    //   const apiData = response.data.data;
-    //   setDropDown(apiData);
-    //   setIsLoading(false);
-    //   ModelAdd();
-    // });
+    customAxios.get(urlCreateStoreReturn).then((response) => {
+      const apiData = response.data.data;
+      setDropDown(apiData);
+      //setIsLoading(false);
+    });
   }, []);
 
-  const getPanelValue = async (searchText) => {
-    //     debugger;
-    //     try {
-    //       customAxios.get(`${urlAutocompleteProduct}?Product=${searchText}`).then((response) => {
-    //         const apiData = response.data.data;
-    //         const newOptions = apiData.map(item => ({ value: item.LongName, key: item.ProductDefinitionId, UomId: item.UOMPrimaryUOM }));
-    //         setAutoCompleteOptions(newOptions);
-    //       });
-    //     } catch (error) {
-    //       //console.error("Error fetching purchase order details:", error);
-    //       // Handle the error as needed
-    //     }
-  }
-  // useEffect(() => {
-  //   debugger;
-  //   const fetchData = async () => {
-  //     try {
-  //       Object.entries(inputValues).forEach(async ([key, value]) => {
-  //         if (value) {
-  //           const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${value}`);
-  //           const apiData = response.data.data;
-  //           const newOptions = apiData.map((item) => ({ value: item.LongName, key: item.ProductDefinitionId, UomId: item.UOMPrimaryUOM }));
-  //           setAutoCompleteOptions((prevState) => ({ ...prevState, [key]: newOptions }));
-  //         }
-  //       });
-  //     } catch (error) {
-  //       // Handle the error as needed
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [inputValues]);
-
-  const onOkModal = () => {
+  useEffect(() => {
     debugger;
-    form2
-      .validateFields()
-      .then(() => {
-        // If validation succeeds, submit the form
-        form2.submit();
-      })
-      .catch((error) => {
-        console.log('Validation error:', error);
-      });
-  }
+    const fetchData = async () => {
+      if (ReturnHeaderId > 0) {
+        setButtonTitle("Update");
+        try {
+          const response = await customAxios.get(
+            `${urlStoreReturnEdit}?ReturnHeaderId=${ReturnHeaderId}`
+          );
+          if (response.status == 200 && response.data.data != null) {
+            const editeddata = response.data.data;
+            const products = editeddata.ReturnDetails.map(
+              (item, index) => ({
+                ...item,
+                key: index,
+                ProductName: item.Product,
+                index: index + 1
+              })
+            );
+            setData(products);
 
-  const onFinishModel = (values) => {
-    debugger;
-    const deliveries = [];
-    for (let i = 0; i < idCounterModel; i++) {
-      const delivery = {
-        ProductId: values.Product,
-        DeliveryQuantity: values[i].quantity,
-        UomId: values[i].uom,
-        DelDate: values.FromDate === null ? '' : (values[i].datedelivery.$D.toString().padStart(2, '0') + '-' + (values[i].datedelivery.$M + 1).toString().padStart(2, '0') + '-' + values[i].datedelivery.$y).toString(),
-        DeliveryLocation: values[i].deliveryloc === undefined ? null : values[i].deliveryloc,
+            const formdata = editeddata.newReturnModel;
+            form1.setFieldsValue({
+            
+              ReturningStore: formdata.StoreId,
+              ReturnedLocation: formdata.SupplierId,
+             // ReturnHeaderId: formdata.ReturnHeaderId
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
       }
-      deliveries.push(delivery);
-      setDelivery(deliveries);
-      setIsModalOpen(false);
-    }
-    onCancelModel();
-  }
+    };
+    fetchData();
+  }, []);
 
-  const onCancelModel = () => {
+  const handleSearch = async (searchText) => {
     debugger;
-    form2.resetFields();
-    for (let i = idCounterModel; i > 0; i--) {
-      ModelDelete(i);
+    if (searchText) {
+      const form1va = form1.getFieldValue();
+      const response = await customAxios.get(
+        `${urlGetStoreProductDetails}?product=${searchText}&storeId=${form1va.ReturningStore}`
+      );
+      const apiData = response.data.data;
+      const newOptions = apiData.map((item) => ({
+        value: item.LongName,
+        key: item.ProductDefinitionId,
+      }));
+      setProductOptions(newOptions);
+    } else {
+      form2.setFieldsValue({ ProductId: 0 });
+      setProductOptions([]);
     }
-    setIsModalOpen(false);
-  }
-  const handleCancel = () => {
-    const url = '/StoreReturn';
-    navigate(url);
-    // form1.resetFields();
-    // form2.resetFields();
-    // setDelivery([]);
-    // setData([]);
-    // for (let i = idCounter; i > 0; i--) {
-    //   handleDelete(i);
-    // }
   };
-
-  const ModelOpen = (value, record) => {
+  const handleSelect = (value, option, column) => {
     debugger;
-    form1
-      .validateFields()
-      .then(() => {
-        // If validation succeeds, submit the form
-        setRecordKeys(record.key)
-        setIsModalOpen(true);
-      })
-      .catch((error) => {
-        console.log('Validation error:', error);
-      });
-  }
-
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
+    form2.setFieldsValue({ ProductId: option.key });
   };
 
-  const handleToPurchaseOrder = () => {
-    const url = '/StoreReturn';
-    navigate(url);
-  };
-
-  const handleDelete = (record) => {
+  const onFinishModel = async(values) => {
     debugger;
     const newData = data.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
     Object.keys(fields).forEach(fieldName => {
@@ -233,246 +165,267 @@ const CreateStoreReturn = () => {
       });
   }
   const handleOnFinish = async (values) => {
-    //     debugger;
-    //     setIsSearchLoading(true);
-    //     const products = [];
-    //     for (let i = 0; i <= idCounter; i++) {
-    //       if (values[i] !== undefined) {
-    //         const product = {
-    //           ProductId: productIds[i],
-    //           UomId: values[i].uom,
-    //           PoQuantity: values[i].poQty,
-    //           BonusQuantity: values[i].bounsQty === "" ? 0 : values[i].bounsQty,
-    //           PoRate: values[i].poRate === "" ? null : values[i].poRate.toFixed(4),
-    //           DiscountRate: values[i].discount === "" ? 0 : values[i].discount.toFixed(4),
-    //           DiscountAmount: values[i].discountAmt === "" ? 0 : parseFloat(values[i].discountAmt).toFixed(4),
-    //           // DiscountAmount: values[i].discountAmt === "" ? 0 : (form1.getFieldValue([i, 'discountAmt'])).toFixed(4),          
-    //           MrpExpected: values[i].expectedMRP === "" ? 0 : values[i].expectedMRP.toFixed(4),
-    //           TaxType1: values[i].cgst === "" ? 0 : values[i].cgst,
-    //           TaxAmount1: values[i].cgstAmt === "" ? 0 : values[i].cgstAmt.toFixed(4),
-    //           TaxType2: values[i].sgst === "" ? 0 : values[i].sgst,
-    //           TaxAmount2: values[i].sgstAmt === "" ? 0 : values[i].sgstAmt.toFixed(4),
-    //           LineAmount: values[i].amount === "" ? null : values[i].amount.toFixed(4),
-    //           PoTotalAmount: values[i].totalAmount === "" ? null : values[i].totalAmount,
-    //           AvailableQuantity: values[i].avlQty === "" ? null : values[i].avlQty,
-    //         }
-    //         products.push(product);
-    //       }
-    //     }
-
-    //     const purchaseOrder = {
-    //       SupplierId: values.SupplierList === undefined ? '' : values.SupplierList,
-    //       ProcurementStoreId: values.StoreDetails === undefined ? '' : values.StoreDetails,
-    //       DocumentType: values.DocumentType === undefined ? '' : values.DocumentType,
-    //       PurchaseDate: values.PODate === undefined ? dayjs(`${currentDate}`).format(dateFormat) : values.PODate,
-    //       PoStatus: values.POStatus === undefined ? null : values.POStatus,
-    //       Remarks: values.Remarks === undefined ? null : values.Remarks,
-    //       PoPurchaseValue: values.Amount === undefined ? null : values.Amount,
-    //       PoTotalAmount: values.totalpoAmount === undefined ? null : values.totalpoAmount,
-    //       PoTaxAmount: values.PoTaxAmount === undefined ? 0 : values.PoTaxAmount,
-    //     }
-    //     const postData = {
-    //       newPurchaseOrderModel: purchaseOrder,
-    //       PurchaseOrderDetails: products,
-    //       Delivery: delivery
-    //     }
-    //     try {
-    //       const response = await customAxios.post(urlAddNewPurchaseOrder, postData, {        
-    //         headers: {
-    //           'Content-Type': 'application/json'
-    //         }        
-    //       });
-    //       form1.resetFields();
-    //     } catch (error) {
-    //       // Handle error      
-    //     }
-    //     setIsSearchLoading(false);
-  };
-
-  const handleSelect = (value, option, key) => {
     debugger;
-    // Update the product value in the form
-    form1.setFieldsValue({ [key]: { product: value } });
-    setProductIds((prevState) => ({ ...prevState, [key]: option.key }));
-    setSelectedProductId((prevState) => {
-      const newState = { ...prevState, [key]: option.key };
-      return newState;
-    })
+   
+    if (data.length == 0) {
+      message.warning('Please Add Product/Batch')
+      return false;
+    }
 
-    // form1.setFieldsValue({option});
-    // Set the selected UOM based on the selected product
-    const matchingUom = DropDown.UOM.find((uomOption) => uomOption.UomId === option.UomId);
-    setSelectedUomText((prevState) => {
-      const newState = { ...prevState, [key]: matchingUom.LongName };
-      return newState;
-    });
-    setSelectedUomId((prevState) => {
-      const newState = { ...prevState, [key]: matchingUom.UomId };
-      console.log(selectedUomId);
-      return newState;
-    });
-    if (matchingUom) {
-      // If a matching UomId is found, set this as the selected Uom
-      setSelectedUom((prevState) => {
-        const newState = { ...prevState, [key]: matchingUom.UomId };
-        console.log(newState); // Log the new state
-        return newState;
+    const products = [];
+    for (let i = 0; i < data.length; i++) {
+      if (data[i] !== undefined) {
+        const product = {
+          ProductId: data[i].ProductId,
+          UomId: data[i].UomId,
+          BatchNo: data[i].BatchNo,
+          ReturnQty: values[i].ReturnQty,
+          EXPDateString:dayjs(data[i].EXPDate).format('DD-MM-YYYY'),
+      
+        }
+        products.push(product);
+      }
+    }
+    const storeReturn = {
+      FacilityId : 1,
+      StoreId: values.ReturningStore,
+      SupplierId: values.ReturnedLocation,
+      ReturnDatestring: values.ReturnDate ? values.ReturnDate.format("DD-MM-YYYY") : null,
+      ReturnStatus: !issueStatus ? 'Created' : values.ReturnStatus,
+      ReturnHeaderId:ReturnHeaderId
+    }
+    const postData = {
+      newReturnModel: storeReturn,
+      ReturnDetails: products,
+    }
+    try {
+      const response = await customAxios.post(urlAddNewStoreReturn, postData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
-
-      // Update the UOM value in the form
-      form1.setFieldsValue({ [key]: { uom: matchingUom.UomId } });
-    } else {
-      // If no matching UomId is found, clear the selected Uom
-      setSelectedUom((prevState) => {
-        const newState = { ...prevState, [key]: null };
-        console.log(newState); // Log the new state
-        return newState;
-      });
-
-      // Clear the UOM value in the form
-      form1.setFieldsValue({ [key]: { uom: null } });
+      handleToBack();
+    } catch (error) {
+      // Handle error      
     }
   };
-
-  useEffect(() => {
-    console.log(selectedUom);
-    console.log(selectedUomText);// log the current state
-  }, [selectedUom], [selectedUomText]); // run this effect whenever selectedUom changes   
-
-  const ModelAdd = () => {
-    debugger;
-    setCounterModel(idCounterModel + 1);
-    if (shouldValidateModel) { //first time going to add row without validation, call from use useEffect      
-      form2
-        .validateFields()
-        .then(() => {
-          const newRow = {
-            key: idCounterModel.toString(),
-            quantity: '',
-            uom: '',
-            datedelivery: '',
-            deliveryloc: '',
-          }; // Define your new row data here
-          setDataModel([...dataModel, newRow]);
-        })
+  const addtolist  = () => {
+    // Filter selected items
+    const selectedItems = dataModal.filter(item => selectedRowKeys.includes(item.key));
+  
+    if (selectedItems.length > 0) {
+      // Map selected items to a new array with updated keys and indices
+      const newItems = selectedItems.map((item, index) => ({
+        ...item,
+        key: index,      // Ensure a unique key for each item
+        index: index + 1 // Adjust index if needed
+      }));
+  
+      // Update the state with the new items
+      setData(newItems);
+      setIsModalOpen(false);
     } else {
-      const newRow = {
-        key: idCounterModel.toString(),
-        quantity: '',
-        uom: '',
-        datedelivery: '',
-        deliveryloc: '',
-      };
-      setDataModel([...dataModel, newRow]);
-      setShouldValidateModel(true);
+      message.warning("Please select at least one product");
+      return false;
     }
-    //setIsTableReady(false);
   };
-  const columnsModel = [
+  const OpenModel = async () => {
+    await form1.validateFields(["ReturningStore"]);
+    form2.resetFields();
+    setDataModal([]);
+    setSelectedRowKeys([]);
+    setIsModalOpen(true);
+  };
+  const handleToBack = () => {
+    const url = "/StoreReturn";
+    navigate(url);
+  };
+  const handleReset = () => {
+    form2.resetFields();
+  };
+  const SubmitChanged = (event) => {
+    setIssueStatus(event.target.checked);
+  };
+
+  const handleclose = () => {
+    setIsModalOpen(false);
+    form2.resetFields();
+    setDataModal([]);
+  };
+
+  const handleSelectChange = (e, key) => {
+    const newSelectedRowKeys = e.target.checked
+      ? [...selectedRowKeys, key]
+      : selectedRowKeys.filter(k => k !== key);
+
+    setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+
+  const columns = [
     {
-      title: 'Quantity',
-      dataIndex: 'quantity',
-      key: 'quantity',
-      render: (_, record) => (
-        <Form.Item style={{ width: 100 }}
-          name={[record.key, 'quantity']}
-          rules={[
-            {
-              required: true,
-              message: 'Please input!'
-            },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value) {
-                  return Promise.resolve();
-                }
-                if (value === form1.getFieldValue([recordKeys, 'poQty'])) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(new Error(`Quantity must be equal to PO Qty is ${form1.getFieldValue([recordKeys, 'poQty'])}!`));
-              },
-            }),
-          ]}
-        >
-          <InputNumber min={0} style={{ width: '150%' }} allowClear />
-        </Form.Item>
-      )
+      title: "Product",
+      dataIndex: "ProductName",
+      key: "ProductName",
     },
     {
-      title: 'UOM',
-      // width: 150,
-      dataIndex: 'uom',
-      key: 'uom',
+      title: "Uom",
+      dataIndex: "Uom",
+      key: "Uom",
+    },
+    {
+      title: "BatchNo",
+      dataIndex: "BatchNo",
+      key: "BatchNo",
+    },
+    {
+      title: "Expiry Date",
+      dataIndex: "EXPDate",
+      key: "EXPDate",
+      sorter: (a, b) => a.EXPDate.localeCompare(b.EXPDate),
+      sortDirections: ["descend", "ascend"],
+      render: (text) => {
+        const dateParts = text.split("T")[0].split("-");
+        const year = dateParts[0];
+        const month = dateParts[1];
+        const day = dateParts[2];
+
+        return `${day}-${month}-${year}`;
+      },
+    },
+    {
+      title: "Returned Quantity",
+      dataIndex: "Quantity",
+      key: "Quantity",
+      render: (text) => {
+        // Display 0 if Quantity is null
+        return text === null ? 0 : text;
+      },
+    },
+    {
+      title: "Returnable Qty",
+      dataIndex: "BalanceQty",
+      key: "ReturnableQty",
       render: (text, record) => {
-        const recordKeyAsNumber = parseInt(recordKeys);
-        const uoms = selectedUomText[recordKeyAsNumber];
-        console.log(selectedUomText);
-        return (
-          <Form.Item style={{ width: 100 }}
-            name={[record.key, 'uom']}
-            initialValue={selectedUomId[recordKeyAsNumber]}
+        // Use ReturnHeaderId from location to determine which value to show
+        return ReturnHeaderId && ReturnHeaderId > 0 ? record.AvlQuantity : record.BalanceQty;
+      },
+    },
+    {
+      title: "Return Quantity",
+      dataIndex: "ReturnQty",
+      key: "ReturnQty",
+      width:300,
+      render: (text, record) => (
+        <>
+          <Form.Item
+            name={[record.key, "ReturnQty"]} initialValue={record.ReturnQty}
             rules={[
               {
-                required: false,
-              }
+                required: true,
+                message: "Please input!",
+              },
+              {
+                validator: (_, value) => {
+                  if (value > record.BalanceQty) {
+                    return Promise.reject(
+                      new Error("Return Qty should not be Greater than Returnable.")
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
             ]}
           >
-            <Tag color="blue">{uoms}</Tag>
+            <InputNumber min={0} style={{ marginTop: 10 }} allowClear />
           </Form.Item>
-        );
-      }
+        </>
+      ),
+    },
+
+  ];
+
+
+  const Modalcolumns = [
+    {
+      title: '',
+      dataIndex: 'checkbox',
+      key: 'checkbox',
+      render: (_, record) => (
+        <Checkbox
+          checked={selectedRowKeys.includes(record.key)}
+          onChange={(e) => handleSelectChange(e, record.key)}
+        />
+      ),
     },
     {
-      title: 'Date of Delivery',
-      dataIndex: 'datedelivery',
-      // width: 150,
-      key: 'datedelivery',
-      render: (text, record) => (
-        <Form.Item style={{ width: 200 }}
-          name={[record.key, 'datedelivery']}
-          initialValue={dayjs(`${currentDate}`)}
-          rules={[
-            {
-              required: true,
-            }
-          ]}
-        >
-          <DatePicker style={{ width: '150%' }} format="DD-MM-YYYY" /*format={dateFormat} */ />
-        </Form.Item>
-      )
+      title: "Product",
+      dataIndex: "ProductName",
+      key: "ProductName",
     },
     {
-      title: 'Delivery Location',
-      dataIndex: 'deliveryloc',
-      // width: 150,
-      key: 'deliveryloc',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'deliveryloc']} initialValue={text} style={{ width: 200 }}>
-          <Input style={{ width: '150%' }} allowClear />
-        </Form.Item>
-      )
+      title: "Quantity",
+      dataIndex: "BalanceQty",
+      key: "BalanceQty",
     },
     {
-      title: <Button type="primary" icon={<PlusOutlined />} onClick={ModelAdd}></Button>,
-      dataIndex: 'add',
-      key: 'add',
-      width: 50,
-      render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => ModelDelete(record)}><DeleteOutlined /></Popconfirm>
-      //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>      
-    }
-  ]
+      title: "BatchNo",
+      dataIndex: "BatchNo",
+      key: "BatchNo",
+    },
+    {
+      title: "Expiry Date",
+      dataIndex: "EXPDate",
+      key: "EXPDate",
+      sorter: (a, b) => a.EXPDate.localeCompare(b.EXPDate),
+      sortDirections: ["descend", "ascend"],
+      render: (text) => {
+        const dateParts = text.split("T")[0].split("-");
+        const year = dateParts[0];
+        const month = dateParts[1];
+        const day = dateParts[2];
+
+        return `${day}-${month}-${year}`;
+      },
+    },
+  ];
 
   return (
-    <Layout style={{ zIndex: '999999999' }}>
-      <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-        <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
+    <Layout style={{ zIndex: "999999999" }}>
+      <div
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <Row
+          style={{
+            padding: "0.5rem 2rem 0.5rem 2rem",
+            backgroundColor: "#40A2E3",
+            borderRadius: "10px 10px 0px 0px ",
+          }}
+        >
           <Col span={16}>
-            <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
+            <Title
+              level={4}
+              style={{
+                color: "white",
+                fontWeight: 500,
+                margin: 0,
+                paddingTop: 0,
+              }}
+            >
               Create Store Return
             </Title>
           </Col>
           <Col offset={6} span={2}>
-            <Button icon={<LeftOutlined />} style={{ marginBottom: 0 }} onClick={handleToPurchaseOrder}>
+            <Button
+              icon={<LeftOutlined />}
+              style={{ marginBottom: 0 }}
+              onClick={handleToBack}
+            >
               Back
             </Button>
           </Col>
@@ -682,13 +635,27 @@ const CreateStoreReturn = () => {
                   </Form.Item>
                 </div>
               </Col>
-              <Table columns={columnsModel} dataSource={dataModel} />
-            </Form>
-          </Modal>
-        </ConfigProvider>
+            </Row>
+          </Form>
+          <Form
+            name="basic"
+            style={{
+              width: "100%",
+            }}
+            onFinish={addtolist}
+            form={form3}
+          >
+            <Table columns={Modalcolumns} dataSource={dataModal} />
+          </Form>
+          <Row justify={"end"} style={{ margin: "1rem 1.5rem 0" }}>
+          <Form.Item>
+            <Button onClick={addtolist}   type="primary">Add To List</Button>
+            </Form.Item>
+          </Row>
+        </Modal>
       </div>
-    </Layout >
+    </Layout>
   );
-}
+};
 
 export default CreateStoreReturn;

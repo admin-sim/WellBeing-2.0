@@ -20,7 +20,11 @@ const PageHeader = ({
     >
       <Col
         span={24}
-        style={{ display: "flex", justifyContent: "space-between" }}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
       >
         <Title
           level={4}

@@ -166,19 +166,7 @@ const PurchaseOrder = () => {
     },
   ];
 
-  const disableFromDate = (current) => {
-    // Disable dates that are after today
-    return current && current.isAfter(dayjs().endOf("day"));
-  };
-
-  const disableToDate = (current) => {
-    // Disable dates that are before the selected fromDate or after today
-    return (
-      current &&
-      (current.isBefore(fromDate, "day") ||
-        current.isAfter(dayjs().endOf("day")))
-    );
-  };
+ 
   const onFinish = async (values) => {
     debugger;
     setLoading(true);

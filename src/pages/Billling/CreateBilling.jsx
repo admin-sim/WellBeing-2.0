@@ -11,17 +11,12 @@ import {
   Select,
   message,
   DatePicker,
-  Divider,
-  notification,
   Table,
-  Modal,
   Tooltip,
   AutoComplete,
   Typography,
-  Empty,
 } from "antd";
 import {
-  EditOutlined,
   DeleteOutlined,
   LeftOutlined,
   PlusOutlined,
@@ -40,9 +35,7 @@ import {
   urlGetAllProviders,
   urlAddNewCharge,
   urlBillingCreate,
- 
   urlEditDiscount,
-  urlUpdateDiscount,
   urlInvoiceDiscount,
   urlGetPatientHeaderDetails,
 } from "../../../endpoints";
@@ -447,8 +440,7 @@ const CreateBilling = () => {
               </span>
             );
           },
-        }
-        
+        },
       ],
     },
   ];

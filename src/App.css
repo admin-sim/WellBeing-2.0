@@ -1,3 +1,8 @@
+/*Ck Editor Imports*/
+@import url("https://fonts.googleapis.com/css2?family=Oswald&family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+/*Ck Editor Imports*/
+
 #root {
   margin: 0;
   padding: 0;
@@ -164,8 +169,6 @@ li .ant-menu-item {
 }
 
 /* C K Editor Start*/
-@import url("https://fonts.googleapis.com/css2?family=Oswald&family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 
 @media print {
   body {

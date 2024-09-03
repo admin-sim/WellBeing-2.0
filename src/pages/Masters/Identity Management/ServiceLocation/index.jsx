@@ -14,23 +14,26 @@ function ServiceLocation() {
       title: "Sl No",
       dataIndex: "SlNo",
       key: "1",
-      width: 100,
+      width: 80,
     },
     {
       title: "Service Location Name",
       dataIndex: "ServiceLocationName",
       key: "2",
+      width: 200,
     },
     {
       title: "Service Location Code",
       dataIndex: "ServiceLocationCode",
       key: "3",
+      width: 200,
     },
 
     {
       title: "Service Location Type",
       dataIndex: "ServiceLocationType",
       key: "4",
+      width: 200,
     },
   ];
 

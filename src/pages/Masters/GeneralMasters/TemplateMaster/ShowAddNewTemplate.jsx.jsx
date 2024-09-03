@@ -23,6 +23,7 @@ import {
 import customAxios from "../../../../components/customAxios/customAxios";
 import CkEditor from "../../../../components/CKEditor/index.jsx";
 import { template } from "lodash";
+import { ColWithSixSpan } from "../../../../components/customGridColumns/index.jsx";
 
 function ShowAddNewTemplate() {
   const [apiData, setApiData] = useState([]);
@@ -134,15 +135,15 @@ function ShowAddNewTemplate() {
         />
         <Spin spinning={loading}>
           <Form
-            style={{ margin: "1rem 2rem" }}
+            style={{ margin: "1rem" }}
             layout="vertical"
             form={form}
             onFinish={(values) => {
               handleSubmit(values);
             }}
           >
-            <Row gutter={32}>
-              <Col span={6}>
+            <Row gutter={16}>
+              <ColWithSixSpan>
                 <Form.Item
                   name="facilityID"
                   label="Facility"
@@ -164,8 +165,8 @@ function ShowAddNewTemplate() {
                     ))}
                   </Select>
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="tempGroupID"
                   label="Template Group"
@@ -187,8 +188,8 @@ function ShowAddNewTemplate() {
                     ))}
                   </Select>
                 </Form.Item>
-              </Col>
-              <Col span={5}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="providerID" label="Providers">
                   <Select style={{ width: "100%" }}>
                     {apiData?.Provider?.map((option) => (
@@ -201,8 +202,8 @@ function ShowAddNewTemplate() {
                     ))}
                   </Select>
                 </Form.Item>
-              </Col>
-              <Col span={5}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="tempName"
                   label="Template Name"
@@ -215,13 +216,13 @@ function ShowAddNewTemplate() {
                 >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
-              </Col>
-              <Col span={2}>
-                <Form.Item label=" ">
-                  <Button type="primary" htmlType="submit">
-                    {templateRecord ? "Update" : "Save"}
-                  </Button>
-                </Form.Item>
+              </ColWithSixSpan>
+            </Row>
+            <Row justify={"end"}>
+              <Col>
+                <Button type="primary" htmlType="submit">
+                  {templateRecord ? "Update" : "Save"}
+                </Button>
               </Col>
             </Row>
           </Form>

@@ -18,14 +18,12 @@ import {
 } from "antd";
 import { IoAddCircleOutline } from "react-icons/io5";
 import { FaAnglesRight } from "react-icons/fa6";
-import Layout from "antd/es/layout/layout";
 import {
   SearchOutlined,
   EditOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router";
-
 import {
   urlGetPatientDetail,
   urlAddNewPatient,
@@ -34,7 +32,6 @@ import {
   urlGetServiceLocationBasedonId,
 } from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
-import Title from "antd/es/typography/Title";
 import TextArea from "antd/es/input/TextArea";
 import WebcamImage from "../../../components/WebCam/index.jsx";
 import dayjs from "dayjs";
@@ -81,7 +78,6 @@ const NewPatient = () => {
   const [loadings, setLoadings] = useState(false);
   const [isloading, setLoading] = useState(true);
   const [uploadedImage, setUploadedImage] = useState(null);
-
   const [form] = Form.useForm();
   const [form2] = Form.useForm();
   const navigate = useNavigate();
@@ -109,7 +105,6 @@ const NewPatient = () => {
       const now = DateTime.now();
       const birthDate = DateTime.fromJSDate(date.toDate());
       const diff = now.diff(birthDate, ["years", "months", "days"]).toObject();
-
       setAge({
         years: Math.floor(diff.years),
         months: Math.floor(diff.months),
@@ -699,7 +694,6 @@ const NewPatient = () => {
   ];
 
   const handleAddressClick = () => {
-   
     const presentAddressFields = form.getFieldsValue([
       "presentAddress1",
       "presentCountryId",

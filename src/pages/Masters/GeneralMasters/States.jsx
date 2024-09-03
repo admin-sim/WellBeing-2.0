@@ -1,29 +1,20 @@
-import {
-  EditOutlined,
-  PlusCircleOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import {
   Button,
-  Card,
   Col,
   Form,
   Modal,
   Row,
   Select,
-  Space,
-  Table,
   Spin,
   Layout,
   notification,
   message,
 } from "antd";
-import { useForm } from "antd/es/form/Form";
 import Input from "antd/es/input/Input";
 import Title from "antd/es/typography/Title";
 import React, { useState, useEffect } from "react";
 import customAxios from "../../../components/customAxios/customAxios";
-
 import {
   urlGetAllStates,
   urlGetSelectedStateDetails,
@@ -31,6 +22,7 @@ import {
   urlDeleteSelectedState,
 } from "../../../../endpoints";
 import CustomTable from "../../../components/customTable";
+import PageHeader from "../../../components/PageHeader";
 
 function States() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,7 +42,6 @@ function States() {
   }, []);
 
   const fetchData = async () => {
-    debugger;
     setLoading(true);
     try {
       const response = await customAxios.get(`${urlGetAllStates}`);
@@ -74,7 +65,7 @@ function States() {
 
   const handleStateEditModal = (record) => {
     // edit the item in your data here
-    debugger;
+
     setStateData(record);
     setLoading(true);
     setIsEditing(true);
@@ -103,7 +94,6 @@ function States() {
   };
 
   const handleDelete = (record) => {
-    debugger;
     //Deleting an State from the Table
     setStateData(record);
     try {
@@ -128,7 +118,6 @@ function States() {
   };
 
   const handleSubmit = async () => {
-    debugger;
     form.validateFields();
     const values = form.getFieldsValue();
     console.log("state Edit Modal Submit", values);
@@ -211,21 +200,25 @@ function States() {
       title: "Sl. No.",
       dataIndex: "key",
       key: "key",
+      width: 80,
     },
     {
       title: "State Name",
       dataIndex: "StateName",
       key: "StateName",
+      width: 150,
     },
     {
       title: "State Code",
       dataIndex: "StateCode",
       key: "StateCode",
+      width: 150,
     },
     {
       title: "Country",
       dataIndex: "CountryName",
       key: "CountryName",
+      width: 120,
     },
   ];
 
@@ -240,36 +233,12 @@ function States() {
             borderRadius: "10px",
           }}
         >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                State Manager
-              </Title>
-            </Col>
-            <Col offset={5} span={3}>
-              <Button
-                icon={<PlusCircleOutlined />}
-                onClick={handleAddStateShowModal}
-              >
-                Add New State
-              </Button>
-            </Col>
-          </Row>
-
+          <PageHeader
+            title={"State Manager"}
+            buttonLabel={"Add New State"}
+            buttonIcon={<PlusCircleOutlined />}
+            onButtonClick={handleAddStateShowModal}
+          />
           <Spin spinning={loading}>
             <CustomTable
               columns={columns}
@@ -295,7 +264,7 @@ function States() {
                 {/* {IsSubmitClicked ? "Submitting" : "Submit"} */}
                 {isEditing ? "Update" : "Submit"}
               </Button>,
-              <Button key="back" onClick={handleStateModalCancel}>
+              <Button key="back" danger onClick={handleStateModalCancel}>
                 Cancel
               </Button>,
             ]}

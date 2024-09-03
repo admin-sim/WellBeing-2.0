@@ -10,12 +10,10 @@ import {
   notification,
   message,
 } from "antd";
-
 import Input from "antd/es/input/Input";
 import Title from "antd/es/typography/Title";
 import React, { useState, useEffect } from "react";
 import customAxios from "../../../components/customAxios/customAxios";
-
 import {
   urlGetAllUOMs,
   urlGetSelectedUOMDetails,
@@ -23,6 +21,7 @@ import {
   urlDeleteSelectedUOM,
 } from "../../../../endpoints";
 import CustomTable from "../../../components/customTable";
+import PageHeader from "../../../components/PageHeader";
 
 function UOM() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,21 +32,6 @@ function UOM() {
   const [isEditing, setIsEditing] = useState();
   const [messageApi, contextHolder] = message.useMessage();
   const [IsSubmitClicked, setIsSubmitClicked] = useState(false);
-
-  const options = [
-    {
-      value: "jack",
-      label: "Jack",
-    },
-    {
-      value: "lucy",
-      label: "Lucy",
-    },
-    {
-      value: "Yiminghe",
-      label: "yiminghe",
-    },
-  ];
 
   useEffect(() => {
     fetchData();
@@ -69,8 +53,6 @@ function UOM() {
   };
 
   const handleDelete = (record) => {
-    debugger;
-    //Deleting an State from the Table
     setUOMData(record);
     try {
       customAxios
@@ -100,8 +82,6 @@ function UOM() {
   };
 
   const handleUOMEditModal = (record) => {
-    // edit the item in your data here
-    debugger;
     setUOMData(record);
     setLoading(true);
     setIsEditing(true);
@@ -127,7 +107,6 @@ function UOM() {
   };
 
   const handleSubmit = async () => {
-    debugger;
     form.validateFields();
     setIsSubmitClicked(true);
     const values = form.getFieldsValue();
@@ -192,7 +171,7 @@ function UOM() {
       } catch (error) {
         console.error("Failed to send data to server: ", error);
       }
-    }else{
+    } else {
       setIsSubmitClicked(false);
     }
   };
@@ -202,126 +181,101 @@ function UOM() {
       title: "Sl. No.",
       dataIndex: "key",
       key: "key",
+      width: 80,
     },
     {
       title: "Short Name",
       dataIndex: "ShortName",
       key: "ShortName",
+      width: 120,
     },
     {
       title: "Long Name",
       dataIndex: "LongName",
       key: "LongName",
+      width: 180,
     },
   ];
 
   return (
     <>
-      <Layout>
-        <div
-          style={{
-            width: "100%",
-            backgroundColor: "white",
-            minHeight: "max-content",
-            borderRadius: "10px",
-          }}
-        >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Unit Of Measurement (UOM) Manager
-              </Title>
-            </Col>
-
-            <Col offset={5} span={3}>
-              <Button
-                icon={<PlusCircleOutlined />}
-                onClick={handleAddUOMShowModal}
-              >
-                Add New UOM
-              </Button>
-            </Col>
-          </Row>
-
-          <Spin spinning={loading}>
-            <CustomTable
-              columns={columns}
-              dataSource={columnData}
-              actionColumn={true}
-              isFilter={true}
-              onEdit={handleUOMEditModal}
-              onDelete={handleDelete}
-            />
-          </Spin>
-          {contextHolder}
-          <Modal
-            title="Add New UOM"
-            open={isModalOpen}
-            maskClosable={false}
-            footer={[
-              <Button
-                key="submit"
-                type="primary"
-                loading={IsSubmitClicked}
-                onClick={handleSubmit}
-                
-              >
-                 {isEditing ? "Update" : "Submit"}
-              </Button>,
-              <Button key="back" onClick={handleUOMModalCancel}>
-                Cancel
-              </Button>,
-            ]}
-            onCancel={handleUOMModalCancel}
-          >
-            <Form
-              style={{ margin: "1rem 0" }}
-              layout="vertical"
-              form={form}
-              onFinish={handleSubmit}
-              //disabled={IsSubmitClicked}
+      <Layout
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <PageHeader
+          title={"Unit Of Measurement (UOM) Manager"}
+          buttonLabel={"Add New UOM"}
+          buttonIcon={<PlusCircleOutlined />}
+          onButtonClick={handleAddUOMShowModal}
+        />
+        <Spin spinning={loading}>
+          <CustomTable
+            columns={columns}
+            dataSource={columnData}
+            actionColumn={true}
+            isFilter={true}
+            onEdit={handleUOMEditModal}
+            onDelete={handleDelete}
+          />
+        </Spin>
+        {contextHolder}
+        <Modal
+          title={isEditing ? "Edit UOM" : "Add New UOM"}
+          open={isModalOpen}
+          maskClosable={false}
+          footer={[
+            <Button
+              key="submit"
+              type="primary"
+              loading={IsSubmitClicked}
+              onClick={handleSubmit}
             >
-              <Form.Item
-                name="ShortName"
-                label="Short Name"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter Short Name",
-                  },
-                ]}
-              >
-                <Input style={{ width: "100%" }} />
-              </Form.Item>
-              <Form.Item
-                name="LongName"
-                label="Long Name"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter Long Name",
-                  },
-                ]}
-              >
-                <Input style={{ width: "100%" }} />
-              </Form.Item>
-            </Form>
-          </Modal>
-        </div>
+              {isEditing ? "Update" : "Submit"}
+            </Button>,
+            <Button key="back" danger onClick={handleUOMModalCancel}>
+              Cancel
+            </Button>,
+          ]}
+          onCancel={handleUOMModalCancel}
+        >
+          <Form
+            style={{ margin: "1rem 0" }}
+            layout="vertical"
+            form={form}
+            onFinish={handleSubmit}
+            //disabled={IsSubmitClicked}
+          >
+            <Form.Item
+              name="ShortName"
+              label="Short Name"
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter Short Name",
+                },
+              ]}
+            >
+              <Input style={{ width: "100%" }} />
+            </Form.Item>
+            <Form.Item
+              name="LongName"
+              label="Long Name"
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter Long Name",
+                },
+              ]}
+            >
+              <Input style={{ width: "100%" }} />
+            </Form.Item>
+          </Form>
+        </Modal>
       </Layout>
     </>
   );

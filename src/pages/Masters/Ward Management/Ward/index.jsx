@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader/index.jsx";
 import CustomTable from "../../../../components/customTable/index.jsx";
-import { useNavigate } from "react-router-dom";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import CreateWardModal from "./CreateWardModal.jsx";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";

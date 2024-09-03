@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Row, Col, Form, Input, TimePicker } from "antd";
+import { Row, Col, Form, Input, TimePicker, Divider } from "antd";
 import PropTypes from "prop-types";
-import moment from "moment";
+import { ColWithSixSpan } from "../../../../components/customGridColumns";
 
 const SessionsForms = ({ numForms, form, formData }) => {
-  debugger;
-
   const numberPattern = /^\d*$/;
 
   // Use useEffect to set initial form values when formData changes
   useEffect(() => {
-    debugger;
     if (form && formData) {
       form.setFieldsValue(formData);
     }
@@ -41,12 +38,11 @@ const SessionsForms = ({ numForms, form, formData }) => {
   for (let i = 0; i < numForms; i++) {
     forms.push(
       <div key={i}>
-        <strong> Session: {i + 1} </strong>
-        <Row
-          gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-          style={{ margin: "20px 0px" }}
-        >
-          <Col span={6}>
+        <Divider orientation="left" style={{ marginTop: 0 }}>
+          Session: {i + 1}
+        </Divider>
+        <Row gutter={16}>
+          <ColWithSixSpan>
             <Form.Item
               name={["sessions", i, "StartTime"]}
               label="Start Time (24 H)"
@@ -82,8 +78,8 @@ const SessionsForms = ({ numForms, form, formData }) => {
                 format="HH:mm:ss"
               />
             </Form.Item>
-          </Col>
-          <Col span={6}>
+          </ColWithSixSpan>
+          <ColWithSixSpan>
             <Form.Item
               name={["sessions", i, "EndTime"]}
               label="End Time (24 H)"
@@ -116,11 +112,11 @@ const SessionsForms = ({ numForms, form, formData }) => {
                 format="HH:mm:ss"
               />
             </Form.Item>
-          </Col>
-          <Col span={6}>
+          </ColWithSixSpan>
+          <ColWithSixSpan>
             <Form.Item
               name={["sessions", i, "SlotDuration"]}
-              label="Slot Duration (in Minutes)"
+              label="Slot&nbsp;Duration&nbsp;(in&nbsp;Minutes)"
               rules={[
                 { required: true, message: "Enter Slot Duration" },
                 { pattern: numberPattern, message: "Enter a valid number" },
@@ -128,8 +124,8 @@ const SessionsForms = ({ numForms, form, formData }) => {
             >
               <Input style={{ width: "100%" }} />
             </Form.Item>
-          </Col>
-          <Col span={6}>
+          </ColWithSixSpan>
+          <ColWithSixSpan>
             <Form.Item
               name={["sessions", i, "PatientsInSlot"]}
               label="No. of patient/slot"
@@ -140,16 +136,11 @@ const SessionsForms = ({ numForms, form, formData }) => {
             >
               <Input style={{ width: "100%" }} maxLength={1} />
             </Form.Item>
-          </Col>
-        </Row>
-        <Row
-          gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-          style={{ margin: "20px 0px" }}
-        >
-          <Col span={6}>
+          </ColWithSixSpan>
+          <ColWithSixSpan>
             <Form.Item
               name={["sessions", i, "OverbookingSlots"]}
-              label="Overbooking slots (begin)"
+              label="Overbooking&nbsp;slots&nbsp;(begin)"
               rules={[
                 { required: true, message: "Enter Overbooking slots" },
                 { pattern: numberPattern, message: "Enter a valid number" },
@@ -157,8 +148,8 @@ const SessionsForms = ({ numForms, form, formData }) => {
             >
               <Input style={{ width: "100%" }} maxLength={1} />
             </Form.Item>
-          </Col>
-          <Col span={6}>
+          </ColWithSixSpan>
+          <ColWithSixSpan>
             <Form.Item
               name={["sessions", i, "OverbookingEndSlots"]}
               label="Overbooking slots (end)"
@@ -169,8 +160,8 @@ const SessionsForms = ({ numForms, form, formData }) => {
             >
               <Input style={{ width: "100%" }} maxLength={1} />
             </Form.Item>
-          </Col>
-          <Col span={6}>
+          </ColWithSixSpan>
+          <ColWithSixSpan>
             <Form.Item
               name={["sessions", i, "PatientsMaxSlot"]}
               label="Maximum No. of slot"
@@ -181,7 +172,7 @@ const SessionsForms = ({ numForms, form, formData }) => {
             >
               <Input style={{ width: "100%" }} />
             </Form.Item>
-          </Col>
+          </ColWithSixSpan>
         </Row>
       </div>
     );

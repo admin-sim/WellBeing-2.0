@@ -1,30 +1,20 @@
-import {
-  EditOutlined,
-  PlusCircleOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import {
   Button,
-  Card,
   Col,
   Form,
   Modal,
   Row,
   Select,
-  Space,
-  Table,
   Spin,
   Layout,
   notification,
   DatePicker,
 } from "antd";
-
-import Input from "antd/es/input/Input";
 import Title from "antd/es/typography/Title";
 import React, { useState, useEffect } from "react";
 import customAxios from "../../../../components/customAxios/customAxios";
 import moment from "moment/moment";
-// import dayjs from "dayjs";
 
 import {
   urlGetAllCalenderPublished,
@@ -34,6 +24,7 @@ import {
 } from "../../../../../endpoints";
 import CustomTable from "../../../../components/customTable/index";
 import dayjs from "dayjs";
+import PageHeader from "../../../../components/PageHeader";
 
 function PublishCalender() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,15 +39,11 @@ function PublishCalender() {
     Providers: [],
   });
   const [isEditing, setIsEditing] = useState(false);
-  // const today = moment(); // Get today's date
-  // const lastDate = moment().add(3, "months"); // Get the date three months from now
-
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
-    debugger;
     setLoading(true);
     try {
       const response = await customAxios.get(`${urlGetAllCalenderPublished}`);
@@ -87,7 +74,6 @@ function PublishCalender() {
   };
 
   const handleFromDateChange = (date, dateString) => {
-    debugger;
     setFromDate(dateString);
   };
 
@@ -102,7 +88,6 @@ function PublishCalender() {
   };
 
   const disabledToDate = (current) => {
-    debugger;
     if (!disabledToFromDate) {
       const today = dayjs().startOf("day");
       const maxDate = dayjs().add(3, "months").endOf("day");
@@ -132,7 +117,6 @@ function PublishCalender() {
   };
 
   const handleEditModal = (record) => {
-    debugger;
     setCalenderData(record);
     setLoading(true);
     setIsEditing(true);
@@ -164,7 +148,6 @@ function PublishCalender() {
   };
 
   const handleDelete = (record) => {
-    debugger;
     //Deleting an State from the Table
     setCalenderData(record);
     try {
@@ -193,10 +176,8 @@ function PublishCalender() {
   };
 
   const handleSubmit = async () => {
-    debugger;
     form.validateFields();
     const values = form.getFieldsValue();
-    console.log("state Edit Modal Submit", values);
 
     try {
       // Send a POST request to the server
@@ -258,180 +239,162 @@ function PublishCalender() {
       title: "Sl. No.",
       dataIndex: "key",
       key: "key",
+      width: 80,
     },
     {
       title: "Provider Name",
       dataIndex: "ProviderName",
       key: "ProviderName",
+      width: 250,
     },
     {
       title: "From Date",
       dataIndex: "StartDate",
       key: "StartDateTime",
+      width: 150,
     },
     {
       title: "To Date",
       dataIndex: "EndDate",
       key: "EndDateTime",
+      width: 150,
     },
   ];
 
   return (
     <>
-      <Layout>
-        <div
-          style={{
-            width: "100%",
-            backgroundColor: "white",
-            minHeight: "max-content",
-            borderRadius: "10px",
-          }}
+      <Layout
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <PageHeader
+          title={"Publish Calender"}
+          buttonLabel={"New Calender"}
+          buttonIcon={<PlusCircleOutlined style={{ fontSize: "1.1rem" }} />}
+          onButtonClick={handleAddAreaShowModal}
+        />
+
+        <Spin spinning={loading}>
+          <CustomTable
+            columns={columns}
+            dataSource={columnData}
+            actionColumn={true}
+            isFilter={true}
+            onEdit={handleEditModal}
+            onDelete={handleDelete}
+          />
+        </Spin>
+        <Modal
+          title="Publish New Calender"
+          open={isModalOpen}
+          maskClosable={false}
+          footer={null}
+          onCancel={handleAreaModalCancel}
         >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
+          <Form
+            style={{ margin: "1rem 0" }}
+            layout="vertical"
+            form={form}
+            onFinish={handleSubmit}
           >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Publish Calender
-              </Title>
-            </Col>
-            <Col offset={5} span={3}>
-              <Button
-                icon={<PlusCircleOutlined />}
-                onClick={handleAddAreaShowModal}
-              >
-                New Calender
-              </Button>
-            </Col>
-          </Row>
-
-          <Spin spinning={loading}>
-            <CustomTable
-              columns={columns}
-              dataSource={columnData}
-              actionColumn={true}
-              isFilter={true}
-              onEdit={handleEditModal}
-              onDelete={handleDelete}
-            />
-          </Spin>
-          <Modal
-            title="Publish New Calender"
-            open={isModalOpen}
-            maskClosable={false}
-            footer={null}
-            onCancel={handleAreaModalCancel}
-          >
-            <Form
-              style={{ margin: "1rem 0" }}
-              layout="vertical"
-              form={form}
-              onFinish={handleSubmit}
+            <Form.Item
+              name="Provider"
+              label="Provider"
+              rules={[
+                {
+                  required: true,
+                  message: "Please select provider",
+                },
+              ]}
             >
-              <Form.Item
-                name="Provider"
-                label="Provider"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select provider",
-                  },
-                ]}
+              <Select
+                showSearch
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
+                }
+                disabled={isEditing}
+                allowClear
+                placeholder="Select a provider"
               >
-                <Select
-                  showSearch
-                  filterOption={(input, option) =>
-                    option.children
-                      .toLowerCase()
-                      .indexOf(input.toLowerCase()) >= 0
-                  }
-                  disabled={isEditing}
-                  allowClear
-                  placeholder="Select a provider"
-                >
-                  {Dropdown.Providers.map((option) => (
-                    <Select.Option
-                      key={option.ProviderId}
-                      value={option.ProviderId}
-                    >
-                      {option.ProviderName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
+                {Dropdown.Providers.map((option) => (
+                  <Select.Option
+                    key={option.ProviderId}
+                    value={option.ProviderId}
+                  >
+                    {option.ProviderName}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
 
-              <Form.Item
-                name="FromDate"
-                label="From Date"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select From Date",
-                  },
-                  {
-                    validator: validateFromDate,
-                  },
-                ]}
-              >
-                <DatePicker
-                  format={"DD-MM-YYYY"}
-                  onChange={handleFromDateChange}
-                  style={{ width: "100%" }}
-                  disabled={isEditing}
-                  disabledDate={disabledFromDate}
-                ></DatePicker>
-              </Form.Item>
-              <Form.Item
-                name="ToDate"
-                label="To Date"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter From Date",
-                  },
-                  {
-                    validator: validateToDate,
-                  },
-                ]}
-              >
-                <DatePicker
-                  format={"DD-MM-YYYY"}
-                  onChange={handleToDateChange}
-                  style={{ width: "100%" }}
-                  disabledDate={disabledToDate}
-                ></DatePicker>
-              </Form.Item>
-              <Row gutter={32} style={{ height: "1.8rem" }}>
-                <Col offset={12} span={6}>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                      Submit
-                    </Button>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item>
-                    <Button type="default" onClick={handleAreaModalCancel}>
-                      Cancel
-                    </Button>
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </Modal>
-        </div>
+            <Form.Item
+              name="FromDate"
+              label="From Date"
+              rules={[
+                {
+                  required: true,
+                  message: "Please select From Date",
+                },
+                {
+                  validator: validateFromDate,
+                },
+              ]}
+            >
+              <DatePicker
+                format={"DD-MM-YYYY"}
+                onChange={handleFromDateChange}
+                style={{ width: "100%" }}
+                disabled={isEditing}
+                disabledDate={disabledFromDate}
+              ></DatePicker>
+            </Form.Item>
+            <Form.Item
+              name="ToDate"
+              label="To Date"
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter From Date",
+                },
+                {
+                  validator: validateToDate,
+                },
+              ]}
+            >
+              <DatePicker
+                format={"DD-MM-YYYY"}
+                onChange={handleToDateChange}
+                style={{ width: "100%" }}
+                disabledDate={disabledToDate}
+              ></DatePicker>
+            </Form.Item>
+            <Row
+              gutter={16}
+              justify={"end"}
+              style={{ marginBottom: "-1.5rem" }}
+            >
+              <Col>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit">
+                    Submit
+                  </Button>
+                </Form.Item>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button danger onClick={handleAreaModalCancel}>
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
       </Layout>
     </>
   );

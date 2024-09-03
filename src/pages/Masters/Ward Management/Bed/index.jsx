@@ -8,7 +8,6 @@ import customAxios from '../../../../components/customAxios/customAxios.jsx'
 import { urlBedIndex } from "../../../../../endpoints.js";
 
 function Bed() {
-  const [createWardModal, setCreateWardModal] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
   const [tableData, setTableData] = useState();
 

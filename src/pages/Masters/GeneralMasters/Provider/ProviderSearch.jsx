@@ -1,9 +1,4 @@
-import {
-  PlusCircleFilled,
-  PlusCircleOutlined,
-  PlusOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import {
   Button,
   Col,
@@ -23,6 +18,8 @@ import Title from "antd/es/typography/Title";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
+import PageHeader from "../../../../components/PageHeader/index.jsx";
+import { ColWithSixSpan } from "../../../../components/customGridColumns/index.jsx";
 
 const containsDropdown = [
   { id: "1", name: "Starts With" },
@@ -50,11 +47,7 @@ function ProviderSearch() {
   };
 
   const handleEditRegistrationsDetails = (record) => {
-    debugger;
-
     const url = `/ProviderRegistration`;
-
-    // Navigate to the new URL
     navigate(url, {
       state: {
         selectedRow: record,
@@ -64,7 +57,6 @@ function ProviderSearch() {
   };
 
   useEffect(() => {
-    debugger;
     setIsLoading(true);
     customAxios.get(urlGetProviderDetails).then((response) => {
       const apiData = response.data.data;
@@ -74,7 +66,6 @@ function ProviderSearch() {
   }, []);
 
   const processProviderData = (providers) => {
-    debugger;
     return providers.map((provider) => {
       const combinedIdentifiers = provider.ProviderIdentifications.map(
         (identification, index) => {
@@ -92,15 +83,8 @@ function ProviderSearch() {
   };
 
   const handleOnSearch = async (values) => {
-    debugger;
-
-    console.log("Search by these values", values);
-
-    // ... Repeat for other parameters
     try {
       setIsLoading(true);
-
-      // Assuming postData1 is an object with your input values
       const postData1 = {
         NameFilterType:
           values.NameFilterType === undefined ? 0 : values.NameFilterType,
@@ -155,13 +139,13 @@ function ProviderSearch() {
       dataIndex: "key",
       key: "key",
       width: 70,
+      // responsive: ["xxl", "xl", "lg", "md", "sm", "xs"],
     },
-
     {
       title: "Name",
       dataIndex: "ProviderName",
       key: "ProviderName",
-      width: 300,
+      // responsive: ["xxl", "xl", "lg", "md", "sm", "xs"],
       render: (Text, record) => (
         <>
           <a
@@ -176,25 +160,26 @@ function ProviderSearch() {
         </>
       ),
     },
-
     {
       title: "Gender",
       dataIndex: "GenderType",
       key: "GenderType",
-      width: 150,
+      // responsive: ["xxl", "xl", "lg", "md", "sm", "xs"],
     },
 
     {
       title: "DOB",
       dataIndex: "DateOfBirth",
       key: "DateOfBirth",
-      width: 150,
+      width: 100,
+      // responsive: ["xxl", "xl", "lg", "md", "sm", "xs"],
     },
     {
       title: "Identifier Type",
       dataIndex: "combinedIdentifiers",
       key: "combinedIdentifiers",
-      width: 250,
+      // responsive: ["xxl", "xl", "lg", "md", "sm", "xs"],
+
       // render: (record) => (
       //   <ul>
       //     {providerSearchDetails.ProviderIdentifications.map((id, index) => (
@@ -207,7 +192,8 @@ function ProviderSearch() {
       title: "Contact Details",
       dataIndex: "ContactDetails",
       key: "ContactDetails",
-      width: 300,
+      responsive: ["xxl", "xl", "lg", "md", "sm", "xs"],
+
       render: (text, record) => (
         <div>
           <p>
@@ -235,46 +221,22 @@ function ProviderSearch() {
             borderRadius: "10px",
           }}
         >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Provider Search
-              </Title>
-            </Col>
-            <Col offset={4} span={4}>
-              <Button
-                className="dfja"
-                icon={<PlusCircleOutlined style={{ fontSize: "1.1rem" }} />}
-                onClick={() => navigate("/ProviderRegistration")}
-              >
-                Register New Provider
-              </Button>
-            </Col>
-          </Row>
+          <PageHeader
+            title={"Provider Search"}
+            buttonLabel={"Register New Provider"}
+            buttonIcon={<PlusCircleOutlined style={{ fontSize: "1.1rem" }} />}
+            onButtonClick={() => navigate("/ProviderRegistration")}
+          />
+
           <Form
             layout="vertical"
             form={form}
-            name="register"
             onFinish={handleOnSearch}
             scrollToFirstError={true}
-            style={{ padding: "0rem 2rem", marginTop: "1rem" }}
+            style={{ padding: "0rem 1rem", marginTop: "1rem" }}
           >
-            <Row gutter={32}>
-              <Col span={6}>
+            <Row gutter={16}>
+              <ColWithSixSpan>
                 <Form.Item name="NameFilterType" label="Name">
                   <Select placeholder="Select Value" allowClear>
                     {containsDropdown.map((option) => (
@@ -284,13 +246,13 @@ function ProviderSearch() {
                     ))}
                   </Select>
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="ProviderName" label="Provider Name">
                   <Input placeholder="Enter Provider Name" allowClear />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="date" label="Date Of Birth">
                   <DatePicker
                     style={{ width: "100%" }}
@@ -299,8 +261,8 @@ function ProviderSearch() {
                     placeholder="DD-MM-YYYY"
                   />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="Gender" label="Gender">
                   <Select placeholder="Select Gender" allowClear>
                     {providerDropdown.Genders.map((option) => (
@@ -313,10 +275,8 @@ function ProviderSearch() {
                     ))}
                   </Select>
                 </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={32}>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="identifierTypeId" label="Identifier Type">
                   <Select placeholder="Select Value" allowClear>
                     {providerDropdown.ProviderIdentificationType.map(
@@ -331,13 +291,13 @@ function ProviderSearch() {
                     )}
                   </Select>
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="identifierValue" label="ID Value">
                   <Input placeholder="Enter Provider Name" allowClear />
                 </Form.Item>
-              </Col>
-              <Col span={3}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="MobileNumber"
                   label="Mobile Number"
@@ -350,8 +310,8 @@ function ProviderSearch() {
                 >
                   <Input maxLength={10} />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="StructuralRole" label="Structural&nbsp;Role">
                   <Select placeholder="Select Value" allowClear>
                     {providerDropdown.StructuralRoles.map((option) => (
@@ -364,8 +324,8 @@ function ProviderSearch() {
                     ))}
                   </Select>
                 </Form.Item>
-              </Col>
-              <Col span={3}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="ConsultantType" label="Consultant&nbsp;Type">
                   <Select placeholder="Select Value" allowClear>
                     {providerDropdown.ConsultantType.map((option) => (
@@ -379,10 +339,10 @@ function ProviderSearch() {
                     ))}
                   </Select>
                 </Form.Item>
-              </Col>
+              </ColWithSixSpan>
             </Row>
             <Row justify="end">
-              <Col style={{ marginRight: "10px" }}>
+              <Col style={{ marginRight: "1rem" }}>
                 <Form.Item>
                   <Button type="primary" htmlType="submit">
                     Search
@@ -398,11 +358,16 @@ function ProviderSearch() {
               </Col>
             </Row>
           </Form>
-          <div style={{ margin: "0 2rem" }}>
+          <div style={{ margin: "0 1rem" }}>
             <Table
+              className="vitals-table"
               size="small"
+              bordered
               columns={columns}
               dataSource={providerSearchDetails}
+              scroll={{
+                x: 800,
+              }}
             />
           </div>
         </div>

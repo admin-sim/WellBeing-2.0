@@ -109,7 +109,6 @@ const PatientVitalSigns = () => {
   );
 
   useEffect(() => {
-    debugger;
     setLoading(true);
     customAxios
       .get(
@@ -123,7 +122,6 @@ const PatientVitalSigns = () => {
   }, [PatientData.PatientId]);
 
   useEffect(() => {
-    debugger;
     setLoading(true);
     customAxios
       .get(
@@ -162,7 +160,6 @@ const PatientVitalSigns = () => {
   }
 
   const onHeightChange = (e) => {
-    debugger;
     const height = e.target.value;
     const feet = Math.floor(height / 30.48); // 1 foot = 30.48 cm
     const inch = Math.floor((height / 30.48 - feet) * 12); // 1 inch = 2.54 cm
@@ -181,7 +178,6 @@ const PatientVitalSigns = () => {
   };
 
   const onWeightChange = (e) => {
-    debugger;
     const weight = e.target.value;
     setHeightWeightValues((prevState) => ({
       ...prevState,
@@ -191,7 +187,6 @@ const PatientVitalSigns = () => {
   };
 
   const calculateBMI = (height, weight) => {
-    debugger;
     if (!height || !weight) {
       // If either height or weight is not provided, set BMI to 0
       setHeightWeightValues((prevState) => ({
@@ -216,7 +211,6 @@ const PatientVitalSigns = () => {
   };
 
   const onSystolicBPChange = (e) => {
-    debugger;
     const systolicBP = e.target.value;
     setMAPValues((prevState) => ({
       ...prevState,
@@ -227,7 +221,6 @@ const PatientVitalSigns = () => {
   };
 
   const onDiastolicBPChange = (e) => {
-    debugger;
     const diastolicBP = e.target.value;
     setMAPValues((prevState) => ({
       ...prevState,
@@ -238,7 +231,6 @@ const PatientVitalSigns = () => {
   };
 
   const calculateMAP = (systolicBP, diastolicBP) => {
-    debugger;
     if (!systolicBP || !diastolicBP) {
       //if either systolicBP or diastolicBP are not provided then set MeanAtrialPressure to 0
 
@@ -297,8 +289,6 @@ const PatientVitalSigns = () => {
     // setProviders([]);
   };
   const handleSaveCaptureDetails = async () => {
-    debugger;
-
     if (form2.isFieldsTouched()) {
       const values = form2.getFieldsValue();
       form2.validateFields().then(async () => {
@@ -410,7 +400,6 @@ const PatientVitalSigns = () => {
   };
 
   const handleEditCaptureVitals = async (record) => {
-    debugger;
     setSelectedVitals(record);
     setIsEditCaptureVitals(true);
     console.log("vitals value", record);

@@ -250,6 +250,7 @@ const CreatePurchaseOrder = () => {
     if (response.status === 200) {
       const successMessage = PoHeaderId === 0 ? "Purchase Order Created Successfully" : "Purchase Order Updated Successfully";
       message.success(successMessage);
+      setLoading(false);
       handleCancel();
     } else {
       message.error("Something went wrong");
@@ -1256,7 +1257,7 @@ const CreatePurchaseOrder = () => {
                 <Form.Item>
                   <Button
                     type="primary"
-                    //loading={isSearchLoading}
+                    loading={loading}
                     htmlType="submit"
                   >
                     {buttonTitle}

@@ -4,10 +4,13 @@ import { Button, Checkbox, Col, Form, Input, Row, Select } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+} from "../../../../components/customGridColumns";
 
 function CreateEditWorkFlow() {
   const [form] = useForm();
-
   const [lists, setLists] = useState({});
 
   useEffect(() => {
@@ -25,7 +28,6 @@ function CreateEditWorkFlow() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  console.log("lists ", lists);
   const record = location.state;
 
   function handleSubmit(values) {
@@ -66,8 +68,8 @@ function CreateEditWorkFlow() {
         form={form}
         onFinish={handleSubmit}
       >
-        <Row gutter={32}>
-          <Col span={6}>
+        <Row gutter={16}>
+          <ColWithSixSpan>
             <Form.Item
               name="FacilityName"
               label="Facility Name"
@@ -75,8 +77,8 @@ function CreateEditWorkFlow() {
             >
               <Select />
             </Form.Item>
-          </Col>
-          <Col span={6}>
+          </ColWithSixSpan>
+          <ColWithSixSpan>
             <Form.Item
               name="WorkFlowName"
               label="WorkFlow Name"
@@ -84,8 +86,8 @@ function CreateEditWorkFlow() {
             >
               <Input />
             </Form.Item>
-          </Col>
-          <Col span={6}>
+          </ColWithSixSpan>
+          <ColWithSixSpan>
             <Form.Item
               name="WorkFlowDescription"
               label="WorkFlow Description"
@@ -93,20 +95,20 @@ function CreateEditWorkFlow() {
             >
               <Input />
             </Form.Item>
-          </Col>
-          <Col span={6}>
+          </ColWithSixSpan>
+          <ColWithSixSpan>
             <Form.Item name="IsWalkInPatient" label=" ">
               <Checkbox>Is Walk-In Patient</Checkbox>
             </Form.Item>
-          </Col>
+          </ColWithSixSpan>
         </Row>
         <DragDropContext onDragEnd={onDragEnd}>
           <Row
             style={{
               height: "fit-content",
               padding: "1rem 0",
-              width: "100%",
-              border: "1px solid grey",
+              border: "1px solid #ccc",
+              borderRadius: "1rem",
               display: "flex",
               justifyContent: "space-evenly",
             }}
@@ -169,7 +171,7 @@ function CreateEditWorkFlow() {
           </Row>
         </DragDropContext>
 
-        <Row gutter={32} justify="end" style={{ margin: "2rem" }}>
+        <Row gutter={16} justify="end" style={{ marginTop: "2rem" }}>
           <Col>
             <Form.Item>
               <Button

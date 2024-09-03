@@ -8,12 +8,10 @@ import {
   Select,
   Spin,
   Layout,
-  ConfigProvider,
   notification,
   message,
 } from "antd";
 import Title from "antd/es/typography/Title";
-
 import Input from "antd/es/input/Input";
 import customAxios from "../../../components/customAxios/customAxios";
 import React, { useEffect, useState } from "react";
@@ -23,6 +21,8 @@ import {
   urlAddandUpdateLookup,
 } from "../../../../endpoints";
 import CustomTable from "../../../components/customTable";
+import PageHeader from "../../../components/PageHeader";
+import { ColWithTwelveSpan } from "../../../components/customGridColumns";
 
 function Lookup() {
   const [columnData, setColumnData] = useState();
@@ -42,8 +42,6 @@ function Lookup() {
   }, []);
 
   const fetchData = async () => {
-    debugger;
-
     setLoading(true);
     try {
       const response = await customAxios.get(`${urlGetAllGeneralLookUp}`);
@@ -64,22 +62,21 @@ function Lookup() {
       title: "Sl. No.",
       dataIndex: "key",
       key: "key",
+      width: 80,
     },
     {
       title: "Type",
       dataIndex: "LookupType",
       key: "LookupType",
+      width: 180,
     },
     {
       title: "Description",
       dataIndex: "LookupDescription",
       key: "LookupDescription",
+      width: 180,
     },
   ];
-
-  const onChange = (pagination, filters, sorter, extra) => {
-    console.log("params", pagination, filters, sorter, extra);
-  };
 
   const handleAddLookupShowModal = () => {
     setIsLookUpModalVisible(true);
@@ -88,8 +85,6 @@ function Lookup() {
   };
 
   const handleLookUpEditModal = (record) => {
-    // edit the item in your data here
-    debugger;
     setLookUpData(record);
     setLoading(true);
     setIsEditing(true);
@@ -117,7 +112,6 @@ function Lookup() {
   };
 
   const handleSubmit = async () => {
-    debugger;
     form.validateFields();
     const values = form.getFieldsValue();
     setIsSubmitClicked(true);
@@ -200,35 +194,12 @@ function Lookup() {
             borderRadius: "10px",
           }}
         >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                General Lookup Master
-              </Title>
-            </Col>
-            <Col offset={5} span={3}>
-              <Button
-                icon={<PlusCircleOutlined />}
-                onClick={handleAddLookupShowModal}
-              >
-                Add New Lookup
-              </Button>
-            </Col>
-          </Row>
+          <PageHeader
+            title={"General Lookup Master"}
+            buttonLabel={"Add New Lookup"}
+            buttonIcon={<PlusCircleOutlined />}
+            onButtonClick={handleAddLookupShowModal}
+          />
           <Spin spinning={loading}>
             <CustomTable
               columns={columns}
@@ -243,8 +214,7 @@ function Lookup() {
       </Layout>
       {contextHolder}
       <Modal
-        width={500}
-        title={isEditing ? "EDIT LOOKUP " : "ADD NEW LOOKUP"}
+        title={isEditing ? "Edit Lookup " : "Add New Lookup"}
         open={isLookUpModalVisible}
         onCancel={handleLookUpModalCancel}
         maskClosable={false}
@@ -258,14 +228,14 @@ function Lookup() {
             {/* {IsSubmitClicked ? "Submitting" : "Submit"} */}
             {isEditing ? "Update" : "Submit"}
           </Button>,
-          <Button key="back" onClick={handleLookUpModalCancel}>
+          <Button key="back" danger onClick={handleLookUpModalCancel}>
             Cancel
           </Button>,
         ]}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            <Col span={12}>
+          <Row gutter={{ xs: 16, sm: 20, md: 24, lg: 32 }}>
+            <ColWithTwelveSpan>
               <Form.Item
                 name="Type"
                 label="Lookup Type"
@@ -302,13 +272,13 @@ function Lookup() {
                       key={option.LookupID}
                       value={option.LookupType}
                     >
-                      {option.LookupType }
+                      {option.LookupType}
                     </Select.Option>
                   ))}
                 </Select>
               </Form.Item>
-            </Col>
-            <Col span={12}>
+            </ColWithTwelveSpan>
+            <ColWithTwelveSpan>
               <Form.Item
                 name="Description"
                 label="Lookup Description"
@@ -321,7 +291,7 @@ function Lookup() {
               >
                 <Input></Input>
               </Form.Item>
-            </Col>
+            </ColWithTwelveSpan>
           </Row>
         </Form>
       </Modal>
