@@ -218,7 +218,8 @@ const Login = () => {
   ) : (
     <div
       style={{
-        height: "max-content",
+        height: "100vh",
+        width: "auto",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -241,7 +242,6 @@ const Login = () => {
             width: "auto",
             height: "auto",
           }}
-          name="loginForm"
           initialValues={{
             UserId: "admin",
             Password: "123456",

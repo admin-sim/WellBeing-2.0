@@ -131,26 +131,29 @@ const CreateStoreReturn = () => {
 
   const onFinishModel = async(values) => {
     debugger;
-    console.log("val", values);
-    const form1values = form1.getFieldValue();
-    const expDatefrom=values.expcheck ? values.ExpiryDateFrom?.format("DD-MM-YYYY") :  "";
-    const expDateto=values.expcheck ? values.ExpiryDateTo?.format("DD-MM-YYYY") :  "";
-    const recfrom=values.ReceiptDateFrom ? values.ReceiptDateFrom.format("DD-MM-YYYY") : "";
-    const recto=values.ReceiptDateTo ? values.ReceiptDateTo.format("DD-MM-YYYY") : "";
-    const productid=values.ProductId ? values.ProductId : "";
-
-  const response = await customAxios.get(
-        `${urlSearchReceipt}?Store=${form1values.ReturningStore}&Supplier=${form1values.ReturnedLocation}&Product=${productid}&ExpToString=${expDateto}&ExpFromString=${expDatefrom}&RecFromString=${recfrom}&RecToString=${recto}`
-      );
-      const apiData = response.data.data;
-      const formattedData = apiData.newIndentIssueModel.map(item => ({
-        ...item,
-        key: item.StockId, // Assign StockId as the key for each item
-      }));
-      
-      setDataModal(formattedData);
-
+    const newData = data.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
+    Object.keys(fields).forEach(fieldName => {
+      if (fieldName.startsWith(`${record.key}.`)) {
+        form1.resetFields([fieldName]);
+      }
+    });
+    setData(newData);
+    // if (tableRef.current) {
+    //   tableRef.current.scrollLeft = 0;
+    // }    
   };
+
+  const ModelDelete = (record) => {
+    debugger;
+    const newData = dataModel.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
+    setDataModel(newData);
+  };
+
+  const handleInputChange = (value, option, key) => {
+    setInputValues((prevState) => ({ ...prevState, [key]: value }));
+  };
+
+
   const handleOnFinish = async (values) => {
     debugger;
    
@@ -417,269 +420,206 @@ const CreateStoreReturn = () => {
             </Button>
           </Col>
         </Row>
-        <Form
-          layout="vertical"
-          onFinish={handleOnFinish}
-          variant="outlined"
-          style={{
-            maxWidth: 1500,
-          }}
-          form={form1}
-          initialValues={{
-            ReturnDate: dayjs(),
-          }}
-        >
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-            style={{ padding: "1rem 0.5rem", marginBottom: "0" }}
-            align="Bottom"
-          >
-            <Col className="gutter-row" span={8}>
-              <div>
-                <Form.Item
-                  label="Returning Store"
-                  name="ReturningStore"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input!",
-                    },
-                  ]}
-                >
-                  <Select allowClear placeholder="Select Value">
-                    {DropDown.StoreDetails.map((option) => (
-                      <Select.Option
-                        key={option.StoreId}
-                        value={option.StoreId}
-                      >
-                        {option.LongName}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={8}>
-              <div>
-                <Form.Item
-                  label="Returned to Location"
-                  name="ReturnedLocation"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input!",
-                    },
-                  ]}
-                >
-                  <Select allowClear placeholder="Select Value">
-                    {DropDown.ReturnStoreDetails.map((option) => (
-                      <Select.Option
-                        key={option.StoreId}
-                        value={option.StoreId}
-                      >
-                        {option.LongName}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={8}>
-              <div>
-                <Form.Item
-                  label="Returning Date"
-                  name="ReturnDate"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input!",
-                    },
-                  ]}
-                >
-                  <DatePicker
-                    style={{ width: "100%" }}
-                    format="DD-MM-YYYY"
-                    disabled
-                  />
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={4}>
-              <div>
-                <Form.Item
-                  label="Status"
-                  name="ReturnStatus"
-                  rules={[
-                    {
-                      required: issueStatus,
-                      message: "Please input!",
-                    },
-                  ]}
-                >
-                  <Select allowClear placeholder="Select Value">
-                    <Select.Option key="Draft" value="Draft"></Select.Option>
-                    <Select.Option
-                      key="Finalize"
-                      value="Finalize"
-                    ></Select.Option>
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item
-                  name="SubmitCheck"
-                  style={{ marginTop: "30px" }}
-                  valuePropName="checked"
-                >
-                  <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item name="Remarks" style={{ marginTop: "30px" }}>
-                  <Button type="link" onClick={OpenModel}>
-                    Search Product/Batch No
-                  </Button>
-                </Form.Item>
-              </div>
-            </Col>
-          </Row>
-          <Row justify="end" style={{ padding: "0rem 1rem" }}>
-            <Col style={{ marginRight: "10px" }}>
-              <Form.Item>
-                <Button type="primary" htmlType="submit">
-                {buttonTitle}
-                </Button>
-              </Form.Item>
-            </Col>
-            <Col>
-              <Form.Item>
-                <Button onClick={handleToBack} type="primary">Cancel</Button>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Table columns={columns} dataSource={data} />
-        </Form>
-        <Modal
-          width={1200}
-          maskClosable={false}
-          title="Search for Product"
-          open={isModalOpen}
-          onCancel={handleclose}
-          footer={null}
-        >
+        <Card>
           <Form
-            name="basic"
-            style={{
-              width: "100%",
-            }}
-            initialValues={{
-              ExpiryDateFrom: dayjs().subtract(1, "day"),
-              ExpiryDateTo: dayjs(),
-              expcheck: true,
-            }}
-            onFinish={onFinishModel}
             layout="vertical"
-            form={form2}
+            onFinish={handleOnFinish}
+            variant="outlined"
+            size="default"
+            style={{
+              maxWidth: 1500
+            }}
+            form={form1}
+            initialValues={{
+              ReturningDate: dayjs(),
+            }}
+          // onValuesChange={(changedValues, allValues) => {
+          //   debugger;
+          //   for (let i = 0; i < 9; i++) {
+          //     if (changedValues[i] !== undefined) {
+          //       if (changedValues[i].product !== undefined) {
+          //         getPanelValue(form1.getFieldValue([i, 'product']));
+          //       }
+          //       const poQty = allValues[i]['poQty'];
+          //       const poRate = allValues[i]['poRate'];
+
+          //       if (poQty !== "" && poRate !== "") {
+          //         const total = poQty * poRate;
+          //         // Update the total value in the form fields
+          //         if (allValues[i]['discount'] !== "") {
+          //           form1.setFieldsValue({ [i]: { discountAmt: (total * (allValues[i]['discount'] / 100)).toFixed(2) } });
+          //           form1.setFieldsValue({ [i]: { amount: (total - (total * (allValues[i]['discount'] / 100))) } });
+          //           form1.setFieldsValue({ [i]: { totalAmount: (total - (total * (allValues[i]['discount'] / 100))) } });
+          //           // form1.setFieldsValue({ Amount: form1.getFieldValue('Amount') + (total - (total * (allValues[i]['discount'] / 100))) })
+          //         } else {
+          //           form1.setFieldsValue({ [i]: { amount: total } });
+          //           form1.setFieldsValue({ [i]: { totalAmount: total } });
+          //         }
+          //       }
+          //       break;
+          //     }
+          //   }
+          //   let totalAmount = 0;
+          //   for (let j = 0; j < 10; j++) {
+          //     if (allValues[j] !== undefined) {
+          //       const Amount = form1.getFieldValue([j, 'amount']);
+          //       totalAmount += Amount;
+          //     }
+          //   }
+          //   form1.setFieldsValue({ Amount: totalAmount });
+          //   form1.setFieldsValue({ totalpoAmount: totalAmount });
+          //   // Assuming 'poQty' and 'poRate' are the names of the fields
+
+          //   // Check if both values are valid numbers              
+          // }}
           >
-            <Row gutter={32}>
-              <Col span={8}>
-                <Row gutter={32}>
-                  <Col span={20}>
-                    <Form.Item label="Product" name="Product">
-                      <AutoComplete
-                        style={{ width: "100%" }}
-                        options={productOptions}
-                        onSearch={handleSearch}
-                        onSelect={(value, option) =>
-                          handleSelect(value, option, "Product")
-                        }
-                        placeholder="Search for a product"
-                        allowClear
-                      />
-                    </Form.Item>
-                    <Form.Item hidden name="ProductId">
-                      <Input></Input>
-                    </Form.Item>
-                  </Col>
-                  <Col span={4}>
-                    <Form.Item
-                      name="expcheck"
-                      label=" "
-                      valuePropName="checked"
-                    >
-                      <Checkbox />
-                    </Form.Item>
-                  </Col>
-                </Row>
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
+              <Col className="gutter-row" span={8}>
+                <div>
+                  <Form.Item
+                    label="Returning Store"
+                    name="ReturningStore"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please input!'
+                      }
+                    ]}
+                  >
+                    <Select allowClear placeholder='Select Value'>
+                      {DropDown.SupplierList.map((option) => (
+                        <Select.Option key={option.VendorId} value={option.VendorId}>
+                          {option.LongName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </div>
               </Col>
-              <Col span={8}>
-                <Row>
-                  <Col span={24}>
-                    <Form.Item
-                      style={{ marginBottom: "0.5rem" }}
-                      label="Expiry Date From"
-                      name="ExpiryDateFrom"
-                    >
-                      <DatePicker
-                        style={{ width: "100%" }}
-                        format="DD-MM-YYYY"
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col span={24}>
-                    {" "}
-                    <Form.Item label="Receipt Date From" name="ReceiptDateFrom">
-                      <DatePicker
-                        style={{ width: "100%" }}
-                        format="DD-MM-YYYY"
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
+              <Col className="gutter-row" span={8}>
+                <div>
+                  <Form.Item label="Returning To Vendor" name="ReturningToVendor"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please input!'
+                      }
+                    ]}
+                  >
+                    <Select allowClear placeholder='Select Value'>
+                      {DropDown.StoreDetails.map((option) => (
+                        <Select.Option key={option.StoreId} value={option.StoreId}>
+                          {option.StoreType}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </div>
               </Col>
-              <Col span={8}>
-                <Row>
-                  <Col span={24}>
-                    <Form.Item
-                      style={{ marginBottom: "0.5rem" }}
-                      label="Expiry Date To"
-                      name="ExpiryDateTo"
-                    >
-                      <DatePicker
-                        style={{ width: "100%" }}
-                        format="DD-MM-YYYY"
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col span={24}>
-                    <Form.Item label="Receipt Date To" name="ReceiptDateTo">
-                      <DatePicker
-                        style={{ width: "100%" }}
-                        format="DD-MM-YYYY"
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
+              <Col className="gutter-row" span={8}>
+                <div>
+                  <Form.Item label="Returning Date" name="ReturningDate"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please input!'
+                      }
+                    ]}
+                  >
+                    <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' disabled />
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={4}>
+                <div>
+                  <Form.Item label="Status" name="Status">
+                    <Select allowClear placeholder='Select Value'>
+                      {DropDown.StoreDetails.map((option) => (
+                        <Select.Option key={option.StoreId} value={option.StoreId}>
+                          {option.StoreType}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item name="Remarks" style={{ marginTop: '30px' }}>
+                    <Checkbox>Submit</Checkbox>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item name="Remarks" style={{ marginTop: '30px' }}>
+                    <Button type='link' onClick={OpenModel}>Search Product/Batch No</Button>
+                  </Form.Item>
+                </div>
               </Col>
             </Row>
-            <Row justify="end" style={{ padding: "0rem 1rem" }}>
-              <Col style={{ marginRight: "10px" }}>
+            <Row justify="end" style={{ padding: '0rem 1rem' }}>
+              <Col style={{ marginRight: '10px' }}>
                 <Form.Item>
-                  <Button type="primary" htmlType="SearchList">
+                  <Button type="primary" loading={isSearchLoading} htmlType="submit">
                     Submit
                   </Button>
                 </Form.Item>
               </Col>
               <Col>
                 <Form.Item>
-                  <Button danger onClick={handleReset}>
-                    Reset
+                  <Button type="primary" onClick={handleCancel}>
+                    Cancel
                   </Button>
                 </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Card>
+    
+          <Modal
+            title="Basic Modal"
+            onOk={onOkModal}
+            onCancel={onCancelModel}
+            width={1000}
+            open={isModalOpen}
+          >
+            <Form
+              name="basic"
+              labelCol={{
+                span: 8,
+              }}
+              wrapperCol={{
+                span: 16,
+              }}
+              style={{
+                width: '100%',
+              }}
+              initialValues={{
+                remember: true,
+              }}
+              onFinish={onFinishModel}
+              onFinishFailed={onFinishFailed}
+              autoComplete="off"
+              form={form2}
+            >
+              <Row>
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item
+                    label="Product"
+                    name="Product"
+                    initialValue={selectedProductId[recordKeys]}
+                    style={{ marginLeft: '10px' }}
+                    rules={[
+                      {
+                        required: false,
+                      }
+                    ]}
+                  >
+                    <Tag color="blue">{form1.getFieldValue([recordKeys, 'product'])}</Tag>
+                  </Form.Item>
+                </div>
               </Col>
             </Row>
           </Form>

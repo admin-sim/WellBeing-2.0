@@ -1,18 +1,11 @@
-import {
-  EditOutlined,
-  PlusCircleOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import {
   Button,
-  Card,
   Col,
   Form,
   Modal,
   Row,
   Select,
-  Space,
-  Table,
   Spin,
   Layout,
   notification,
@@ -33,7 +26,7 @@ import {
 } from "../../../../../endpoints";
 import CustomTable from "../../../../components/customTable/index";
 import dayjs from "dayjs";
-import moment from "moment/moment";
+import PageHeader from "../../../../components/PageHeader";
 const { RangePicker } = DatePicker;
 
 function ProviderAbsence() {
@@ -42,7 +35,6 @@ function ProviderAbsence() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [calendarData, setCalendarData] = useState({});
-  const [DateFormat, setDateFormat] = useState("DD-MM-YYYY");
   const [FromDate, setFromDate] = useState();
   const [ToDate, setToDate] = useState();
   const [Dropdown, setDropdown] = useState({
@@ -55,7 +47,6 @@ function ProviderAbsence() {
   }, []);
 
   const fetchData = async () => {
-    debugger;
     setLoading(true);
     try {
       const response = await customAxios.get(`${urlGetAllProviderAbsence}`);
@@ -81,7 +72,6 @@ function ProviderAbsence() {
   };
 
   const handleEditModal = (record) => {
-    debugger;
     setCalendarData(record);
     setLoading(true);
     setIsEditing(true);
@@ -114,13 +104,11 @@ function ProviderAbsence() {
   };
 
   const handleFromDateChange = (date, dateString) => {
-    debugger;
     const formattedFromDate = dayjs(date).format("DD-MM-YYYY hh:mm:ss A");
     setFromDate(formattedFromDate);
   };
 
   const handleToDateChange = (date, dateString) => {
-    debugger;
     const formattedToDate = dayjs(date).format("DD-MM-YYYY hh:mm:ss A");
     setToDate(formattedToDate);
   };
@@ -189,7 +177,6 @@ function ProviderAbsence() {
   };
 
   const handleDelete = (record) => {
-    debugger;
     //Deleting an State from the Table
     setCalendarData(record);
     try {
@@ -216,19 +203,7 @@ function ProviderAbsence() {
     }
   };
 
-  // const handleRangeChange = (dates, dateStrings) => {
-  //   debugger;
-  //   if (dates) {
-  //     const formattedFromDate = dates[0].format("DD-MM-YYYY HH:mm:ss A");
-  //     const formattedToDate = dates[1].format("DD-MM-YYYY HH:mm:ss A");
-  //     console.log("Formatted Dates:", formattedFromDate, formattedToDate);
-  //   } else {
-  //     form.setFieldsValue({ FromDateToDate: [] });
-  //   }
-  // };
-
   const handleSubmit = async () => {
-    debugger;
     form.validateFields();
     const values = form.getFieldsValue();
     console.log("state Edit Modal Submit", values);
@@ -330,170 +305,153 @@ function ProviderAbsence() {
       title: "Sl. No.",
       dataIndex: "key",
       key: "key",
+      width: 80,
     },
     {
       title: "Provider Name",
       dataIndex: "ProviderName",
       key: "ProviderName",
+      width: 180,
     },
     {
       title: "Reason for Absence",
       dataIndex: "AbsenceReason",
       key: "AbsenceReason",
+      width: 180,
     },
     {
       title: "From Date",
       dataIndex: "StartDateTime",
       key: "StartDateTime",
+      width: 180,
     },
     {
       title: "To Date",
       dataIndex: "EndDateTime",
       key: "EndDateTime",
+      width: 180,
     },
   ];
 
   return (
     <>
-      <Layout>
-        <div
-          style={{
-            width: "100%",
-            backgroundColor: "white",
-            minHeight: "max-content",
-            borderRadius: "10px",
-          }}
+      <Layout
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <PageHeader
+          title={"Provider Absence"}
+          buttonLabel={"Add New Leave"}
+          buttonIcon={<PlusCircleOutlined style={{ fontSize: "1.1rem" }} />}
+          onButtonClick={handleAddAreaShowModal}
+        />
+        <Spin spinning={loading}>
+          <CustomTable
+            columns={columns}
+            dataSource={columnData}
+            actionColumn={true}
+            isFilter={true}
+            onEdit={handleEditModal}
+            onDelete={handleDelete}
+          />
+        </Spin>
+        <Modal
+          title="Publish New Calender"
+          open={isModalOpen}
+          maskClosable={false}
+          footer={null}
+          onCancel={handleAreaModalCancel}
         >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
+          <Form
+            style={{ margin: "1rem 0" }}
+            layout="vertical"
+            form={form}
+            onFinish={handleSubmit}
+            initialValues={{ FromDateToDate: [dayjs(), dayjs()] }}
           >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Provider Absence
-              </Title>
-            </Col>
-            <Col offset={5} span={3}>
-              <Button
-                icon={<PlusCircleOutlined />}
-                onClick={handleAddAreaShowModal}
-              >
-                Add New Leave
-              </Button>
-            </Col>
-          </Row>
-
-          <Spin spinning={loading}>
-            <CustomTable
-              columns={columns}
-              dataSource={columnData}
-              actionColumn={true}
-              isFilter={true}
-              onEdit={handleEditModal}
-              onDelete={handleDelete}
-            />
-          </Spin>
-          <Modal
-            title="Publish New Calender"
-            open={isModalOpen}
-            maskClosable={false}
-            footer={null}
-            onCancel={handleAreaModalCancel}
-          >
-            <Form
-              style={{ margin: "1rem 0" }}
-              layout="vertical"
-              form={form}
-              onFinish={handleSubmit}
-              initialValues={{ FromDateToDate: [dayjs(), dayjs()] }}
+            <Form.Item
+              name="Provider"
+              label="Provider"
+              rules={[
+                {
+                  required: true,
+                  message: "Please select provider",
+                },
+              ]}
             >
-              <Form.Item
-                name="Provider"
-                label="Provider"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select provider",
-                  },
-                ]}
+              <Select
+                disabled={isEditing}
+                allowClear
+                placeholder="Select a provider"
               >
-                <Select
-                  disabled={isEditing}
-                  allowClear
-                  placeholder="Select a provider"
-                >
-                  {Dropdown.Provider.map((option) => (
-                    <Select.Option
-                      key={option.ProviderId}
-                      value={option.ProviderId}
-                    >
-                      {option.ProviderName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
+                {Dropdown.Provider.map((option) => (
+                  <Select.Option
+                    key={option.ProviderId}
+                    value={option.ProviderId}
+                  >
+                    {option.ProviderName}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
 
-              <Form.Item
-                name="FromDateToDate"
-                label="From Date - To Date"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select the start Date and End Date",
-                  },
-                ]}
-              >
-                <RangePicker
-                  format={"DD-MM-YYYY hh:mm:ss A"}
-                  style={{ width: "100%" }}
-                  disabledDate={disabledDate}
-                  disabledTime={disabledRangeTime}
-                  showTime
-                ></RangePicker>
-              </Form.Item>
+            <Form.Item
+              name="FromDateToDate"
+              label="From Date - To Date"
+              rules={[
+                {
+                  required: true,
+                  message: "Please select the start Date and End Date",
+                },
+              ]}
+            >
+              <RangePicker
+                format={"DD-MM-YYYY hh:mm:ss A"}
+                style={{ width: "100%" }}
+                disabledDate={disabledDate}
+                disabledTime={disabledRangeTime}
+                showTime
+              ></RangePicker>
+            </Form.Item>
 
-              <Form.Item
-                name="Reason"
-                label="Leave Reason"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter Reason for leave",
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-              <Row gutter={32} style={{ height: "1.8rem" }}>
-                <Col offset={12} span={6}>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                      Submit
-                    </Button>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item>
-                    <Button type="default" onClick={handleAreaModalCancel}>
-                      Cancel
-                    </Button>
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </Modal>
-        </div>
+            <Form.Item
+              name="Reason"
+              label="Leave Reason"
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter Reason for leave",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Row
+              gutter={16}
+              justify={"end"}
+              style={{ marginBottom: "-1.5rem" }}
+            >
+              <Col>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit">
+                    Submit
+                  </Button>
+                </Form.Item>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button danger onClick={handleAreaModalCancel}>
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
       </Layout>
     </>
   );

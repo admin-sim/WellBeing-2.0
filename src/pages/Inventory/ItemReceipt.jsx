@@ -71,12 +71,12 @@ const ItemReceipt = () => {
   const navigate = useNavigate();
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Pending: "volcano",
-    "Partially Pending": "orange",
-    Completed: "green",
-    Finalize:"#52c41a"
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Pending: "#F5004F",
+    "Partially Pending": "#8E3E63",
+    Finalize: "#52c41a",
+    Completed: "#FF9100",
   };
 
   const GetModelDetails = (text, record, index) => {
@@ -157,7 +157,7 @@ const ItemReceipt = () => {
       dataIndex: "IssueDateString",
       key: "IssueDateString",
       width: 100,
-   
+
     },
     {
       title: "Issueing Store",
@@ -205,7 +205,7 @@ const ItemReceipt = () => {
       render: (_, row) => <Button type="link">Report</Button>,
     },
   ];
-  
+
 
   const onFinish = async (values) => {
     setLoading(true);
@@ -334,7 +334,7 @@ const ItemReceipt = () => {
               </Col>
               <Col className="gutter-row" span={4}>
                 <Form.Item name="FromDate" label="From Date">
-                <DatePicker
+                  <DatePicker
                     value={fromDate}
                     onChange={(date) => setFromDate(date)}
                     disabledDate={disableFromDate}
@@ -442,15 +442,15 @@ const ItemReceipt = () => {
               </Col>
             </Row>
           </Form>
+          <Spin spinning={loading}>
+            <CustomTable
+              dataSource={filteredData}
+              columns={columns}
+              isFilter={true}
+              actionColumn={false}
+            />
+          </Spin>
         </Card>
-        <Spin spinning={loading}>
-          <CustomTable
-            dataSource={filteredData}
-            columns={columns}
-            isFilter={true}
-            actionColumn={false}
-          />
-        </Spin>
       </div>
     </Layout>
   );

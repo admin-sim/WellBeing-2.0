@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Layout from 'antd/es/layout/layout';
 import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
+import CustomTable from "../../components/customTable/index.jsx";
 import {
   Spin,
   Skeleton,
@@ -59,12 +60,12 @@ const VendorReturn = () => {
   const navigate = useNavigate();
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Pending: "volcano",
-    "Partially Pending": "orange",
-    Finalize: "green",
-    Completed: "green",
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Pending: "#F5004F",
+    "Partially Pending": "#8E3E63",
+    Finalize: "#52c41a",
+    Completed: "#FF9100",
   };
 
   const GetModelDetails = (ReturnHeaderId) => {
@@ -171,6 +172,8 @@ const VendorReturn = () => {
         .then((response) => {
           debugger;
           setFilteredData(response.data.data.ReturnDetails);
+        }).finally(() => {
+          setLoading(false);
         })
     } catch (error) {
       // Handle any errors here      
@@ -275,25 +278,34 @@ const VendorReturn = () => {
               </Col>
             </Row>
           </Form>
+          <Spin spinning={loading}>
+            <CustomTable
+              dataSource={filteredData}
+              columns={columns}
+              isFilter={true}
+              actionColumn={false}
+              bordered
+            />
+          </Spin>
+          {/* <Table display={setIsTable}
+            dataSource={filteredData}
+            columns={columns}
+            pagination={{
+              onChange: (current, pageSize) => {
+                setPage(current);
+                setPaginationSize(pageSize);
+              },
+              defaultPageSize: 5,
+              hideOnSinglePage: true,
+              showSizeChanger: true,
+              showTotal: (total, range) =>
+                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+            }}
+            rowKey={(row) => row.AppUserId}
+            size="small"
+            bordered
+          /> */}
         </Card>
-        <Table display={setIsTable}
-          dataSource={filteredData}
-          columns={columns}
-          pagination={{
-            onChange: (current, pageSize) => {
-              setPage(current);
-              setPaginationSize(pageSize);
-            },
-            defaultPageSize: 5,
-            hideOnSinglePage: true,
-            showSizeChanger: true,
-            showTotal: (total, range) =>
-              `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-          }}
-          rowKey={(row) => row.AppUserId}
-          size="small"
-          bordered
-        />
       </div>
     </Layout>
   );

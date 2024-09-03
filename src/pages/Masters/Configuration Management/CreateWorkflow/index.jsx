@@ -13,21 +13,25 @@ function WorkflowManager() {
       title: "Sl No",
       dataIndex: "SlNo",
       key: "1",
+      width: 80,
     },
     {
       title: "Facility Name",
       dataIndex: "FacilityName",
       key: "2",
+      width: 200,
     },
     {
       title: "WorkFlow Name",
       dataIndex: "WorkFlowName",
       key: "3",
+      width: 150,
     },
     {
       title: "WorkFlow Description",
       dataIndex: "WorkFlowDescription",
       key: "4",
+      width: 200,
     },
   ];
 

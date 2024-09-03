@@ -10,64 +10,64 @@ function Facility() {
       title: "Sl No",
       dataIndex: "SlNo",
       key: "10",
-      width: 130,
+      width: 80,
     },
     {
       title: "Facility Name",
       dataIndex: "FacilityName",
       key: "1",
-      width: 300,
+      width: 200,
     },
     {
       title: "Facility Code",
       dataIndex: "FacilityCode",
       key: "11",
-      width: 300,
+      width: 120,
     },
     {
       title: "Address Line 1",
       dataIndex: "AddressLine1",
       key: "2",
-      width: 290,
+      width: 150,
     },
     {
       title: "Address Line 2",
       dataIndex: "AddressLine2",
       key: "3",
-      width: 300,
+      width: 250,
     },
     {
       title: "State",
       dataIndex: "State",
       key: "4",
-      width: 150,
+      width: 120,
     },
 
     {
       title: "Place",
       dataIndex: "Place",
       key: "5",
-      width: 150,
+      width: 120,
     },
 
     {
       title: "Area",
       dataIndex: "Area",
       key: "6",
-      width: 250,
+      width: 180,
     },
 
     {
       title: "Contact Name",
       dataIndex: "ContactName",
       key: "7",
-      width: 330,
+      width: 150,
     },
 
     {
       title: "Contact Details",
       key: "8",
-      width: 320,
+      width: 250,
       render: (text, record) => (
         <div>
           <p>

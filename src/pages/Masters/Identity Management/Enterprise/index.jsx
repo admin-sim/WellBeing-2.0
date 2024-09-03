@@ -9,52 +9,52 @@ function Enterprise() {
       title: "Enterprise Name",
       dataIndex: "EnterpriseName",
       key: "1",
-      width: 300,
+      width: 200,
     },
     {
       title: "Address Line 1",
       dataIndex: "AddressLine1",
       key: "2",
-      width: 250,
+      width: 150,
     },
     {
       title: "Address Line 2",
       dataIndex: "AddressLine2",
       key: "3",
-      width: 300,
+      width: 150,
     },
     {
       title: "State",
       dataIndex: "State",
       key: "4",
-      width: 150,
+      width: 100,
     },
 
     {
       title: "Place",
       dataIndex: "Place",
       key: "5",
-      width: 150,
+      width: 100,
     },
 
     {
       title: "Area",
       dataIndex: "Area",
       key: "6",
-      width: 250,
+      width: 150,
     },
 
     {
       title: "Contact Name",
       dataIndex: "ContactName",
       key: "7",
-      width: 220,
+      width: 150,
     },
 
     {
       title: "Contact Details",
       key: "8",
-      width: 400,
+      width: 250,
       render: (text, record) => (
         <div>
           <p>

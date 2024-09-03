@@ -1,30 +1,20 @@
-import {
-  EditOutlined,
-  PlusCircleOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import {
   Button,
-  Card,
   Col,
   Form,
   Modal,
   Row,
-  Select,
-  Space,
-  Table,
   Spin,
   Layout,
   notification,
 } from "antd";
-
 import Input from "antd/es/input/Input";
 import Title from "antd/es/typography/Title";
 import React, { useState, useEffect } from "react";
 import customAxios from "../../../../components/customAxios/customAxios";
 import dayjs from "dayjs";
 import { DatePicker } from "antd";
-
 import {
   urlGetAllHolidays,
   urlAddNewHoliday,
@@ -33,6 +23,7 @@ import {
   urlDeleteHoliday,
 } from "../../../../../endpoints";
 import CustomTable from "../../../../components/customTable/index";
+import PageHeader from "../../../../components/PageHeader";
 
 function Holiday() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,7 +31,6 @@ function Holiday() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [calendarData, setCalendarData] = useState();
-  const [DateFormat, setDateFormat] = useState("DD-MM-YYYY");
   const [FromDate, setFromDate] = useState();
   const [ToDate, setToDate] = useState();
   const [Dropdown, setDropdown] = useState({
@@ -53,7 +43,6 @@ function Holiday() {
   }, []);
 
   const fetchData = async () => {
-    debugger;
     setLoading(true);
     try {
       const response = await customAxios.get(`${urlGetAllHolidays}`);
@@ -79,13 +68,11 @@ function Holiday() {
   };
 
   const handleFromDateChange = (date, dateString) => {
-    debugger;
     const formattedFromDate = dayjs(date).format("DD-MM-YYYY");
     setFromDate(formattedFromDate);
   };
 
   const handleToDateChange = (date, dateString) => {
-    debugger;
     const formattedToDate = dayjs(date).format("DD-MM-YYYY");
     setToDate(formattedToDate);
   };
@@ -116,7 +103,6 @@ function Holiday() {
   };
 
   const handleEditModal = (record) => {
-    debugger;
     setCalendarData(record);
     setLoading(true);
     setIsEditing(true);
@@ -148,7 +134,6 @@ function Holiday() {
   };
 
   const handleDelete = (record) => {
-    debugger;
     //Deleting an State from the Table
     setCalendarData(record);
     try {
@@ -176,10 +161,8 @@ function Holiday() {
   };
 
   const handleSubmit = async () => {
-    debugger;
     form.validateFields();
     const values = form.getFieldsValue();
-    console.log("state Edit Modal Submit", values);
 
     try {
       if (isEditing) {
@@ -270,162 +253,144 @@ function Holiday() {
       title: "Sl. No.",
       dataIndex: "key",
       key: "key",
+      width: 80,
     },
     {
       title: "Holiday Name",
       dataIndex: "HolidayName",
       key: "HolidayName",
+      width: 150,
     },
 
     {
       title: "From Date",
       dataIndex: "startDateTime",
       key: "startDateTime",
+      width: 120,
     },
     {
       title: "To Date",
       dataIndex: "endDateTime",
       key: "endDateTime",
+      width: 120,
     },
   ];
 
   return (
     <>
-      <Layout>
-        <div
-          style={{
-            width: "100%",
-            backgroundColor: "white",
-            minHeight: "max-content",
-            borderRadius: "10px",
-          }}
+      <Layout
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <PageHeader
+          title={"Holidays"}
+          buttonLabel={"Add New Holiday"}
+          buttonIcon={<PlusCircleOutlined style={{ fontSize: "1.1rem" }} />}
+          onButtonClick={handleAddAreaShowModal}
+        />
+        <Spin spinning={loading}>
+          <CustomTable
+            columns={columns}
+            dataSource={columnData}
+            actionColumn={true}
+            isFilter={true}
+            onEdit={handleEditModal}
+            onDelete={handleDelete}
+          />
+        </Spin>
+        <Modal
+          title="Add New Holiday"
+          open={isModalOpen}
+          maskClosable={false}
+          footer={null}
+          onCancel={handleAreaModalCancel}
         >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
+          <Form
+            style={{ margin: "1rem 0" }}
+            layout="vertical"
+            form={form}
+            onFinish={handleSubmit}
           >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Holidays
-              </Title>
-            </Col>
-            <Col offset={5} span={3}>
-              <Button
-                icon={<PlusCircleOutlined />}
-                onClick={handleAddAreaShowModal}
-              >
-                Add New Holiday
-              </Button>
-            </Col>
-          </Row>
-
-          <Spin spinning={loading}>
-            <CustomTable
-              columns={columns}
-              dataSource={columnData}
-              actionColumn={true}
-              isFilter={true}
-              onEdit={handleEditModal}
-              onDelete={handleDelete}
-            />
-          </Spin>
-          <Modal
-            title="Add New Holiday"
-            open={isModalOpen}
-            maskClosable={false}
-            footer={null}
-            onCancel={handleAreaModalCancel}
-          >
-            <Form
-              style={{ margin: "1rem 0" }}
-              layout="vertical"
-              form={form}
-              onFinish={handleSubmit}
+            <Form.Item
+              name="HolidayName"
+              label="Holiday Name"
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter Reason for leave",
+                },
+              ]}
             >
-              <Form.Item
-                name="HolidayName"
-                label="Holiday Name"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter Reason for leave",
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
+              <Input />
+            </Form.Item>
 
-              <Form.Item
-                name="FromDate"
-                label="From Date"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select the start Date",
-                  },
-                  {
-                    validator: validateFromDate,
-                  },
-                ]}
-              >
-                <DatePicker
-                  format={"DD-MM-YYYY"}
-                  onChange={handleFromDateChange}
-                  style={{ width: "100%" }}
-                  disabledDate={disabledDate}
-                ></DatePicker>
-              </Form.Item>
-              <Form.Item
-                name="ToDate"
-                label="To Date"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select the end Date",
-                  },
-                  {
-                    validator: validateToDate,
-                  },
-                ]}
-              >
-                <DatePicker
-                  format={"DD-MM-YYYY"}
-                  onChange={handleToDateChange}
-                  disabledDate={disabledDate}
-                  style={{ width: "100%" }}
-                ></DatePicker>
-              </Form.Item>
+            <Form.Item
+              name="FromDate"
+              label="From Date"
+              rules={[
+                {
+                  required: true,
+                  message: "Please select the start Date",
+                },
+                {
+                  validator: validateFromDate,
+                },
+              ]}
+            >
+              <DatePicker
+                format={"DD-MM-YYYY"}
+                onChange={handleFromDateChange}
+                style={{ width: "100%" }}
+                disabledDate={disabledDate}
+              ></DatePicker>
+            </Form.Item>
+            <Form.Item
+              name="ToDate"
+              label="To Date"
+              rules={[
+                {
+                  required: true,
+                  message: "Please select the end Date",
+                },
+                {
+                  validator: validateToDate,
+                },
+              ]}
+            >
+              <DatePicker
+                format={"DD-MM-YYYY"}
+                onChange={handleToDateChange}
+                disabledDate={disabledDate}
+                style={{ width: "100%" }}
+              ></DatePicker>
+            </Form.Item>
 
-              <Row gutter={32} style={{ height: "1.8rem" }}>
-                <Col offset={12} span={6}>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                      Submit
-                    </Button>
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item>
-                    <Button type="default" onClick={handleAreaModalCancel}>
-                      Cancel
-                    </Button>
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </Modal>
-        </div>
+            <Row
+              gutter={16}
+              justify={"end"}
+              style={{ marginBottom: "-1.5rem" }}
+            >
+              <Col>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit">
+                    Submit
+                  </Button>
+                </Form.Item>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button danger onClick={handleAreaModalCancel}>
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
       </Layout>
     </>
   );

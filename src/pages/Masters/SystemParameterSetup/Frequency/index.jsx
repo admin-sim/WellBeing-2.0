@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import PageHeader from "../../../../components/PageHeader/index.jsx";
 import CustomTable from "../../../../components/customTable/index.jsx";
-import { useNavigate } from "react-router-dom";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import AddEditFrequencyModal from "./AddEditFrequencyModal.jsx";
 
@@ -14,21 +13,25 @@ function Frequency() {
       title: "Sl No",
       dataIndex: "SlNo",
       key: "1",
+      width: 80,
     },
     {
       title: "Frequency",
       dataIndex: "Frequency",
       key: "2",
+      width: 120,
     },
     {
       title: "Count",
       dataIndex: "Count",
       key: "3",
+      width: 80,
     },
     {
       title: "Local Language",
       dataIndex: "LocalLanguage",
       key: "4",
+      width: 150,
     },
   ];
 

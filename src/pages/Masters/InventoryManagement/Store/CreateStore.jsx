@@ -1,33 +1,22 @@
 import React, { useState, useEffect } from "react";
-import customAxios from "../../../components/customAxios/customAxios.jsx";
-import {
-  PlusOutlined,
-  DeleteOutlined,
-  PlusCircleOutlined,
-} from "@ant-design/icons";
+import customAxios from "../../../../components/customAxios/customAxios.jsx";
+import { PlusOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import Layout from "antd/es/layout/layout";
 import { useNavigate } from "react-router";
 import {
-  Spin,
-  Skeleton,
   Collapse,
   Typography,
   Select,
-  Popconfirm,
   Button,
   Form,
   Input,
   Row,
   AutoComplete,
   Col,
-  DatePicker,
   Card,
-  Divider,
-  Tooltip,
   Table,
   Checkbox,
   message,
-  Flex,
 } from "antd";
 import dayjs from "dayjs";
 import TextArea from "antd/es/input/TextArea";
@@ -35,11 +24,9 @@ import {
   urlCreateStore,
   urlAutocompleteProduct,
   urlEditStore,
-} from "../../../../endpoints";
+} from "../../../../../endpoints.js";
 import { useLocation } from "react-router-dom";
-import { render } from "react-dom";
 import FormItem from "antd/es/form/FormItem/index.js";
-import { lowerCase } from "lodash";
 
 const CreateStore = () => {
   const [DropDown, setDropDown] = useState({

@@ -20,9 +20,10 @@ import {
 } from "../../../../../endpoints";
 import customAxios from "../../../../components/customAxios/customAxios";
 import moment from "moment";
+import PageHeader from "../../../../components/PageHeader";
+import { ColWithSixSpan } from "../../../../components/customGridColumns";
 
 const ScheduleTemplateEdit = () => {
-  debugger;
   const [form] = Form.useForm();
   const [NumOfForms, setNumOfForms] = useState();
   const [templateData, setTemplateData] = useState();
@@ -39,7 +40,6 @@ const ScheduleTemplateEdit = () => {
   }, []);
 
   const HandleEditScheduleTemplate = async (record) => {
-    debugger;
     // console.log("the schedule Template", record);
     setLoading(true);
     try {
@@ -103,7 +103,6 @@ const ScheduleTemplateEdit = () => {
   // }, [response, form]);
 
   const handleSubmit = async () => {
-    debugger;
     try {
       const values = await form.validateFields();
 
@@ -176,34 +175,15 @@ const ScheduleTemplateEdit = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
-          style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
-          }}
+        <PageHeader title={"Edit Template"} button={false} />
+        <Form
+          layout="vertical"
+          form={form}
+          onFinish={handleSubmit}
+          style={{ margin: "1rem" }}
         >
-          <Col span={16}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              Edit Template
-            </Title>
-          </Col>
-        </Row>
-        <Form layout="vertical" form={form} onFinish={handleSubmit}>
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-            style={{ margin: "20px 10px" }}
-            // style={{ height: "1.8rem", paddingBottom: "2rem" }}
-          >
-            <Col span={6}>
+          <Row gutter={16}>
+            <ColWithSixSpan>
               <Form.Item
                 name="TemplateName"
                 label="Template Name"
@@ -211,47 +191,39 @@ const ScheduleTemplateEdit = () => {
               >
                 <Input style={{ width: "100%" }} />
               </Form.Item>
+            </ColWithSixSpan>
+          </Row>
+          <Row>
+            <Col span={24}>
+              <SessionsForms
+                numForms={NumOfForms}
+                form={form}
+                formData={formData}
+                // setFormData={setFormData}
+              ></SessionsForms>
             </Col>
           </Row>
-
-          <>
-            <Row>
-              <Col
-                span={24}
-                style={{ margin: "0px 10px", padding: "4px 20px" }}
-              >
-                <SessionsForms
-                  numForms={NumOfForms}
-                  form={form}
-                  formData={formData}
-                  // setFormData={setFormData}
-                ></SessionsForms>
-              </Col>
-            </Row>
-            <Row
-              gutter={32}
-              style={{
-                height: "1.8rem",
-                paddingBottom: "2rem",
-                margin: "20px 0px",
-              }}
-            >
-              <Col offset={20} span={2}>
-                <Form.Item>
-                  <Button type="primary" htmlType="submit">
-                    Update
-                  </Button>
-                </Form.Item>
-              </Col>
-              <Col span={2} style={{ paddingLeft: "0px" }}>
-                <Form.Item>
-                  <Button type="default" onClick={handleBack}>
-                    Cancel
-                  </Button>
-                </Form.Item>
-              </Col>
-            </Row>
-          </>
+          <Row justify={"end"}>
+            <Col style={{ marginRight: "1rem" }}>
+              <Form.Item>
+                <Button size="middle" type="primary" htmlType="submit">
+                  Update
+                </Button>
+              </Form.Item>
+            </Col>
+            <Col>
+              <Form.Item>
+                <Button
+                  size="middle"
+                  type="default"
+                  danger
+                  onClick={handleBack}
+                >
+                  Cancel
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
         </Form>
       </div>
     </Layout>

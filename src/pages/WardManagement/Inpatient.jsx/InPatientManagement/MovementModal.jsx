@@ -16,16 +16,23 @@ import {
   Typography,
 } from "antd";
 import React from "react";
+import dayjs from "dayjs";
 
 import PatientHeader from "../../../../components/PatientHeader";
 
-function Movement({ bed, patient, Dropdown, open, handleClose }) {
+function Movement({ bed, patient, Dropdown, open, handleClose, handleSubmit, handleDropdown }) {
   const [form] = Form.useForm();
 
   const handleCancel = () => {
     form.resetFields();
     handleClose();
   };
+
+  const getDropdown = async (value, SLId, Id, PId) => {
+    debugger
+    form.setFieldsValue({ ServiceLocation: '' })
+    handleDropdown(value, SLId, Id, PId)
+  }
 
   return (
     <div>
@@ -57,21 +64,21 @@ function Movement({ bed, patient, Dropdown, open, handleClose }) {
               <Row>
                 <Col span={24}>Admitted Date and Time</Col>
                 <Col span={24}>
-                  <b>14-05-2024 04:18:00 PM</b>
+                  <b>{Dropdown.PatientsCurrentDetails.AdmittedDateString}</b>
                 </Col>
               </Row>
               <Row style={{ marginTop: "0.5rem" }}>
                 <Col span={12}>
                   <Col span={23}>Department</Col>
                   <Col span={23}>
-                    <b>General Medicine</b>
+                    <b>{Dropdown.PatientsCurrentDetails.DepartmentName}</b>
                   </Col>
                 </Col>
 
                 <Col span={12}>
                   <Col span={24}>Service Location</Col>
                   <Col span={24}>
-                    <b>First Floor</b>
+                    <b>{Dropdown.PatientsCurrentDetails.ServiceLocationName}</b>
                   </Col>
                 </Col>
               </Row>
@@ -79,14 +86,14 @@ function Movement({ bed, patient, Dropdown, open, handleClose }) {
                 <Col span={12}>
                   <Col span={23}>Provider</Col>
                   <Col span={23}>
-                    <b>Dr. Clement Atlee</b>
+                    <b>{Dropdown.PatientsCurrentDetails.Provider}</b>
                   </Col>
                 </Col>
 
                 <Col span={12}>
                   <Col span={24}>Ward Category</Col>
                   <Col span={24}>
-                    <b>General Ward</b>
+                    <b>{Dropdown.PatientsCurrentDetails.WardCategory}</b>
                   </Col>
                 </Col>
               </Row>
@@ -94,14 +101,14 @@ function Movement({ bed, patient, Dropdown, open, handleClose }) {
                 <Col span={12}>
                   <Col span={23}>Ward</Col>
                   <Col span={23}>
-                    <b>Female Ward First Floor</b>
+                    <b>{Dropdown.PatientsCurrentDetails.Ward}</b>
                   </Col>
                 </Col>
 
                 <Col span={12}>
                   <Col span={24}>Bed</Col>
                   <Col span={24}>
-                    <b>FWFF2</b>
+                    <b>{Dropdown.PatientsCurrentDetails.Bed}</b>
                   </Col>
                 </Col>
               </Row>
@@ -112,9 +119,9 @@ function Movement({ bed, patient, Dropdown, open, handleClose }) {
               style={{ marginTop: "1rem" }}
               layout="vertical"
               form={form}
-              onFinish={(values) => {
-                console.log(values);
-                handleCancel();
+              onFinish={handleSubmit}
+              initialValues={{
+                ExpectedReturnTime: dayjs(new Date())
               }}
             >
               <Row gutter={16}>
@@ -129,17 +136,17 @@ function Movement({ bed, patient, Dropdown, open, handleClose }) {
                         message: "Please select Reason",
                       },
                     ]}
+                    initialValue={Dropdown.PatientsCurrentDetails.DepartmentId}
                   >
-                    <Select style={{ width: "100%" }}>
+                    <Select style={{ width: "100%" }} placeholder='Select Department' allowClear onChange={(value) => getDropdown(value, 0, 1, 0)}>
                       {Dropdown.FacilityDepartment.map((option) => (
-                        <Select.Option key={option.DepartmentId} value={option.DepartmentId}>
+                        <Select.Option key={option.FacilityDepartmentId} value={option.FacilityDepartmentId}>
                           {option.DepartmentName}
                         </Select.Option>
                       ))}
                     </Select>
                   </Form.Item>
                 </Col>
-
                 <Col span={24}>
                   <Form.Item
                     style={{ marginBottom: "0rem" }}
@@ -151,20 +158,33 @@ function Movement({ bed, patient, Dropdown, open, handleClose }) {
                         message: "Please select Reason",
                       },
                     ]}
+                    initialValue={Dropdown.PatientsCurrentDetails.ServiceLocationId}
                   >
-                    <Select style={{ width: "100%" }} >
+                    <Select style={{ width: "100%" }} placeholder='Select ServiceLocation' allowClear>
                       {Dropdown.FacilityDeptServiceLocation.map((option) => (
-                        <Select.Option key={option.ServiceLocationId} value={option.ServiceLocationId}>
+                        <Select.Option key={option.FacilityDepartmentServiceLocationId} value={option.FacilityDepartmentServiceLocationId}>
                           {option.ServiceLocationName}
                         </Select.Option>
                       ))}
                     </Select>
                   </Form.Item>
+                  <Form.Item hidden
+                    name="PatientId"
+                    initialValue={Dropdown.PatientsCurrentDetails.PatientID}
+                  >
+                    <Input />
+                  </Form.Item>
+                  <Form.Item hidden
+                    name="BedId"
+                    initialValue={Dropdown.PatientsCurrentDetails.BedID}
+                  >
+                    <Input />
+                  </Form.Item>
                 </Col>
                 <Col span={24}>
                   <Form.Item
                     style={{ marginBottom: "0rem" }}
-                    name="Reason"
+                    name="MovementReason"
                     label="Reason for Movement"
                     rules={[
                       {
@@ -186,8 +206,8 @@ function Movement({ bed, patient, Dropdown, open, handleClose }) {
                 <Col span={24}>
                   <Form.Item
                     style={{ marginBottom: "3rem" }}
-                    name="DateTimeTransfer"
-                    label="Date and Time of Transfer"
+                    name="ExpectedReturnTime"
+                    label="Expected Return Time"
                     rules={[
                       {
                         required: true,

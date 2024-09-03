@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Spin,
   Button,
   Col,
   Form,
@@ -11,8 +10,6 @@ import {
   Divider,
   notification,
   Popconfirm,
-  Checkbox,
-  Card,
   Space,
   Table,
   Modal,
@@ -27,7 +24,6 @@ import {
 } from "@ant-design/icons";
 import { FaAnglesRight } from "react-icons/fa6";
 import { useNavigate, useLocation } from "react-router";
-const { Option } = Select;
 import {
   urlGetProviderDetails,
   urlGetStatesBasedOnCountryId,
@@ -42,11 +38,10 @@ import {
   urlDeleteProviderCredential,
 } from "../../../../../endpoints.js";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
-import Title from "antd/es/typography/Title";
 import TextArea from "antd/es/input/TextArea";
 import WebcamImage from "../../../../components/WebCam/index.jsx";
 import dayjs from "dayjs";
-//import "../../../Patient/style.css"
+import PageHeader from "../../../../components/PageHeader/index.jsx";
 
 const Provider = () => {
   const [providerDropdown, setProviderDropdown] = useState({
@@ -100,9 +95,6 @@ const Provider = () => {
   const [providerDetails, setProviderDetails] = useState([]);
 
   useEffect(() => {
-    debugger;
-
-    // Determine edit mode based on location.state
     const isEdit =
       location.state !== null && location.state.isEditProviderRegistration;
     const providerId = isEdit ? location.state.selectedRow.ProviderId : null;
@@ -204,8 +196,6 @@ const Provider = () => {
   };
 
   const handleOnFinish = async (values) => {
-    debugger;
-    console.log("Received values from form: ", values);
     setIsSubmitClicked(true);
     const patientDetails = isEditProviderRegistration
       ? {
@@ -376,8 +366,6 @@ const Provider = () => {
   };
 
   const handleAddressClick = () => {
-    debugger;
-
     const presentAddressFields = form.getFieldsValue([
       "PresentAddress",
       "PresentCountry",
@@ -417,9 +405,6 @@ const Provider = () => {
   };
 
   const handleCountriesChange = async (value, isPermanent) => {
-    // setCountrySelectValue(value);
-    debugger;
-
     try {
       // Update the options for the second select based on the value of the first select
       if (value != null) {
@@ -478,8 +463,6 @@ const Provider = () => {
   };
 
   const handleStatesChange = async (value, isPermanent) => {
-    // setCountrySelectValue(value);
-    debugger;
     try {
       // Update the options for the second select based on the value of the first select
       if (value != null) {
@@ -517,8 +500,6 @@ const Provider = () => {
   };
 
   const handlePlacesChange = async (value, isPermanent) => {
-    // setCountrySelectValue(value);
-    debugger;
     try {
       // Update the options for the second select based on the value of the first select
       if (value != null) {
@@ -554,18 +535,15 @@ const Provider = () => {
   };
 
   const handleExpiryDate = (date, dateString) => {
-    debugger;
     setExpiryDate(dateString);
   };
 
   const handleDateOfBirth = (date, dateString) => {
-    debugger;
     setDateOfBirth(dateString);
   };
 
   //editing the details from credential table
   const onEditCredential = (record) => {
-    debugger;
     console.log("identifier record", record);
 
     if (isEditProviderRegistration) {
@@ -604,7 +582,6 @@ const Provider = () => {
 
   //editing the details from credential table
   const onEditIdentification = (record) => {
-    debugger;
     if (isEditProviderRegistration) {
       customAxios
         .get(
@@ -648,9 +625,6 @@ const Provider = () => {
 
   //Deleting  the details from credential table
   const onDeleteCredential = (record) => {
-    // (int ProviderIdentityId, long ProviderId)
-    // int ProviderCredentialId, long ProviderId)
-    debugger;
     console.log("credential record", record);
     if (isEditProviderRegistration) {
       customAxios
@@ -690,8 +664,6 @@ const Provider = () => {
 
   //Deleting  the details from credential table
   const onDeleteIdentification = (record) => {
-    debugger;
-    console.log("identifier record", record);
     if (isEditProviderRegistration) {
       customAxios
         .delete(
@@ -754,7 +726,6 @@ const Provider = () => {
 
   //Saving the details of credentials
   const handleSaveCredentials = async () => {
-    debugger;
     const values = credentialForm.getFieldsValue();
     console.log("To save Identification", values);
     if (isEditProviderRegistration) {
@@ -878,9 +849,8 @@ const Provider = () => {
 
   //Saving the details of credentials
   const handleSaveIdentification = async () => {
-    debugger;
     const values = identifierForm.getFieldsValue();
-    console.log("To save Identification", values);
+
     if (isEditProviderRegistration) {
       const identification = IsEditingIdentifiersModal
         ? {
@@ -1012,7 +982,6 @@ const Provider = () => {
     }
   };
 
-  //headers of the credential table
   const CredentialColumns = [
     {
       title: "Sl. No.",
@@ -1120,884 +1089,822 @@ const Provider = () => {
     },
   ];
 
+  const handleImageUpload = (base64image) => {
+    console.log(base64image);
+  };
+
+  const ColWithThreeSpan = ({ children, ...props }) => (
+    <Col xl={3} lg={5} md={7} sm={6} xs={9} span={12} {...props}>
+      {children}
+    </Col>
+  );
+  const ColWithSixSpan = ({ children, ...props }) => (
+    <Col xl={7} lg={7} md={12} xs={12} span={24} {...props}>
+      {children}
+    </Col>
+  );
+  const ColWithSevenSpan = ({ children, ...props }) => (
+    <Col xl={7} lg={7} md={7} xs={15} span={24} {...props}>
+      {children}
+    </Col>
+  );
+  const ColWithEightSpan = ({ children, ...props }) => (
+    <Col xl={8} lg={8} md={8} sm={8} xs={8} span={24} {...props}>
+      {children}
+    </Col>
+  );
+  const ColWithTwelveAtLowerLevelSpan = ({ children, ...props }) => (
+    <Col xl={12} lg={12} md={12} xs={12} span={24} {...props}>
+      {children}
+    </Col>
+  );
+
+  const ColWithTwelveSpan = ({ children, ...props }) => (
+    <Col xl={12} lg={12} md={24} span={24} {...props}>
+      {children}
+    </Col>
+  );
+
   return (
     <>
-      <Layout>
-        <div
-          style={{
-            width: "100%",
-            backgroundColor: "white",
-            minHeight: "max-content",
-            borderRadius: "10px",
-          }}
+      <Layout
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <PageHeader
+          title={
+            isEditProviderRegistration
+              ? "Edit Provider Details"
+              : "Add Provider details"
+          }
+          buttonLabel={!isEditProviderRegistration && "Search Provider"}
+          buttonIcon={<SearchOutlined />}
+          onButtonClick={searchProvider}
+          button={isEditProviderRegistration ? false : true}
+        />
+
+        <Divider orientation="left">Provider Details</Divider>
+
+        <Form
+          layout="vertical"
+          form={form}
+          onFinish={handleOnFinish}
+          scrollToFirstError={true}
+          style={{ padding: "0rem 1rem" }}
         >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                {isEditProviderRegistration
-                  ? "Edit Provider Details"
-                  : "Add Provider details"}
-              </Title>
+          <Row gutter={32}>
+            <Col xl={18} lg={18} md={18} span={24}>
+              <Row gutter={16}>
+                <ColWithThreeSpan>
+                  <Form.Item
+                    name="title"
+                    label="Title"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select title",
+                      },
+                    ]}
+                  >
+                    <Select
+                      loading={isLoading}
+                      placeholder="Select Title"
+                      allowClear
+                    >
+                      {providerDropdown.Titles.map((option) => (
+                        <Select.Option
+                          key={option.LookupID}
+                          value={option.LookupID}
+                        >
+                          {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </ColWithThreeSpan>
+                <ColWithSevenSpan>
+                  <Form.Item
+                    name="FirstName"
+                    label="First Name"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please add First Name",
+                      },
+                    ]}
+                  >
+                    <Input allowClear />
+                  </Form.Item>
+                </ColWithSevenSpan>
+                <ColWithSixSpan>
+                  <Form.Item name="MiddleName" label="Middle Name" allowClear>
+                    <Input />
+                  </Form.Item>
+                </ColWithSixSpan>
+                <ColWithSixSpan>
+                  <Form.Item
+                    name="LastName"
+                    label="Last Name"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please add Last Name",
+                      },
+                    ]}
+                  >
+                    <Input allowClear />
+                  </Form.Item>
+                </ColWithSixSpan>
+
+                <ColWithThreeSpan>
+                  <Form.Item
+                    name="Gender"
+                    label="Gender"
+                    // hasFeedback
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select gender",
+                      },
+                    ]}
+                  >
+                    <Select loading={isLoading} placeholder="select" allowClear>
+                      {providerDropdown.Genders.map((option) => (
+                        <Select.Option
+                          key={option.LookupID}
+                          value={option.LookupID}
+                        >
+                          {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </ColWithThreeSpan>
+
+                <ColWithSevenSpan>
+                  <Form.Item name="Qualification" label="Qualification">
+                    <Input allowClear />
+                  </Form.Item>
+                </ColWithSevenSpan>
+                <ColWithSixSpan>
+                  <Form.Item
+                    name="dob"
+                    label="Date&nbsp;of&nbsp;Birth"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select Date Of Birth",
+                      },
+                    ]}
+                  >
+                    <DatePicker
+                      placeholder="DD-MM-YYYY"
+                      style={{ width: "100%" }}
+                      format="DD-MM-YYYY"
+                      onChange={handleDateOfBirth}
+                      disabledDate={disabledDateOfBirth}
+                      allowClear
+                    />
+                  </Form.Item>
+                </ColWithSixSpan>
+
+                <ColWithSixSpan>
+                  <Form.Item
+                    name="structuralRole"
+                    label="Structural Role"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select Structural Role",
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Select the role"
+                      style={{ width: "100%" }}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children
+                          .toLowerCase()
+                          .localeCompare(optionB.children.toLowerCase())
+                      }
+                      loading={isLoading}
+                      allowClear
+                    >
+                      {providerDropdown.StructuralRoles.map((option) => (
+                        <Select.Option
+                          key={option.LookupID}
+                          value={option.LookupID}
+                        >
+                          {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </ColWithSixSpan>
+                <ColWithSixSpan>
+                  <Form.Item
+                    name="consultantType"
+                    label="Consultant&nbsp;Type"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select Consultant Type",
+                      },
+                    ]}
+                  >
+                    <Select
+                      loading={isLoading}
+                      placeholder="Select Type"
+                      allowClear
+                    >
+                      {providerDropdown.ConsultantType.map((option) => (
+                        <Select.Option
+                          key={option.LookupID}
+                          value={option.LookupID}
+                        >
+                          {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </ColWithSixSpan>
+              </Row>
             </Col>
-            {isEditProviderRegistration ? null : (
-              <Col offset={5} span={3}>
-                <Button icon={<SearchOutlined />} onClick={searchProvider}>
-                  Search Provider
-                </Button>
-              </Col>
-            )}
+            <Col xl={6} lg={6} md={6} span={24}>
+              <WebcamImage onImageUpload={handleImageUpload} />
+            </Col>
           </Row>
 
-          <Divider orientation="left">Provider Details</Divider>
-
-          <Form
-            layout="vertical"
-            form={form}
-            name="register"
-            onFinish={handleOnFinish}
-            scrollToFirstError={true}
-            style={{ padding: "0rem 2rem" }}
-          >
-            <Row gutter={20}>
-              <Col span={18}>
-                <Row gutter={16}>
-                  <Col span={3}>
-                    <Form.Item
-                      name="title"
-                      label="Title"
-                      // hasFeedback
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select title",
-                        },
-                      ]}
+          <Row gutter={32}>
+            <ColWithTwelveSpan>
+              <Divider orientation="left" style={{ marginTop: "1rem" }}>
+                Present Address
+              </Divider>
+              <Row gutter={32}>
+                <Col span={24}>
+                  <Form.Item
+                    name="PresentAddress"
+                    label="Address"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter Address",
+                      },
+                    ]}
+                  >
+                    <TextArea placeholder="Add Address" autoSize allowClear />
+                  </Form.Item>
+                </Col>
+                <ColWithTwelveAtLowerLevelSpan>
+                  <Form.Item
+                    name="PresentCountry"
+                    label="Country"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select country",
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Select the country"
+                      style={{ width: "100%" }}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children
+                          .toLowerCase()
+                          .localeCompare(optionB.children.toLowerCase())
+                      }
+                      onChange={(value) => handleCountriesChange(value, false)}
+                      allowClear
+                      loading={isLoading}
                     >
-                      <Select
-                        loading={isLoading}
-                        placeholder="Select Title"
-                        allowClear
-                      >
-                        {providerDropdown.Titles.map((option) => (
-                          <Select.Option
-                            key={option.LookupID}
-                            value={option.LookupID}
-                          >
-                            {option.LookupDescription}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col span={7}>
-                    <Form.Item
-                      name="FirstName"
-                      label="First Name"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please add First Name",
-                        },
-                      ]}
-                    >
-                      <Input allowClear />
-                    </Form.Item>
-                  </Col>
-                  <Col span={7}>
-                    <Form.Item name="MiddleName" label="Middle Name" allowClear>
-                      <Input />
-                    </Form.Item>
-                  </Col>
-                  <Col span={7}>
-                    <Form.Item
-                      name="LastName"
-                      label="Last Name"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please add Last Name",
-                        },
-                      ]}
-                    >
-                      <Input allowClear />
-                    </Form.Item>
-                  </Col>
-                </Row>
-                <Row gutter={16}>
-                  <Col span={3}>
-                    <Form.Item
-                      name="Gender"
-                      label="Gender"
-                      // hasFeedback
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select gender",
-                        },
-                      ]}
-                    >
-                      <Select
-                        loading={isLoading}
-                        placeholder="select"
-                        allowClear
-                      >
-                        {providerDropdown.Genders.map((option) => (
-                          <Select.Option
-                            key={option.LookupID}
-                            value={option.LookupID}
-                          >
-                            {option.LookupDescription}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col span={7}>
-                    <Row gutter={32}>
-                      <Col span={12}>
-                        <Form.Item name="Qualification" label="Qualification">
-                          <Input allowClear />
-                        </Form.Item>
-                      </Col>
-                      <Col span={12} className="custom-padding">
-                        <Form.Item
-                          name="dob"
-                          label="Date&nbsp;of&nbsp;Birth"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Please select Date Of Birth",
-                            },
-                          ]}
+                      {providerDropdown.Countries.map((option) => (
+                        <Select.Option
+                          key={option.LookupID}
+                          value={option.LookupID}
                         >
-                          <DatePicker
-                            placeholder="DD-MM-YYYY"
-                            style={{ width: "100%" }}
-                            format="DD-MM-YYYY"
-                            onChange={handleDateOfBirth}
-                            disabledDate={disabledDateOfBirth}
-                            allowClear
-                          />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </Col>
+                          {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </ColWithTwelveAtLowerLevelSpan>
+                <ColWithTwelveAtLowerLevelSpan>
+                  <Form.Item
+                    name="PresentState"
+                    label="State"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select state",
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Select the state"
+                      style={{ width: "100%" }}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children
+                          .toLowerCase()
+                          .localeCompare(optionB.children.toLowerCase())
+                      }
+                      //loading={isLoading}
+                      onChange={(value) => handleStatesChange(value, false)}
+                      allowClear
+                    >
+                      {states.map((option) => (
+                        <Select.Option
+                          key={option.StateID}
+                          value={option.StateID}
+                        >
+                          {option.StateName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </ColWithTwelveAtLowerLevelSpan>
+                <ColWithTwelveAtLowerLevelSpan>
+                  <Form.Item
+                    name="PresentCity"
+                    label="City"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select place",
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Select the city"
+                      style={{ width: "100%" }}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children
+                          .toLowerCase()
+                          .localeCompare(optionB.children.toLowerCase())
+                      }
+                      // loading={Loading}
+                      onChange={(value) => handlePlacesChange(value, false)}
+                      allowClear
+                    >
+                      {places.map((option) => (
+                        <Select.Option
+                          key={option.PlaceId}
+                          value={option.PlaceId}
+                        >
+                          {option.PlaceName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </ColWithTwelveAtLowerLevelSpan>
+                <ColWithTwelveAtLowerLevelSpan>
+                  <Form.Item
+                    name="PresentArea"
+                    label="Area"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select area",
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Select the area"
+                      style={{ width: "100%" }}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children
+                          .toLowerCase()
+                          .localeCompare(optionB.children.toLowerCase())
+                      }
+                      // loading={Loading}
+                      allowClear
+                    >
+                      {areas.map((option) => (
+                        <Select.Option
+                          key={option.AreaId}
+                          value={option.AreaId}
+                        >
+                          {option.AreaName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </ColWithTwelveAtLowerLevelSpan>
+                <ColWithTwelveAtLowerLevelSpan>
+                  <Form.Item
+                    name="PresentPinCode"
+                    label="Pin Code"
+                    rules={[
+                      {
+                        pattern: new RegExp(/^\d{6}$/),
+                        message: "Invalid Pin Code",
+                      },
+                    ]}
+                  >
+                    <Input maxLength={6} allowClear />
+                  </Form.Item>
+                </ColWithTwelveAtLowerLevelSpan>
+                <Col
+                  offset={3}
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    marginTop: "1.5rem",
+                  }}
+                >
+                  <Tooltip title="Permanent Address same as Present Address?">
+                    <Button
+                      type="primary"
+                      size="middle"
+                      onClick={handleAddressClick}
+                    >
+                      <FaAnglesRight />
+                    </Button>
+                  </Tooltip>
+                </Col>
+              </Row>
+            </ColWithTwelveSpan>
+            <ColWithTwelveSpan>
+              <Divider orientation="left" style={{ margin: "1rem" }}>
+                Permanent Address
+              </Divider>
+              <Row gutter={32}>
+                <Col span={24}>
+                  <Form.Item
+                    name="PermanentAddress"
+                    label="Address"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter Address",
+                      },
+                    ]}
+                  >
+                    <TextArea placeholder="Add Address" allowClear autoSize />
+                  </Form.Item>
+                </Col>
+                <ColWithTwelveAtLowerLevelSpan>
+                  <Form.Item
+                    name="PermanentCountry"
+                    label="Country"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select country",
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Select the country"
+                      style={{ width: "100%" }}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children
+                          .toLowerCase()
+                          .localeCompare(optionB.children.toLowerCase())
+                      }
+                      onChange={(value) => handleCountriesChange(value, true)}
+                      allowClear
+                      loading={isLoading}
+                    >
+                      {providerDropdown.Countries.map((option) => (
+                        <Select.Option
+                          key={option.LookupID}
+                          value={option.LookupID}
+                        >
+                          {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </ColWithTwelveAtLowerLevelSpan>
+                <ColWithTwelveAtLowerLevelSpan>
+                  <Form.Item
+                    name="PermanentState"
+                    label="State"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select state",
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Select the state"
+                      style={{ width: "100%" }}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children
+                          .toLowerCase()
+                          .localeCompare(optionB.children.toLowerCase())
+                      }
+                      // loading={Loading}
+                      onChange={(value) => handleStatesChange(value, true)}
+                      allowClear
+                    >
+                      {permanentStates.map((option) => (
+                        <Select.Option
+                          key={option.StateID}
+                          value={option.StateID}
+                        >
+                          {option.StateName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </ColWithTwelveAtLowerLevelSpan>
+                <ColWithTwelveAtLowerLevelSpan>
+                  <Form.Item
+                    name="PermanentCity"
+                    label="City"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select place",
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Select the city"
+                      style={{ width: "100%" }}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children
+                          .toLowerCase()
+                          .localeCompare(optionB.children.toLowerCase())
+                      }
+                      // loading={Loading}
+                      onChange={(value) => handlePlacesChange(value, true)}
+                      allowClear
+                    >
+                      {permanentPlaces.map((option) => (
+                        <Select.Option
+                          key={option.PlaceId}
+                          value={option.PlaceId}
+                        >
+                          {option.PlaceName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </ColWithTwelveAtLowerLevelSpan>
+                <ColWithTwelveAtLowerLevelSpan>
+                  <Form.Item
+                    name="PermanentArea"
+                    label="Area"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select area",
+                      },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Select the area"
+                      style={{ width: "100%" }}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children
+                          .toLowerCase()
+                          .localeCompare(optionB.children.toLowerCase())
+                      }
+                      // loading={Loading}
+                      allowClear
+                    >
+                      {permanentAreas.map((option) => (
+                        <Select.Option
+                          key={option.AreaId}
+                          value={option.AreaId}
+                        >
+                          {option.AreaName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </ColWithTwelveAtLowerLevelSpan>
+                <ColWithTwelveAtLowerLevelSpan>
+                  <Form.Item
+                    name="PermanentPinCode"
+                    label="Pin Code"
+                    rules={[
+                      {
+                        pattern: new RegExp(/^\d{6}$/),
+                        message: "Invalid Pin Code",
+                      },
+                    ]}
+                  >
+                    <Input allowClear maxLength={6} />
+                  </Form.Item>
+                </ColWithTwelveAtLowerLevelSpan>
+              </Row>
+            </ColWithTwelveSpan>
+          </Row>
 
-                  <Col span={7}>
-                    <Form.Item
-                      name="structuralRole"
-                      label="Structural Role"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select Structural Role",
-                        },
-                      ]}
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Select the role"
-                        style={{ width: "100%" }}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children
-                            .toLowerCase()
-                            .includes(input.toLowerCase())
-                        }
-                        filterSort={(optionA, optionB) =>
-                          optionA.children
-                            .toLowerCase()
-                            .localeCompare(optionB.children.toLowerCase())
-                        }
-                        loading={isLoading}
-                        allowClear
-                      >
-                        {providerDropdown.StructuralRoles.map((option) => (
-                          <Select.Option
-                            key={option.LookupID}
-                            value={option.LookupID}
-                          >
-                            {option.LookupDescription}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col span={7}>
-                    <Form.Item
-                      name="consultantType"
-                      label="Consultant Type"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select Consultant Type",
-                        },
-                      ]}
-                    >
-                      <Select
-                        loading={isLoading}
-                        placeholder="Select Type"
-                        allowClear
-                      >
-                        {providerDropdown.ConsultantType.map((option) => (
-                          <Select.Option
-                            key={option.LookupID}
-                            value={option.LookupID}
-                          >
-                            {option.LookupDescription}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </Col>
-              <Col
-                span={6}
-                style={{
-                  overflow: "hidden",
-                  paddingRight: "0px",
-                  marginTop: "-30px",
-                }}
+          <Divider orientation="left">Contact Details</Divider>
+          <Row gutter={16}>
+            <ColWithSixSpan>
+              <Form.Item
+                name="MobileNumber"
+                label="Mobile Number"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter your mobile number.",
+                  },
+                  {
+                    pattern: /^\d{10}$/,
+                    message: "Invalid mobile number!",
+                  },
+                ]}
               >
-                <WebcamImage
-                //  onImageUpload={handleImageUpload}
+                <Input allowClear maxLength={10} />
+              </Form.Item>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
+              <Form.Item
+                name="LandlineNumber"
+                label="Landline Number"
+                rules={[
+                  {
+                    pattern: /^\d{10}$/,
+                    message: "Invalid mobile number!",
+                  },
+                ]}
+              >
+                <Input allowClear maxLength={10} />
+              </Form.Item>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
+              <Form.Item
+                name="EmailId"
+                label="Email Id"
+                rules={[
+                  {
+                    type: "email",
+                    message: "Please input valid E-mail",
+                  },
+                  {
+                    required: true,
+                    message: "Please enter email-id",
+                  },
+                ]}
+              >
+                <Input allowClear />
+              </Form.Item>
+            </ColWithSixSpan>
+          </Row>
+          <Divider orientation="left">Other Details</Divider>
+          {/* <Space size="large">{""}</Space> */}
+
+          <Table
+            pagination={false}
+            title={() => (
+              <>
+                <PageHeader
+                  title={"Provider Credentials"}
+                  buttonLabel={"Add Credentials"}
+                  buttonIcon={<PlusCircleOutlined />}
+                  onButtonClick={handleAddCredential}
                 />
-              </Col>
-            </Row>
+              </>
+            )}
+            columns={CredentialColumns}
+            bordered
+            dataSource={credentialsDetails}
+            // rowKey={(row) => row.ProviderIdentityId}
+            size="small"
+            className="vitals-table"
+            style={{
+              margin: "0 0 2rem 0",
 
-            <Row gutter={32}>
-              <Col span={12}>
-                <Divider orientation="left" style={{ margin: "0" }}>
-                  Present Address
-                </Divider>
-                <Row gutter={32}>
-                  <Col span={24}>
-                    <Form.Item
-                      name="PresentAddress"
-                      label="Address"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please enter Address",
-                        },
-                      ]}
-                    >
-                      <TextArea placeholder="Add Address" autoSize allowClear />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="PresentCountry"
-                      label="Country"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select country",
-                        },
-                      ]}
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Select the country"
-                        style={{ width: "100%" }}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children
-                            .toLowerCase()
-                            .includes(input.toLowerCase())
-                        }
-                        filterSort={(optionA, optionB) =>
-                          optionA.children
-                            .toLowerCase()
-                            .localeCompare(optionB.children.toLowerCase())
-                        }
-                        onChange={(value) =>
-                          handleCountriesChange(value, false)
-                        }
-                        allowClear
-                        loading={isLoading}
-                      >
-                        {providerDropdown.Countries.map((option) => (
-                          <Select.Option
-                            key={option.LookupID}
-                            value={option.LookupID}
-                          >
-                            {option.LookupDescription}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="PresentState"
-                      label="State"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select state",
-                        },
-                      ]}
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Select the state"
-                        style={{ width: "100%" }}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children
-                            .toLowerCase()
-                            .includes(input.toLowerCase())
-                        }
-                        filterSort={(optionA, optionB) =>
-                          optionA.children
-                            .toLowerCase()
-                            .localeCompare(optionB.children.toLowerCase())
-                        }
-                        //loading={isLoading}
-                        onChange={(value) => handleStatesChange(value, false)}
-                        allowClear
-                      >
-                        {states.map((option) => (
-                          <Select.Option
-                            key={option.StateID}
-                            value={option.StateID}
-                          >
-                            {option.StateName}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="PresentCity"
-                      label="City"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select place",
-                        },
-                      ]}
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Select the city"
-                        style={{ width: "100%" }}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children
-                            .toLowerCase()
-                            .includes(input.toLowerCase())
-                        }
-                        filterSort={(optionA, optionB) =>
-                          optionA.children
-                            .toLowerCase()
-                            .localeCompare(optionB.children.toLowerCase())
-                        }
-                        // loading={Loading}
-                        onChange={(value) => handlePlacesChange(value, false)}
-                        allowClear
-                      >
-                        {places.map((option) => (
-                          <Select.Option
-                            key={option.PlaceId}
-                            value={option.PlaceId}
-                          >
-                            {option.PlaceName}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="PresentArea"
-                      label="Area"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select area",
-                        },
-                      ]}
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Select the area"
-                        style={{ width: "100%" }}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children
-                            .toLowerCase()
-                            .includes(input.toLowerCase())
-                        }
-                        filterSort={(optionA, optionB) =>
-                          optionA.children
-                            .toLowerCase()
-                            .localeCompare(optionB.children.toLowerCase())
-                        }
-                        // loading={Loading}
-                        allowClear
-                      >
-                        {areas.map((option) => (
-                          <Select.Option
-                            key={option.AreaId}
-                            value={option.AreaId}
-                          >
-                            {option.AreaName}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="PresentPinCode"
-                      label="Pin Code"
-                      rules={[
-                        {
-                          pattern: new RegExp(/^\d{6}$/),
-                          message: "Invalid Pin Code",
-                        },
-                      ]}
-                    >
-                      <Input maxLength={6} allowClear />
-                    </Form.Item>
-                  </Col>
-                  <Col
-                    offset={3}
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      marginTop: "1.5rem",
-                    }}
-                  >
-                    <Tooltip title="Permanent Address same as Present Address?">
-                      <Button
-                        type="primary"
-                        size="middle"
-                        onClick={handleAddressClick}
-                      >
-                        <FaAnglesRight />
-                      </Button>
-                    </Tooltip>
-                  </Col>
-                </Row>
-              </Col>
-              <Col span={12}>
-                <Divider orientation="left" style={{ margin: "0" }}>
-                  Permanent Address
-                </Divider>
-                <Row gutter={32}>
-                  <Col span={24}>
-                    <Form.Item
-                      name="PermanentAddress"
-                      label="Address"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please enter Address",
-                        },
-                      ]}
-                    >
-                      <TextArea placeholder="Add Address" allowClear autoSize />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="PermanentCountry"
-                      label="Country"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select country",
-                        },
-                      ]}
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Select the country"
-                        style={{ width: "100%" }}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children
-                            .toLowerCase()
-                            .includes(input.toLowerCase())
-                        }
-                        filterSort={(optionA, optionB) =>
-                          optionA.children
-                            .toLowerCase()
-                            .localeCompare(optionB.children.toLowerCase())
-                        }
-                        onChange={(value) => handleCountriesChange(value, true)}
-                        allowClear
-                        loading={isLoading}
-                      >
-                        {providerDropdown.Countries.map((option) => (
-                          <Select.Option
-                            key={option.LookupID}
-                            value={option.LookupID}
-                          >
-                            {option.LookupDescription}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="PermanentState"
-                      label="State"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select state",
-                        },
-                      ]}
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Select the state"
-                        style={{ width: "100%" }}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children
-                            .toLowerCase()
-                            .includes(input.toLowerCase())
-                        }
-                        filterSort={(optionA, optionB) =>
-                          optionA.children
-                            .toLowerCase()
-                            .localeCompare(optionB.children.toLowerCase())
-                        }
-                        // loading={Loading}
-                        onChange={(value) => handleStatesChange(value, true)}
-                        allowClear
-                      >
-                        {permanentStates.map((option) => (
-                          <Select.Option
-                            key={option.StateID}
-                            value={option.StateID}
-                          >
-                            {option.StateName}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="PermanentCity"
-                      label="City"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select place",
-                        },
-                      ]}
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Select the city"
-                        style={{ width: "100%" }}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children
-                            .toLowerCase()
-                            .includes(input.toLowerCase())
-                        }
-                        filterSort={(optionA, optionB) =>
-                          optionA.children
-                            .toLowerCase()
-                            .localeCompare(optionB.children.toLowerCase())
-                        }
-                        // loading={Loading}
-                        onChange={(value) => handlePlacesChange(value, true)}
-                        allowClear
-                      >
-                        {permanentPlaces.map((option) => (
-                          <Select.Option
-                            key={option.PlaceId}
-                            value={option.PlaceId}
-                          >
-                            {option.PlaceName}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="PermanentArea"
-                      label="Area"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select area",
-                        },
-                      ]}
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Select the area"
-                        style={{ width: "100%" }}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children
-                            .toLowerCase()
-                            .includes(input.toLowerCase())
-                        }
-                        filterSort={(optionA, optionB) =>
-                          optionA.children
-                            .toLowerCase()
-                            .localeCompare(optionB.children.toLowerCase())
-                        }
-                        // loading={Loading}
-                        allowClear
-                      >
-                        {permanentAreas.map((option) => (
-                          <Select.Option
-                            key={option.AreaId}
-                            value={option.AreaId}
-                          >
-                            {option.AreaName}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="PermanentPinCode"
-                      label="Pin Code"
-                      rules={[
-                        {
-                          pattern: new RegExp(/^\d{6}$/),
-                          message: "Invalid Pin Code",
-                        },
-                      ]}
-                    >
-                      <Input allowClear maxLength={6} />
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
+              boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
+            }}
+            locale={{
+              emptyText: "There is no Provider credentials to show",
+            }}
+          />
 
-            <Divider orientation="left">Contact Details</Divider>
-            <Row gutter={14}>
-              <Col span={6}>
-                <Form.Item
-                  name="MobileNumber"
-                  label="Mobile Number"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter your mobile number.",
-                    },
-                    {
-                      pattern: /^\d{10}$/,
-                      message: "Invalid mobile number!",
-                    },
-                  ]}
+          <Table
+            pagination={false}
+            title={() => (
+              <>
+                <PageHeader
+                  title={"Provider Identifiers"}
+                  buttonLabel={"Add Identifiers"}
+                  buttonIcon={<PlusCircleOutlined />}
+                  onButtonClick={handleAddIdentification}
+                />
+              </>
+            )}
+            columns={IdentifiersColumns}
+            bordered
+            dataSource={identifierDetails}
+            size="small"
+            // rowKey={(row) => row.ProviderIdentityId}
+            className="vitals-table"
+            style={{
+              margin: "0 0 1.5rem 0",
+              boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
+            }}
+            locale={{
+              emptyText: "There is no Provider Identifier to show",
+            }}
+          />
+
+          <Row justify="end">
+            <Col style={{ marginRight: "10px" }}>
+              <Form.Item>
+                <Button
+                  loading={isSubmitClicked}
+                  type="primary"
+                  htmlType="submit"
                 >
-                  <Input allowClear maxLength={10} />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="LandlineNumber"
-                  label="Landline Number"
-                  rules={[
-                    {
-                      pattern: /^\d{10}$/,
-                      message: "Invalid mobile number!",
-                    },
-                  ]}
-                >
-                  <Input allowClear maxLength={10} />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="EmailId"
-                  label="Email Id"
-                  rules={[
-                    {
-                      type: "email",
-                      message: "Please input valid E-mail",
-                    },
-                    {
-                      required: true,
-                      message: "Please enter email-id",
-                    },
-                  ]}
-                >
-                  <Input allowClear />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Divider orientation="left">Other Details</Divider>
-            <Space size="large">{""}</Space>
-
-            <Table
-              pagination={false}
-              title={() => (
-                <>
-                  <Row
-                    style={{
-                      backgroundColor: "#40A2E3",
-                      padding: "0.3rem 0rem 0.3rem 1.5rem",
-                      color: "white",
-                      borderRadius: "5px",
-                    }}
-                  >
-                    <Col
-                      span={5}
-                      style={{
-                        fontWeight: 500,
-                        letterSpacing: "0.5px",
-                        fontSize: "1.2rem",
-                      }}
-                    >
-                      Provider Credentials
-                    </Col>
-                    <Col
-                      offset={15}
-                      span={4}
-                      style={{
-                        fontWeight: 500,
-                        letterSpacing: "0.5px",
-                        fontSize: "1.2rem",
-                      }}
-                    >
-                      <Button onClick={handleAddCredential}>
-                        <PlusCircleOutlined />
-                        Add Credentials
-                      </Button>
-                    </Col>
-                  </Row>
-                </>
-              )}
-              columns={CredentialColumns}
-              bordered
-              dataSource={credentialsDetails}
-              // rowKey={(row) => row.ProviderIdentityId}
-              size="small"
-              className="vitals-table"
-              style={{
-                margin: "0 0 1.5rem 0",
-                boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
-              }}
-              locale={{
-                emptyText: "There is no Provider credentials  to show",
-              }}
-            />
-
-            <Space size="large">{""}</Space>
-
-            <Table
-              pagination={false}
-              title={() => (
-                <>
-                  <Row
-                    style={{
-                      backgroundColor: "#40A2E3",
-                      // padding: "0.3rem 1rem",
-                      color: "white",
-                      borderRadius: "5px",
-                      padding: "0.3rem 0rem 0.3rem 1.5rem",
-                    }}
-                  >
-                    <Col
-                      span={5}
-                      style={{
-                        fontWeight: 500,
-                        letterSpacing: "0.5px",
-                        fontSize: "1.2rem",
-                      }}
-                    >
-                      Provider Identifiers
-                    </Col>
-                    <Col
-                      offset={15}
-                      span={4}
-                      style={{
-                        fontWeight: 500,
-                        letterSpacing: "0.5px",
-                        fontSize: "1.2rem",
-                      }}
-                    >
-                      <Button onClick={handleAddIdentification}>
-                        <PlusCircleOutlined />
-                        Add Identifiers
-                      </Button>
-                    </Col>
-                  </Row>
-                </>
-              )}
-              columns={IdentifiersColumns}
-              bordered
-              dataSource={identifierDetails}
-              size="small"
-              // rowKey={(row) => row.ProviderIdentityId}
-              className="vitals-table"
-              style={{
-                margin: "0 0 1.5rem 0",
-                boxShadow: "0px 0px 1px 1px rgba(0,0,0,0.2)",
-              }}
-              locale={{
-                emptyText: "There is no Provider Identifier to show",
-              }}
-            />
-
-            <Row justify="end">
-              <Col style={{ marginRight: "10px" }}>
+                  {isEditProviderRegistration ? "Update" : "Submit"}
+                </Button>
+              </Form.Item>
+            </Col>
+            {isEditProviderRegistration ? (
+              <Col>
                 <Form.Item>
-                  <Button
-                    loading={isSubmitClicked}
-                    type="primary"
-                    htmlType="submit"
-                  >
-                    {isEditProviderRegistration ? "Update" : "Submit"}
+                  <Button type="default" danger onClick={searchProvider}>
+                    Cancel
                   </Button>
                 </Form.Item>
               </Col>
-              {isEditProviderRegistration ? (
-                <Col>
-                  <Form.Item>
-                    <Button type="default" onClick={searchProvider}>
-                      Cancel
-                    </Button>
-                  </Form.Item>
-                </Col>
-              ) : (
-                <Col>
-                  <Form.Item>
-                    <Button type="default" danger onClick={handleReset}>
-                      Reset
-                    </Button>
-                  </Form.Item>
-                </Col>
-              )}
-            </Row>
-          </Form>
-        </div>
+            ) : (
+              <Col>
+                <Form.Item>
+                  <Button type="default" danger onClick={handleReset}>
+                    Reset
+                  </Button>
+                </Form.Item>
+              </Col>
+            )}
+          </Row>
+        </Form>
       </Layout>
       <Modal
         title="Credentials"

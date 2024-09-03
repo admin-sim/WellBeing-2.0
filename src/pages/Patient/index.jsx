@@ -2,17 +2,8 @@ import customAxios from "../../components/customAxios/customAxios.jsx";
 import React, { useEffect, useState } from "react";
 import { FaUsers } from "react-icons/fa";
 import { useNavigate } from "react-router";
-import {
-  Col,
-  ConfigProvider,
-  Row,
-  Select,
-  Typography,
-  Spin,
-  notification,
-} from "antd";
+import { Col, ConfigProvider, Row, Typography, Spin, notification } from "antd";
 import { LuCalendarSearch } from "react-icons/lu";
-import Input from "antd/es/input";
 import Form from "antd/es/form";
 import { Modal, Table, Layout, Tag, Avatar } from "antd";
 import Button from "antd/es/button";
@@ -20,14 +11,11 @@ import {
   urlGetAllPatients,
   urlGetPatientDetail,
   urlEditOrDeletePatientVisit,
-  urlAddNewVisit,
-  urlCancelVisit,
   urlGetEditOrCancelEncounterDetails,
   urlGetPatientHeaderDetails,
 } from "../../../endpoints.js";
-import { CalendarFilled, UserAddOutlined } from "@ant-design/icons";
+import { UserAddOutlined } from "@ant-design/icons";
 import { EnvironmentOutlined } from "@ant-design/icons";
-
 import "../Patient/style.css";
 import male from "../../assets/m.png";
 import female from "../../assets/f.png";
@@ -40,11 +28,9 @@ const Patient = () => {
   const { Title } = Typography;
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  // const [form1] = Form.useForm();
   const [form] = Form.useForm();
   const [selectedRecord, setSelectedRecord] = useState([]);
   const [patientHeaderDetails, setPatientHeaderDetails] = useState([]);
-
   const [isEditOrDeleteVisitModalVisible, setIsEditOrCancelVisitModalVisible] =
     useState(false);
   const [isMoreModalVisible, setIsMoreModalVisible] = useState(false);
@@ -55,11 +41,6 @@ const Patient = () => {
   const [submitLoader, setIsSubmitLoader] = useState(false);
   const [encounterDetails, setEncounterDetails] = useState();
   const [showWard, setShowWard] = useState(false);
-  const [departments, setDepartments] = useState([]);
-  const [providers, setProviders] = useState([]);
-  const [serviceLocations, setServiceLocations] = useState([]);
-  const [wards, setWards] = useState([]);
-  const [beds, setBeds] = useState([]);
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -81,7 +62,6 @@ const Patient = () => {
   });
 
   useEffect(() => {
-    // debugger;
     setIsLoading(true);
     customAxios.get(urlGetAllPatients).then((response) => {
       setPatientDetails(response.data.data.Patients);
@@ -123,7 +103,6 @@ const Patient = () => {
   };
 
   const handleEditorCancelVisitModal = async (record, isCancel) => {
-    debugger;
     setSelectedRecord(record);
     setIsLoading(true);
     setIsCancelOrEditEncounter(true);
@@ -178,7 +157,7 @@ const Patient = () => {
   };
 
   const handleEditOrDeleteVisitModalCancel = () => {
-    // debugger;
+    //
     setIsCancelEncounter(false);
     setIsEditOrCancelVisitModalVisible(false);
     setIsCancelOrEditEncounter(false);
@@ -188,7 +167,6 @@ const Patient = () => {
   };
 
   const handleMoreDetailsModal = async (record) => {
-    debugger;
     setIsLoading(true);
     try {
       const response = await customAxios.get(
@@ -215,7 +193,7 @@ const Patient = () => {
   };
 
   const handleOk = async () => {
-    // debugger;
+    //
 
     try {
       await form.validateFields(); // Trigger form validation
@@ -461,154 +439,146 @@ const Patient = () => {
 
   return (
     <>
-      <Layout style={{ zIndex: "1" }}>
-        <div
+      <Layout
+        style={{
+          padding: "0.5rem",
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <Row
           style={{
-            backgroundColor: "white",
-            minHeight: "100vh",
+            backgroundColor: "#40A2E3",
             borderRadius: "10px",
-            overflow: "hidden",
-            padding: "1rem",
+            marginLeft: "5px",
+            marginRight: "5px",
+            alignItems: "center",
+            display: "flex",
+            justifyContent: "space-between",
           }}
+          gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
         >
-          <Row
+          <Col
             style={{
-              // padding: '0rem 0rem 0rem 0rem',
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 10px 10px",
-              // height: "50px",
-              marginLeft: "5px",
-              marginRight: " 5px",
-              alignItems: "center",
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "space-evenly",
+              alignItems: "center",
             }}
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
           >
-            <Col
-              style={{
-                display: "flex",
-                justifyContent: "space-evenly",
-                alignItems: "center",
-              }}
-            >
-              <Col>
-                <Button
-                  type="default"
-                  size="large"
-                  onClick={navigateToNewPatient}
-                  className="dfja"
-                >
-                  <UserAddOutlined
-                    style={{
-                      fontWeight: "bold",
-                      fontSize: "1.2rem",
-                    }}
-                  />
-                  <span style={{ fontWeight: "500" }}> Register Patient </span>
-                </Button>
-              </Col>
-              <Col>
-                <Button type="default" size="large" className="dfja">
-                  <LuCalendarSearch
-                    style={{ fontSize: "1.2rem", marginRight: "0.3rem" }}
-                  />
-                  <span style={{ fontWeight: "500" }}>Appointment Search</span>
-                </Button>
-              </Col>
-              <Col>
-                <div
+            <Col>
+              <Button
+                type="default"
+                size="large"
+                onClick={navigateToNewPatient}
+                className="dfja"
+              >
+                <UserAddOutlined
                   style={{
-                    margin: "0.2rem",
-                    borderRadius: "10px",
-                    display: "flex",
-                    justifyContent: "center",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    width: "100%",
-                    backgroundColor: "white",
+                    fontWeight: "bold",
+                    fontSize: "1.2rem",
                   }}
-                >
-                  <span
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-around",
-                      width: "60%",
-                    }}
-                  >
-                    <FaUsers style={{ fontSize: "1.9rem", color: "#1a9bf0" }} />
-                    <div
-                      style={{
-                        fontSize: "1.3rem",
-                        fontWeight: "600",
-                      }}
-                    >
-                      {patientDetails.length}
-                    </div>
-                  </span>
-                  <span
-                    style={{
-                      fontWeight: 500,
-                      fontSize: "0.8rem",
-                      padding: "0 0.4rem",
-                    }}
-                  >
-                    Visits for Today
-                  </span>
-                </div>
-              </Col>
+                />
+                <span style={{ fontWeight: "500" }}> Register Patient </span>
+              </Button>
             </Col>
             <Col>
-              <Col>
-                <Button
-                  type="default"
-                  size="large"
-                  onClick={navigateToNewVisit}
-                >
-                  <span style={{ fontWeight: "500" }}>Create Visit</span>
-                </Button>
-              </Col>
+              <Button type="default" size="large" className="dfja">
+                <LuCalendarSearch
+                  style={{ fontSize: "1.2rem", marginRight: "0.3rem" }}
+                />
+                <span style={{ fontWeight: "500" }}>Appointment Search</span>
+              </Button>
             </Col>
-          </Row>
+            <Col>
+              <div
+                style={{
+                  margin: "0.2rem",
+                  borderRadius: "10px",
+                  display: "flex",
+                  justifyContent: "center",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  width: "100%",
+                  backgroundColor: "white",
+                }}
+              >
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                    width: "60%",
+                  }}
+                >
+                  <FaUsers style={{ fontSize: "1.9rem", color: "#1a9bf0" }} />
+                  <div
+                    style={{
+                      fontSize: "1.3rem",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {patientDetails.length}
+                  </div>
+                </span>
+                <span
+                  style={{
+                    fontWeight: 500,
+                    fontSize: "0.8rem",
+                    padding: "0 0.4rem",
+                  }}
+                >
+                  Visits for Today
+                </span>
+              </div>
+            </Col>
+          </Col>
+          <Col>
+            <Col>
+              <Button type="default" size="large" onClick={navigateToNewVisit}>
+                <span style={{ fontWeight: "500" }}>Create Visit</span>
+              </Button>
+            </Col>
+          </Col>
+        </Row>
+        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+          <Col span={24}>
+            <Title level={4}> List of Patients in Visits</Title>
+            <Title level={5}>
+              Showing {startIndex + 1} to {Math.min(endIndex, totalPatients)} of{" "}
+              {totalPatients} Patients
+            </Title>
+          </Col>
+        </Row>
+        <Spin spinning={isLoading}>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col span={24}>
-              <Title level={4}> List of Patients in Visits</Title>
-              <Title level={5}>
-                Showing {startIndex + 1} to {Math.min(endIndex, totalPatients)}{" "}
-                of {totalPatients} Patients
-              </Title>
+              <Table
+                dataSource={patientDetails}
+                columns={columns}
+                rowKey={(row) => row.EncounterId}
+                size="small"
+                className="custom-table"
+                scroll={{ x: 1000 }}
+                // onChange={(pagination) => {
+                //   setCurrentPage(pagination.current);
+                //   setItemsPerPage(pagination.pageSize);
+                // }}
+                pagination={{
+                  current: currentPage,
+                  pageSize: itemsPerPage,
+                  total: totalPatients,
+                  onChange: (page, pageSize) => {
+                    setCurrentPage(page);
+                    setItemsPerPage(pageSize);
+                  },
+                }}
+                bordered
+              />
             </Col>
           </Row>
-          <Spin spinning={isLoading}>
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col span={24}>
-                <Table
-                  dataSource={patientDetails}
-                  columns={columns}
-                  rowKey={(row) => row.EncounterId}
-                  size="small"
-                  className="custom-table"
-                  scroll={{ x: 1000 }}
-                  // onChange={(pagination) => {
-                  //   setCurrentPage(pagination.current);
-                  //   setItemsPerPage(pagination.pageSize);
-                  // }}
-                  pagination={{
-                    current: currentPage,
-                    pageSize: itemsPerPage,
-                    total: totalPatients,
-                    onChange: (page, pageSize) => {
-                      setCurrentPage(page);
-                      setItemsPerPage(pageSize);
-                    },
-                  }}
-                  bordered
-                />
-              </Col>
-            </Row>
-          </Spin>
-        </div>
+        </Spin>
       </Layout>
       <ConfigProvider
         theme={{

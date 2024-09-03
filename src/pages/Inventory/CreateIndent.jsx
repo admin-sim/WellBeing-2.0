@@ -10,6 +10,7 @@ import {
   urlUpdateIndent,
 } from "../../../endpoints.js";
 import Select from "antd/es/select";
+import CustomTable from "../../components/customTable/index.jsx";
 import {
   ConfigProvider,
   message,
@@ -52,7 +53,7 @@ const CreateIndent = () => {
   });
 
   let [counter, setCounter] = useState(0);
-  let [productCount, setProductcount] = useState(0);
+  let [productCount, setProductcount] = useState(1);
 
   //const { PoHeaderId, SupplierId, StoreId } = useParams();
   const [form1] = Form.useForm();
@@ -69,9 +70,27 @@ const CreateIndent = () => {
   const indentId = location.state.IndentId;
   const [buttonTitle, setButtonTitle] = useState("Save");
   const [indentStatus, setIndentStatus] = useState(false);
-  const [data, setData] = useState([]);
   const [dropDownLoad, setDropDownLoading] = useState(true);
   const [loading, setLoading] = useState(false);
+
+  const initialDataSource =
+    indentId === 0
+      ? [
+        {
+          key: 0,
+          ProductName: "",
+          // ProductId: '',
+          UomId: "",
+          RequestingQty: "",
+          RequestingStoreStock: "",
+          IssuingStoreStock: "",
+          Favourite: false,
+          ActiveFlag: true,
+        },
+      ]
+      : [];
+
+  const [data, setData] = useState([]);
 
   useEffect(() => {
     customAxios.get(urlCreatePurchaseOrder).then((response) => {
@@ -106,14 +125,14 @@ const CreateIndent = () => {
           }));
           setIstablevisible(true);
           setData(products);
-          setProductcount(products.length+1);
+          setProductcount(products.length + 1);
           const formdata = apiData.newIndentModel;
           form1.setFieldsValue({
             RequestingStoreId: formdata.RequestingStoreId,
             IndentNumber: formdata.IndentNumber,
             IndentDatestring: formdata.IndentDatestring
-                ? dayjs(formdata.IndentDatestring, "DD-MM-YYYY")
-                : null,
+              ? dayjs(formdata.IndentDatestring, "DD-MM-YYYY")
+              : null,
             IssueingStoreId: formdata.IssueingStoreId,
             IndentType: formdata.IndentType,
             IndentCategory: formdata.IndentCategory,
@@ -202,7 +221,9 @@ const CreateIndent = () => {
     if (va.RequestingStoreId !== undefined && va.IssueingStoreId != undefined) {
       if (va.RequestingStoreId !== va.IssueingStoreId) {
         setIstablevisible(true);
+        setData(initialDataSource)
       } else {
+        setData((prevState) => { return [] })
         form1.resetFields();
         setIstablevisible(false);
         message.warning("Please select Different Stores");
@@ -234,7 +255,7 @@ const CreateIndent = () => {
         `${urlAutocompleteProduct}?Product=${searchText}`
       );
       const apiData = response.data.data;
-      const filteredApiData = apiData.filter(apiItem => 
+      const filteredApiData = apiData.filter(apiItem =>
         !data.some(option => option.ProductId === apiItem.ProductId)
       );
       const newOptions = filteredApiData.map((item) => ({
@@ -317,7 +338,7 @@ const CreateIndent = () => {
               allowClear={{
                 clearIcon: <CloseSquareFilled />,
               }}
-              disabled={!!record.IndentLineId  }
+              disabled={!!record.IndentLineId}
             />
           </Form.Item>
           <Form.Item
@@ -445,12 +466,12 @@ const CreateIndent = () => {
     },
     {
       title: (
-       
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={AddProduct}
-          ></Button>
+
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={AddProduct}
+        ></Button>
       ),
       dataIndex: "add",
       key: "add",
@@ -538,7 +559,7 @@ const CreateIndent = () => {
 
   const handleOnFinish = async (values) => {
     debugger;
-    const newdata =data.filter(item => item.ProductId)
+    const newdata = data.filter(item => item.ProductId)
     const products = newdata
       .filter((item, index) => index <= newdata.length && item !== undefined)
       .map((item) => ({
@@ -552,13 +573,13 @@ const CreateIndent = () => {
         IndentLineId: item.IndentLineId || 0,
         ActiveFlag: item.ActiveFlag,
       }));
-  
-      if (products.length === 0 || !products.some(product => product.ActiveFlag)) {
-        message.warning("Please Add Products");
-        return false;
-      }
+
+    if (products.length === 0 || !products.some(product => product.ActiveFlag)) {
+      message.warning("Please Add Products");
+      return false;
+    }
     const activeProducts = products.filter((product) => product.ActiveFlag);
-  
+
     const indent = {
       IndentDatestring: values.IndentDatestring.format("DD-MM-YYYY"),
       IndentId: values.IndentId || 0,
@@ -570,12 +591,12 @@ const CreateIndent = () => {
       IndentStatus: indentStatus ? values.IndentStatus : "Created",
       IndentCategory: "StoreIndent",
     };
-  
+
     const postData = {
       newIndentModel: indent,
-      IndentDetails:  indentId === 0 ? activeProducts : products,
+      IndentDetails: indentId === 0 ? activeProducts : products,
     };
-  
+
     try {
       const url = indentId > 0 ? urlUpdateIndent : urlAddNewIndent;
       const response = await customAxios.post(url, postData, {
@@ -594,7 +615,7 @@ const CreateIndent = () => {
       message.error("An error occurred while submitting the form. Please try again.");
     }
   };
-  
+
 
   const SubmitCheck = (event) => {
     setIndentStatus(event.target.checked);
@@ -646,12 +667,12 @@ const CreateIndent = () => {
             onFinish={handleOnFinish}
             variant="outlined"
             style={{
-            //   maxWidth: 1500,
+              //   maxWidth: 1500,
             }}
             name="trigger"
             form={form1}
             initialValues={{
-                IndentDatestring: dayjs(),
+              IndentDatestring: dayjs(),
             }}
           >
             <Row
@@ -692,7 +713,7 @@ const CreateIndent = () => {
                   ]}
                 >
                   <Select
-                  loading={dropDownLoad}
+                    loading={dropDownLoad}
                     allowClear
                     placeholder="Select Value"
                     onChange={handleSelect}
@@ -721,7 +742,7 @@ const CreateIndent = () => {
                   ]}
                 >
                   <Select
-                  loading={dropDownLoad}
+                    loading={dropDownLoad}
                     allowClear
                     placeholder="Select Value"
                     onChange={handleSelect}
@@ -823,16 +844,25 @@ const CreateIndent = () => {
             </Row>
             <Divider style={{ marginTop: "0" }}></Divider>
             <Spin spinning={loading}>
-            {istablevisible ? (
-              <div>
-                <Table
-                  columns={columns}
+              {istablevisible ? (
+                // <div>
+                //   <Table
+                //     columns={columns}
+                //     dataSource={data.filter((item) => item.ActiveFlag !== false)}
+                //     scroll={{ x: 0 }}
+                //     bordered
+                //   />
+                // </div>
+                // <Spin spinning={loading}>
+                <CustomTable
                   dataSource={data.filter((item) => item.ActiveFlag !== false)}
-                  scroll={{ x: 0 }}
+                  columns={columns}
+                  isFilter={false}
+                  actionColumn={false}
                   bordered
                 />
-              </div>
-            ) : null}
+                // </Spin>
+              ) : null}
             </Spin>
           </Form>
         </Card>

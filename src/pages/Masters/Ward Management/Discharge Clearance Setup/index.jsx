@@ -14,36 +14,43 @@ function DischargeClearance() {
       title: "Sl No",
       dataIndex: "SlNo",
       key: "1",
+      width: 80,
     },
     {
       title: "Short Name",
       dataIndex: "ShortName",
       key: "2",
+      width: 120,
     },
     {
       title: "Long Name",
       dataIndex: "LongName",
       key: "3",
+      width: 120,
     },
     {
       title: "Patient Type",
       dataIndex: "PatientType",
       key: "4",
+      width: 120,
     },
     {
       title: "Clearance Type",
       dataIndex: "ClearanceType",
       key: "5",
+      width: 130,
     },
     {
       title: "Clearance Sequence",
       dataIndex: "ClearanceSequence",
       key: "6",
+      width: 160,
     },
     {
       title: "Status",
       dataIndex: "Status",
       key: "7",
+      width: 80,
     },
   ];
 

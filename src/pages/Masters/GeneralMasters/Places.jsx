@@ -1,24 +1,16 @@
-import {
-  EditOutlined,
-  PlusCircleOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import {
   Button,
-  Card,
   Col,
   Form,
   Modal,
   Row,
   Select,
-  Space,
-  Table,
   Spin,
   Layout,
   notification,
   message,
 } from "antd";
-import { useForm } from "antd/es/form/Form";
 import Input from "antd/es/input/Input";
 import Title from "antd/es/typography/Title";
 import React, { useState, useEffect } from "react";
@@ -32,6 +24,7 @@ import {
   urlDeleteSelectedPlace,
 } from "../../../../endpoints";
 import CustomTable from "../../../components/customTable";
+import PageHeader from "../../../components/PageHeader";
 
 function Places() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,7 +48,6 @@ function Places() {
   }, []);
 
   const fetchData = async () => {
-    debugger;
     setLoading(true);
     try {
       const response = await customAxios.get(`${urlGetAllPlaces}`);
@@ -78,7 +70,6 @@ function Places() {
   };
 
   const handlePlaceEditModal = (record) => {
-    debugger;
     setPlaceData(record);
     setLoading(true);
     setIsEditing(true);
@@ -107,7 +98,6 @@ function Places() {
   };
 
   const handleDelete = (record) => {
-    debugger;
     //Deleting an State from the Table
     setPlaceData(record);
     try {
@@ -133,7 +123,6 @@ function Places() {
   };
 
   const handleSubmit = async () => {
-    debugger;
     form.validateFields();
     setIsSubmitClicked(true);
     const values = form.getFieldsValue();
@@ -214,7 +203,7 @@ function Places() {
   const handleCountryChange = async (value) => {
     setSelectedCountryValue(value);
     setStateLoader(true);
-    debugger;
+
     try {
       // Update the options for the second select based on the value of the first select
       if (value != null) {
@@ -247,180 +236,152 @@ function Places() {
       title: "Sl. No.",
       dataIndex: "key",
       key: "key",
+      width: 80,
     },
     {
       title: "Place",
       dataIndex: "PlaceName",
       key: "PlaceName",
+      width: 150,
     },
     {
       title: "State",
       dataIndex: "StateName",
       key: "StateName",
+      width: 150,
     },
     {
       title: "Country",
       dataIndex: "CountryName",
       key: "CountryName",
+      width: 150,
     },
   ];
 
   return (
     <>
-      <Layout>
-        <div
-          style={{
-            width: "100%",
-            backgroundColor: "white",
-            minHeight: "max-content",
-            borderRadius: "10px",
-          }}
-        >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Place Manager
-              </Title>
-            </Col>
-            <Col offset={5} span={3}>
-              <Button
-                icon={<PlusCircleOutlined />}
-                onClick={handleAddPlaceShowModal}
-              >
-                Add New Place
-              </Button>
-            </Col>
-          </Row>
-
-          <Spin spinning={loading}>
-            <CustomTable
-              columns={columns}
-              dataSource={columnData}
-              actionColumn={true}
-              isFilter={true}
-              onEdit={handlePlaceEditModal}
-              onDelete={handleDelete}
-            />
-          </Spin>
-          {contextHolder}
-          <Modal
-            title={isEditing ? "Update place Details" : "Add New Place"}
-            open={isModalOpen}
-            maskClosable={false}
-            footer={[
-              <Button
-                key="submit"
-                type="primary"
-                loading={IsSubmitClicked}
-                onClick={handleSubmit}
-              >
-                {/* {IsSubmitClicked ? "Submitting" : "Submit"} */}
-                {isEditing ? "Update" : "Submit"}
-              </Button>,
-              <Button key="back" onClick={handlePlaceModalCancel}>
-                Cancel
-              </Button>,
-            ]}
-            onCancel={handlePlaceModalCancel}
-          >
-            <Form
-              style={{ margin: "1rem 0" }}
-              layout="vertical"
-              form={form}
-              onFinish={handleSubmit}
+      <Layout
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <PageHeader
+          title={"Place Manager"}
+          buttonLabel={"Add New Place"}
+          buttonIcon={<PlusCircleOutlined />}
+          onButtonClick={handleAddPlaceShowModal}
+        />
+        <Spin spinning={loading}>
+          <CustomTable
+            columns={columns}
+            dataSource={columnData}
+            actionColumn={true}
+            isFilter={true}
+            onEdit={handlePlaceEditModal}
+            onDelete={handleDelete}
+          />
+        </Spin>
+        {contextHolder}
+        <Modal
+          title={isEditing ? "Update Place Details" : "Add New Place"}
+          open={isModalOpen}
+          maskClosable={false}
+          footer={[
+            <Button
+              key="submit"
+              type="primary"
+              loading={IsSubmitClicked}
+              onClick={handleSubmit}
             >
-              {isEditing ? null : (
-                <Form.Item
-                  name="Country"
-                  label="Country"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select Country",
-                    },
-                  ]}
+              {/* {IsSubmitClicked ? "Submitting" : "Submit"} */}
+              {isEditing ? "Update" : "Submit"}
+            </Button>,
+            <Button key="back" danger onClick={handlePlaceModalCancel}>
+              Cancel
+            </Button>,
+          ]}
+          onCancel={handlePlaceModalCancel}
+        >
+          <Form
+            style={{ margin: "1rem 0" }}
+            layout="vertical"
+            form={form}
+            onFinish={handleSubmit}
+          >
+            {isEditing ? null : (
+              <Form.Item
+                name="Country"
+                label="Country"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select Country",
+                  },
+                ]}
+              >
+                <Select
+                  // disabled={isEditing}
+                  allowClear
+                  placeholder="Select a type"
+                  onChange={handleCountryChange}
                 >
-                  <Select
-                    // disabled={isEditing}
-                    allowClear
-                    placeholder="Select a type"
-                    onChange={handleCountryChange}
-                  >
-                    {Dropdown.Countries.map((option) => (
-                      <Select.Option
-                        key={option.LookupID}
-                        value={option.LookupID}
-                      >
-                        {option.LookupDescription}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              )}
+                  {Dropdown.Countries.map((option) => (
+                    <Select.Option
+                      key={option.LookupID}
+                      value={option.LookupID}
+                    >
+                      {option.LookupDescription}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
 
-              <Form.Item
-                name="State"
-                label="State"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select state",
-                  },
-                ]}
-              >
-                {isEditing ? (
-                  <Select disabled allowClear>
-                    {Dropdown.States.map((option) => (
-                      <Select.Option
-                        key={option.StateID}
-                        value={option.StateID}
-                      >
-                        {option.StateName}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                ) : (
-                  <Select allowClear>
-                    {States.map((option) => (
-                      <Select.Option
-                        key={option.StateID}
-                        value={option.StateID}
-                      >
-                        {option.StateName}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                )}
-              </Form.Item>
-              <Form.Item
-                name="PlaceName"
-                label="Place Name"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter place name",
-                  },
-                ]}
-              >
-                <Input style={{ width: "100%" }} />
-              </Form.Item>
-            </Form>
-          </Modal>
-        </div>
+            <Form.Item
+              name="State"
+              label="State"
+              rules={[
+                {
+                  required: true,
+                  message: "Please select state",
+                },
+              ]}
+            >
+              {isEditing ? (
+                <Select disabled allowClear>
+                  {Dropdown.States.map((option) => (
+                    <Select.Option key={option.StateID} value={option.StateID}>
+                      {option.StateName}
+                    </Select.Option>
+                  ))}
+                </Select>
+              ) : (
+                <Select allowClear>
+                  {States.map((option) => (
+                    <Select.Option key={option.StateID} value={option.StateID}>
+                      {option.StateName}
+                    </Select.Option>
+                  ))}
+                </Select>
+              )}
+            </Form.Item>
+            <Form.Item
+              name="PlaceName"
+              label="Place Name"
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter place name",
+                },
+              ]}
+            >
+              <Input style={{ width: "100%" }} />
+            </Form.Item>
+          </Form>
+        </Modal>
       </Layout>
     </>
   );

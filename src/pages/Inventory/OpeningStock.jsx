@@ -61,12 +61,12 @@ const OpeningStock = () => {
   };
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Pending: "volcano",
-    "Partially Pending": "orange",
-    Finalize: "green",
-    Completed: "green",
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Pending: "#F5004F",
+    "Partially Pending": "#8E3E63",
+    Finalize: "#52c41a",
+    Completed: "#FF9100",
   };
 
   const columns = [
@@ -178,7 +178,7 @@ const OpeningStock = () => {
     form.resetFields();
   };
 
-  return (   
+  return (
     <Layout style={{ zIndex: "999999999" }}>
       <div
         style={{
@@ -284,17 +284,16 @@ const OpeningStock = () => {
               </Col>
             </Row>
           </Form>
-        </Card>
-        <Spin spinning={loading}>
-          <CustomTable
-            dataSource={filteredData}
-            columns={columns}
-            actionColumn={false}
-            isFilter={true}
-            bordered
-          />
-        </Spin>
-        {/* <Table display={setIsTable}
+          <Spin spinning={loading}>
+            <CustomTable
+              dataSource={filteredData}
+              columns={columns}
+              actionColumn={false}
+              isFilter={true}
+              bordered
+            />
+          </Spin>
+          {/* <Table display={setIsTable}
           dataSource={filteredData}
           columns={columns}
           pagination={{
@@ -312,6 +311,7 @@ const OpeningStock = () => {
           size="small"
           bordered
         /> */}
+        </Card>
       </div>
     </Layout>
   );

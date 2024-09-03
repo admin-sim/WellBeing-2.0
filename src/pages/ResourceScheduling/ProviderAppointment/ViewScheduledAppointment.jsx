@@ -1,14 +1,4 @@
-import {
-  Button,
-  Col,
-  Divider,
-  Form,
-  Input,
-  Modal,
-  Row,
-  Select,
-  Spin,
-} from "antd";
+import { Button, Col, Form, Input, Modal, Row, Spin } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
@@ -29,7 +19,6 @@ function ViewScheduledAppointment({
   useEffect(() => {
     setLoader(true);
 
- 
     form3.setFieldsValue({
       reason: calendarData[0]?.extendedProps?.AppointmentReasonName,
       // ? calendarData[0]?.extendedProps?.AppointmentReasonName
@@ -43,7 +32,7 @@ function ViewScheduledAppointment({
 
   return (
     <Modal
-      width={"40%"}
+      width={"40rem"}
       title={
         <span style={{ fontSize: "1.2rem", fontWeight: "600" }}>
           View Schedule Appointment

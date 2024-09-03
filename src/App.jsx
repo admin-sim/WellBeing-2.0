@@ -66,8 +66,8 @@ import MedicalReturn from "./pages/Inventory/MedicalReturn";
 import StockExpiry from "./pages/Inventory/StockExpiry";
 import UpdateIndentIssue from "./pages/Inventory/UpdateIndentIssue";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import ManageAppointment from "./pages/ManageAppointment";
-import ProviderAppointment from "./pages/ProviderAppointment";
+import ManageAppointment from "./pages/ResourceScheduling/ManageAppointment/index.jsx";
+import ProviderAppointment from "./pages/ResourceScheduling/ProviderAppointment";
 import BedManager from "./pages/WardManagement/Inpatient.jsx/BedManager";
 import DischargeClearance from "./pages/WardManagement/Inpatient.jsx/DischargeClearance";
 import InPatientManagement from "./pages/WardManagement/Inpatient.jsx/InPatientManagement/InPatientManagement";
@@ -88,9 +88,9 @@ import CreateBilling from "./pages/AccountManagement/Billling/CreateBilling.jsx"
 import Vendor from "./pages/Masters/InventoryManagement/Vendor";
 import VendorSearch from "./pages/Masters/InventoryManagement/VendorSearch";
 import ProductClassification from "./pages/Masters/InventoryManagement/ProductClassification";
-import ProductDefinition from "./pages/Masters/InventoryManagement/ProductDefinition";
-import Store from "./pages/Masters/InventoryManagement/Store";
-import CreateStore from "./pages/Masters/InventoryManagement/CreateStore";
+import ProductDefinition from "./pages/Masters/InventoryManagement/ProductDefinition/ProductDefinition.jsx";
+import Store from "./pages/Masters/InventoryManagement/Store/Store.jsx";
+import CreateStore from "./pages/Masters/InventoryManagement/Store/CreateStore.jsx";
 import SubTestMapping from "./pages/Masters/LaboratoryManagement/SubTestMapping";
 import TestMethods from "./pages/Masters/LaboratoryManagement/TestMethods";
 import TestReferences from "./pages/Masters/LaboratoryManagement/TestReferences";
@@ -103,7 +103,7 @@ import BillAggrement from "./pages/Masters/GeneralMasters/AccountManagement/Bill
 import CreateBillAgrement from "./pages/Masters/GeneralMasters/AccountManagement/CreateBillAgrement";
 import UpdateItemReceipt from "./pages/Inventory/UpdateItemReceipt";
 import UpdatePatientIssue from "./pages/Inventory/UpdatePatientIssue";
-import ShowCreateEditDefinition from "./pages/Masters/InventoryManagement/ShowCreateEditDefinition";
+import ShowCreateEditDefinition from "./pages/Masters/InventoryManagement/ProductDefinition/ShowCreateEditDefinition";
 import Templates from "./pages/Masters/GeneralMasters/TemplateMaster";
 import ShowAddNewTemplate from "./pages/Masters/GeneralMasters/TemplateMaster/ShowAddNewTemplate.jsx";
 import Enterprise from "./pages/Masters/Identity Management/Enterprise/index.jsx";
@@ -125,6 +125,8 @@ import WorkflowManager from "./pages/Masters/Configuration Management/CreateWork
 import CreateEditWorkFlow from "./pages/Masters/Configuration Management/CreateWorkflow/CreateEditWorkFlow.jsx";
 import Frequency from "./pages/Masters/SystemParameterSetup/Frequency/index.jsx";
 import PatientTrackingBoard from "./pages/ClinicalDocuments/PatientTrackingBoard/index.jsx";
+import AdditionalCharge from "./pages/Masters/GeneralMasters/AccountManagement/AdditionalCharge";
+import CreateAdditionalCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAdditionalCharge";
 import AssignedPlanSearchPage from "./pages/AccountManagement/AssignedPlan/AssignedPlanSearchPage.jsx";
 import CreateAssignedPlan from "./pages/AccountManagement/AssignedPlan/CreateAssignedPlan.jsx";
 function ProtectedRoute({ children }) {
@@ -819,6 +821,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ServiceClassification />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="AdditionalCharge"
+              element={
+                <ProtectedRoute>
+                  <AdditionalCharge />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="CreateAdditionalCharge"
+              element={
+                <ProtectedRoute>
+                  <CreateAdditionalCharge />
                 </ProtectedRoute>
               }
             />

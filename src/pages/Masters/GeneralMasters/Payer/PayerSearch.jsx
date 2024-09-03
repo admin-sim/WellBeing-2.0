@@ -1,9 +1,4 @@
-import {
-  PlusCircleFilled,
-  PlusCircleOutlined,
-  PlusOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import {
   Button,
   Col,
@@ -23,21 +18,9 @@ import {
   urlSearchPayerRecord,
   urlGetPayerViewModel,
 } from "../../../../../endpoints";
-
-const options = [
-  {
-    value: "jack",
-    label: "Jack",
-  },
-  {
-    value: "lucy",
-    label: "Lucy",
-  },
-  {
-    value: "Yiminghe",
-    label: "yiminghe",
-  },
-];
+import CustomTable from "../../../../components/customTable/index";
+import PageHeader from "../../../../components/PageHeader";
+import { ColWithSixSpan } from "../../../../components/customGridColumns";
 
 function PayerSearch() {
   const navigate = useNavigate();
@@ -67,7 +50,6 @@ function PayerSearch() {
   };
 
   useEffect(() => {
-    debugger;
     setLoading(true);
     customAxios.get(urlGetPayerViewModel).then((response) => {
       const apiData = response.data.data;
@@ -77,7 +59,6 @@ function PayerSearch() {
   }, []);
 
   const handleOnFinish = async (values) => {
-    debugger;
     console.log("Received values from form: ", values);
 
     // ... Repeat for other parameters
@@ -129,8 +110,6 @@ function PayerSearch() {
   };
 
   const handleEditPayerDetails = (record) => {
-    debugger;
-
     const url = `/PayerRegistration`;
 
     // Navigate to the new URL
@@ -147,14 +126,14 @@ function PayerSearch() {
       title: "Sl. No.",
       dataIndex: "key",
       key: "key",
-      width: 70,
+      width: 80,
     },
 
     {
       title: "Payer Type",
       dataIndex: "PayerTypeName",
       key: "PayerTypeName",
-      width: 200,
+      width: 120,
       render: (text, record) => (
         <>
           <a
@@ -173,27 +152,27 @@ function PayerSearch() {
       title: "Payer Name",
       dataIndex: "PayerName",
       key: "PayerName",
-      width: 300,
+      width: 250,
     },
     {
       title: "Effective From",
       dataIndex: "EffectiveFromDate",
       key: "EffectiveFromDate",
-      width: 170,
+      width: 130,
     },
 
     {
       title: "Effective To",
       dataIndex: "EffectiveToDate",
       key: "EffectiveToDate",
-      width: 150,
+      width: 130,
     },
 
     {
       title: "Identifier Type",
       dataIndex: "combinedIdentifiers",
       key: "combinedIdentifiers",
-      width: 250,
+      width: 150,
     },
 
     {
@@ -219,7 +198,7 @@ function PayerSearch() {
       title: "City",
       dataIndex: "City",
       key: "City",
-      width: 150,
+      width: 130,
     },
   ];
 
@@ -234,46 +213,21 @@ function PayerSearch() {
             borderRadius: "10px",
           }}
         >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Payer Search
-              </Title>
-            </Col>
-            <Col offset={4} span={4}>
-              <Button
-                className="dfja"
-                icon={<PlusCircleOutlined style={{ fontSize: "1.1rem" }} />}
-                onClick={() => navigate("/PayerRegistration")}
-              >
-                Register New Payer
-              </Button>
-            </Col>
-          </Row>
+          <PageHeader
+            title={"Payer Search"}
+            buttonLabel={"Register New Payer"}
+            buttonIcon={<PlusCircleOutlined style={{ fontSize: "1.1rem" }} />}
+            onButtonClick={() => navigate("/PayerRegistration")}
+          />
           <Form
             layout="vertical"
             form={form}
-            name="register"
             onFinish={handleOnFinish}
             scrollToFirstError={true}
-            style={{ padding: "0rem 2rem", marginTop: "1rem" }}
+            style={{ margin: "1rem" }}
           >
-            <Row gutter={32}>
-              <Col span={6}>
+            <Row gutter={16}>
+              <ColWithSixSpan>
                 <Form.Item name="PayerType" label="Payer Type">
                   <Select placeholder="Select Value" allowClear>
                     {payerDropdown.PayerTypes.map((response) => (
@@ -286,13 +240,13 @@ function PayerSearch() {
                     ))}
                   </Select>
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="PayerName" label="Payer Name">
                   <Input placeholder="Enter Provider Name" allowClear />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="EffectiveFrom" label="Effective From">
                   <DatePicker
                     style={{ width: "100%" }}
@@ -300,8 +254,8 @@ function PayerSearch() {
                     allowClear
                   />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="EffectiveTo" label="Effective To">
                   <DatePicker
                     style={{ width: "100%" }}
@@ -309,10 +263,9 @@ function PayerSearch() {
                     allowClear
                   />
                 </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={32}>
-              <Col span={6}>
+              </ColWithSixSpan>
+
+              <ColWithSixSpan>
                 <Form.Item name="IdentifierType" label="Identifier Type">
                   <Select placeholder="Select Value" allowClear>
                     {payerDropdown.PayerIdentificationType.map((response) => (
@@ -325,13 +278,13 @@ function PayerSearch() {
                     ))}
                   </Select>
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="identifierValue" label="Identifier Value">
                   <Input placeholder="Enter Provider Name" allowClear />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item
                   name="MobileNumber"
                   label="Mobile Number"
@@ -344,12 +297,12 @@ function PayerSearch() {
                 >
                   <Input maxLength={10} />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="City" label="City">
                   <Input placeholder="Enter City Name" allowClear />
                 </Form.Item>
-              </Col>
+              </ColWithSixSpan>
             </Row>
             <Row justify="end">
               <Col style={{ marginRight: "10px" }}>
@@ -368,13 +321,13 @@ function PayerSearch() {
               </Col>
             </Row>
           </Form>
-          <div style={{ margin: "0 2rem" }}>
-            <Table
-              size="small"
-              columns={columns}
-              dataSource={payerSearchDetails}
-            />
-          </div>
+
+          <CustomTable
+            size="small"
+            columns={columns}
+            dataSource={payerSearchDetails}
+            actionColumn={false}
+          />
         </div>
       </Layout>
     </>

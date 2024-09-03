@@ -3,6 +3,10 @@ import React, { useEffect, useState } from "react";
 import { FaUsers } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+} from "../../../components/customGridColumns/index.jsx";
+import {
   Col,
   ConfigProvider,
   Row,
@@ -10,58 +14,35 @@ import {
   Typography,
   Spin,
   notification,
-  Switch,
+  Tooltip,
 } from "antd";
 import { TimePicker } from "antd";
 import Input from "antd/es/input";
 import Form from "antd/es/form";
-import { Modal, Table, Layout, Tag, Avatar } from "antd";
+import { Modal, Table, Layout, Tag } from "antd";
 import Button from "antd/es/button";
 import {
-  urlGetAllPatients,
-  urlGetPatientDetail,
-  urlAddNewVisit,
-  urlCancelVisit,
   urlGetAllQueues,
   urlGetProviderBasedOnDepartment,
   urlGetMarkArrival,
   urlAssignQueue,
-  urlGetPatientVitalSigns,
   urlRevertCheckIn,
   urlPushPatientQueuePosition,
-  urlAddNewPatientVital,
   urlStartConsultation,
   urlCloseConsultation,
   urlRevertToMarkArrival,
-  urlGetCapturedVitalsDetails,
   urlGetPatientHeaderDetails,
 } from "../../../../endpoints";
-import {
-  CalendarFilled,
-  UserAddOutlined,
-  EditOutlined,
-} from "@ant-design/icons";
-import { BiBody } from "react-icons/bi";
-import { FaEdit, FaBed } from "react-icons/fa";
-import { TbTemperatureCelsius, TbTemperatureFahrenheit } from "react-icons/tb";
-import { FaRegClock } from "react-icons/fa6";
-import { MdAirlineSeatReclineNormal } from "react-icons/md";
-import { BsPersonStanding } from "react-icons/bs";
 import "../../Patient/style.css";
-import male from "../../../assets/m.png";
-import female from "../../../assets/f.png";
-import defaultPic from "../../../assets/defaultPic.png";
 import dayjs from "dayjs";
 import { MdManageSearch } from "react-icons/md";
-import { Radio, message } from "antd";
+import { message } from "antd";
 import "../style.css";
 import PatientHeader from "../../../components/PatientHeader/index.jsx";
 
 const Queue = () => {
-  const [patientDetails, setPatientDetails] = useState([]);
   const [patientHeaderDetails, setPatientHeaderDetails] = useState([]);
   const { Title } = Typography;
-  const { TextArea } = Input;
   const [isLoading, setLoading] = useState(false);
   const [serachLoading, setSearchLoading] = useState(false);
   const [assignTokenLoader, setAssignTokenLoader] = useState(false);
@@ -70,7 +51,6 @@ const Queue = () => {
   const [startConsLoader, setStartConsLoader] = useState(false);
   const [closeConsLoader, setCloseConsLoader] = useState(false);
   const navigate = useNavigate();
-  const { Option } = Select;
   //   const [form1] = Form.useForm();
   const [form] = Form.useForm();
   const [form2] = Form.useForm();
@@ -128,7 +108,6 @@ const Queue = () => {
   const totalPatients = patientQueueDetails.length;
 
   useEffect(() => {
-    debugger;
     const pr1 = selectedProvider || 0;
     const fl1 = Flag === "All" ? '""' : Flag;
     setLoading(true);
@@ -162,26 +141,23 @@ const Queue = () => {
   };
 
   const handleTimeChange = (time, timeString) => {
-    debugger;
     setSelectedTime(dayjs(time));
     // form1.setFieldsValue({ConsultationTime:dayjs(time)})
   };
 
   const handleShowSearchModal = () => {
-    debugger;
     // setSelectedRecord(record); // Set the selected record when the modal is opened
 
     setIsShowSearchModalVisible(true);
   };
 
   const handleShowSearchModalCancel = () => {
-    // debugger;
+    //
     setIsShowSearchModalVisible(false);
     setProviders([]);
   };
 
   const handleDepartmentChange = async (value) => {
-    debugger;
     try {
       // Update the options for the second select based on the value of the first select
       if (value != null) {
@@ -284,7 +260,6 @@ const Queue = () => {
   };
 
   const handleSearchProvider = async () => {
-    debugger;
     try {
       await form.validateFields();
       const values = form.getFieldsValue();
@@ -345,7 +320,6 @@ const Queue = () => {
   };
 
   const handleQueueActionSelect = async (value, option, record) => {
-    debugger;
     console.log("check the selected value,option,key", value, option, record);
     setSelectedPatientRecord(record);
     setLoading(true);
@@ -451,7 +425,7 @@ const Queue = () => {
   };
 
   const handleMarkArrivalModalCancel = () => {
-    // debugger;
+    //
     setIsMarkArrivalModalVisible(false);
     form3.resetFields();
     setSelectedTime(null);
@@ -460,14 +434,14 @@ const Queue = () => {
   };
 
   const handleRevertToCheckInModalCancel = () => {
-    // debugger;
+    //
     setIsRevertToCheckInModalVisible(false);
     form3.resetFields();
     // setProviders([]);
   };
 
   const handlePushPatientModalCancel = () => {
-    // debugger;
+    //
     setIsPushPatientModalVisible(false);
     form3.resetFields();
     form1.resetFields();
@@ -475,7 +449,7 @@ const Queue = () => {
   };
 
   const handleStartConsultationModalCancel = () => {
-    // debugger;
+    //
     setIsStartConsultationModalVisible(false);
     setSelectedTime(null);
     form3.resetFields();
@@ -484,7 +458,7 @@ const Queue = () => {
   };
 
   const handleCloseConsultationModalCancel = () => {
-    // debugger;
+    //
     setIsCloseConsultationModalVisible(false);
     setSelectedTime(null);
     form3.resetFields();
@@ -492,7 +466,7 @@ const Queue = () => {
     // setProviders([]);
   };
   const handleRevertToMarkArrivalModalCancel = () => {
-    // debugger;
+    //
     setIsCloseConsultationModalVisible(false);
     form3.resetFields();
     // setProviders([]);
@@ -505,15 +479,13 @@ const Queue = () => {
   };
 
   const handleAntenatalVitalsModalCancel = () => {
-    // debugger;
+    //
     setIsAntenatalVitalsModalVisible(false);
     form3.resetFields();
     // setProviders([]);
   };
 
   const handleAssignQueue = async () => {
-    debugger;
-
     const inputvalues = await form1.validateFields();
     console.log("the assign Queue values", inputvalues);
     // const fl1 = Flag === "All" ? '"All"' : Flag;
@@ -576,7 +548,6 @@ const Queue = () => {
   };
 
   const handleConfirmCheckIn = async () => {
-    debugger;
     setRevertToCheckInLoader(true);
     const fl1 = Flag === "All" ? '""' : Flag;
     try {
@@ -616,7 +587,6 @@ const Queue = () => {
   };
 
   const handlePushPatientPosition = async () => {
-    debugger;
     const values = await form1.validateFields();
     setPushPatientLoader(true);
     //PushToQueue(long QID, int ProviderId, long PatientId, int QNo, int PushToPosition, string Flag)
@@ -670,7 +640,6 @@ const Queue = () => {
   };
 
   const handleConfirmStartConsultation = async () => {
-    debugger;
     const inputvalues = form1.getFieldsValue();
     const formatedTime = inputvalues.StartConsultationTime.format("HH:mm:ss");
     const tokenNo =
@@ -724,8 +693,6 @@ const Queue = () => {
   };
 
   const handleConfirmCloseConsultation = async () => {
-    debugger;
-
     const inputvalues = await form1.validateFields();
     const formatedTime = inputvalues.CloseConsultationTime.format("HH:mm:ss");
     //console.log("close Consultations", formatedTime);
@@ -763,8 +730,6 @@ const Queue = () => {
   };
 
   const handleConfirmMarKArrival = async () => {
-    debugger;
-
     const fl1 = Flag === "All" ? '""' : Flag;
     try {
       const response = await customAxios.post(
@@ -954,115 +919,84 @@ const Queue = () => {
 
   return (
     <>
-      <Layout style={{ zIndex: "1" }}>
+      <Layout>
         <div
           style={{
+            padding: "0.5rem",
+            width: "100%",
             backgroundColor: "white",
-            minHeight: "100vh",
+            minHeight: "max-content",
             borderRadius: "10px",
-            overflow: "hidden",
-            padding: "1rem",
           }}
         >
           <Row
             style={{
-              // padding: '0rem 0rem 0rem 0rem',
-              backgroundColor: "#1a9bf0",
-              borderRadius: "10px 10px 10px 10px",
-              height: "70px",
-              marginLeft: "5px",
-              marginRight: " 5px",
-              alignItems: "center",
+              padding: "0.5rem 1.5rem 0.5rem 1.5rem",
+              backgroundColor: "#40A2E3",
+              borderRadius: "10px 10px 0px 0px",
             }}
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
           >
-            <Col span={4}>
-              <div
+            <Col
+              span={24}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Title
+                level={4}
                 style={{
-                  //   padding: "0px  10px",
-                  borderRadius: "1em",
-                  display: "flex",
-                  justifyContent: "start",
-                  flexDirection: "column",
-                  alignItems: "start",
                   color: "white",
-                  width: "100%",
-                  //   backgroundColor: "white",
+                  fontWeight: 500,
+                  margin: 0,
+                  paddingTop: 0,
                 }}
               >
-                <Title level={2} style={{ margin: "0px 0px", color: "white" }}>
-                  Queue
-                </Title>
-              </div>
-            </Col>
-            <Col span={3} offset={7}>
-              <div
-                style={{
-                  padding: "5px",
-                  borderRadius: "1em",
-                  display: "flex",
-                  justifyContent: "center",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  width: "100%",
-                  backgroundColor: "white",
-                }}
-              >
-                <span style={{ display: "flex", alignItems: "center" }}>
-                  <FaUsers style={{ fontSize: "30px", color: "#1a9bf0" }} />
-                  <div
-                    style={{
-                      height: "30px",
-                      width: "30px",
-                      color: "black",
-                      backgroundColor: "#fff",
-                      padding: "5px",
-                      fontSize: "23px",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      borderRadius: "10px",
-                      fontWeight: "bolder",
-                      marginLeft: "5px", // Added margin to create space between icon and text
-                    }}
-                  >
-                    {patientQueueDetails?.length}
-                  </div>
-                </span>
-                <span style={{ fontWeight: 500, fontSize: "12px" }}>
-                  List for today
-                </span>
-              </div>
-            </Col>
-            <Col span={1} offset={9}>
-              <div
-                style={{
-                  //   padding: "0px  10px",
-                  borderRadius: "1em",
-                  display: "flex",
-                  justifyContent: "center",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  width: "100%",
-                }}
-              >
-                <MdManageSearch
-                  style={{
-                    fontSize: "40px",
-                    color: "white",
-                    marginRight: "20px",
-                  }}
+                Queue
+              </Title>
+              <Col>
+                <Tooltip title="Number of Patients in Queue" placement="bottom">
+                  <span style={{ display: "flex", alignItems: "center" }}>
+                    <FaUsers style={{ fontSize: "30px", color: "#fff" }} />
+                    <div
+                      style={{
+                        height: "1rem",
+                        color: "#fff",
+                        padding: "0.5rem",
+                        fontSize: "1.5rem",
+                        display: "flex",
+                        alignItems: "center",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {patientQueueDetails?.length}
+                    </div>
+                  </span>
+                </Tooltip>
+              </Col>
+              <Tooltip title="Search" placement="bottom">
+                <Button
+                  type="link"
+                  style={{ color: "#fff", fontSize: "2rem" }}
+                  size="middle"
+                  className="dfja"
+                  icon={<MdManageSearch />}
                   onClick={handleShowSearchModal}
                 />
-              </div>
+              </Tooltip>
             </Col>
           </Row>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+
+          <Row
+            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+            style={{ margin: "1rem 0" }}
+          >
             <Col span={24}>
-              <Title level={4}> List of Patients in queue</Title>
+              {/* <Title level={4}> List of Patients in queue</Title> */}
               <Title level={5}>
-                Showing {startIndex + 1} to {Math.min(endIndex, totalPatients)}{" "}
-                of {totalPatients} Patients
+                Showing {startIndex + totalPatients ? 1 : 0} to{" "}
+                {Math.min(endIndex, totalPatients)} of {totalPatients} Patients
               </Title>
             </Col>
           </Row>
@@ -1098,545 +1032,450 @@ const Queue = () => {
           </Spin>
         </div>
       </Layout>
-      <ConfigProvider
-        theme={{
-          token: {
-            zIndexPopupBase: 3000,
-          },
-        }}
+
+      <Modal
+        width="50rem"
+        title="Search By Provider"
+        open={isShowSearchModalVisible}
+        onOk={handleSearchProvider}
+        onCancel={handleShowSearchModalCancel}
+        okText="Search"
+        cancelButtonProps={{ danger: "true" }}
+        maskClosable={false}
+        confirmLoading={serachLoading}
       >
-        {/* {contextHolder} */}
-        <Modal
-          width={800}
-          title="Search By Provider"
-          open={isShowSearchModalVisible}
-          onOk={handleSearchProvider}
-          onCancel={handleShowSearchModalCancel}
-          okText="Search"
-          maskClosable={false}
-          confirmLoading={serachLoading}
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={{
+            QueueStatus: "All",
+          }}
         >
-          <div>
-            <Form
-              //   key={selectedRecord.PatientId}
-              form={form}
-              layout="vertical"
-              initialValues={{
-                QueueStatus: "All",
-                // Provider: "0",
-                // Department: "0",
-              }}
-            >
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col span={8}>
-                  <Form.Item
-                    name="Department"
-                    label="Department"
-                    rules={[
-                      {
-                        required: true,
-                        // message: "Please select title",
-                      },
-                    ]}
-                  >
-                    <Select onChange={handleDepartmentChange} allowClear>
-                      {QueueDropDown.Departments.map((option) => (
-                        <Select.Option
-                          key={option.DepartmentId}
-                          value={option.DepartmentId}
-                        >
-                          {option.DepartmentName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    name="Provider"
-                    label="Provider"
-                    rules={[
-                      {
-                        required: true,
-                      },
-                    ]}
-                  >
-                    <Select allowClear>
-                      {/* <Select.Option key="all" value="0">
+          <Row gutter={16}>
+            <ColWithEightSpan>
+              <Form.Item
+                name="Department"
+                label="Department"
+                rules={[
+                  {
+                    required: true,
+                    // message: "Please select title",
+                  },
+                ]}
+              >
+                <Select onChange={handleDepartmentChange} allowClear>
+                  {QueueDropDown.Departments.map((option) => (
+                    <Select.Option
+                      key={option.DepartmentId}
+                      value={option.DepartmentId}
+                    >
+                      {option.DepartmentName}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </ColWithEightSpan>
+            <ColWithEightSpan>
+              <Form.Item
+                name="Provider"
+                label="Provider"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Select allowClear>
+                  {/* <Select.Option key="all" value="0">
                             SELECT VALUE
                           </Select.Option> */}
-                      {Providers.map((option) => (
-                        <Select.Option
-                          key={option.ProviderId}
-                          value={option.ProviderId}
-                        >
-                          {option.ProviderName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item name="QueueStatus" label="Queue&nbsp;Status">
-                    <Select allowClear>
-                      <Select.Option key="all" value="All">
-                        ALL
-                      </Select.Option>
-                      {QueueDropDown.QueueStatus.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupDescription}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </div>
-        </Modal>
-      </ConfigProvider>
-      <ConfigProvider
-        theme={{
-          token: {
-            zIndexPopupBase: 3000,
-          },
-        }}
-      >
-        {/* {contextHolder} */}
-        <Modal
-          width={900}
-          title="Mark Arrival"
-          open={isMarkArrivalModalVisible}
-          onCancel={handleMarkArrivalModalCancel}
-          maskClosable={false}
-          footer={[
-            <Button
-              key="start"
-              type="primary"
-              onClick={openStartConsultationModal}
-            >
-              Start Consultation
-            </Button>,
-
-            <Button
-              key="ok"
-              type="primary"
-              onClick={handleAssignQueue}
-              loading={assignTokenLoader}
-              disabled={formSubmitted}
-            >
-              Assign Queue
-            </Button>,
-            <Button key="cancel" onClick={handleMarkArrivalModalCancel}>
-              Close
-            </Button>,
-          ]}
-        >
-          <div>
-            <PatientHeader patient={patientHeaderDetails}></PatientHeader>
-            <Form
-              key={selectedPatientRecord.QId}
-              form={form1}
-              layout="vertical"
-              disabled={formSubmitted}
-            >
-              <Row
-                style={{ margin: "24px 0px" }}
-                gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              >
-                <Col span={8}>
-                  <div style={{ width: "80%" }}>
-                    <span style={{ fontWeight: "bold", margin: "8px" }}>
-                      Service Location
-                    </span>
-                    <p style={{ margin: "8px" }}>
-                      {selectedPatientRecord &&
-                        selectedPatientRecord.ServiceLocation}
-                    </p>
-                  </div>
-                </Col>
-                <Col span={8}>
-                  <div style={{ width: "60%" }}>
-                    <span style={{ fontWeight: "bold", margin: "8px" }}>
-                      Visit Reason
-                    </span>
-                    <p style={{ margin: "8px" }}>
-                      {selectedPatientRecord && selectedPatientRecord.Reason}
-                    </p>
-                  </div>
-                </Col>
-
-                <Col span={8}>
-                  <div style={{ width: "80%" }}>
-                    <span style={{ fontWeight: "bold", margin: "8px" }}>
-                      Appointment Time
-                    </span>
-                    <p style={{ margin: "8px" }}>
-                      {selectedPatientRecord &&
-                        selectedPatientRecord.AppointmentTime}
-                    </p>
-                  </div>
-                </Col>
-              </Row>
-              <Row
-                style={{ marginLeft: "8px" }}
-                gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              >
-                <Col span={6}>
-                  <Form.Item
-                    name="TokenNo"
-                    label="Token no"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please enter a token number",
-                      },
-                      {
-                        pattern: /^[1-9]\d*$/,
-                        message:
-                          "Token number must be a positive and no special characters",
-                      },
-                    ]}
-                  >
-                    <Input allowClear maxLength={4} />
-                  </Form.Item>
-                </Col>
-                <Col span={8} offset={1}>
-                  <div style={{ width: "70%" }}>
-                    <span style={{ fontWeight: "bold", margin: "10px 8px" }}>
-                      Current Queue Length
-                    </span>
-                    <p style={{ margin: "10px" }}>
-                      {NewQueueModel && NewQueueModel.QLength}
-                    </p>
-                  </div>
-                </Col>
-              </Row>
-            </Form>
-          </div>
-        </Modal>
-      </ConfigProvider>
-
-      <ConfigProvider
-        theme={{
-          token: {
-            zIndexPopupBase: 3000,
-          },
-        }}
-      >
-        {/* {contextHolder} */}
-        <Modal
-          width={600}
-          title="REVERT TO CHECK-IN"
-          open={isRevertToCheckInModalVisible}
-          onOk={handleConfirmCheckIn}
-          // okButtonProps={{ disabled: IsVisitCreated }}
-          onCancel={handleRevertToCheckInModalCancel}
-          okText="Yes"
-          cancelText="No"
-          maskClosable={false}
-          confirmLoading={revertToCheckInLoader}
-        >
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-            style={{ margin: "0px 10px" }}
-          >
-            <Col span={20}>
-              <strong>
-                Are you sure you want to revert this patient to Check In?{" "}
-              </strong>
-            </Col>
+                  {Providers.map((option) => (
+                    <Select.Option
+                      key={option.ProviderId}
+                      value={option.ProviderId}
+                    >
+                      {option.ProviderName}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </ColWithEightSpan>
+            <ColWithEightSpan>
+              <Form.Item name="QueueStatus" label="Queue&nbsp;Status">
+                <Select allowClear>
+                  <Select.Option key="all" value="All">
+                    ALL
+                  </Select.Option>
+                  {QueueDropDown.QueueStatus.map((option) => (
+                    <Select.Option
+                      key={option.LookupID}
+                      value={option.LookupDescription}
+                    >
+                      {option.LookupDescription}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </ColWithEightSpan>
           </Row>
-        </Modal>
-      </ConfigProvider>
-      <ConfigProvider
-        theme={{
-          token: {
-            zIndexPopupBase: 3000,
-          },
-        }}
+        </Form>
+      </Modal>
+
+      <Modal
+        width="60rem"
+        title="Mark Arrival"
+        open={isMarkArrivalModalVisible}
+        onCancel={handleMarkArrivalModalCancel}
+        maskClosable={false}
+        footer={[
+          <Button
+            key="start"
+            type="primary"
+            onClick={openStartConsultationModal}
+          >
+            Start Consultation
+          </Button>,
+
+          <Button
+            key="ok"
+            type="primary"
+            onClick={handleAssignQueue}
+            loading={assignTokenLoader}
+            disabled={formSubmitted}
+          >
+            Assign Queue
+          </Button>,
+          <Button danger key="cancel" onClick={handleMarkArrivalModalCancel}>
+            Close
+          </Button>,
+        ]}
       >
-        {/* {contextHolder} */}
-        <Modal
-          width={900}
-          title="PUSH PATIENT"
-          open={isPushPatientModalVisible}
-          onCancel={handlePushPatientModalCancel}
-          maskClosable={false}
-          footer={[
-            <Button
-              key="ok"
-              type="primary"
-              onClick={handlePushPatientPosition}
-              loading={pushPatientLoader}
-              // disabled={IsVisitCreated}
-            >
-              Push Patient
-            </Button>,
-            <Button key="cancel" onClick={handlePushPatientModalCancel}>
-              Cancel
-            </Button>,
-          ]}
-        >
-          <div>
-            <PatientHeader patient={patientHeaderDetails}></PatientHeader>
-            <Form
-              key={selectedPatientRecord.QId}
-              form={form1}
-              layout="vertical"
-            >
-              <Row
-                style={{ margin: "24px 0px" }}
-                gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              >
-                <Col span={8}>
-                  <div style={{ width: "80%" }}>
-                    <span style={{ fontWeight: "bold", margin: "8px" }}>
-                      Service Location
-                    </span>
-                    <p style={{ margin: "8px" }}>
-                      {selectedPatientRecord &&
-                        selectedPatientRecord.ServiceLocation}
-                    </p>
-                  </div>
-                </Col>
-                <Col span={8}>
-                  <div style={{ width: "60%" }}>
-                    <span style={{ fontWeight: "bold", margin: "8px" }}>
-                      Provider
-                    </span>
-                    <p style={{ margin: "8px" }}>
-                      {selectedPatientRecord &&
-                        selectedPatientRecord.ProviderName}
-                    </p>
-                  </div>
-                </Col>
-              </Row>
-              <Row
-                style={{ marginLeft: "8px" }}
-                gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              >
-                <Col span={6}>
-                  <Form.Item
-                    name="PushToPosition"
-                    label="Push to Position"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please enter a position number",
-                      },
-                      {
-                        pattern: /^[1-9]\d*$/,
-                        message: "No special characters",
-                      },
-                    ]}
-                  >
-                    <Input allowClear maxLength={2} />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </div>
-        </Modal>
-      </ConfigProvider>
-      <ConfigProvider
-        theme={{
-          token: {
-            zIndexPopupBase: 3000,
-          },
-        }}
-      >
-        {/* {contextHolder} */}
-        <Modal
-          width={600}
-          title="START CONSULTATION"
-          open={isStartConsultationModalVisible}
-          onCancel={handleStartConsultationModalCancel}
-          onOk={handleConfirmStartConsultation}
-          okText="Start"
-          cancelText="Cancel"
-          maskClosable={false}
-          // confirmLoading={startConsLoader}
-        >
+        <div>
+          <PatientHeader patient={patientHeaderDetails}></PatientHeader>
           <Form
+            key={selectedPatientRecord.QId}
             form={form1}
             layout="vertical"
-            initialValues={{ StartConsultationTime: selectedTime }}
+            disabled={formSubmitted}
           >
+            <Row style={{ margin: "1rem 0" }} gutter={16}>
+              <ColWithSixSpan>
+                <span style={{ fontWeight: "bold" }}>
+                  Service&nbsp;Location
+                </span>
+                <p>
+                  {selectedPatientRecord &&
+                    selectedPatientRecord.ServiceLocation}
+                </p>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
+                <span style={{ fontWeight: "bold" }}>Visit Reason</span>
+                <p>
+                  {selectedPatientRecord?.Reason
+                    ? selectedPatientRecord.Reason
+                    : "-"}
+                </p>
+              </ColWithSixSpan>
+
+              <ColWithSixSpan>
+                <span style={{ fontWeight: "bold" }}>Appointment Time</span>
+                <p>
+                  {selectedPatientRecord &&
+                    selectedPatientRecord.AppointmentTime}
+                </p>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
+                <Form.Item
+                  name="TokenNo"
+                  label="Token no"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter a token number",
+                    },
+                    {
+                      pattern: /^[1-9]\d*$/,
+                      message:
+                        "Token number must be a positive and no special characters",
+                    },
+                  ]}
+                >
+                  <Input allowClear maxLength={3} />
+                </Form.Item>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
+                <span style={{ fontWeight: "bold" }}>Current Queue Length</span>
+                <p>{NewQueueModel && NewQueueModel.QLength}</p>
+              </ColWithSixSpan>
+            </Row>
+          </Form>
+        </div>
+      </Modal>
+
+      <Modal
+        width={600}
+        title="REVERT TO CHECK-IN"
+        open={isRevertToCheckInModalVisible}
+        onOk={handleConfirmCheckIn}
+        // okButtonProps={{ disabled: IsVisitCreated }}
+        onCancel={handleRevertToCheckInModalCancel}
+        okText="Yes"
+        cancelText="No"
+        maskClosable={false}
+        confirmLoading={revertToCheckInLoader}
+      >
+        <Row
+          gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+          style={{ margin: "0px 10px" }}
+        >
+          <Col span={20}>
+            <strong>
+              Are you sure you want to revert this patient to Check In?{" "}
+            </strong>
+          </Col>
+        </Row>
+      </Modal>
+
+      <Modal
+        width={900}
+        title="PUSH PATIENT"
+        open={isPushPatientModalVisible}
+        onCancel={handlePushPatientModalCancel}
+        maskClosable={false}
+        footer={[
+          <Button
+            key="ok"
+            type="primary"
+            onClick={handlePushPatientPosition}
+            loading={pushPatientLoader}
+            // disabled={IsVisitCreated}
+          >
+            Push Patient
+          </Button>,
+          <Button key="cancel" onClick={handlePushPatientModalCancel}>
+            Cancel
+          </Button>,
+        ]}
+      >
+        <div>
+          <PatientHeader patient={patientHeaderDetails}></PatientHeader>
+          <Form key={selectedPatientRecord.QId} form={form1} layout="vertical">
             <Row
+              style={{ margin: "24px 0px" }}
               gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              style={{ margin: "0px 5px" }}
             >
-              <Col span={20}>
-                <strong>
-                  Are you sure you want to start consultation for this patient?
-                </strong>
+              <Col span={8}>
+                <div style={{ width: "80%" }}>
+                  <span style={{ fontWeight: "bold", margin: "8px" }}>
+                    Service Location
+                  </span>
+                  <p style={{ margin: "8px" }}>
+                    {selectedPatientRecord &&
+                      selectedPatientRecord.ServiceLocation}
+                  </p>
+                </div>
+              </Col>
+              <Col span={8}>
+                <div style={{ width: "60%" }}>
+                  <span style={{ fontWeight: "bold", margin: "8px" }}>
+                    Provider
+                  </span>
+                  <p style={{ margin: "8px" }}>
+                    {selectedPatientRecord &&
+                      selectedPatientRecord.ProviderName}
+                  </p>
+                </div>
               </Col>
             </Row>
             <Row
+              style={{ marginLeft: "8px" }}
               gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              style={{ margin: "10px 5px" }}
+            >
+              <Col span={6}>
+                <Form.Item
+                  name="PushToPosition"
+                  label="Push to Position"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter a position number",
+                    },
+                    {
+                      pattern: /^[1-9]\d*$/,
+                      message: "No special characters",
+                    },
+                  ]}
+                >
+                  <Input allowClear maxLength={2} />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </div>
+      </Modal>
+
+      <Modal
+        width={600}
+        title="START CONSULTATION"
+        open={isStartConsultationModalVisible}
+        onCancel={handleStartConsultationModalCancel}
+        onOk={handleConfirmStartConsultation}
+        okText="Start"
+        cancelText="Cancel"
+        maskClosable={false}
+        // confirmLoading={startConsLoader}
+      >
+        <Form
+          form={form1}
+          layout="vertical"
+          initialValues={{ StartConsultationTime: selectedTime }}
+        >
+          <Row
+            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+            style={{ margin: "0px 5px" }}
+          >
+            <Col span={20}>
+              <strong>
+                Are you sure you want to start consultation for this patient?
+              </strong>
+            </Col>
+          </Row>
+          <Row
+            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+            style={{ margin: "10px 5px" }}
+          >
+            <Col span={10}>
+              <Form.Item name="StartConsultationTime">
+                <TimePicker onChange={handleTimeChange} />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
+
+      <Modal
+        width={800}
+        title="CLOSE CONSULTATION"
+        open={isCloseConsultationModalVisible}
+        onCancel={handleCloseConsultationModalCancel}
+        onOk={handleConfirmCloseConsultation}
+        okText="Save"
+        cancelText="Cancel"
+        maskClosable={false}
+        confirmLoading={closeConsLoader}
+      >
+        <div>
+          <PatientHeader patient={patientHeaderDetails}></PatientHeader>
+          <Form
+            key={selectedPatientRecord.QId}
+            form={form1}
+            layout="vertical"
+            initialValues={{ CloseConsultationTime: selectedTime }}
+          >
+            <Row
+              style={{ margin: "24px 0px" }}
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+            >
+              <Col span={12}>
+                <div style={{ width: "80%" }}>
+                  <span style={{ fontWeight: "bold", margin: "8px" }}>
+                    Service Location
+                  </span>
+                  <p style={{ margin: "8px" }}>
+                    {selectedPatientRecord &&
+                      selectedPatientRecord.ServiceLocation}
+                  </p>
+                </div>
+              </Col>
+              <Col span={12}>
+                <div style={{ width: "60%" }}>
+                  <span style={{ fontWeight: "bold", margin: "8px" }}>
+                    Provider
+                  </span>
+                  <p style={{ margin: "8px" }}>
+                    {selectedPatientRecord &&
+                      selectedPatientRecord.ProviderName}
+                  </p>
+                </div>
+              </Col>
+            </Row>
+            <Row
+              style={{ marginLeft: "8px" }}
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
             >
               <Col span={10}>
-                <Form.Item name="StartConsultationTime">
+                <Form.Item
+                  name="DispositionType"
+                  label="Disposition Type"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Disposition type is required",
+                    },
+                  ]}
+                >
+                  <Select allowClear>
+                    {QueueDropDown.DispositionType.map((option) => (
+                      <Select.Option
+                        key={option.LookupID}
+                        value={option.LookupID}
+                      >
+                        {option.LookupDescription}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={10} offset={1}>
+                <Form.Item
+                  name="CloseConsultationTime"
+                  label="Close Consult Time"
+                >
                   <TimePicker onChange={handleTimeChange} />
                 </Form.Item>
               </Col>
             </Row>
           </Form>
-        </Modal>
-      </ConfigProvider>
-      <ConfigProvider
-        theme={{
-          token: {
-            zIndexPopupBase: 3000,
-          },
-        }}
+        </div>
+      </Modal>
+
+      <Modal
+        width={600}
+        title="Revert To Mark Arrival"
+        open={isRevertToMarkArrivalModalVisible}
+        onOk={handleConfirmMarKArrival}
+        // okButtonProps={{ disabled: IsVisitCreated }}
+        onCancel={handleRevertToMarkArrivalModalCancel}
+        okText="Yes"
+        cancelText="No"
+        maskClosable={false}
       >
-        {/* {contextHolder} */}
-        <Modal
-          width={800}
-          title="CLOSE CONSULTATION"
-          open={isCloseConsultationModalVisible}
-          onCancel={handleCloseConsultationModalCancel}
-          onOk={handleConfirmCloseConsultation}
-          okText="Save"
-          cancelText="Cancel"
-          maskClosable={false}
-          confirmLoading={closeConsLoader}
+        <Row
+          gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+          style={{ margin: "0px 10px" }}
         >
-          <div>
-            <PatientHeader patient={patientHeaderDetails}></PatientHeader>
-            <Form
-              key={selectedPatientRecord.QId}
-              form={form1}
-              layout="vertical"
-              initialValues={{ CloseConsultationTime: selectedTime }}
-            >
-              <Row
-                style={{ margin: "24px 0px" }}
-                gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              >
-                <Col span={12}>
-                  <div style={{ width: "80%" }}>
-                    <span style={{ fontWeight: "bold", margin: "8px" }}>
-                      Service Location
-                    </span>
-                    <p style={{ margin: "8px" }}>
-                      {selectedPatientRecord &&
-                        selectedPatientRecord.ServiceLocation}
-                    </p>
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <div style={{ width: "60%" }}>
-                    <span style={{ fontWeight: "bold", margin: "8px" }}>
-                      Provider
-                    </span>
-                    <p style={{ margin: "8px" }}>
-                      {selectedPatientRecord &&
-                        selectedPatientRecord.ProviderName}
-                    </p>
-                  </div>
-                </Col>
-              </Row>
-              <Row
-                style={{ marginLeft: "8px" }}
-                gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              >
-                <Col span={10}>
-                  <Form.Item
-                    name="DispositionType"
-                    label="Disposition Type"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Disposition type is required",
-                      },
-                    ]}
-                  >
-                    <Select allowClear>
-                      {QueueDropDown.DispositionType.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={10} offset={1}>
-                  <Form.Item
-                    name="CloseConsultationTime"
-                    label="Close Consult Time"
-                  >
-                    <TimePicker onChange={handleTimeChange} />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </div>
-        </Modal>
-      </ConfigProvider>
-      <ConfigProvider
-        theme={{
-          token: {
-            zIndexPopupBase: 3000,
-          },
-        }}
+          <Col span={20}>
+            <strong>
+              Are you sure you want to revert this patient to Mark Arrival?{" "}
+            </strong>
+          </Col>
+        </Row>
+      </Modal>
+
+      <Modal
+        width={1000}
+        title="ANTENATAL VITALS"
+        open={isAntenatalVitalsModalVisible}
+        onCancel={handleAntenatalVitalsModalCancel}
+        // onOk={handleConfirmCloseConsultation}
+        okText="Save"
+        cancelText="Cancel"
+        maskClosable={false}
       >
-        {/* {contextHolder} */}
-        <Modal
-          width={600}
-          title="Revert To Mark Arrival"
-          open={isRevertToMarkArrivalModalVisible}
-          onOk={handleConfirmMarKArrival}
-          // okButtonProps={{ disabled: IsVisitCreated }}
-          onCancel={handleRevertToMarkArrivalModalCancel}
-          okText="Yes"
-          cancelText="No"
-          maskClosable={false}
-        >
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-            style={{ margin: "0px 10px" }}
-          >
-            <Col span={20}>
-              <strong>
-                Are you sure you want to revert this patient to Mark Arrival?{" "}
-              </strong>
-            </Col>
-          </Row>
-        </Modal>
-      </ConfigProvider>
-      <ConfigProvider
-        theme={{
-          token: {
-            zIndexPopupBase: 3000,
-          },
-        }}
-      >
-        {/* {contextHolder} */}
-        <Modal
-          width={1000}
-          title="ANTENATAL VITALS"
-          open={isAntenatalVitalsModalVisible}
-          onCancel={handleAntenatalVitalsModalCancel}
-          // onOk={handleConfirmCloseConsultation}
-          okText="Save"
-          cancelText="Cancel"
-          maskClosable={false}
-        >
-          <div>
-            <PatientHeader patient={patientHeaderDetails}></PatientHeader>
-          </div>
-        </Modal>
-      </ConfigProvider>
+        <div>
+          <PatientHeader patient={patientHeaderDetails}></PatientHeader>
+        </div>
+      </Modal>
     </>
   );
 };

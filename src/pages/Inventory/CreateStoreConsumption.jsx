@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
 import { urlCreatePurchaseOrder, urlStoreConsumptionEdit, urlAutocompleteProduct, urlGetProductDetailsById, urlStoreConsumptionShowBatchDetails, urlAddNewConsumption } from '../../../endpoints';
 import Select from 'antd/es/select';
-import { ConfigProvider, Typography, Checkbox, message, Modal, Popconfirm, Spin, Col, Card, Row, AutoComplete } from 'antd';
+import { Tag, Typography, Checkbox, message, Modal, Popconfirm, Spin, Col, Card, Row, AutoComplete } from 'antd';
 import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
@@ -15,6 +15,7 @@ import { Table, InputNumber } from 'antd';
 import { PlusOutlined, DeleteOutlined, CloseSquareFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useLocation } from "react-router-dom";
+import CustomTable from "../../components/customTable/index.jsx";
 //import { Calculate } from '@mui/icons-material';
 
 const CreateStoreConsumption = () => {
@@ -103,6 +104,7 @@ const CreateStoreConsumption = () => {
             ...item,
             key: index,
             Quantity: item.BalanceQty,
+            ReasonforConsumption: item.Remarks,
             index: index + 1
           }))
           setData(products)
@@ -201,7 +203,7 @@ const CreateStoreConsumption = () => {
           ProductId: data[i].ProductId,
           UomId: data[i].UomId,
           IssueQty: data[i].IssueQty,
-          Remarks: data[i].Remarks,
+          Remarks: form2data[i].ReasonforConsumption,
           PatientIssueLineId: data[i].PatientIssueLineId
         }
         products.push(product);
@@ -249,6 +251,7 @@ const CreateStoreConsumption = () => {
         })
         form2.setFieldsValue({ [record.key]: { ProductId: option.key } });
         form2.setFieldsValue({ [record.key]: { Quantity: qty } });
+        form2.setFieldsValue({ [record.key]: { UomId: option.UomId } });
         const newData = data.map((item) => {
           if (item.key === record.key) {
             const updatedItem = {
@@ -412,7 +415,7 @@ const CreateStoreConsumption = () => {
       key: 'Quantity',
       render: (text, record) => (
         <Form.Item name={[record.key, 'Quantity']} initialValue={text}>
-          <InputNumber min={0} style={{ width: '100%' }} disabled />
+          <InputNumber style={{ width: '100%' }} disabled />
         </Form.Item>
       )
     },
@@ -425,7 +428,7 @@ const CreateStoreConsumption = () => {
           name={[record.key, 'ReasonforConsumption']}
           initialValue={text}
         >
-          <InputNumber min={0} style={{ width: '100%' }} />
+          <Input style={{ width: '100%' }} />
         </Form.Item>
       )
     },
@@ -651,8 +654,9 @@ const CreateStoreConsumption = () => {
       key: 'UomId',
       width: 100,
       render: (text, record) => (
-        <Form.Item name={[record.key, 'UomId']} >
-          {record.Uom}
+        <Form.Item name={[record.key, 'UomId']}>
+          <Tag color="#7C00FE">{record.Uom}</Tag>
+          {/* {record.Uom} */}
         </Form.Item>
       )
     },
@@ -757,100 +761,100 @@ const CreateStoreConsumption = () => {
             </Button>
           </Col>
         </Row>
-        <Form
-          layout="vertical"
-          onFinish={handleOnFinish}
-          variant="outlined"
-          size="default"
-          style={{
-            maxWidth: 1500
-          }}
-          form={form1}
-          initialValues={{
-            ConsumptionDate: dayjs(),
-          }}
-        >
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item label="Issuing Store" name="IssuingStore"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please input!'
-                    }
-                  ]}
-                >
-                  <Select placeholder='Select Value' allowClear onChange={handleStore}>
-                    {DropDown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
-                        {option.LongName}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-                <Form.Item name="IssueId" hidden>
-                  <Input />
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item label="Consumption Date" name="ConsumptionDate">
-                  <DatePicker disabled style={{ width: '100%' }} format='DD-MM-YYYY' />
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item label="Consumption Status" name="ConsumptionStatus"
-                  rules={[
-                    {
-                      required: issueStatus,
-                      message: 'Please input!'
-                    }
-                  ]}
-                >
-                  <Select allowClear placeholder='Select Value'>
-                    <Select.Option key='Draft' value='Draft'></Select.Option>
-                    <Select.Option key='Finalize' value='Finalize'></Select.Option>
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }} valuePropName='checked'>
-                  <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={12}>
-              <div>
-                <Form.Item label='Remarks' name="Remarks">
-                  <TextArea allowClear />
-                </Form.Item>
-              </div>
-            </Col>
-          </Row>
-          <Row justify="end" style={{ padding: '0rem 1rem' }}>
-            <Col style={{ marginRight: '10px' }}>
-              <Form.Item>
-                <Button type="primary" loading={isSearchLoading} htmlType="submit">
-                  {buttonTitle}
-                </Button>
-              </Form.Item>
-            </Col>
-            <Col>
-              <Form.Item>
-                <Button type="primary" onClick={handleToStoreConsumption}>
-                  Cancel
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
         <Card>
+          <Form
+            layout="vertical"
+            onFinish={handleOnFinish}
+            variant="outlined"
+            size="default"
+            style={{
+              maxWidth: 1500
+            }}
+            form={form1}
+            initialValues={{
+              ConsumptionDate: dayjs(),
+            }}
+          >
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item label="Issuing Store" name="IssuingStore"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please input!'
+                      }
+                    ]}
+                  >
+                    <Select placeholder='Select Value' allowClear onChange={handleStore}>
+                      {DropDown.StoreDetails.map((option) => (
+                        <Select.Option key={option.StoreId} value={option.StoreId}>
+                          {option.LongName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                  <Form.Item name="IssueId" hidden>
+                    <Input />
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item label="Consumption Date" name="ConsumptionDate">
+                    <DatePicker disabled style={{ width: '100%' }} format='DD-MM-YYYY' />
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item label="Consumption Status" name="ConsumptionStatus"
+                    rules={[
+                      {
+                        required: issueStatus,
+                        message: 'Please input!'
+                      }
+                    ]}
+                  >
+                    <Select allowClear placeholder='Select Value'>
+                      <Select.Option key='Draft' value='Draft'></Select.Option>
+                      <Select.Option key='Finalize' value='Finalize'></Select.Option>
+                    </Select>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }} valuePropName='checked'>
+                    <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={12}>
+                <div>
+                  <Form.Item label='Remarks' name="Remarks">
+                    <TextArea allowClear />
+                  </Form.Item>
+                </div>
+              </Col>
+            </Row>
+            <Row justify="end" style={{ padding: '0rem 1rem' }}>
+              <Col style={{ marginRight: '10px' }}>
+                <Form.Item>
+                  <Button type="primary" loading={isSearchLoading} htmlType="submit">
+                    {buttonTitle}
+                  </Button>
+                </Form.Item>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button type="primary" onClick={handleToStoreConsumption}>
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
           <Form
             layout="vertical"
             onFinish={handleOnFinish}
@@ -861,16 +865,25 @@ const CreateStoreConsumption = () => {
             }}
             form={form2}
           >
-            {isTable && <Table
-              bordered
-              columns={columns}
-              size="small"
-              dataSource={data.filter((item) => item.ActiveFlag !== false)}
-              locale={{ emptyText: "nodata " }}
-              scroll={{
-                x: 0,
-              }}
-            />}
+            {isTable &&
+              <CustomTable
+                dataSource={data.filter((item) => item.ActiveFlag !== false)}
+                columns={columns}
+                isFilter={false}
+                actionColumn={false}
+                bordered
+              />
+              //  <Table
+              //   bordered
+              //   columns={columns}
+              //   size="small"
+              //   dataSource={data.filter((item) => item.ActiveFlag !== false)}
+              //   locale={{ emptyText: "nodata " }}
+              //   scroll={{
+              //     x: 0,
+              //   }}
+              // />
+            }
           </Form>
         </Card>
         <Modal
@@ -904,18 +917,20 @@ const CreateStoreConsumption = () => {
             <Row>
               <Col className="gutter-row" span={12}>
                 <div>
-                  <span>
+                  <Tag color="#1890ff">Product: {productDetails.ProductName}</Tag>
+                  {/* <span>
                     Product :{" "}
                     <b style={{ color: "#1677ff" }}>{productDetails.ProductName}</b>{" "}
-                  </span>
+                  </span> */}
                 </div>
               </Col>
               <Col className="gutter-row" span={12}>
                 <div>
-                  <span>
+                  <Tag color="#52c41a">Product: {productDetails.IssueQty}</Tag>
+                  {/* <span>
                     Issued Quantity  :{" "}
                     <b style={{ color: "#1677ff" }}>{productDetails.IssueQty}</b>{" "}
-                  </span>
+                  </span> */}
                 </div>
               </Col>
             </Row>

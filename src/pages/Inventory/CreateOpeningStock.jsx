@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
 import { urlCreatePurchaseOrder, urlEditOpeningStock, urlUpdateOpeningStock, urlAutocompleteProduct, urlAddNewStock } from '../../../endpoints';
 import Select from 'antd/es/select';
-import { ConfigProvider, Typography, Checkbox, Tag, Modal, Popconfirm, message, Col, Divider, Row, AutoComplete } from 'antd';
+import { ConfigProvider, Typography, Checkbox, Tag, Modal, Popconfirm, message, Col, Divider, Row, AutoComplete, Card } from 'antd';
 import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
@@ -15,6 +15,7 @@ import { Table, InputNumber } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useLocation } from "react-router-dom";
+import CustomTable from "../../components/customTable/index.jsx";
 
 //import { Calculate } from '@mui/icons-material';
 
@@ -35,7 +36,7 @@ const CreateOpeningStock = () => {
   const GRNHeaderId = location.state.GRNHeaderId;
 
   const initialDataSource =
-  GRNHeaderId === 0
+    GRNHeaderId === 0
       ? [
         {
           key: 0,
@@ -51,7 +52,7 @@ const CreateOpeningStock = () => {
       : [];
 
   const initialModelDataSource =
-  GRNHeaderId === 0
+    GRNHeaderId === 0
       ? [
         {
           key: 0,
@@ -536,7 +537,7 @@ const CreateOpeningStock = () => {
       title: "Bar Code",
       dataIndex: "BarCode",
       key: "BarCode",
-      width: 100,
+      // width: 100,
       render: (_, record) => (
         <>
           <Form.Item
@@ -544,7 +545,7 @@ const CreateOpeningStock = () => {
             initialValue={record.BarCode}
           >
             <Input
-              min={0} disabled={!!record.GrnBatchId}
+              min={0} style={{ width: 100 }} disabled={!!record.GrnBatchId}
             />
           </Form.Item>
           <Form.Item name={[record.key, "ProductId"]} hidden initialValue={productDetails.ProductId}>
@@ -575,7 +576,7 @@ const CreateOpeningStock = () => {
               },
             ]}
           >
-            <Input disabled={!!record.GrnBatchId} />
+            <Input style={{ width: 100 }} disabled={!!record.GrnBatchId} />
           </Form.Item>
         );
       },
@@ -597,7 +598,7 @@ const CreateOpeningStock = () => {
         >
           <InputNumber
             min={0} disabled={!!record.GrnBatchId}
-            style={{ width: '100%' }}
+            style={{ width: 100 }}
           />
         </Form.Item>
       ),
@@ -606,10 +607,10 @@ const CreateOpeningStock = () => {
       title: "Uom",
       dataIndex: "UomId",
       key: "UomId",
-      width: 100,
+      // width: 100,
       render: (text, record) => (
         <Form.Item name={[record.key, "UomId"]} initialValue={productDetails.UomId}>
-          <Select disabled defaultValue={productDetails.UomId}>
+          <Select disabled defaultValue={productDetails.UomId} style={{ width: 100 }}>
             {DropDown.UOM.map((option) => (
               <Select.Option key={option.UomId} value={option.UomId}>
                 {option.ShortName}
@@ -633,7 +634,7 @@ const CreateOpeningStock = () => {
           }
         >
           <DatePicker disabled={!!record.GrnBatchId}
-            style={{ width: "100%" }}
+            style={{ width: 100 }}
             format="DD-MM-YYYY"
             disabledDate={(current) => {
               return current && current > dayjs().endOf("day");
@@ -662,7 +663,7 @@ const CreateOpeningStock = () => {
           }
         >
           <DatePicker disabled={!!record.GrnBatchId}
-            style={{ width: "100%" }}
+            style={{ width: 100 }}
             format="DD-MM-YYYY"
             disabledDate={(current) => {
               return current && current < dayjs().startOf("day");
@@ -681,7 +682,7 @@ const CreateOpeningStock = () => {
         >
           <InputNumber defaultValue={productDetails.PoRate}
             min={0}
-            style={{ width: 50 }}
+            style={{ width: 100 }}
             disabled
           />
         </Form.Item>
@@ -713,7 +714,7 @@ const CreateOpeningStock = () => {
         >
           <InputNumber
             min={0} disabled={!!record.GrnBatchId}
-            style={{ width: 50 }}
+            style={{ width: 100 }}
             allowClear
           />
         </Form.Item>
@@ -725,7 +726,7 @@ const CreateOpeningStock = () => {
       key: "TaxType1",
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxType1"]}>
-          <Select disabled></Select>
+          <Select style={{ width: 100 }} disabled></Select>
         </Form.Item>
       ),
     },
@@ -735,7 +736,7 @@ const CreateOpeningStock = () => {
       key: "TaxAmount1",
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxAmount1"]}>
-          <InputNumber min={0} style={{ width: 50 }} disabled />
+          <InputNumber min={0} style={{ width: 100 }} disabled />
         </Form.Item>
       ),
     },
@@ -745,7 +746,7 @@ const CreateOpeningStock = () => {
       key: "TaxType2",
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxType2"]}>
-          <Select disabled></Select>
+          <Select style={{ width: 100 }} disabled></Select>
         </Form.Item>
       ),
     },
@@ -755,7 +756,7 @@ const CreateOpeningStock = () => {
       key: "TaxAmount2",
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxAmount2"]}>
-          <InputNumber min={0} disabled />
+          <InputNumber min={0} style={{ width: 100 }} disabled />
         </Form.Item>
       ),
     },
@@ -765,7 +766,7 @@ const CreateOpeningStock = () => {
       key: "StockLocator",
       render: (text, record) => (
         <Form.Item name={[record.key, "StockLocator"]} initialValue={"Manual"}>
-          <Input disabled={!!record.GrnBatchId} />
+          <Input style={{ width: 100 }} disabled={!!record.GrnBatchId} />
         </Form.Item>
       ),
     },
@@ -779,7 +780,7 @@ const CreateOpeningStock = () => {
       ),
       dataIndex: "add",
       key: "add",
-      width: 50,
+      // width: 50,
       render: (text, record) => (
         <Popconfirm
           title="Sure to delete?"
@@ -821,112 +822,114 @@ const CreateOpeningStock = () => {
             </Button>
           </Col>
         </Row>
-        <Form
-          layout="vertical"
-          onFinish={handleOnFinish}
-          variant="outlined"
-          size="default"
-          style={{
-            maxWidth: 1500
-          }}
-          form={form1}
-          initialValues={{
-            Date: dayjs(),
-          }}
-        >
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
-            <Col className="gutter-row" span={6}>
-              <Form.Item
-                label="Receiving Store"
-                name="ReceivingStore"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input!'
-                  }
-                ]}
-              >
-                <Select allowClear placeholder='Select Value' loading={dropDownLoad} disabled={!!GRNHeaderId}>
-                  {DropDown.StoreDetails.map((option) => (
-                    <Select.Option key={option.StoreId} value={option.StoreId}>
-                      {option.LongName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-              <Form.Item name="GRNHeaderId" hidden>
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <Form.Item label="Date" name="Date">
-                <DatePicker style={{ width: '100%' }} disabled format='DD-MM-YYYY' />
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <Form.Item label="Openng Stock Status" name="GRNStatus"
-                rules={[
-                  {
-                    required: issueStatus,
-                    message: 'Please input!'
-                  }
-                ]}
-              >
-                <Select allowClear placeholder='Select Value'>
-                  <Select.Option key='Draft' value='Draft'></Select.Option>
-                  <Select.Option key='Finalize' value='Finalize'></Select.Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }} valuePropName='checked'>
-                <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={12}>
-              <Form.Item label="Remarks" name="Remarks">
-                <TextArea />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row justify="end" style={{ padding: '0rem 1rem' }}>
-            <Col style={{ marginRight: '10px' }}>
-              <Form.Item>
-                <Button type="primary" htmlType="submit">
-                  {buttonTitle}
-                </Button>
-              </Form.Item>
-            </Col>
-            <Col style={{ marginRight: '10px' }}>
-              <Form.Item>
-                <Button type="primary">
-                  Import
-                </Button>
-              </Form.Item>
-            </Col>
-            <Col>
-              <Form.Item>
-                <Button type="primary" onClick={handleOpeningStock}>
-                  Cancel
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Divider style={{ marginTop: '0' }}></Divider>
-          {/* <Table columns={columns} dataSource={data} scroll={{ x: 0 }} /> */}
-        </Form>
-        <Form
-          layout="vertical"
-          onFinish={handleOnFinish}
-          variant="outlined"
-          size="default"
-          style={{
-            maxWidth: 1500
-          }}
-          form={form2}
-        >
-          <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} scroll={{ x: 0 }} />
-        </Form>
+        <Card>
+          <Form
+            layout="vertical"
+            onFinish={handleOnFinish}
+            variant="outlined"
+            size="default"
+            style={{
+              maxWidth: 1500
+            }}
+            form={form1}
+            initialValues={{
+              Date: dayjs(),
+            }}
+          >
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
+              <Col className="gutter-row" span={6}>
+                <Form.Item
+                  label="Receiving Store"
+                  name="ReceivingStore"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Please input!'
+                    }
+                  ]}
+                >
+                  <Select allowClear placeholder='Select Value' loading={dropDownLoad} disabled={!!GRNHeaderId}>
+                    {DropDown.StoreDetails.map((option) => (
+                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                        {option.LongName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+                <Form.Item name="GRNHeaderId" hidden>
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item label="Date" name="Date">
+                  <DatePicker style={{ width: '100%' }} disabled format='DD-MM-YYYY' />
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item label="Openng Stock Status" name="GRNStatus"
+                  rules={[
+                    {
+                      required: issueStatus,
+                      message: 'Please input!'
+                    }
+                  ]}
+                >
+                  <Select allowClear placeholder='Select Value'>
+                    <Select.Option key='Draft' value='Draft'></Select.Option>
+                    <Select.Option key='Finalize' value='Finalize'></Select.Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }} valuePropName='checked'>
+                  <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={12}>
+                <Form.Item label="Remarks" name="Remarks">
+                  <TextArea />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row justify="end" style={{ padding: '0rem 1rem' }}>
+              <Col style={{ marginRight: '10px' }}>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit">
+                    {buttonTitle}
+                  </Button>
+                </Form.Item>
+              </Col>
+              <Col style={{ marginRight: '10px' }}>
+                <Form.Item>
+                  <Button type="primary">
+                    Import
+                  </Button>
+                </Form.Item>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button type="primary" onClick={handleOpeningStock}>
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Divider style={{ marginTop: '0' }}></Divider>
+            {/* <Table columns={columns} dataSource={data} scroll={{ x: 0 }} /> */}
+          </Form>
+          <Form
+            layout="vertical"
+            onFinish={handleOnFinish}
+            variant="outlined"
+            size="default"
+            style={{
+              maxWidth: 1500
+            }}
+            form={form2}
+          >
+            <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} scroll={{ x: 0 }} />
+          </Form>
+        </Card>
         <ConfigProvider
           theme={{
             token: {
@@ -934,7 +937,7 @@ const CreateOpeningStock = () => {
             }
           }}>
           <Modal
-            title="Basic Modal"
+            title="Product Batch Details"
             onOk={onOkModal}
             onCancel={onCancelModel}
             width={1700}
@@ -962,24 +965,24 @@ const CreateOpeningStock = () => {
               <Row>
                 <Col className="gutter-row" span={12}>
                   <div>
-                    <Form.Item
+                    {/* <Form.Item
                       label="Product"
                       name="Product"
                       style={{ marginLeft: '10px' }}
-                    >
-                      <Tag color="blue">{productDetails.ProductName}</Tag>
-                    </Form.Item>
+                    > */}
+                    <Tag color="#1890ff">Product: {productDetails.ProductName}</Tag>
+                    {/* </Form.Item> */}
                   </div>
                 </Col>
                 <Col className="gutter-row" span={12}>
                   <div>
-                    <Form.Item
+                    {/* <Form.Item
                       label="Received Quantity"
                       name="Received Quantity"
                       style={{ marginLeft: '10px' }}
-                    >
-                      <Tag color="blue">{form2.getFieldValue([productDetails.key, 'Quantity'])}</Tag>
-                    </Form.Item>
+                    > */}
+                    <Tag color="blue">{form2.getFieldValue([productDetails.key, 'Quantity'])}</Tag>
+                    {/* </Form.Item> */}
                   </div>
                 </Col>
               </Row>

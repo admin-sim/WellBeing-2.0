@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from 'antd/es/layout/layout';
 import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import CustomTable from "../../components/customTable/index.jsx";
 import dayjs from 'dayjs';
 import {
   Spin,
@@ -57,11 +58,12 @@ const StoreReturn = () => {
   };
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Pending: "volcano",
-    "Partially Pending": "orange",
-    Completed: "green",
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Pending: "#F5004F",
+    "Partially Pending": "#8E3E63",
+    Finalize: "#52c41a",
+    Completed: "#FF9100",
   };
 
   const GetModelDetails = (ReturnHeaderId) => {
@@ -155,7 +157,7 @@ const StoreReturn = () => {
           {
             params: postData1,
             headers: {
-              "Content-Type": "application/json", // Replace with the appropriate content type if needed
+              "Content-Type": "application/json",
             },
           }
         )
@@ -274,9 +276,16 @@ const StoreReturn = () => {
               </Col>
             </Row>
           </Form>
-        </Card>
-        <div>
-          <Table
+          <Spin spinning={loading}>
+            <CustomTable
+              dataSource={filteredData}
+              columns={columns}
+              isFilter={true}
+              actionColumn={false}
+              bordered
+            />
+          </Spin>
+          {/* <Table
             dataSource={filteredData}
             columns={columns}
             pagination={{
@@ -293,8 +302,8 @@ const StoreReturn = () => {
             rowKey={(row) => row.AppUserId}
             size="small"
             bordered
-          />
-        </div>
+          /> */}
+        </Card>
       </div>
     </Layout>
   );

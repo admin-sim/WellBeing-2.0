@@ -2,15 +2,14 @@ import React, { useEffect, useState } from "react";
 import {
   urlAddNewProduct,
   urlShowCreateDefinition,
-} from "../../../../endpoints.js";
-import customAxios from "../../../components/customAxios/customAxios.jsx";
+} from "../../../../../endpoints.js";
+import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import "./showCreateEditDefinition.css";
 import {
   Button,
   Checkbox,
   Col,
   Collapse,
-  ConfigProvider,
   Divider,
   Form,
   Input,
@@ -20,13 +19,18 @@ import {
   Spin,
 } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
-import PageHeader from "../../../components/PageHeader/index.jsx";
-import { IoArrowBackOutline } from "react-icons/io5";
+import PageHeader from "../../../../components/PageHeader/index.jsx";
 import { LeftOutlined } from "@ant-design/icons";
 import { useForm } from "antd/es/form/Form.js";
 import TextArea from "antd/es/input/TextArea.js";
 import { IoMdAddCircle, IoMdAddCircleOutline } from "react-icons/io";
-import CustomTable from "../../../components/customTable/index.jsx";
+import CustomTable from "../../../../components/customTable/index.jsx";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+  ColWithSixteenSpan,
+  ColWithTwelveSpan,
+} from "../../../../components/customGridColumns/index.jsx";
 
 function ShowEditDefinition() {
   const [loading, setLoading] = useState(false);
@@ -61,7 +65,6 @@ function ShowEditDefinition() {
   };
 
   const onFinish = async (values) => {
-    debugger;
     try {
       const Product = {
         ProductClassificationId: record.ProductClassificationId,
@@ -168,26 +171,31 @@ function ShowEditDefinition() {
       }
     } catch (error) {}
   };
+
   const UOMColumns = [
     {
       title: "Alternate UOM Units",
       dataIndex: "AlternateUOMUnits",
       key: "1",
+      width: 180,
     },
     {
       title: "Alternate UOM",
       dataIndex: "AlternateUOM",
       key: "2",
+      width: 180,
     },
     {
       title: "Equivalent UOM Units",
       dataIndex: "EquivalentUOMUnits",
       key: "3",
+      width: 180,
     },
     {
       title: "Equivalent UOM",
       dataIndex: "EquivalentUOM",
       key: "4",
+      width: 180,
     },
   ];
 
@@ -196,26 +204,31 @@ function ShowEditDefinition() {
       title: "Gender",
       dataIndex: "Gender",
       key: "1",
+      width: 100,
     },
     {
       title: "Start Age",
       dataIndex: "StartAge",
       key: "2",
+      width: 100,
     },
     {
       title: "Age Unit",
       dataIndex: "AgeUnit",
       key: "3",
+      width: 100,
     },
     {
       title: "End Age",
       dataIndex: "EndAge",
       key: "4",
+      width: 100,
     },
     {
       title: "Age Unit",
       dataIndex: "AgeUnit",
       key: "5",
+      width: 100,
     },
   ];
 
@@ -225,8 +238,8 @@ function ShowEditDefinition() {
       label: <span style={{ fontSize: "1rem", fontWeight: 600 }}>UOM</span>,
       children: (
         <div style={{ borderBottom: "1px solid silver" }}>
-          <Row gutter={32}>
-            <Col span={6}>
+          <Row gutter={16}>
+            <ColWithSixSpan>
               <Form.Item
                 name="UOMPrimaryUOM"
                 label="Primary UOM"
@@ -245,12 +258,12 @@ function ShowEditDefinition() {
                   }))}
                 />
               </Form.Item>
-            </Col>
-            <Col span={6}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item name="decimalPlaces" label="Decimal Places">
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-            </Col>
+            </ColWithSixSpan>
           </Row>
           <CustomTable
             columns={UOMColumns}
@@ -276,8 +289,8 @@ function ShowEditDefinition() {
       label: <span style={{ fontSize: "1rem", fontWeight: 600 }}>Billing</span>,
       children: (
         <div style={{ borderBottom: "1px solid silver" }}>
-          <Row gutter={32}>
-            <Col offset={1} span={7}>
+          <Row gutter={16}>
+            <ColWithEightSpan>
               <Form.Item
                 valuePropName="checked"
                 name="BillingIsChargeable"
@@ -285,8 +298,8 @@ function ShowEditDefinition() {
               >
                 <Checkbox checked>Is Chargeable</Checkbox>
               </Form.Item>
-            </Col>
-            <Col span={8}>
+            </ColWithEightSpan>
+            <ColWithEightSpan>
               <Form.Item
                 name="BillingIsProviderMandatory"
                 valuePropName="checked"
@@ -294,8 +307,8 @@ function ShowEditDefinition() {
               >
                 <Checkbox checked>Is Provider Mandatory</Checkbox>
               </Form.Item>
-            </Col>
-            <Col span={8}>
+            </ColWithEightSpan>
+            <ColWithEightSpan>
               <Form.Item
                 name="BillingPricingMethod"
                 label="Pricing Method"
@@ -310,7 +323,7 @@ function ShowEditDefinition() {
                   ]}
                 />
               </Form.Item>
-            </Col>
+            </ColWithEightSpan>
           </Row>
         </div>
       ),
@@ -320,8 +333,8 @@ function ShowEditDefinition() {
       label: <span style={{ fontSize: "1rem", fontWeight: 600 }}>Stock</span>,
       children: (
         <div style={{ borderBottom: "1px solid silver" }}>
-          <Row gutter={32}>
-            <Col span={6}>
+          <Row gutter={16}>
+            <ColWithSixSpan>
               <Form.Item
                 name="Serialization"
                 label="Serialization"
@@ -340,44 +353,44 @@ function ShowEditDefinition() {
                   ]}
                 />
               </Form.Item>
-            </Col>
-            <Col span={6}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item name="DrugForm" label="Drug Form">
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-            </Col>
-            <Col span={4}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item name="MinimumStockDays" label="Minimum Stock Days">
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-            </Col>
-            <Col span={4}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item name="MinimumStock" label="Minimum Stock">
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-            </Col>
-            <Col span={6}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item name="LeadTimeinDays" label="Lead Time">
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-            </Col>
+            </ColWithSixSpan>
 
-            <Col span={6}>
+            <ColWithSixSpan>
               <Form.Item name="ReorderLevel" label="Reorder Level">
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-            </Col>
-            <Col span={4}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item name="ReorderQuantity" label="Reorder Quantity">
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-            </Col>
-            <Col span={4}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item name="MaximumStock" label="Maximum Stock">
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-            </Col>
-            <Col span={4}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item
                 name="BarcodeApplicability"
                 label="Barcode Applicability"
@@ -395,21 +408,21 @@ function ShowEditDefinition() {
                   ]}
                 />
               </Form.Item>
-            </Col>
-            <Col span={6}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item name="DefaultPrice" label="Default Price">
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-            </Col>
-            <Col span={6}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item
                 name="MinimumShelfLifeinDays"
                 label="Minimum Shelf Life in Days"
               >
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-            </Col>
-            <Col span={6}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item
                 name="IsConsumptionAllowed"
                 valuePropName="checked"
@@ -417,7 +430,7 @@ function ShowEditDefinition() {
               >
                 <Checkbox checked>Is Consumption Allowed</Checkbox>
               </Form.Item>
-            </Col>
+            </ColWithSixSpan>
           </Row>
         </div>
       ),
@@ -432,7 +445,7 @@ function ShowEditDefinition() {
       children: (
         <div style={{ borderBottom: "1px solid silver" }}>
           <Row gutter={32}>
-            <Col offset={1} span={7}>
+            <ColWithEightSpan>
               <Form.Item
                 name="OrderIsOrderable"
                 valuePropName="checked"
@@ -440,8 +453,8 @@ function ShowEditDefinition() {
               >
                 <Checkbox checked>Is Orderable</Checkbox>
               </Form.Item>
-            </Col>
-            <Col span={8}>
+            </ColWithEightSpan>
+            <ColWithEightSpan style={{ alignItems: "center" }}>
               <Form.Item
                 name="OrderIsIntervalApplicable"
                 valuePropName="checked"
@@ -449,8 +462,8 @@ function ShowEditDefinition() {
               >
                 <Checkbox checked> Is Interval Applicable</Checkbox>
               </Form.Item>
-            </Col>
-            <Col span={8}>
+            </ColWithEightSpan>
+            <ColWithEightSpan>
               <Form.Item
                 name="OrderIsQuantityApplicable"
                 valuePropName="checked"
@@ -458,16 +471,16 @@ function ShowEditDefinition() {
               >
                 <Checkbox checked> Is Quantity Applicable</Checkbox>
               </Form.Item>
-            </Col>
+            </ColWithEightSpan>
             <Divider style={{ margin: "0" }} orientation="left">
               Default Dosage
             </Divider>
-            <Col span={6}>
+            <ColWithSixSpan>
               <Form.Item name="OrderDuration" label="Duration">
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-            </Col>
-            <Col span={6}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item name="OrderUOM" label="UOM">
                 <Select
                   style={{ width: "100%" }}
@@ -477,8 +490,8 @@ function ShowEditDefinition() {
                   }))}
                 />
               </Form.Item>
-            </Col>
-            <Col span={6}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item name="OrderDefaultFrequency" label="Default Frequency">
                 <Select
                   style={{ width: "100%" }}
@@ -488,8 +501,8 @@ function ShowEditDefinition() {
                   }))}
                 />
               </Form.Item>
-            </Col>
-            <Col span={6}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item name="OrderRoute" label="Route">
                 <Select
                   style={{ width: "100%" }}
@@ -499,11 +512,11 @@ function ShowEditDefinition() {
                   }))}
                 />
               </Form.Item>
-            </Col>
+            </ColWithSixSpan>
             <Divider style={{ margin: "0" }} orientation="left">
               Applicable Patient Type
             </Divider>
-            <Col offset={1} span={5}>
+            <ColWithSixSpan>
               <Form.Item
                 valuePropName="checked"
                 name="OrderPatTypeEmergency"
@@ -511,8 +524,8 @@ function ShowEditDefinition() {
               >
                 <Checkbox>Emergency Patient</Checkbox>
               </Form.Item>
-            </Col>
-            <Col span={6}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item
                 valuePropName="checked"
                 name="OrderPatTypeIp"
@@ -520,8 +533,8 @@ function ShowEditDefinition() {
               >
                 <Checkbox>In Patient</Checkbox>
               </Form.Item>
-            </Col>
-            <Col span={6}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item
                 valuePropName="checked"
                 name="OrderPatTypeAmbulatory"
@@ -529,8 +542,8 @@ function ShowEditDefinition() {
               >
                 <Checkbox>Ambulatory Patient</Checkbox>
               </Form.Item>
-            </Col>
-            <Col span={6}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item
                 valuePropName="checked"
                 name="OrderPatTypeShortstay"
@@ -538,7 +551,7 @@ function ShowEditDefinition() {
               >
                 <Checkbox>Short Stay Patient</Checkbox>
               </Form.Item>
-            </Col>
+            </ColWithSixSpan>
             <Divider
               style={{ margin: "0", display: "flex", alignItems: "center" }}
               orientation="left"
@@ -577,20 +590,20 @@ function ShowEditDefinition() {
         <Row
           style={{
             padding: "1rem 1rem 0 1rem",
-            borderBottom: "1px solid grey",
+            borderBottom: "1px solid #E5E4E2",
           }}
         >
-          <Col span={12}>
+          <ColWithTwelveSpan>
             <p>
               Product Group : <strong>{record?.ProductGroup}</strong>
             </p>
-          </Col>
-          <Col span={12}>
+          </ColWithTwelveSpan>
+          <ColWithTwelveSpan>
             <p>
               Product Classification :{" "}
               <strong>{record?.ProductClassification}</strong>
             </p>
-          </Col>
+          </ColWithTwelveSpan>
         </Row>
         <Form
           form={form}
@@ -608,10 +621,10 @@ function ShowEditDefinition() {
             OrderIsQuantityApplicable: true,
           }}
         >
-          <Row gutter={32}>
-            <Col span={16}>
+          <Row gutter={16}>
+            <ColWithSixteenSpan>
               <Row gutter={32}>
-                <Col span={6}>
+                <ColWithSixSpan>
                   <Form.Item
                     name="HSNSAC"
                     label="HSN/SAC"
@@ -624,8 +637,8 @@ function ShowEditDefinition() {
                   >
                     <Input style={{ width: "100%" }} />
                   </Form.Item>
-                </Col>
-                <Col span={6}>
+                </ColWithSixSpan>
+                <ColWithSixSpan>
                   <Form.Item
                     name="ShortName"
                     label="Short Name"
@@ -638,8 +651,8 @@ function ShowEditDefinition() {
                   >
                     <Input style={{ width: "100%" }} />
                   </Form.Item>
-                </Col>
-                <Col span={12}>
+                </ColWithSixSpan>
+                <ColWithTwelveSpan>
                   <Form.Item
                     name="LongName"
                     label="Long Name"
@@ -652,8 +665,8 @@ function ShowEditDefinition() {
                   >
                     <Input style={{ width: "100%" }} />
                   </Form.Item>
-                </Col>
-                <Col span={12}>
+                </ColWithTwelveSpan>
+                <ColWithTwelveSpan>
                   <Form.Item name="Manufacturer" label="Manufacturer">
                     <Select
                       style={{ width: "100%" }}
@@ -663,8 +676,8 @@ function ShowEditDefinition() {
                       }))}
                     />
                   </Form.Item>
-                </Col>
-                <Col span={6}>
+                </ColWithTwelveSpan>
+                <ColWithSixSpan>
                   <Form.Item
                     name="TrackingMethod"
                     label="Tracking Method"
@@ -689,16 +702,16 @@ function ShowEditDefinition() {
                       ]}
                     />
                   </Form.Item>
-                </Col>
+                </ColWithSixSpan>
 
-                <Col span={6}>
+                <ColWithSixSpan>
                   <Form.Item valuePropName="checked" name="IsAtomic" label=" ">
                     <Checkbox checked style={{ width: "100%" }}>
                       is Atomic
                     </Checkbox>
                   </Form.Item>
-                </Col>
-                <Col span={6}>
+                </ColWithSixSpan>
+                <ColWithSixSpan>
                   <Form.Item
                     name="Sourcing"
                     label="Sourcing"
@@ -719,8 +732,8 @@ function ShowEditDefinition() {
                       ]}
                     />
                   </Form.Item>
-                </Col>
-                <Col span={6}>
+                </ColWithSixSpan>
+                <ColWithSixSpan>
                   <Form.Item
                     name="Expiry"
                     label="Expiry"
@@ -741,8 +754,8 @@ function ShowEditDefinition() {
                       ]}
                     />
                   </Form.Item>
-                </Col>
-                <Col span={6}>
+                </ColWithSixSpan>
+                <ColWithSixSpan>
                   <Form.Item
                     name="Status"
                     label="Status"
@@ -762,19 +775,19 @@ function ShowEditDefinition() {
                       ]}
                     />
                   </Form.Item>
-                </Col>
+                </ColWithSixSpan>
               </Row>
-            </Col>
-            <Col span={8}>
+            </ColWithSixteenSpan>
+            <ColWithEightSpan>
               <Form.Item name="Remarks" label="Remarks">
                 <TextArea style={{ width: "100%" }} rows={4} />
               </Form.Item>
-            </Col>
+            </ColWithEightSpan>
           </Row>
           <Row
             justify={"end"}
             gutter={32}
-            style={{ paddingBottom: "1rem", borderBottom: "1px solid grey" }}
+            style={{ paddingBottom: "1rem", borderBottom: "1px solid #E5E4E2" }}
           >
             <Col>
               <Button

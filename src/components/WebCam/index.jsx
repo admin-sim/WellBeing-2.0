@@ -1,5 +1,5 @@
 import { UploadOutlined } from "@ant-design/icons";
-import { Button, Col, Row, Upload, message } from "antd";
+import { Button, Col, Row, Upload, message, Spin } from "antd";
 import React, { useCallback, useRef, useState } from "react";
 import { useEffect } from "react";
 import Webcam from "react-webcam";
@@ -10,10 +10,12 @@ function WebcamImage({ onImageUpload }) {
   const [up, setUp] = useState(null);
   const [hasCameraPermission, setHasCameraPermission] = useState(true);
   const [fileList, setFileList] = useState([]);
+  const [loading, setLoading] = useState(true); // New state for loader
 
   const handleUserMediaError = (error) => {
     console.log(error);
     setHasCameraPermission(false);
+    setLoading(false); // Stop loader if there's an error
   };
 
   const props = {
@@ -37,19 +39,15 @@ function WebcamImage({ onImageUpload }) {
     },
     onRemove: () => {
       setImg(null);
-      onImageUpload(null);
       setFileList([]);
+      onImageUpload(null);
     },
     customRequest: async ({ file, onSuccess, onError }) => {
       try {
-        // Here, you would normally send the file to your server
-        // For now, we'll simulate a server response
         console.log("Uploading file:", file);
 
-        // Simulate an API call
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        // Simulate a successful upload
         onSuccess("ok");
         message.success(`${file.name} file uploaded successfully.`);
 
@@ -70,7 +68,6 @@ function WebcamImage({ onImageUpload }) {
       }
     },
     onChange: (info) => {
-      console.log("onChange", info.file.status);
       const { status } = info.file;
 
       if (status === "uploading") {
@@ -90,11 +87,18 @@ function WebcamImage({ onImageUpload }) {
       }
     },
   };
+
   useEffect(() => {
     if (up?.length <= 0) {
       setImg(null);
     }
   }, [up]);
+
+  useEffect(() => {
+    if (hasCameraPermission) {
+      setLoading(false); // Stop loader when the webcam is ready
+    }
+  }, [hasCameraPermission]);
 
   const videoConstraints = {
     width: 720,
@@ -109,29 +113,39 @@ function WebcamImage({ onImageUpload }) {
 
   return (
     <div
-      className="Container"
-      style={{ display: "flex", flexDirection: "column" }}
+      style={{
+        display: "flex",
+        border: "1px solid lavender",
+        width: "100%",
+        justifyContent: "center",
+        borderRadius: "1rem",
+        padding: "0.5rem",
+        alignItems: "center",
+      }}
     >
-      {img === null ? (
+      {loading ? (
+        <Spin tip="Loading camera..." />
+      ) : img === null ? (
         <>
           {hasCameraPermission ? (
             <Webcam
               audio={false}
               mirrored={true}
-              height={200}
+              height={150}
               width={"auto"}
               ref={webcamRef}
               screenshotFormat="image/jpeg"
               videoConstraints={videoConstraints}
               onUserMediaError={handleUserMediaError}
+              onUserMedia={() => setLoading(false)} // Set loading false when media is ready
             />
           ) : (
             <div
               style={{
                 backgroundColor: "#E5D4FF",
                 textAlign: "center",
-                height: "210px",
-                width: "auto",
+                height: "150px",
+                width: "150px",
               }}
             >
               <p>
@@ -158,16 +172,34 @@ function WebcamImage({ onImageUpload }) {
             }}
           >
             {hasCameraPermission && (
-              <Col>
-                <Button size="small" onClick={capture}>
-                  Capture photo
+              <Col offset={4} span={20}>
+                <Button
+                  size="middle"
+                  style={{
+                    height: "min-content",
+                    width: "6rem",
+                    borderColor: "green",
+                    marginBottom: "0.5rem",
+                  }}
+                  onClick={capture}
+                >
+                  Capture <br />
+                  photo
                 </Button>
               </Col>
             )}
-            <Col>
+            <Col offset={4} span={20}>
               <Upload {...props}>
-                <Button size="small" icon={<UploadOutlined />}>
-                  Upload &nbsp;(&lt;1MB)
+                <Button
+                  size="middle"
+                  style={{
+                    height: "min-content",
+                    width: "6rem",
+                    borderColor: "brown",
+                  }}
+                  icon={<UploadOutlined />}
+                >
+                  Upload <br /> &nbsp;(&lt;1MB)
                 </Button>
               </Upload>
             </Col>
@@ -176,24 +208,46 @@ function WebcamImage({ onImageUpload }) {
       ) : (
         <>
           <div style={{ display: "flex", justifyContent: "center" }}>
-            <img src={img} alt="PatientPhoto" width={200} height={200} />
+            <img src={img} alt="PatientPhoto" width={150} height={150} />
           </div>
-          <Row className="py-1">
-            <Col span={12}>
+          <Row
+            className="py-1"
+            style={{
+              display: "flex",
+              justifyContent: "space-around",
+              marginTop: "0.5rem",
+            }}
+          >
+            <Col offset={4} span={20}>
               <Button
-                size="small"
+                size="middle"
+                style={{
+                  height: "min-content",
+                  width: "6rem",
+                  borderColor: "green",
+                }}
                 onClick={() => {
                   setImg(null);
                   setFileList([]);
                 }}
               >
-                Retake Photo
+                Retake <br />
+                Photo
               </Button>
             </Col>
-            <Col span={12}>
+            <Col offset={4} span={20}>
               <Upload {...props} fileList={fileList}>
-                <Button size="small" icon={<UploadOutlined />}>
-                  Upload &nbsp;(&lt;1MB)
+                <Button
+                  size="middle"
+                  style={{
+                    height: "min-content",
+                    width: "6rem",
+                    borderColor: "brown",
+                    marginTop: "0.5rem",
+                  }}
+                  icon={<UploadOutlined />}
+                >
+                  Upload <br /> &nbsp;(&lt;1MB)
                 </Button>
               </Upload>
             </Col>

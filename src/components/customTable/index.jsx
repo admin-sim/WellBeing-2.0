@@ -1,5 +1,14 @@
 import React, { useState, useCallback } from "react";
-import { Table, Input, Space, Popconfirm, Button, ConfigProvider } from "antd";
+import {
+  Table,
+  Input,
+  Space,
+  Popconfirm,
+  Button,
+  ConfigProvider,
+  Row,
+  Col,
+} from "antd";
 import {
   EyeOutlined,
   EditOutlined,
@@ -19,13 +28,13 @@ const CustomTable = ({
   size,
   actionColumn = true,
   style,
-  scroll,
+  scroll = { x: 300 },
   title,
   rowSelection,
   rowkey,
   actionColumnName,
   loading,
- 
+  locale,
 }) => {
   const [searchText, setSearchText] = useState("");
 
@@ -89,7 +98,7 @@ const CustomTable = ({
       ),
       key: "action",
       fixed: "right",
-      width: "4rem",
+      width: "5rem",
       render: (text, record) => (
         <Space
           size="small"
@@ -131,46 +140,55 @@ const CustomTable = ({
   return (
     <div style={{ padding: "1rem 0.5rem", backgroundColor: "#fff" }}>
       {isFilter && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "end",
+        <Row
+          // style={{
+          //   display: "flex",
+          //   justifyContent: "end",
+          // }}
+
+          justify={"end"}
+        >
+          <Col xl={6} lg={7} md={8} sm={10} span={15}>
+            <Input
+              placeholder="Search in table"
+              suffix={<SearchOutlined />}
+              onChange={(e) => handleSearch(e.target.value)}
+              style={{ marginBottom: "0.8rem" }}
+            />
+          </Col>
+        </Row>
+      )}
+      <Row>
+        <ConfigProvider
+          theme={{
+            components: {
+              Table: {
+                headerBg: "#E6E6FA",
+              },
+            },
           }}
         >
-          <Input
-            placeholder="Search in table"
-            suffix={<SearchOutlined />}
-            onChange={(e) => handleSearch(e.target.value)}
-            style={{ marginBottom: "0.8rem", width: "30%" }}
-          />
-        </div>
-      )}
-      <ConfigProvider
-        theme={{
-          components: {
-            Table: {
-              headerBg: "#E6E6FA",
-            },
-          },
-        }}
-      >
-        <Table
-          loading={loading}
-          style={style}
-          columns={tableColumns}
-          size={size ? size : "small"}
-          bordered
-          pagination={{
-            showTotal: (total, range) =>
-              `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-          }}
-          rowKey={rowkey}
-          dataSource={searchedData}
-          scroll={scroll}
-          title={title}
-          rowSelection={rowSelection}
-        />
-      </ConfigProvider>
+          <Col span={24}>
+            <Table
+              loading={loading}
+              style={style}
+              columns={tableColumns}
+              size={size ? size : "small"}
+              bordered
+              pagination={{
+                showTotal: (total, range) =>
+                  `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+              }}
+              rowKey={rowkey}
+              dataSource={searchedData}
+              scroll={scroll}
+              title={title}
+              rowSelection={rowSelection}
+              locale={locale}
+            />
+          </Col>
+        </ConfigProvider>
+      </Row>
     </div>
   );
 };

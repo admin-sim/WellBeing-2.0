@@ -71,11 +71,12 @@ const PatientIssue = () => {
   }, []);
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Pending: "volcano",
-    "Partially Pending": "orange",
-    Completed: "green",
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Pending: "#F5004F",
+    "Partially Pending": "#8E3E63",
+    Finalize: "#52c41a",
+    Completed: "#FF9100",
   };
 
   const handleIndentId = (text, record, index) => {
@@ -133,18 +134,18 @@ const PatientIssue = () => {
     },
     {
       title: "Order Date",
-      dataIndex: "IndentDate",
-      key: "IndentDate",
-      sorter: (a, b) => new Date(a.IndentDate) - new Date(b.IndentDate),
+      dataIndex: "IndentDatestring",
+      key: "IndentDatestring",
+      sorter: (a, b) => new Date(a.IndentDatestring) - new Date(b.IndentDatestring),
       sortDirections: ["descend", "ascend"],
-      render: (text) => {
-        const dateParts = text.split("T")[0].split("-");
-        const year = dateParts[0];
-        const month = dateParts[1];
-        const day = dateParts[2];
+      // render: (text) => {
+      //   const dateParts = text.split("T")[0].split("-");
+      //   const year = dateParts[0];
+      //   const month = dateParts[1];
+      //   const day = dateParts[2];
 
-        return `${day}-${month}-${year}`;
-      },
+      //   return `${day}-${month}-${year}`;
+      // },
     },
     {
       title: "UHID",
@@ -180,6 +181,13 @@ const PatientIssue = () => {
       key: "IndentStatus",
       sorter: (a, b) => a.IndentStatus.localeCompare(b.IndentStatus),
       sortDirections: ["descend", "ascend"],
+      render: (text) => {
+        return (
+          <Tag color={colorMapping[`${text}`]} key={text}>
+            {text}
+          </Tag>
+        );
+      },
     },
     {
       title: "Issue Status",
@@ -187,6 +195,13 @@ const PatientIssue = () => {
       key: "IssueStatus",
       sorter: (a, b) => a.IssueStatus.localeCompare(b.IssueStatus),
       sortDirections: ["descend", "ascend"],
+      render: (text) => {
+        return (
+          <Tag color={colorMapping[`${text}`]} key={text}>
+            {text}
+          </Tag>
+        );
+      },
     },
     {
       render: (_, row) => <Button type="link">Report</Button>,
@@ -306,7 +321,7 @@ const PatientIssue = () => {
       // Handle any errors here
       console.error("Error:", error);
     }
-    setLoading(false);
+    // setLoading(false);
   };
 
   const onReset = () => {

@@ -45,22 +45,25 @@ function Templates() {
       title: "Sl No.",
       dataIndex: "key",
       key: "1",
-      width: 100,
+      width: 80,
     },
     {
       title: "Template Name",
       dataIndex: "TempName",
       key: "2",
+      width: 120,
     },
     {
       title: "Template Group",
       dataIndex: "TempGroupName",
       key: "3",
+      width: 120,
     },
     {
       title: "Provider",
       dataIndex: "ProviderName",
       key: "4",
+      width: 120,
     },
   ];
 

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import PageHeader from "../../../../components/PageHeader/index.jsx";
 import CustomTable from "../../../../components/customTable/index.jsx";
-import { useNavigate } from "react-router-dom";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import AddNewConfiguration from "./AddNewConfigurationModal.jsx";
 
@@ -14,36 +13,43 @@ function Configuration() {
       title: "Sl No",
       dataIndex: "SlNo",
       key: "1",
+      width: 80,
     },
     {
       title: "Facility Name",
       dataIndex: "FacilityName",
       key: "2",
+      width: 180,
     },
     {
       title: "Prefix",
       dataIndex: "Prefix",
       key: "3",
+      width: 80,
     },
     {
       title: "Description",
       dataIndex: "Description",
       key: "4",
+      width: 120,
     },
     {
       title: "Suffix",
       dataIndex: "Suffix",
       key: "5",
+      width: 80,
     },
     {
       title: "Initial Value",
       dataIndex: "InitialValue",
       key: "6",
+      width: 120,
     },
     {
-      title: "IncrementValue",
+      title: "Increment Value",
       dataIndex: "IncrementValue",
       key: "7",
+      width: 120,
     },
   ];
 

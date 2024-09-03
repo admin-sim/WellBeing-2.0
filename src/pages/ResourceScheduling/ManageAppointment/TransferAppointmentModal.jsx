@@ -13,13 +13,17 @@ import {
 import moment from "moment";
 import React, { useEffect, useState } from "react";
 import {
-  urlCancelSelectedAppointment,
   urlGetFutureAppointmentDateSessions,
   urlGetSlotTransferDetails,
   urlTransferSelectedAppointment,
-} from "../../../endpoints";
-import customAxios from "../../components/customAxios/customAxios";
+} from "../../../../endpoints";
+import customAxios from "../../../components/customAxios/customAxios";
 import dayjs from "dayjs";
+import { isMobile } from "react-device-detect";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+} from "../../../components/customGridColumns";
 
 function TransferAppointmentModal({
   open,
@@ -112,7 +116,7 @@ function TransferAppointmentModal({
 
   return (
     <Modal
-      width={"50%"}
+      width={"40rem"}
       title={
         <span style={{ fontSize: "1.2rem", fontWeight: "600" }}>
           Transfer Appointment
@@ -141,7 +145,6 @@ function TransferAppointmentModal({
               ...values,
               AvailableSlotDate: values?.AvailableSlotDate.format("DD-MM-YYYY"),
             };
-            console.log("form Values", values);
             try {
               const response = await customAxios.post(
                 `${urlTransferSelectedAppointment}?Id=${appointmentDetails?.AppointmentId}&AppTransfer=${values?.ReasonForTransfer}&AvailableDate=${values?.AvailableSlotDate}&StartTime=${values?.slotTime}&PatientId=${appointmentDetails?.PatientId}&ProviderId=${appointmentDetails?.ProviderId}`
@@ -186,7 +189,14 @@ function TransferAppointmentModal({
           }}
         >
           <Row>
-            <Col span={16} style={{ borderRight: "1px solid grey" }}>
+            <Col
+              xl={15}
+              lg={15}
+              md={15}
+              xs={24}
+              span={24}
+              style={!isMobile && { borderRight: "1px solid grey" }}
+            >
               <Row>
                 <Col span={12}>
                   <Col span={24}>
@@ -235,37 +245,10 @@ function TransferAppointmentModal({
                   <Col span={24}>{appointmentDetails?.Age}</Col>
                 </Col>
               </Row>
-              <Row style={{ marginTop: "1rem" }} gutter={32}>
-                <Col span={12}>
-                  <Form.Item
-                    name="ReasonForTransfer"
-                    label="Reason For Transfer"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Transfer Reason Required.",
-                      },
-                    ]}
-                  >
-                    <Select style={{ width: "100%" }}>
-                      {transferDetails?.AppointmentTransferReason?.map(
-                        (response) => (
-                          <Select.Option
-                            key={response.LookupID}
-                            value={response.LookupID}
-                          >
-                            {response.LookupDescription}
-                          </Select.Option>
-                        )
-                      )}
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row>
             </Col>
             <Divider type="vertical" style={{ height: "100%" }} />
-            <Col span={7}>
-              <Col span={24}>
+            <ColWithEightSpan>
+              <Col span={24} style={isMobile ? { marginTop: "1rem" } : {}}>
                 <Form.Item
                   name="AvailableSlotDate"
                   label="Available Slot"
@@ -298,6 +281,33 @@ function TransferAppointmentModal({
                   </Select>
                 </Form.Item>
               </Col>
+            </ColWithEightSpan>
+          </Row>
+          <Row style={isMobile ? {} : { marginTop: "1rem" }} gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="ReasonForTransfer"
+                label="Reason For Transfer"
+                rules={[
+                  {
+                    required: true,
+                    message: "Transfer Reason Required.",
+                  },
+                ]}
+              >
+                <Select style={{ width: "100%" }}>
+                  {transferDetails?.AppointmentTransferReason?.map(
+                    (response) => (
+                      <Select.Option
+                        key={response.LookupID}
+                        value={response.LookupID}
+                      >
+                        {response.LookupDescription}
+                      </Select.Option>
+                    )
+                  )}
+                </Select>
+              </Form.Item>
             </Col>
           </Row>
         </Form>

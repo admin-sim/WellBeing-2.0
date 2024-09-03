@@ -376,17 +376,38 @@ function MainLayout() {
           content={
             <>
               <Space.Compact
+                size="small"
                 direction="vertical"
-                style={{ display: "flex", alignItems: "flex-start" }}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
                 <Button
                   type="text"
-                  style={{ width: "100%", textAlign: "left" }}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "start",
+                  }}
                 >
                   <UserOutlined />
                   My Profile
                 </Button>
-                <Button type="text" style={{ width: "100%" }}>
+                <Button
+                  type="text"
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "start",
+                  }}
+                >
                   <SettingOutlined />
                   Change Password
                 </Button>
@@ -394,7 +415,13 @@ function MainLayout() {
                 <Button
                   type="text"
                   onClick={logout}
-                  style={{ width: "100%", textAlign: "left" }}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "start",
+                  }}
                 >
                   <LogoutOutlined />
                   Logout
@@ -548,6 +575,7 @@ function MainLayout() {
             <Button
               type="default"
               onClick={showDrawer}
+              className="dfja"
               style={{
                 fontSize: "1rem",
                 height: "2rem",
@@ -577,6 +605,7 @@ function MainLayout() {
               justifyContent: "flex-end",
               padding: "0 0.5rem",
               fontSize: "1rem",
+              alignItems: "center",
             }}
           />
         </Header>

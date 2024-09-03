@@ -6,6 +6,7 @@ import {
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import CustomTable from "../../components/customTable/index.jsx";
 import {
   Spin,
   Skeleton,
@@ -26,7 +27,10 @@ import {
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
 
-import { urlGetPurshaseOrderDetails, urlSearchAcknowledgeReturn } from "../../../endpoints.js";
+import {
+  urlGetPurshaseOrderDetails,
+  urlSearchAcknowledgeReturn,
+} from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
@@ -53,15 +57,16 @@ const AcknowledageReturn = () => {
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
-    form.submit()
+    form.submit();
   }, []);
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Pending: "volcano",
-    "Partially Pending": "orange",
-    Completed: "green",
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Pending: "#F5004F",
+    "Partially Pending": "#8E3E63",
+    Finalize: "#52c41a",
+    Completed: "#FF9100",
   };
 
   const GetModelDetails = (record) => {
@@ -94,7 +99,7 @@ const AcknowledageReturn = () => {
       sorter: (a, b) => a.ReturnDate.localeCompare(b.ReturnDate),
       sortDirections: ["descend", "ascend"],
       render: (text) => {
-        const dateParts = text.split('T')[0].split('-');
+        const dateParts = text.split("T")[0].split("-");
         const year = dateParts[0];
         const month = dateParts[1];
         const day = dateParts[2];
@@ -109,19 +114,19 @@ const AcknowledageReturn = () => {
       render: (text) => {
         // Check if the date is null or undefined
         if (!text) {
-          return '-'; // Return a placeholder or empty string for null values
+          return "-"; // Return a placeholder or empty string for null values
         }
-    
+
         // Split and format the date if it exists
-        const dateParts = text.split('T')[0].split('-');
+        const dateParts = text.split("T")[0].split("-");
         const year = dateParts[0];
         const month = dateParts[1];
         const day = dateParts[2];
-    
+
         return `${day}-${month}-${year}`;
       },
     },
-    
+
     {
       title: "Returned Store",
       dataIndex: "ReturnStoreName",
@@ -163,24 +168,28 @@ const AcknowledageReturn = () => {
       dataIndex: "Report",
       key: "Report",
       render: (record) => {
-        return <Button type="link">Report</Button>
-      }
+        return <Button type="link">Report</Button>;
+      },
     },
   ];
   const onFinish = async (values) => {
     debugger;
-   
+
     try {
       const postData1 = {
-     
-
-        ReturnID :values.ReturnID ? values.ReturnID : "",
-        ReturnedStore :values.ReturnedStore ? values.ReturnedStore : 0,
-        AcknowledgingStore : values.AcknowledgingStore ? values.AcknowledgingStore : 0,
-        AcknowledgeStatus : values.AcknowledgeStatus ?  values.AcknowledgeStatus : "",
-        ReturnStatus : values.ReturnStatus ? values.ReturnStatus : "",
-        FromDateString : values.FromDate ? values.FromDate.format("DD-MM-YYYY") : null,
-        ToDateString : values.ToDate ? values.ToDate.format("DD-MM-YYYY") : null,
+        ReturnID: values.ReturnID ? values.ReturnID : "",
+        ReturnedStore: values.ReturnedStore ? values.ReturnedStore : 0,
+        AcknowledgingStore: values.AcknowledgingStore
+          ? values.AcknowledgingStore
+          : 0,
+        AcknowledgeStatus: values.AcknowledgeStatus
+          ? values.AcknowledgeStatus
+          : "",
+        ReturnStatus: values.ReturnStatus ? values.ReturnStatus : "",
+        FromDateString: values.FromDate
+          ? values.FromDate.format("DD-MM-YYYY")
+          : null,
+        ToDateString: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : null,
       };
       customAxios
         .get(
@@ -196,13 +205,11 @@ const AcknowledageReturn = () => {
         .then((response) => {
           debugger;
           setFilteredData(response.data.data.AcknowledgeReturnDetails);
-        })
+        });
     } catch (error) {
-      // Handle any errors here      
+      // Handle any errors here
     }
   };
-  
-  
 
   const onReset = () => {
     form.resetFields();
@@ -305,10 +312,7 @@ const AcknowledageReturn = () => {
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
-                <Form.Item
-                  label="Acknowledage Status"
-                  name="AcknowledgeStatus"
-                >
+                <Form.Item label="Acknowledage Status" name="AcknowledgeStatus">
                   <Select>
                     <Select.Option key={0} value={0}>
                       All
@@ -365,13 +369,35 @@ const AcknowledageReturn = () => {
               </Col>
             </Row>
           </Form>
+          <Spin spinning={loading}>
+            <CustomTable
+              dataSource={filteredData}
+              columns={columns}
+              isFilter={true}
+              actionColumn={false}
+              bordered
+            />
+          </Spin>
+          {/* <Table
+            display={setIsTable}
+            dataSource={filteredData}
+            columns={columns}
+            pagination={{
+              onChange: (current, pageSize) => {
+                setPage(current);
+                setPaginationSize(pageSize);
+              },
+              defaultPageSize: 5,
+              hideOnSinglePage: true,
+              showSizeChanger: true,
+              showTotal: (total, range) =>
+                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+            }}
+            rowKey={(row) => row.AppUserId}
+            size="small"
+            bordered
+          /> */}
         </Card>
-        <Table
-          dataSource={filteredData}
-          columns={columns}
-          size="small"
-          bordered
-        />
       </div>
     </Layout>
   );

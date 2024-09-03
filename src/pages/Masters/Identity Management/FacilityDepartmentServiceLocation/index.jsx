@@ -6,6 +6,7 @@ import { PlusCircleOutlined } from "@ant-design/icons";
 import ServiceLocationModal from "./ServiceLocationModal.jsx";
 import ProviderModal from "./ProviderModal.jsx";
 import PatientTypeModal from "./PatientTypeModal.jsx";
+import { ColWithEightSpan } from "../../../../components/customGridColumns/index.jsx";
 
 function FacilityDepartmentServiceLocation() {
   const [form] = Form.useForm();
@@ -175,25 +176,26 @@ function FacilityDepartmentServiceLocation() {
             console.log(values);
           }}
         >
-          <Row gutter={32}>
-            <Col span={8}>
+          <Row gutter={16}>
+            <ColWithEightSpan>
               <Form.Item name="FacilityName" label="Facility Name" required>
                 <Select />
               </Form.Item>
-            </Col>
-            <Col span={8}>
+            </ColWithEightSpan>
+            <ColWithEightSpan>
               <Form.Item name="DepartmentName" label="Department Name" required>
                 <Select />
               </Form.Item>
-            </Col>
+            </ColWithEightSpan>
           </Row>
         </Form>
-        <Row gutter={32} style={{ margin: "0rem" }}>
-          <Col span={8}>
+        <Row gutter={24} style={{ margin: "0 0.5rem" }}>
+          <ColWithEightSpan>
             <div
               style={{
                 border: "1px solid #D3D3D3",
                 borderRadius: "10px 10px 0 0",
+                marginBottom: "1rem",
               }}
             >
               <PageHeader
@@ -207,12 +209,13 @@ function FacilityDepartmentServiceLocation() {
                 onEdit={handleServiceLocationEdit}
               />
             </div>
-          </Col>
-          <Col span={8}>
+          </ColWithEightSpan>
+          <ColWithEightSpan>
             <div
               style={{
                 border: "1px solid #D3D3D3",
                 borderRadius: "10px 10px 0 0",
+                marginBottom: "1rem",
               }}
             >
               <PageHeader
@@ -226,12 +229,13 @@ function FacilityDepartmentServiceLocation() {
                 onEdit={handleProviderEdit}
               />
             </div>
-          </Col>
-          <Col span={8}>
+          </ColWithEightSpan>
+          <ColWithEightSpan>
             <div
               style={{
                 border: "1px solid #D3D3D3",
                 borderRadius: "10px 10px 0 0",
+                marginBottom: "1rem",
               }}
             >
               <PageHeader
@@ -245,7 +249,7 @@ function FacilityDepartmentServiceLocation() {
                 onEdit={handlePatientTypeEdit}
               />
             </div>
-          </Col>
+          </ColWithEightSpan>
         </Row>
         <ServiceLocationModal
           open={serviceLocationModal}

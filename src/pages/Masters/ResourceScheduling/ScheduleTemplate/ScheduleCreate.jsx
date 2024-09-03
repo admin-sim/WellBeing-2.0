@@ -19,6 +19,13 @@ import {
   urlGetScheduleTemplateDetailsBasedOnId,
 } from "../../../../../endpoints";
 import customAxios from "../../../../components/customAxios/customAxios";
+import PageHeader from "../../../../components/PageHeader";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+  ColWithThreeSpan,
+} from "../../../../components/customGridColumns";
+import { JsonRequestError } from "fullcalendar/index.js";
 
 function ScheduleCreateOrUpdate() {
   const [form] = Form.useForm();
@@ -121,34 +128,16 @@ function ScheduleCreateOrUpdate() {
           borderRadius: "10px",
         }}
       >
-        <Row
-          style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
-          }}
+        <PageHeader title={"Create Template"} button={false} />
+
+        <Form
+          layout="vertical"
+          form={form}
+          onFinish={handleSessionsForms}
+          style={{ margin: "1rem" }}
         >
-          <Col span={16}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              Create Template
-            </Title>
-          </Col>
-        </Row>
-        <Form layout="vertical" form={form} onFinish={handleSessionsForms}>
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-            style={{ margin: "20px 0px" }}
-            // style={{ height: "1.8rem", paddingBottom: "2rem" }}
-          >
-            <Col span={6}>
+          <Row gutter={16}>
+            <ColWithSixSpan>
               <Form.Item
                 name="TemplateName"
                 label="Template Name"
@@ -156,8 +145,8 @@ function ScheduleCreateOrUpdate() {
               >
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-            </Col>
-            <Col span={6}>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
               <Form.Item
                 name="NumOfSessions"
                 label="No. of sessions"
@@ -167,31 +156,39 @@ function ScheduleCreateOrUpdate() {
               >
                 <Input style={{ width: "100%" }} />
               </Form.Item>
-            </Col>
-            <Col span={3} style={{ margin: "30px 0px" }}>
-              <Form.Item>
+            </ColWithSixSpan>
+            <ColWithThreeSpan
+              // xl={6}
+              // lg={6}
+              // md={6}
+              // sm={24}
+              // xs={24}
+              // span={6}
+              style={{
+                display: "flex",
+                alignItems: "end",
+                justifyContent: "space-around",
+              }}
+            >
+              <Form.Item style={{ marginRight: "1rem" }}>
                 <Button type="primary" htmlType="submit">
                   Add Sessions
                 </Button>
               </Form.Item>
-            </Col>
-            {!addSession && (
-              <Col span={2} style={{ margin: "30px 0px" }}>
+
+              {!addSession && (
                 <Form.Item>
-                  <Button type="default" onClick={handleBack}>
+                  <Button type="default" danger onClick={handleBack}>
                     Back
                   </Button>
                 </Form.Item>
-              </Col>
-            )}
+              )}
+            </ColWithThreeSpan>
           </Row>
           {addSession && (
             <>
               <Row>
-                <Col
-                  span={24}
-                  style={{ margin: "0px 10px", padding: "4px 20px" }}
-                >
+                <Col span={24}>
                   <SessionsForms
                     numForms={NumOfForms}
                     form={form}
@@ -200,15 +197,8 @@ function ScheduleCreateOrUpdate() {
                   ></SessionsForms>
                 </Col>
               </Row>
-              <Row
-                gutter={32}
-                style={{
-                  height: "1.8rem",
-                  paddingBottom: "2rem",
-                  margin: "20px 0px",
-                }}
-              >
-                <Col offset={20} span={2}>
+              <Row justify={"end"}>
+                <Col style={{ marginRight: "1rem" }}>
                   <Form.Item>
                     <Button
                       type="primary"
@@ -219,9 +209,9 @@ function ScheduleCreateOrUpdate() {
                     </Button>
                   </Form.Item>
                 </Col>
-                <Col span={2} style={{ paddingLeft: "0px" }}>
+                <Col>
                   <Form.Item>
-                    <Button type="default" onClick={handleBack}>
+                    <Button type="default" danger onClick={handleBack}>
                       Cancel
                     </Button>
                   </Form.Item>

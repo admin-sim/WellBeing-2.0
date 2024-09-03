@@ -1,6 +1,7 @@
 import customAxios from "../../components/customAxios/customAxios.jsx";
 import React, { useCallback, useEffect, useState } from "react";
 import Button from "antd/es/button";
+import CustomTable from "../../components/customTable/index.jsx";
 import {
   urlCreatePurchaseOrder,
   urlAutocompleteProduct,
@@ -17,7 +18,7 @@ import {
   Checkbox,
   Tag,
   Modal,
-  Skeleton,
+  Card,
   Popconfirm,
   Spin,
   Col,
@@ -58,17 +59,17 @@ const CreateUrgentIssue = () => {
   const initialDataSource =
     issueId === 0
       ? [
-          {
-            key: counter,
-            ProductName: "",
-            ProductId: "",
-            UomId: "",
-            IssueQty: "",
-            AvlQtyatIssue: "",
-            Remarks: "",
-            ActiveFlag: true,
-          },
-        ]
+        {
+          key: counter,
+          ProductName: "",
+          ProductId: "",
+          UomId: "",
+          IssueQty: "",
+          AvlQtyatIssue: "",
+          Remarks: "",
+          ActiveFlag: true,
+        },
+      ]
       : [];
 
   const [form1] = Form.useForm();
@@ -231,7 +232,7 @@ const CreateUrgentIssue = () => {
     setCounter(counter + 1);
   };
 
-  
+
   const OpenBatch = async (record) => {
     debugger;
     try {
@@ -239,12 +240,12 @@ const CreateUrgentIssue = () => {
       await form1.validateFields();
       form2.resetFields();
       const formValues = form1.getFieldsValue();
-  
+
       // Update the record with the form value
       record.IssueQty = formValues[record.key].IssueQty;
       setProductDetails(record);
       setBatchRecord(record);
-  
+
       // Construct the product object
       const product = {
         IssueQty: record.IssueQty,
@@ -252,16 +253,16 @@ const CreateUrgentIssue = () => {
         IssueId: formValues.IssueingStoreId,
         StoreId: formValues.IssueingStoreId,
       };
-  
+
       // Filter dataModel based on ProductId and ActiveFlag
       const filteredDataModel = dataModal.filter(
         (item) =>
-          item.ProductId === record.ProductId 
+          item.ProductId === record.ProductId
         // &&
         //   item.ActiveFlag === true &&
         //   item.IssueBatchId > 0
       );
-  
+
       // Construct the post object
       const post1 = {
         newIndentModel: product,
@@ -277,18 +278,18 @@ const CreateUrgentIssue = () => {
           },
         }
       );
-  
+
       const ApiData = response.data.data;
- 
+
       setBatchDetails(ApiData.BatchDetails);
       ///setModalCounter(ApiData.BatchDetails.length + 1);
-  
+
       // Process batch data
       if (ApiData.Batch.length > 0) {
         const batch = ApiData.Batch.map((item, index) => {
           if (
             item.ProductId ===
-              ApiData.ProductDefinitionModel.ProductDefinitionId &&
+            ApiData.ProductDefinitionModel.ProductDefinitionId &&
             item.ActiveFlag !== false
           ) {
             if (item.IssueBatchId !== 0) {
@@ -311,7 +312,7 @@ const CreateUrgentIssue = () => {
 
         // Append the new filteredDataModel to the updated final batch details
         setDataModal([...updatedbatch, ...batch]);
-       // setDataModal(batch);
+        // setDataModal(batch);
       } else {
         // Calculate quantities and amounts based on batch details
         const calculateQuantitiesAndAmounts = (issueQty) => {
@@ -322,7 +323,7 @@ const CreateUrgentIssue = () => {
           const updatedBatchDetails = sortedBatchDetails.map((item) => {
             let qty = 0;
             let amount = 0;
-  
+
             if (!item.IsProductBatchExpired && totalQty < issueQty) {
               qty = Math.min(item.BalanceQty, issueQty - totalQty);
               totalQty += qty;
@@ -332,11 +333,11 @@ const CreateUrgentIssue = () => {
           });
           return updatedBatchDetails.filter((item) => item.qty > 0);
         };
-  
+
         const updatedBatch = calculateQuantitiesAndAmounts(record.IssueQty).map(
           (item, index) => ({
             ...item,
-            key:  uuidv4(),
+            key: uuidv4(),
             IssueQty: item.qty, // Update IssueQty with qty
             IssueRate: item.MRP,
             LineAmount: item.amount,
@@ -344,7 +345,7 @@ const CreateUrgentIssue = () => {
             RequestQty: item.qty,
           })
         );
-  
+
         // Reset the form with the new values
         form2.setFieldsValue(
           updatedBatch.reduce((acc, item) => {
@@ -363,19 +364,19 @@ const CreateUrgentIssue = () => {
             return acc;
           }, {})
         );
-  
+
         setDataModal((prevDataModel) => {
           return [...prevDataModel, ...updatedBatch];
         });
       }
-  
+
       setIsModelOpen(true);
     } catch (error) {
       console.error("Error in OpenBatch:", error);
       // Optionally, show a user-friendly message or perform other error handling
     }
   };
- 
+
   const BatchSelect = (selectedStockId, recordKey) => {
     debugger;
 
@@ -396,21 +397,21 @@ const CreateUrgentIssue = () => {
       const updatedDataModel = dataModal.map((item) =>
         item.key === recordKey
           ? {
-              ...item,
-              BatchNo: selectedBatch.BatchNo,
-              StockId: selectedBatch.StockId,
-              IssueBatchId: selectedBatch.IssueBatchId,
-              IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
-              IssueRate: selectedBatch.MRP,
-              //LineAmount:item.LineAmount,
-              BalanceQty: selectedBatch.BalanceQty,
-              EXPDate: selectedBatch.EXPDate
-                ? dayjs(selectedBatch.EXPDate)
-                : null,
-              MRP: selectedBatch.MRP,
-              // qty:item.qty,
-              amount: selectedBatch.amount,
-            }
+            ...item,
+            BatchNo: selectedBatch.BatchNo,
+            StockId: selectedBatch.StockId,
+            IssueBatchId: selectedBatch.IssueBatchId,
+            IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
+            IssueRate: selectedBatch.MRP,
+            //LineAmount:item.LineAmount,
+            BalanceQty: selectedBatch.BalanceQty,
+            EXPDate: selectedBatch.EXPDate
+              ? dayjs(selectedBatch.EXPDate)
+              : null,
+            MRP: selectedBatch.MRP,
+            // qty:item.qty,
+            amount: selectedBatch.amount,
+          }
           : item
       );
       // setDataModel(updatedDataModel);
@@ -443,9 +444,9 @@ const CreateUrgentIssue = () => {
 
   const handleOnFinish = async (values) => {
     debugger;
-   
+
     const newdata = data.filter((item) => item.ProductId && item.ActiveFlag);
-    if(newdata.length===0){
+    if (newdata.length === 0) {
       message.warning("Please Add Product");
       return false;
     }
@@ -471,7 +472,7 @@ const CreateUrgentIssue = () => {
     const sumItems = (items, key) =>
       items.reduce((sum, item) => sum + parseInt(item[key] || 0, 10), 0);
 
-  
+
     const defaultDateTime = new Date().toISOString();
     const finalBatchDetailsWithDefaultExpdate = dataModal.map((batch) => ({
       ...batch,
@@ -487,60 +488,60 @@ const CreateUrgentIssue = () => {
       message.warning("Please enter valid batch details..");
       return false;
     }
-    
-     
-      const UrgentIssue = {
-        IssueDateString: values.IssuingDate
-          ? values.IssuingDate.format("DD-MM-YYYY")
-          : "",
-        RequestingStoreId: values.RequestingStoreId,
-        IssueingStoreId: values.IssueingStoreId,
-        IssueId: values.IssueId ? values.IssueId : 0,
-        IssueStatus: !issueStatus ? "Created" : values.IssueStatus,
-        Remarks: values.Remarks ? values.Remarks : "",
-      };
-    
+
+
+    const UrgentIssue = {
+      IssueDateString: values.IssuingDate
+        ? values.IssuingDate.format("DD-MM-YYYY")
+        : "",
+      RequestingStoreId: values.RequestingStoreId,
+      IssueingStoreId: values.IssueingStoreId,
+      IssueId: values.IssueId ? values.IssueId : 0,
+      IssueStatus: !issueStatus ? "Created" : values.IssueStatus,
+      Remarks: values.Remarks ? values.Remarks : "",
+    };
+
 
     const filteredBatchDataModel = finalBatchDetailsWithDefaultExpdate
-    .filter((item) => {
-      if (item.IssueBatchId > 0) {
-        return true; // include all items with IssueBatchId > 0
-      } else {
-        return item.ActiveFlag === true; // only include items with IssueBatchId = 0 or null and ActiveFlag = true
-      }
-    })
+      .filter((item) => {
+        if (item.IssueBatchId > 0) {
+          return true; // include all items with IssueBatchId > 0
+        } else {
+          return item.ActiveFlag === true; // only include items with IssueBatchId = 0 or null and ActiveFlag = true
+        }
+      })
 
-      const postData = {
-        newIndentModel: UrgentIssue,
-        IndentDetails:
-          issueId === 0
-            ? activeProducts
-            : products.filter(
-                (product) =>
-                  product.IndentIssueLineId > 0 ||
-                  (product.IndentIssueLineId === 0 &&
-                    product.ActiveFlag === true)
-              ),
+    const postData = {
+      newIndentModel: UrgentIssue,
+      IndentDetails:
+        issueId === 0
+          ? activeProducts
+          : products.filter(
+            (product) =>
+              product.IndentIssueLineId > 0 ||
+              (product.IndentIssueLineId === 0 &&
+                product.ActiveFlag === true)
+          ),
 
-        Batch: issueId === 0 ? activeItems : filteredBatchDataModel,
-      };
-      console.log("postData", postData);
-      try {
-        const response = await customAxios.post(
-          urlAddNewUrgentIssue,
-          postData,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+      Batch: issueId === 0 ? activeItems : filteredBatchDataModel,
+    };
+    console.log("postData", postData);
+    try {
+      const response = await customAxios.post(
+        urlAddNewUrgentIssue,
+        postData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-        handleCancel();
-      } catch (error) {
-        // Handle error
-      }
-     
+      handleCancel();
+    } catch (error) {
+      // Handle error
+    }
+
   };
 
   const onFinishModel = async () => {
@@ -783,8 +784,8 @@ const CreateUrgentIssue = () => {
         );
       },
     }
-    
-    
+
+
   ];
 
   const handleDelete = (record) => {
@@ -805,7 +806,7 @@ const CreateUrgentIssue = () => {
     setDataModal(newDataModel);
   };
 
-  
+
 
   const BatchAdd = async () => {
     await form2.validateFields();
@@ -826,7 +827,7 @@ const CreateUrgentIssue = () => {
         IssueRate: 0,
         Stocklocator: 0,
         IssueBatchId: 0,
-        amount:0,
+        amount: 0,
         ActiveFlag: true,
       },
     ]);
@@ -851,12 +852,12 @@ const CreateUrgentIssue = () => {
       prevDataModel.map((item) =>
         item.key === key
           ? {
-              ...item,
-              amount: amount.toFixed(4),
-              qty: qty,
-              IssueQty: qty,
-              LineAmount: amount,
-            }
+            ...item,
+            amount: amount.toFixed(4),
+            qty: qty,
+            IssueQty: qty,
+            LineAmount: amount,
+          }
           : item
       )
     );
@@ -883,56 +884,56 @@ const CreateUrgentIssue = () => {
             style={{ width: 100 }}
             disabled={record?.IssueBatchId > 0}
             onChange={(value) => BatchSelect(value, record.key)}
-            // onSelect={(value, option) => {
-            //   const selectedBatch = batchDetails.find(
-            //     (batch) => batch.StockId === value
-            //   );
+          // onSelect={(value, option) => {
+          //   const selectedBatch = batchDetails.find(
+          //     (batch) => batch.StockId === value
+          //   );
 
-     
-            //   record.StockId = selectedBatch.StockId;
-            //   record.IssueBatchId = selectedBatch.IssueBatchId;
-            //   record.IssueQty = selectedBatch.IssueQty; // Set IssueQty with qty
-            //   record.BatchNo = selectedBatch.BatchNo;
-            //   //record.BalanceQty = selectedBatch.BalanceQty;
-            //   record.EXPDate = selectedBatch.EXPDate
-            //     ? dayjs(selectedBatch.EXPDate)
-            //     : null;
-            //   record.IssueRate = selectedBatch.MRP;
-            //   record.MRP = selectedBatch.MRP;
-            //   record.amount = selectedBatch.amount;
 
-            //   // Update the form with new values
-            //   form2.setFieldsValue({
-            //     [record.key]: {
-            //       StockId: selectedBatch.StockId,
-            //       IssueBatchId: selectedBatch.IssueBatchId,
-            //       IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
-            //       BatchNo: selectedBatch.BatchNo,
-            //       // LineAmount:item.LineAmount,
-            //       BalanceQty: selectedBatch.BalanceQty,
-            //       EXPDate: selectedBatch.EXPDate
-            //         ? dayjs(selectedBatch.EXPDate)
-            //         : undefined,
-            //       IssueRate: selectedBatch.MRP,
-            //       //qty:selectedBatch.qty,
-            //       amount: 0.0,
-            //     },
-            //   });
+          //   record.StockId = selectedBatch.StockId;
+          //   record.IssueBatchId = selectedBatch.IssueBatchId;
+          //   record.IssueQty = selectedBatch.IssueQty; // Set IssueQty with qty
+          //   record.BatchNo = selectedBatch.BatchNo;
+          //   //record.BalanceQty = selectedBatch.BalanceQty;
+          //   record.EXPDate = selectedBatch.EXPDate
+          //     ? dayjs(selectedBatch.EXPDate)
+          //     : null;
+          //   record.IssueRate = selectedBatch.MRP;
+          //   record.MRP = selectedBatch.MRP;
+          //   record.amount = selectedBatch.amount;
 
-            //   // Update the data source
-            //   const updatedDataModal = dataModal.map((item) => {
-            //     if (item.key === record.key) {
-            //       return {
-            //         ...item,
-            //         ...record, // update with new record details
-            //       };
-            //     }
-            //     return item;
-            //   });
+          //   // Update the form with new values
+          //   form2.setFieldsValue({
+          //     [record.key]: {
+          //       StockId: selectedBatch.StockId,
+          //       IssueBatchId: selectedBatch.IssueBatchId,
+          //       IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
+          //       BatchNo: selectedBatch.BatchNo,
+          //       // LineAmount:item.LineAmount,
+          //       BalanceQty: selectedBatch.BalanceQty,
+          //       EXPDate: selectedBatch.EXPDate
+          //         ? dayjs(selectedBatch.EXPDate)
+          //         : undefined,
+          //       IssueRate: selectedBatch.MRP,
+          //       //qty:selectedBatch.qty,
+          //       amount: 0.0,
+          //     },
+          //   });
 
-            //   // Update the data source state
-            //   setDataModal(updatedDataModal);
-            // }}
+          //   // Update the data source
+          //   const updatedDataModal = dataModal.map((item) => {
+          //     if (item.key === record.key) {
+          //       return {
+          //         ...item,
+          //         ...record, // update with new record details
+          //       };
+          //     }
+          //     return item;
+          //   });
+
+          //   // Update the data source state
+          //   setDataModal(updatedDataModal);
+          // }}
           >
             {batchDetails.map((option) => (
               <Select.Option key={option.StockId} value={option.StockId}>
@@ -1007,7 +1008,8 @@ const CreateUrgentIssue = () => {
       width: 100,
       render: (text, record) => (
         <Form.Item name={[record.key, "UomId"]} initialValue={record.UomId}>
-          {record.Uom}
+          <Tag color="#7C00FE">{record.Uom}</Tag>
+          {/* {record.Uom} */}
         </Form.Item>
       ),
     },
@@ -1030,8 +1032,8 @@ const CreateUrgentIssue = () => {
               batchRecord.Expiry === "Month wise"
                 ? "MMMM YYYY"
                 : batchRecord.Expiry === "Date wise"
-                ? "DD-MM-YYYY"
-                : null
+                  ? "DD-MM-YYYY"
+                  : null
             }
             disabled
             style={{ width: "100%" }}
@@ -1119,8 +1121,6 @@ const CreateUrgentIssue = () => {
     };
   };
 
-  
-
   const handleSaveModal = () => {
     form2.submit();
   };
@@ -1179,147 +1179,160 @@ const CreateUrgentIssue = () => {
             </Button>
           </Col>
         </Row>
-        <Form
-          layout="vertical"
-          onFinish={handleOnFinish}
-          variant="outlined"
-          style={{
-            maxWidth: 1500,
-          }}
-          name="trigger"
-          form={form1}
-          initialValues={{
-            IssuingDate: dayjs(),
-            SubmitCheck: false,
-          }}
-        >
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} align="Bottom">
-            <Col className="gutter-row" span={4}>
-              <Form.Item label="Issuing Date" name="IssuingDate">
-                <DatePicker
-                  style={{ width: "100%" }}
-                  disabled
-                  format="DD-MM-YYYY"
-                />
-              </Form.Item>
-              <Form.Item name="IssueId" hidden>
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={4}>
-              <Form.Item
-                label="Issuing Store"
-                name="IssueingStoreId"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please input!",
-                  },
-                ]}
-              >
-                <Select
-                  //allowClear
-                  placeholder="Select Value"
-                  onChange={handleStore}
-                  disabled={!!issueId}
+        <Card>
+          <Form
+            layout="vertical"
+            onFinish={handleOnFinish}
+            variant="outlined"
+            style={{
+              maxWidth: 1500,
+            }}
+            name="trigger"
+            form={form1}
+            initialValues={{
+              IssuingDate: dayjs(),
+              SubmitCheck: false,
+            }}
+          >
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+              style={{ padding: "1rem 0.5rem", marginBottom: "0" }}
+              align="Bottom">
+              <Col className="gutter-row" span={4}>
+                <Form.Item label="Issuing Date" name="IssuingDate">
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    disabled
+                    format="DD-MM-YYYY"
+                  />
+                </Form.Item>
+                <Form.Item name="IssueId" hidden>
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={4}>
+                <Form.Item
+                  label="Issuing Store"
+                  name="IssueingStoreId"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
                 >
-                  {DropDown.StoreDetails.map((option) => (
-                    <Select.Option key={option.StoreId} value={option.StoreId}>
-                      {option.LongName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={4}>
-              <Form.Item
-                label="Requesting Location"
-                name="RequestingStoreId"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please input!",
-                  },
-                ]}
-              >
-                <Select
-                  //allowClear
-                  placeholder="Select Value"
-                  onChange={handleStore}
-                  disabled={!!issueId}
+                  <Select
+                    //allowClear
+                    placeholder="Select Value"
+                    onChange={handleStore}
+                    disabled={!!issueId}
+                  >
+                    {DropDown.StoreDetails.map((option) => (
+                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                        {option.LongName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={4}>
+                <Form.Item
+                  label="Requesting Location"
+                  name="RequestingStoreId"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
                 >
-                  {DropDown.StoreDetails.map((option) => (
-                    <Select.Option key={option.StoreId} value={option.StoreId}>
-                      {option.LongName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <Form.Item label="Issue Owner" name="IssueOwner">
-                <Input style={{ width: "100%" }} allowClear />
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={3}>
-              <Form.Item
-                label="Issue Status"
-                name="IssueStatus"
-                rules={[
-                  {
-                    required: issueStatus,
-                    message: "Please input!",
-                  },
-                ]}
-              >
-                <Select allowClear placeholder="Select Value">
-                  <Option value="Draft">Draft</Option>
-                  <Option value="Finalize">Finalize</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={3}>
-              <Form.Item
-                name="SubmitCheck"
-                style={{ marginTop: "30px" }}
-                valuePropName="checked"
-              >
-                <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={9}>
-              <Form.Item label="Remarks" name="Remarks">
-                <TextArea />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row justify="end" style={{ padding: "0rem 1rem" }}>
-            <Col style={{ marginRight: "10px" }}>
-              <Form.Item>
-                <Button type="primary" htmlType="submit">
-                  {buttonTitle}
-                </Button>
-              </Form.Item>
-            </Col>
-            <Col>
-              <Form.Item>
-                <Button type="primary" onClick={handleCancel}>
-                  Cancel
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Divider style={{ marginTop: "0" }}></Divider>
-          {istablevisible ? (
-            <div>
-              <Table
+                  <Select
+                    //allowClear
+                    placeholder="Select Value"
+                    onChange={handleStore}
+                    disabled={!!issueId}
+                  >
+                    {DropDown.StoreDetails.map((option) => (
+                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                        {option.LongName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item label="Issue Owner" name="IssueOwner">
+                  <Input style={{ width: "100%" }} allowClear />
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={3}>
+                <Form.Item
+                  label="Issue Status"
+                  name="IssueStatus"
+                  rules={[
+                    {
+                      required: issueStatus,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Select allowClear placeholder="Select Value">
+                    <Option value="Draft">Draft</Option>
+                    <Option value="Finalize">Finalize</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={3}>
+                <Form.Item
+                  name="SubmitCheck"
+                  style={{ marginTop: "30px" }}
+                  valuePropName="checked"
+                >
+                  <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={9}>
+                <Form.Item label="Remarks" name="Remarks">
+                  <TextArea />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row justify="end" style={{ padding: "0rem 1rem" }}>
+              <Col style={{ marginRight: "10px" }}>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit">
+                    {buttonTitle}
+                  </Button>
+                </Form.Item>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button type="primary" onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Divider style={{ marginTop: "0" }}></Divider>
+            {/* <Spin spinning={loading}> */}
+            {istablevisible ? (
+              <CustomTable
+                dataSource={data?.filter((item) => item.ActiveFlag !== false)}
                 columns={columns}
-                dataSource={data?.filter((item) => item?.ActiveFlag !== false)}
-                scroll={{ x: 0 }}
+                isFilter={false}
+                actionColumn={false}
+                bordered
               />
-            </div>
-          ) : null}
-        </Form>
+              // <div>
+              //   <Table
+              //     columns={columns}
+              //     dataSource={data?.filter((item) => item?.ActiveFlag !== false)}
+              //     scroll={{ x: 0 }}
+              //   />
+              // </div>
+            ) : null}
+            {/* </Spin> */}
+          </Form>
+        </Card>
         <Modal
           width={1000}
           maskClosable={false}
@@ -1349,25 +1362,27 @@ const CreateUrgentIssue = () => {
             form={form2}
           >
             <Row>
-              <Col className="gutter-row" span={12}>
-                <div>
+              <Col className="gutter-row" span={8}>
+                <Tag color="#1890ff">Product: {productDetails?.ProductName}</Tag>
+                {/* <div>
                   <span>
                     Product :{" "}
                     <b style={{ color: "#1677ff" }}>
                       {productDetails?.ProductName}
                     </b>{" "}
                   </span>
-                </div>
+                </div> */}
               </Col>
               <Col className="gutter-row" span={12}>
-                <div>
+                <Tag color="#52c41a">Recieved Qty: {productDetails?.IssueQty}</Tag>
+                {/* <div>
                   <span>
                     Issued Quantity :{" "}
                     <b style={{ color: "#1677ff" }}>
                       {productDetails?.IssueQty}
                     </b>{" "}
                   </span>
-                </div>
+                </div> */}
               </Col>
             </Row>
             <Table
@@ -1376,11 +1391,11 @@ const CreateUrgentIssue = () => {
               dataSource={
                 batchRecord?.ProductId
                   ? dataModal.filter(
-                      (item) =>
-                        (item.ProductId == batchRecord.ProductId &&
-                          item.ActiveFlag) ||
-                        (item.ProductId == "" && item.ActiveFlag)
-                    )
+                    (item) =>
+                      (item.ProductId == batchRecord.ProductId &&
+                        item.ActiveFlag) ||
+                      (item.ProductId == "" && item.ActiveFlag)
+                  )
                   : []
               }
               size="small"

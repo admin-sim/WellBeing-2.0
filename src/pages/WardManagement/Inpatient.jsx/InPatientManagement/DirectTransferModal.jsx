@@ -22,37 +22,19 @@ import { FcDocument, FcInfo, FcOpenedFolder } from "react-icons/fc";
 import { DollarTwoTone, FolderOpenTwoTone } from "@ant-design/icons";
 import PatientHeader from "../../../../components/PatientHeader";
 import customAxios from '../../../../components/customAxios/customAxios.jsx'
-import { urlGetBeds, urlSaveModal, urlGetServiceLocation } from "../../../../../endpoints.js";
+import { urlSaveModal } from "../../../../../endpoints.js";
 import dayjs from "dayjs";
 
 
-function DirectTransferModal({ bed, patient, Dropdown, open, handleClose }) {
+function DirectTransferModal({ bed, patient, Dropdown, open, handleClose, handleDropdown }) {
   const [form] = Form.useForm();
   const [beds, setBeds] = useState([])
+  const [bedNumber, setBedNumber] = useState()
   const [blockChecked, setBlockChecked] = useState(false)
-  const [dropdown, setDropdown] = useState(Dropdown)
-  console.log("bed info", bed);
   const handleCancel = () => {
     form.resetFields();
     handleClose();
   };
-
-  const GetBeds = async (value) => {
-    setBeds([])
-    try {
-      const response = await customAxios.get(
-        `${urlGetBeds}?WardId=${value}&ID=${1}`
-      );
-      if (response.status === 200 && response.data.data != null) {
-        const detailsheader = response.data.data.EncounterModel;
-        setBeds(response.data.data.Beds);
-      } else {
-        console.error("Failed to fetch patient details");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  }
 
   const Block = (event) => {
     setBlockChecked(event.target.checked)
@@ -73,7 +55,7 @@ function DirectTransferModal({ bed, patient, Dropdown, open, handleClose }) {
       PatientID: values.PatientId,
       AdtType: 'Direct',
       AdtStatus: 'Direct',
-      RetainBed: 'N',
+      RetainBed: blockChecked ? 'Y' : 'N',
       dateTransfer: values.DateTimeTransfer ? values.DateTimeTransfer.format("DD-MM-YYYY") : '',
       timeTransfer: values.DateTimeTransfer ? values.DateTimeTransfer.format('HH:mm:ss') : '',
       EncounterId: values.EncounterId,
@@ -81,23 +63,30 @@ function DirectTransferModal({ bed, patient, Dropdown, open, handleClose }) {
       FromWardCategoryID: values.FromWardCategory,
       ToWardCategoryID: values.ToWardCategory,
       dateBlock: values.BlockTill ? values.BlockTill.format("DD-MM-YYYY") : '',
-      timeBlock: values.BlockTill ? values.BlockTill.format('HH:mm:ss') : '',
-      BedNo: 'FWFF1'
+      timeBlock: values.BlockTill ? values.BlockTill.format('HH:mm:ss') : ''
+      // BedNo: bedNumber
     }
     const response = await customAxios.get(
       `${urlSaveModal}?DepartmentId=${form.DepartmentId}&ProviderId=${form.ProviderId}&ToServiceLocationId=${form.ToServiceLocationId}&FromServiceLocationId=${form.FromServiceLocationId}
       &ToWardId=${form.ToWardId}&FromWardId=${form.FromWardId}&FromBedId=${form.FromBedId}&ToBedId=${form.ToBedId}&ReasonforTransfer=${form.ReasonforTransfer}
       &PatientID=${form.PatientID}&AdtType=${form.AdtType}&AdtStatus=${form.AdtStatus}&RetainBed=${form.RetainBed}&dateTransfer=${form.dateTransfer}&timeTransfer=${form.timeTransfer}
       &EncounterId=${form.EncounterId}&ID=${form.ID}&FromWardCategoryID=${form.FromWardCategoryID}
-      &ToWardCategoryID=${form.ToWardCategoryID}&dateBlock=${form.dateBlock}&timeBlock=${form.timeBlock}&BedNo=${form.BedNo}`
+      &ToWardCategoryID=${form.ToWardCategoryID}&dateBlock=${form.dateBlock}&timeBlock=${form.timeBlock}`
     );
     if (response.status === 200 && response.data.data != null) {
-      message.warning(response.data.data)
-      return false;
+      if (response.data.data === 'Failure') {
+        message.warning(response.data.data)
+        return false;
+      } else if (response.data.data === 'Success') {
+        message.success(response.data.data)
+        handleCancel();
+      } else {
+        message.warning(response.data.data)
+        return false;
+      }
     } else {
       console.error("Failed to fetch patient details");
     }
-    handleCancel();
   }
 
   // const DepartChange = async (value) => {
@@ -111,23 +100,45 @@ function DirectTransferModal({ bed, patient, Dropdown, open, handleClose }) {
   //   }
   // }
 
-  useEffect(() => {
-    const fetchServiceLocation = async () => {
-      const departmentValue = form.getFieldValue('Department');
-      if (departmentValue) {
-        try {
-          const response = await axios.get(
-            `${urlGetServiceLocation}?FacilityDepartmentId=${departmentValue}&ID=${1}`
-          );
-          Dropdown.FacilityDeptServiceLocation = response.data.data.FacilityDeptServiceLocation
-        } catch (error) {
-          console.error('Error fetching service location:', error);
-        }
-      }
-    };
+  // const fetchServiceLocation = (value) => {
+  //   debugger
+  //   Dropdown.FacilityDeptServiceLocation = []
+  // const departmentValue = form.getFieldValue('Department');
+  // if (departmentValue) {
+  //   try {
+  //     const response = await customAxios.get(
+  //       `${urlGetServiceLocation}?FacilityDepartmentId=${departmentValue}&ID=${1}`
+  //     );
+  //     // setDropdown((prevDropdown) => ({
+  //     //   ...prevDropdown,
+  //     //   FacilityDeptServiceLocation: response.data.data.FacilityDeptServiceLocation,
+  //     // }));
+  //     // Dropdown.FacilityDeptServiceLocation = response.data.data.FacilityDeptServiceLocation
+  //   } catch (error) {
+  //     console.error('Error fetching service location:', error);
+  //   }
+  // }
+  // };
 
-    fetchServiceLocation();
-  }, [form.getFieldValue('Department')]);
+  const getDropdown = async (value, SLId, Id, PId) => {
+    debugger
+    if (Id === 1) {
+      form.setFieldsValue({ ToServiceLocation: '' })
+      form.setFieldsValue({ ToWardCategory: '' })
+      form.setFieldsValue({ ToWard: '' })
+      form.setFieldsValue({ ToBed: '' })
+    } else if (Id === 2) {
+      form.setFieldsValue({ ToWardCategory: '' })
+      form.setFieldsValue({ ToWard: '' })
+      form.setFieldsValue({ ToBed: '' })
+    } else if (Id === 3) {
+      form.setFieldsValue({ ToWard: '' })
+      form.setFieldsValue({ ToBed: '' })
+    } else {
+      form.setFieldsValue({ ToBed: '' })
+    }
+    handleDropdown(value, SLId, Id, PId)
+  }
 
   return (
     <div>
@@ -159,7 +170,7 @@ function DirectTransferModal({ bed, patient, Dropdown, open, handleClose }) {
               <Row>
                 <Col span={24}>Admitted Date and Time</Col>
                 <Col span={24}>
-                  <b>14-05-2024 04:18:00 PM</b>
+                  <b>{Dropdown.PatientsCurrentDetails.AdmittedDateString}</b>
                 </Col>
               </Row>
               <Row style={{ marginTop: "0.5rem" }}>
@@ -234,7 +245,8 @@ function DirectTransferModal({ bed, patient, Dropdown, open, handleClose }) {
                     ]}
                     initialValue={Dropdown.PatientsCurrentDetails.DepartmentId}
                   >
-                    <Select style={{ width: "100%" }} defaultValue={Dropdown.PatientsCurrentDetails.DepartmentId}>
+                    <Select style={{ width: "100%" }} defaultValue={Dropdown.PatientsCurrentDetails.DepartmentId}
+                      onChange={(value) => getDropdown(value, 0, 1, 0)} placeholder='Select' allowClear>
                       {Dropdown.FacilityDepartment.map((option) => (
                         <Select.Option key={option.FacilityDepartmentId} value={option.FacilityDepartmentId}>
                           {option.DepartmentName}
@@ -294,7 +306,8 @@ function DirectTransferModal({ bed, patient, Dropdown, open, handleClose }) {
                     ]}
                     initialValue={Dropdown.PatientsCurrentDetails.ServiceLocationId}
                   >
-                    <Select style={{ width: "100%" }} defaultValue={Dropdown.PatientsCurrentDetails.ServiceLocationId}>
+                    <Select style={{ width: "100%" }} defaultValue={Dropdown.PatientsCurrentDetails.ServiceLocationId}
+                      onChange={(value) => getDropdown(value, 0, 2, 0)} placeholder='Select' allowClear>
                       {Dropdown.FacilityDeptServiceLocation.map((option) => (
                         <Select.Option key={option.FacilityDepartmentServiceLocationId} value={option.FacilityDepartmentServiceLocationId}>
                           {option.ServiceLocationName}
@@ -322,7 +335,9 @@ function DirectTransferModal({ bed, patient, Dropdown, open, handleClose }) {
                     ]}
                     initialValue={Dropdown.PatientsCurrentDetails.WardCategoryID}
                   >
-                    <Select style={{ width: "100%" }} defaultValue={Dropdown.PatientsCurrentDetails.WardCategory}>
+                    <Select style={{ width: "100%" }} defaultValue={Dropdown.PatientsCurrentDetails.WardCategory}
+                      onChange={(value) => getDropdown(value, form.getFieldValue('ToServiceLocation'), 3, form.getFieldValue('PatientId'))}
+                      placeholder='Select' allowClear>
                       {Dropdown.WardCategory.map((option) => (
                         <Select.Option key={option.LookupID} value={option.LookupID}>
                           {option.LookupDescription}
@@ -342,16 +357,20 @@ function DirectTransferModal({ bed, patient, Dropdown, open, handleClose }) {
                     style={{ marginBottom: "0.5rem" }}
                     name="ToWard"
                     label="Ward"
-                  // initialValue={Dropdown.PatientsCurrentDetails.Ward}
+                    // initialValue={Dropdown.PatientsCurrentDetails.WardID}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select",
+                      },
+                    ]}
                   >
-                    <Select style={{ width: "100%" }} onSelect={GetBeds}>
-                      {Dropdown.Wards
-                        .filter(option => option.WardID !== Dropdown.PatientsCurrentDetails.WardID)
-                        .map(option => (
-                          <Select.Option key={option.WardID} value={option.WardID}>
-                            {option.WardName}
-                          </Select.Option>
-                        ))}
+                    <Select style={{ width: "100%" }} onChange={(value) => getDropdown(value, 0, 4, 0)} placeholder='Select' allowClear>
+                      {Dropdown.Wards.map(option => (
+                        <Select.Option key={option.WardID} value={option.WardID}>
+                          {option.WardName}
+                        </Select.Option>
+                      ))}
                     </Select>
                   </Form.Item>
                 </Col>
@@ -366,14 +385,20 @@ function DirectTransferModal({ bed, patient, Dropdown, open, handleClose }) {
                     style={{ marginBottom: "0.5rem" }}
                     name="ToBed"
                     label="Bed"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select",
+                      },
+                    ]}
                   >
-                    <Select style={{ width: "100%" }}>
-                      {(beds || [])
-                        .map(option => (
-                          <Select.Option key={option.BedID} value={option.BedID}>
-                            {option.BedNo}
-                          </Select.Option>
-                        ))}
+                    <Select style={{ width: "100%" }} allowClear placeholder='Select'>
+                      {(Dropdown.Beds || []).map(option => (
+                        <Select.Option key={option.BedID} value={option.BedID}>
+                          {option.BedNo}
+                          {/* {setBedNumber(option.BedNo)} */}
+                        </Select.Option>
+                      ))}
                     </Select>
                   </Form.Item>
                 </Col>
@@ -416,7 +441,7 @@ function DirectTransferModal({ bed, patient, Dropdown, open, handleClose }) {
                 </Col>
                 <Col span={24}>
                   <Form.Item name="Block" valuePropName='checked'>
-                    <Checkbox onChange={Block}>Submit</Checkbox>
+                    <Checkbox onChange={Block}>Retain Bed</Checkbox>
                   </Form.Item>
                 </Col>
                 <Col span={24} hidden={!blockChecked}>

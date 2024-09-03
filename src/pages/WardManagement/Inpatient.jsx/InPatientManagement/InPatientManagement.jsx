@@ -1,7 +1,8 @@
 import {
   AppstoreOutlined,
   BarsOutlined,
-  DownOutlined,
+  TabletOutlined,
+  PieChartOutlined,
   StopOutlined,
 } from "@ant-design/icons";
 import "./style.css";
@@ -36,6 +37,7 @@ import WardBed from "./WardBed";
 import { CgMoreO } from "react-icons/cg";
 import { TfiMoreAlt } from "react-icons/tfi";
 import Item from "antd/es/list/Item";
+import dayjs from "dayjs";
 
 function InPatientManagement() {
   const [view, setView] = useState("");
@@ -45,6 +47,7 @@ function InPatientManagement() {
   const [locationDropDown, setLocationDropDown] = useState([]);
   const [inPatientDetails, setInPatientDetails] = useState([]);
   const [beds, setBeds] = useState([]);
+  const [banner, setBanner] = useState({})
 
   useEffect(() => {
     setIsLoading(true);
@@ -68,6 +71,7 @@ function InPatientManagement() {
         });
         setInPatientDetails(inPatient);
         setBeds(response.data.data.Beds);
+        setBanner(response.data.data)
       } else {
         console.log("data is not clear ");
       }
@@ -139,6 +143,14 @@ function InPatientManagement() {
 
   const groupedBeds = groupBedsByWard();
   const firstWardKey = Object.keys(groupedBeds)[0];
+
+  const IncomingTransfer = () => {
+    debugger
+  }
+
+  const OutgoingTransfer = () => {
+    debugger
+  }
 
   return (
     <>
@@ -239,12 +251,82 @@ function InPatientManagement() {
               border: "2px solid lavender",
               margin: "0 1rem",
               borderRadius: "0.5rem",
-              height: "5rem",
+              // height: "5rem",
               width: "100%",
               textAlign: "center",
             }}
           >
-            Summary Section
+            <Row>
+              <Col span={12} >
+                Total Beds:{banner.TotalBeds}
+              </Col>
+              <Col span={12}>
+                Todays:
+              </Col>
+            </Row>
+            <Row>
+              <Col span={3}>
+                As on:{dayjs().format('DD-MM-YYYY')}
+              </Col>
+              <Col span={3} >
+                Occupied:{banner.Occupied}
+              </Col>
+              <Col span={3} >
+                Available:{banner.Available}
+              </Col>
+              <Col span={3}>
+                Blocked:{banner.Blocked}
+              </Col>
+              <Col span={3}>
+                New Admission:{banner.NewAdmissionsCount}
+              </Col>
+              <Col span={3} >
+                Discharges:{banner.DischargedPatientsCount}
+              </Col>
+              <Col span={3} >
+                Transfer In:{banner.TransferInCount}
+              </Col>
+              <Col span={3}>
+                Transfer Out:{banner.TransferOutCount}
+              </Col>
+            </Row>
+          </div>
+        </Row>
+        <br />
+        <Row>
+          <div
+            style={{
+              border: "2px solid lavender",
+              margin: "0 1rem",
+              borderRadius: "0.5rem",
+              // height: "5rem",
+              width: "100%",
+              textAlign: "center",
+            }}
+          >
+            <Row>
+              <Col span={3} style={{ backgroundColor: '#C5EBAA' }}>
+                Available
+              </Col>
+              <Col span={3} style={{ backgroundColor: '#FFBABA' }}>
+                Occupied
+              </Col>
+              <Col span={3} style={{ backgroundColor: '#FF8356' }}>
+                Blocked
+              </Col>
+              <Col span={3} style={{ backgroundColor: '#F0A8D0' }}>
+                Transfer Requested
+              </Col>
+              <Col span={3} style={{ backgroundColor: '#D1E9F6' }}>
+                Request Confirmed
+              </Col>
+              <Col span={3} style={{ backgroundColor: '#CADABF' }}>
+                Discharge Initiated
+              </Col>
+              <Col span={3} style={{ backgroundColor: '#C8A1E0' }}>
+                Movement
+              </Col>
+            </Row>
           </div>
         </Row>
         {view === "" || view === "Tabular" ? (
@@ -284,7 +366,7 @@ function InPatientManagement() {
                 <div style={{ width: "100%", marginTop: "1rem" }}>
                   <Divider orientation="left">Tasks</Divider>
                   <Collapse>
-                    <Collapse.Panel
+                    <Collapse.Panel onClick={IncomingTransfer}
                       header={
                         <div
                           style={{
@@ -298,7 +380,7 @@ function InPatientManagement() {
                       }
                       key="3"
                     ></Collapse.Panel>
-                    <Collapse.Panel
+                    <Collapse.Panel onClick={OutgoingTransfer}
                       header={
                         <div
                           style={{

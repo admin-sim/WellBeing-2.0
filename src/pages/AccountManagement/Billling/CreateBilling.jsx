@@ -11,10 +11,7 @@ import {
   Select,
   message,
   DatePicker,
-  Divider,
-  notification,
   Table,
-  Modal,
   Tooltip,
   AutoComplete,
   Typography,
@@ -22,7 +19,6 @@ import {
   Spin,
 } from "antd";
 import {
-  EditOutlined,
   DeleteOutlined,
   LeftOutlined,
   PlusOutlined,
@@ -42,7 +38,6 @@ import {
   urlAddNewCharge,
   urlBillingCreate,
   urlEditDiscount,
-  urlUpdateDiscount,
   urlInvoiceDiscount,
   urlGetPatientHeaderDetails,
   urlDeleteBillCharge,

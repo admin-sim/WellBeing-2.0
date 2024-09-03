@@ -24,7 +24,6 @@ function AddEditFrequencyModal({ open, handleClose, handleSubmit, record }) {
         maskClosable={false}
         footer={null}
         onCancel={handleCancel}
-        width="40%"
       >
         <Form
           style={{ margin: "1rem 0" }}

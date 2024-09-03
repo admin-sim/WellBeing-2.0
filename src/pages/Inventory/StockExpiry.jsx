@@ -237,27 +237,27 @@ const StockExpiry = () => {
               </Col>
             </Row>
           </Form>
+          {showTable && (
+            <Table
+              dataSource={filteredData}
+              columns={columns}
+              pagination={{
+                onChange: (current, pageSize) => {
+                  setPage(current);
+                  setPaginationSize(pageSize);
+                },
+                defaultPageSize: 5, // Set your default pagination size
+                hideOnSinglePage: true,
+                showSizeChanger: true,
+                showTotal: (total, range) =>
+                  `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+              }}
+              rowKey={(row) => row.AppUserId} // Specify the custom id property here
+              size="small"
+              bordered
+            />
+          )}
         </Card>
-        {showTable && (
-          <Table
-            dataSource={filteredData}
-            columns={columns}
-            pagination={{
-              onChange: (current, pageSize) => {
-                setPage(current);
-                setPaginationSize(pageSize);
-              },
-              defaultPageSize: 5, // Set your default pagination size
-              hideOnSinglePage: true,
-              showSizeChanger: true,
-              showTotal: (total, range) =>
-                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-            }}
-            rowKey={(row) => row.AppUserId} // Specify the custom id property here
-            size="small"
-            bordered
-          />
-        )}
       </div>
     </Layout>
   );
