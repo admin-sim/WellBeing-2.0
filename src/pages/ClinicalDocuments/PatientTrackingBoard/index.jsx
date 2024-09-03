@@ -5,6 +5,7 @@ import PatientTrackRecords from "./PatientTrackRecords";
 import InPatient from "./InPatient";
 import DayCare from "./DayCare";
 import Emergency from "./Emergency";
+import { isMobile } from "react-device-detect";
 
 function PatientTrackingBoard() {
   const [activeButtons, setActiveButtons] = useState({
@@ -35,17 +36,18 @@ function PatientTrackingBoard() {
           border: "2px solid lavender",
           margin: "0.5rem 0",
           borderRadius: "0.5rem",
-          height: "3rem",
+          height: isMobile ? "auto" : "3rem",
           width: "100%",
           textAlign: "center",
-          padding: "0.2rem 3rem",
+          padding: isMobile ? "0.5rem 0rem" : "0rem 3rem",
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: isMobile ? "start" : "center",
+          flexDirection: isMobile && "column",
         }}
         gutter={32}
       >
-        <Col>
+        <Col style={isMobile && { marginTop: "0rem" }}>
           <Button
             size="middle"
             type={activeButtons.PatientTrackRecords ? "primary" : "default"}
@@ -55,7 +57,7 @@ function PatientTrackingBoard() {
             <strong>Patient Track Records</strong>
           </Button>
         </Col>
-        <Col>
+        <Col style={isMobile && { marginTop: "0.5rem" }}>
           <Button
             size="middle"
             type={activeButtons.InPatient ? "primary" : "default"}
@@ -65,7 +67,7 @@ function PatientTrackingBoard() {
             <strong> InPatient</strong>
           </Button>
         </Col>
-        <Col>
+        <Col style={isMobile && { marginTop: "0.5rem" }}>
           <Button
             size="middle"
             type={activeButtons.DayCare ? "primary" : "default"}
@@ -75,7 +77,7 @@ function PatientTrackingBoard() {
             <strong>Day Care</strong>
           </Button>
         </Col>
-        <Col>
+        <Col style={isMobile && { marginTop: "0.5rem" }}>
           <Button
             size="middle"
             type={activeButtons.Emergency ? "primary" : "default"}

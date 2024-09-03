@@ -23,6 +23,12 @@ import {
 } from "../../../../endpoints";
 import { debounce } from "lodash";
 import dayjs from "dayjs";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+  ColWithTwelveSpan,
+} from "../../../components/customGridColumns/index";
+import { isMobile } from "react-device-detect";
 
 function PatientTrackRecords() {
   const [currentTab, setCurrentTab] = useState("1");
@@ -49,7 +55,7 @@ function PatientTrackRecords() {
 
   const columns = [
     {
-      title: "EncounterId",
+      title: "Encounter Id",
       dataIndex: "EncounterId",
       key: "1",
     },
@@ -59,12 +65,12 @@ function PatientTrackRecords() {
       key: "2",
     },
     {
-      title: "EncounterStatus",
+      title: "Encounter Status",
       dataIndex: "EncounterStatus",
       key: "3",
     },
     {
-      title: "ServiceLocation",
+      title: "Service Location",
       dataIndex: "ServiceLocation",
       key: "4",
     },
@@ -352,10 +358,8 @@ function PatientTrackRecords() {
                 <div
                   style={{
                     borderRadius: "0.5rem",
-                    height: "6rem",
                     width: "100%",
                     margin: "1rem auto",
-                    padding: "0.2rem 0.5rem",
                   }}
                 >
                   <Form
@@ -363,36 +367,36 @@ function PatientTrackRecords() {
                     onFinish={handlePatientTrackingSearch}
                     layout="vertical"
                   >
-                    <Row gutter={32}>
-                      <Col span={6}>
+                    <Row gutter={16}>
+                      <ColWithSixSpan>
                         <Form.Item name="UHID" label="UHID">
                           <Input style={{ width: "100%" }} />
                         </Form.Item>
-                      </Col>
-                      <Col span={6}>
+                      </ColWithSixSpan>
+                      <ColWithSixSpan>
                         <Form.Item name="name" label="Name">
                           <Input style={{ width: "100%" }} />
                         </Form.Item>
-                      </Col>
-                      <Col span={8}>
+                      </ColWithSixSpan>
+                      <ColWithEightSpan>
                         <Form.Item
                           name="Contact/Email"
                           label="Contact/Email ID"
                         >
                           <Input style={{ width: "100%" }} />
                         </Form.Item>
-                      </Col>
-                      <Col span={4}>
-                        <Row gutter={32}>
+                      </ColWithEightSpan>
+                      <Col xl={4} lg={4} md={4} sm={24} xs={24} span={24}>
+                        <Row gutter={16} justify={isMobile && "end"}>
                           <Col>
-                            <Form.Item label=" ">
+                            <Form.Item label={!isMobile && " "}>
                               <Button htmlType="submit" type="primary">
                                 Search
                               </Button>
                             </Form.Item>
                           </Col>
                           <Col>
-                            <Form.Item label=" ">
+                            <Form.Item label={!isMobile && " "}>
                               <Button
                                 danger
                                 onClick={handlePatientTrackingReset}
@@ -407,7 +411,8 @@ function PatientTrackRecords() {
                   </Form>
                 </div>
                 {patientTrackRecordTable && (
-                  <div style={{ margin: "2rem" }}>
+                  <div
+                  >
                     <PatientHeader />
                     <div style={{ marginTop: "1rem" }}>
                       <CustomTable
@@ -432,194 +437,158 @@ function PatientTrackRecords() {
                   onFinish={handleOnSearch}
                   variant="outlined"
                   size="small"
-                  style={{
-                    padding: "1rem 1rem 0rem 1rem",
-                    margin: "0.5rem 2rem 0rem 2rem",
-                    //   border: "1px solid lavender",
-                  }}
                   form={form2}
                 >
-                  <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                    <Col span={6}>
-                      <div>
-                        <Form.Item label="UHID" name="Uhid">
-                          <AutoComplete
-                            options={options}
-                            //loading={AutoCompleteLoader}
-                            onSearch={handleAutoCompleteChange}
-                            onSelect={handleSelect}
-                            value={selectedUhId}
-                            filterOption={(inputValue, option) =>
-                              option.value
-                                .toUpperCase()
-                                .includes(inputValue.toUpperCase())
-                            }
-                            allowClear
-                          />
-                        </Form.Item>
-                        {AutoCompleteLoader && (
-                          <Spin
-                            style={{
-                              position: "absolute",
-                              top: "50%",
-                              left: "50%",
-                              transform: "translate(-50%, -50%)",
-                            }}
-                          />
-                        )}
-                      </div>
-                    </Col>
-                    <Col span={6}>
-                      <div>
-                        <Form.Item label="Name Filter" name="NameFilter">
-                          <Select allowClear>
-                            {containsDropdown.map((option) => (
-                              <Select.Option key={option.id} value={option.id}>
-                                {option.name}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </div>
-                    </Col>
-                    <Col span={6}>
-                      <div>
-                        <Form.Item label=" Patient Name" name="PatientName">
-                          <Input allowClear />
-                        </Form.Item>
-                      </div>
-                    </Col>
-                    <Col span={6}>
-                      <div>
-                        <Form.Item label="Date of Birth" name="dob">
-                          <DatePicker
-                            style={{ width: "100%" }}
-                            format={"DD-MM-YYYY"}
-                            disabledDate={disabledDate}
-                            placeholder="DD-MM-YYYY"
-                            allowClear
-                          />
-                        </Form.Item>
-                      </div>
-                    </Col>
-                  </Row>
-                  <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                    <Col span={6}>
-                      <div>
-                        <Form.Item
-                          label="Identifier Type"
-                          name="IdentifierType"
-                        >
-                          <Select allowClear>
-                            {patientDropdown.CardType.map((option) => (
-                              <Select.Option
-                                key={option.LookupID}
-                                value={option.LookupID}
-                              >
-                                {option.LookupDescription}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </div>
-                    </Col>
-                    <Col span={6}>
-                      <div>
-                        <Form.Item
-                          label="Identifier Value"
-                          name="IdentifierValue"
-                        >
-                          <Input allowClear />
-                        </Form.Item>
-                      </div>
-                    </Col>
-                    <Col span={6}>
-                      <div>
-                        <Form.Item label="Registration From" name="RegFrom">
-                          <DatePicker
-                            style={{ width: "100%" }}
-                            format={"DD-MM-YYYY"}
-                            disabledDate={disabledDate}
-                            placeholder="DD-MM-YYYY"
-                            allowClear
-                          />
-                        </Form.Item>
-                      </div>
-                    </Col>
-                    <Col span={6}>
-                      <div>
-                        <Form.Item label="Registration To" name="RegTo">
-                          <DatePicker
-                            style={{ width: "100%" }}
-                            format={"DD-MM-YYYY"}
-                            disabledDate={disabledDate}
-                            placeholder="DD-MM-YYYY"
-                            allowClear
-                          />
-                        </Form.Item>
-                      </div>
-                    </Col>
-                  </Row>
-                  <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                    <Col span={6}>
-                      <div>
-                        <Form.Item
-                          label="Mobile Number :"
-                          name="MobileNumber"
-                          rules={[
-                            {
-                              pattern: new RegExp(/^\d{10}$/),
-                              message: "Invalid mobile number!",
-                            },
-                          ]}
-                        >
-                          <Input allowClear />
-                        </Form.Item>
-                      </div>
-                    </Col>
-                    <Col span={6}>
-                      <div>
-                        <Form.Item label="City" name="City">
-                          <Input allowClear />
-                        </Form.Item>
-                      </div>
-                    </Col>
-                    <Col span={6}>
-                      <div>
-                        <Form.Item
-                          label="Age"
-                          name="Age"
-                          rules={[
-                            {
-                              pattern: new RegExp(/^\d{1,3}$/),
-                              message: "Invalid Age",
-                            },
-                          ]}
-                        >
-                          <Input allowClear />
-                        </Form.Item>
-                      </div>
-                    </Col>
-                    <Col span={6}>
-                      <div>
-                        <Form.Item
+                  <Row gutter={16}>
+                    <ColWithSixSpan>
+                      <Form.Item label="UHID" name="Uhid">
+                        <AutoComplete
+                          options={options}
+                          //loading={AutoCompleteLoader}
+                          onSearch={handleAutoCompleteChange}
+                          onSelect={handleSelect}
+                          value={selectedUhId}
+                          filterOption={(inputValue, option) =>
+                            option.value
+                              .toUpperCase()
+                              .includes(inputValue.toUpperCase())
+                          }
+                          allowClear
+                        />
+                      </Form.Item>
+                      {AutoCompleteLoader && (
+                        <Spin
+                          style={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                          }}
+                        />
+                      )}
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
+                      <Form.Item label="Name Filter" name="NameFilter">
+                        <Select allowClear>
+                          {containsDropdown.map((option) => (
+                            <Select.Option key={option.id} value={option.id}>
+                              {option.name}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
+                      <Form.Item label=" Patient Name" name="PatientName">
+                        <Input allowClear />
+                      </Form.Item>
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
+                      <Form.Item label="Date of Birth" name="dob">
+                        <DatePicker
                           style={{ width: "100%" }}
-                          label="Gender"
-                          name="PatientGender"
-                        >
-                          <Select allowClear>
-                            {patientDropdown.Genders.map((option) => (
-                              <Select.Option
-                                key={option.LookupID}
-                                value={option.LookupID}
-                              >
-                                {option.LookupDescription}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </div>
-                    </Col>
+                          format={"DD-MM-YYYY"}
+                          disabledDate={disabledDate}
+                          placeholder="DD-MM-YYYY"
+                          allowClear
+                        />
+                      </Form.Item>
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
+                      <Form.Item label="Identifier Type" name="IdentifierType">
+                        <Select allowClear>
+                          {patientDropdown.CardType.map((option) => (
+                            <Select.Option
+                              key={option.LookupID}
+                              value={option.LookupID}
+                            >
+                              {option.LookupDescription}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
+                      <Form.Item
+                        label="Identifier Value"
+                        name="IdentifierValue"
+                      >
+                        <Input allowClear />
+                      </Form.Item>
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
+                      <Form.Item label="Registration&nbsp;From" name="RegFrom">
+                        <DatePicker
+                          style={{ width: "100%" }}
+                          format={"DD-MM-YYYY"}
+                          disabledDate={disabledDate}
+                          placeholder="DD-MM-YYYY"
+                          allowClear
+                        />
+                      </Form.Item>
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
+                      <Form.Item label="Registration To" name="RegTo">
+                        <DatePicker
+                          style={{ width: "100%" }}
+                          format={"DD-MM-YYYY"}
+                          disabledDate={disabledDate}
+                          placeholder="DD-MM-YYYY"
+                          allowClear
+                        />
+                      </Form.Item>
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
+                      <Form.Item
+                        label="Mobile Number"
+                        name="MobileNumber"
+                        rules={[
+                          {
+                            pattern: new RegExp(/^\d{10}$/),
+                            message: "Invalid mobile number!",
+                          },
+                        ]}
+                      >
+                        <Input allowClear />
+                      </Form.Item>
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
+                      <Form.Item label="City" name="City">
+                        <Input allowClear />
+                      </Form.Item>
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
+                      <Form.Item
+                        label="Age"
+                        name="Age"
+                        rules={[
+                          {
+                            pattern: new RegExp(/^\d{1,3}$/),
+                            message: "Invalid Age",
+                          },
+                        ]}
+                      >
+                        <Input allowClear />
+                      </Form.Item>
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
+                      <Form.Item
+                        style={{ width: "100%" }}
+                        label="Gender"
+                        name="PatientGender"
+                      >
+                        <Select allowClear>
+                          {patientDropdown.Genders.map((option) => (
+                            <Select.Option
+                              key={option.LookupID}
+                              value={option.LookupID}
+                            >
+                              {option.LookupDescription}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </ColWithSixSpan>
                   </Row>
                   <Row justify="end">
                     <Col style={{ marginRight: "10px" }}>
@@ -644,20 +613,13 @@ function PatientTrackRecords() {
                   </Row>
                 </Form>
                 <Spin spinning={loading}>
-                  <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                    <Col span={24}>
+                  <Row gutter={16}>
+                    <Col span={24} style={{ padding: "0" }}>
                       <CustomTable
                         dataSource={patientsearchDetails}
                         columns={AdvancedPatientSearchColumns}
-                        // rowKey={(row) => row.PatientId}
-                        size="small"
                         actionColumn={false}
-                        // onChange={(pagination) => {
-                        //   setCurrentPage(pagination.current);
-                        //   setItemsPerPage(pagination.pageSize);
-                        // }}
                         isFilter={true}
-                        bordered
                       />
                     </Col>
                   </Row>

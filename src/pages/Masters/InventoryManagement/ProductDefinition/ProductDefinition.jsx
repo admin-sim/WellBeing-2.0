@@ -1,16 +1,17 @@
 import { Button, Col, Collapse, ConfigProvider, Input, Row, Spin } from "antd";
 import Title from "antd/es/typography/Title";
 import React, { useEffect, useState } from "react";
-import customAxios from "../../../components/customAxios/customAxios";
-import CustomTable from "../../../components/customTable";
+import customAxios from "../../../../components/customAxios/customAxios";
+import CustomTable from "../../../../components/customTable";
 import {
   urlGetProductClassificationList,
   urlProductDefinitionIndex,
-} from "../../../../endpoints";
+} from "../../../../../endpoints";
 import { DoubleRightOutlined } from "@ant-design/icons";
 import "./productDefinition.css";
 import { useNavigate } from "react-router-dom";
 import { IoMdAddCircle } from "react-icons/io";
+import PageHeader from "../../../../components/PageHeader";
 
 function ProductDefinition() {
   const [dropDownData, setDropDownData] = useState({});
@@ -25,7 +26,6 @@ function ProductDefinition() {
   }, []);
 
   const fetchProductDefinitionIndex = () => {
-
     try {
       customAxios.get(urlProductDefinitionIndex).then((response) => {
         const apiData = response.data.data;
@@ -38,7 +38,7 @@ function ProductDefinition() {
     }
   };
 
-  const handleProductClassificationClick =async (ProductClassificationId) => {
+  const handleProductClassificationClick = async (ProductClassificationId) => {
     setShowTable(true);
     setTableLoading(true);
     try {
@@ -54,10 +54,7 @@ function ProductDefinition() {
     } catch (error) {
       console.error("Error fetching Product Classification details:", error);
       setTableLoading(false);
-    } 
-     
-    
-    
+    }
   };
 
   const items =
@@ -99,25 +96,30 @@ function ProductDefinition() {
       title: "Short Name",
       dataIndex: "ShortName",
       key: "ShortName",
+      width: 120,
     },
     {
       title: "Long Name",
       dataIndex: "LongName",
       key: "LongName",
+      width: 120,
     },
     {
       title: "Classification",
       dataIndex: "ProductClassification",
       key: "ProductClassification",
+      width: 120,
     },
     {
       title: "Product Group",
       dataIndex: "ProductGroup",
       key: "ProductGroup",
+      width: 150,
     },
     {
       title: "Status",
       key: "Status",
+      width: 80,
       render: (text, record) => {
         if (record.Status === "True") {
           return <span>Active</span>;
@@ -136,43 +138,30 @@ function ProductDefinition() {
   };
 
   return (
-   
-      <div
-        style={{
-          width: "100%",
-          backgroundColor: "white",
-          minHeight: "max-content",
-          borderRadius: "10px",
-        }}
-      >
-        <Row
+    <div
+      style={{
+        width: "100%",
+        backgroundColor: "white",
+        minHeight: "max-content",
+        borderRadius: "10px",
+      }}
+    >
+      <PageHeader title={"Product Definition"} button={false} />
+
+      <Row gutter={32} style={{ margin: "1rem 1rem" }}>
+        <Col
+          xl={6}
+          lg={12}
+          md={12}
+          xs={24}
+          span={24}
           style={{
-            padding: "0.5rem 1.5rem 0.5rem 1.5rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px",
+            width: "100%",
+            height: "min-content",
+            borderRadius: "10px",
+            padding: 0,
           }}
         >
-          <Col
-            span={24}
-            style={{ display: "flex", justifyContent: "space-between" }}
-          >
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              Product Definition
-            </Title>
-          </Col>
-        </Row>
-
-        <Row gutter={32} style={{ margin: "1rem 1rem" }}>
-        
-          <Col span={7} style={{ margin: "1rem 0 1rem 0" }}>
           <Spin spinning={loading}>
             <div
               style={{
@@ -183,7 +172,6 @@ function ProductDefinition() {
               }}
             >
               <Title
-             
                 level={5}
                 style={{
                   color: "black",
@@ -217,13 +205,23 @@ function ProductDefinition() {
                   },
                 }}
               >
-                <Collapse   ghost items={items} className="productDefinition" />
+                <Collapse ghost items={items} className="productDefinition" />
               </ConfigProvider>
             </div>
-            </Spin>
-          </Col>
-        
-          <Col span={17}>
+          </Spin>
+        </Col>
+
+        <Col
+          xl={18}
+          span={24}
+          style={{
+            marginTop: "0rem",
+            padding: 0,
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+          }}
+        >
           <Spin spinning={tableLoading}>
             {showTable && (
               <CustomTable
@@ -243,15 +241,13 @@ function ProductDefinition() {
                       });
                     }}
                   />
-                }
+                } 
               />
             )}
           </Spin>
-          
-          </Col>
-        </Row>
-      </div>
-   
+        </Col>
+      </Row>
+    </div>
   );
 }
 

@@ -21,11 +21,16 @@ import {
   urlPatientAppointmentExist,
   urlSearchPatientRecord,
   urlSearchUHID,
-} from "../../../endpoints.js";
-import customAxios from "../../components/customAxios/customAxios.jsx";
-import CustomTable from "../../components/customTable/index.jsx";
+} from "../../../../endpoints.js";
+import customAxios from "../../../components/customAxios/customAxios.jsx";
+import CustomTable from "../../../components/customTable/index.jsx";
 import moment from "moment";
 import dayjs from "dayjs";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+  ColWithTwelveSpan,
+} from "../../../components/customGridColumns/index.jsx";
 
 function ScheduleAppointmentModal({
   open,
@@ -237,32 +242,38 @@ function ScheduleAppointmentModal({
       title: "UHID",
       dataIndex: "UhId",
       key: "PatientId",
+      width: 80,
     },
     {
       title: "Name",
       dataIndex: "PatientName",
       key: "PatientName",
+      width: 120,
     },
     {
       title: "Gender",
       dataIndex: "PatientGender",
       key: "PatientId",
+      width: 80,
     },
     {
       title: "Date of Birth",
       dataIndex: "DateOfBirth",
       key: "PatientId",
+      width: 150,
       render: (date) => moment(date).format("DD-MM-YYYY"),
     },
     {
       title: "Age",
       dataIndex: "Age",
       key: "PatientId",
+      width: 150,
     },
     {
       title: "Contact Details",
       dataIndex: "MobileNumber",
       key: "PatientId",
+      width: 120,
     },
   ];
 
@@ -278,8 +289,7 @@ function ScheduleAppointmentModal({
   return (
     <div>
       <Modal
-        centered
-        width={"50%"}
+        width={"50rem"}
         title={
           <span style={{ fontSize: "1.2rem", fontWeight: "600" }}>
             Schedule Appointment
@@ -291,26 +301,26 @@ function ScheduleAppointmentModal({
         onCancel={handleCancel}
       >
         <Row>
-          <Col span={8}>
+          <ColWithSixSpan>
             <Col span={24}>
               <b>Provider Name:</b>
             </Col>
             <Col span={24}>{providerDetails?.ProviderName}</Col>
-          </Col>
-          <Col span={8}>
+          </ColWithSixSpan>
+          <ColWithSixSpan>
             <Col span={24}>
               <b>Date:</b>
             </Col>
             <Col span={24}>{formatDate(selectedSlot?.start)}</Col>
-          </Col>
-          <Col span={8}>
+          </ColWithSixSpan>
+          <ColWithSixSpan>
             <Col span={24}>
               <b>Time:</b>
             </Col>
             <Col span={24}>
               {formatTimeSlot(selectedSlot?.start, selectedSlot?.end)}
             </Col>
-          </Col>
+          </ColWithSixSpan>
         </Row>
         <Row style={{ margin: "1rem" }}>
           <Col>
@@ -336,7 +346,7 @@ function ScheduleAppointmentModal({
               >
                 {/* <Spin spinning={patientSearchLoading}> */}
                 <Row gutter={16}>
-                  <Col span={8}>
+                  <ColWithEightSpan>
                     <Form.Item label="UHID" name="Uhid">
                       <Select
                         loading={uhidLoading}
@@ -355,16 +365,16 @@ function ScheduleAppointmentModal({
                         allowClear
                       />
                     </Form.Item>
-                  </Col>
-                  <Col span={8}>
+                  </ColWithEightSpan>
+                  <ColWithEightSpan>
                     <Form.Item name="PatientName" label="Patient Name">
                       <Input allowClear style={{ width: "100%" }} />
                     </Form.Item>
-                  </Col>
-                  <Col span={4}>
+                  </ColWithEightSpan>
+                  <ColWithEightSpan style={{ display: "flex" }}>
                     <Form.Item label="&nbsp;">
                       <Button
-                        style={{ width: "100%" }}
+                        style={{ marginRight: "1rem" }}
                         type="primary"
                         htmlType="submit"
                         loading={patientSearchLoading}
@@ -372,11 +382,9 @@ function ScheduleAppointmentModal({
                         Search
                       </Button>
                     </Form.Item>
-                  </Col>
-                  <Col span={4}>
                     <Form.Item label="&nbsp;">
                       <Button
-                        style={{ width: "100%" }}
+                        // style={{ width: "100%" }}
                         danger
                         type="default"
                         onClick={() => {
@@ -388,13 +396,13 @@ function ScheduleAppointmentModal({
                         Reset
                       </Button>
                     </Form.Item>
-                  </Col>
+                  </ColWithEightSpan>
                 </Row>
                 {/* </Spin> */}
               </Form>
 
               <Form
-                style={{ margin: "1rem 0 0 0", width: "100%" }}
+                style={{ width: "100%" }}
                 layout="vertical"
                 form={form2}
                 initialValues={{
@@ -404,7 +412,11 @@ function ScheduleAppointmentModal({
                   remarks: "",
                 }}
                 onFinish={(values) => {
+                  if (!selecetedPatient) {
+                    message.warn("Please select a patient to book");
+                  }
                   setSaveLoading(true);
+
                   try {
                     const postData = {
                       FacilityId: 1,
@@ -450,22 +462,29 @@ function ScheduleAppointmentModal({
                       })
                       .finally(() => {
                         setSaveLoading(false);
+                        setSelecetedPatient({});
                       });
                   } catch (error) {
+                   
+                    if (!selecetedPatient) {
+                      message.warn("Select Patient to Book");
+                    }
                     console.error("Error:", error);
                     setSaveLoading(false);
+                    setSelecetedPatient({});
                   }
                 }}
               >
                 <Divider style={{ margin: 0 }} />
 
-                <Row gutter={32}>
+                <Row gutter={16}>
                   <Col span={24}>
                     <CustomTable
                       columns={columns}
                       dataSource={patients}
                       actionColumn={false}
                       isFilter={true}
+                      scroll={{ x: 700 }}
                       rowkey={"PatientId"}
                       rowSelection={{
                         type: "radio",
@@ -473,7 +492,7 @@ function ScheduleAppointmentModal({
                       }}
                     />
                   </Col>
-                  <Col span={12}>
+                  <ColWithTwelveSpan>
                     <Form.Item name="reason" label="Reason">
                       <Select
                         style={{ width: "100%" }}
@@ -486,14 +505,16 @@ function ScheduleAppointmentModal({
                         )}
                       />
                     </Form.Item>
-                  </Col>
-                  <Col span={12}>
+                  </ColWithTwelveSpan>
+                  <ColWithTwelveSpan>
                     <Form.Item name="remarks" label="Remarks">
                       <TextArea rows={2} style={{ width: "100%" }} />
                     </Form.Item>
-                  </Col>
-                  {/* <Divider style={{ marginTop: "0" }} /> */}
-                  <Col offset={16} span={4}>
+                  </ColWithTwelveSpan>
+                </Row>
+                <Row justify="end">
+                  <Col style={{ marginRight: "10px" }}>
+                    {/* <Divider style={{ marginTop: "0" }} /> */}
                     <Form.Item>
                       <Button
                         style={{ width: "100%" }}
@@ -505,7 +526,7 @@ function ScheduleAppointmentModal({
                       </Button>
                     </Form.Item>
                   </Col>
-                  <Col span={4}>
+                  <Col>
                     <Form.Item>
                       <Button
                         style={{ width: "100%" }}
@@ -526,7 +547,6 @@ function ScheduleAppointmentModal({
             <>
               <Spin spinning={saveLoading}>
                 <Form
-                  style={{ margin: "1rem 0 0 0", width: "100%" }}
                   layout="vertical"
                   form={form3}
                   onFinish={(values) => {
@@ -548,7 +568,6 @@ function ScheduleAppointmentModal({
                         : "",
                     };
                     form3.resetFields();
-                    console.log("Submit Values", values);
                     // if (
                     //   moment(values.Dob, "DD-MM-YYYY").isAfter(
                     //     moment().endOf("day")
@@ -585,8 +604,8 @@ function ScheduleAppointmentModal({
                     Remarks: "",
                   }}
                 >
-                  <Row gutter={32}>
-                    <Col span={4}>
+                  <Row gutter={16}>
+                    <ColWithSixSpan>
                       <Form.Item
                         name="PatientTitle"
                         label="Title"
@@ -605,8 +624,8 @@ function ScheduleAppointmentModal({
                           }))}
                         />
                       </Form.Item>
-                    </Col>
-                    <Col span={7}>
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
                       <Form.Item
                         name="PatientFirstName"
                         label="First Name"
@@ -619,8 +638,8 @@ function ScheduleAppointmentModal({
                       >
                         <Input style={{ width: "100%" }} />
                       </Form.Item>
-                    </Col>
-                    <Col span={7}>
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
                       <Form.Item
                         name="PatientLastName"
                         label="Last Name"
@@ -633,8 +652,8 @@ function ScheduleAppointmentModal({
                       >
                         <Input style={{ width: "100%" }} />
                       </Form.Item>
-                    </Col>
-                    <Col span={6}>
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
                       <Form.Item
                         name="MobileNumber"
                         label="Mobile Number"
@@ -651,8 +670,8 @@ function ScheduleAppointmentModal({
                       >
                         <Input maxLength={10} style={{ width: "100%" }} />
                       </Form.Item>
-                    </Col>
-                    <Col span={6}>
+                    </ColWithSixSpan>
+                    <ColWithSixSpan>
                       <Form.Item
                         name="Dob"
                         label="Date of Birth"
@@ -670,8 +689,8 @@ function ScheduleAppointmentModal({
                           style={{ width: "100%" }}
                         />
                       </Form.Item>
-                    </Col>
-                    <Col span={18}>
+                    </ColWithSixSpan>
+                    <Col xl={18} lg={18} md={12} xs={12} span={24}>
                       <Form.Item name="PresentAddress" label="Address">
                         <TextArea style={{ width: "100%" }} />
                       </Form.Item>
@@ -761,11 +780,14 @@ function ScheduleAppointmentModal({
                       </Form.Item>
                     </Col>
                   </Row>
-                  <Row gutter={32}>
-                    <Col offset={16} span={4}>
+                  <Row
+                    gutter={16}
+                    justify={"end"}
+                    style={{ marginRight: "10px" }}
+                  >
+                    <Col>
                       <Form.Item>
                         <Button
-                          style={{ width: "100%" }}
                           type="primary"
                           htmlType="submit"
                           loading={saveLoading}
@@ -776,12 +798,7 @@ function ScheduleAppointmentModal({
                     </Col>
                     <Col span={4}>
                       <Form.Item>
-                        <Button
-                          style={{ width: "100%" }}
-                          danger
-                          type="default"
-                          onClick={handleCancel}
-                        >
+                        <Button danger type="default" onClick={handleCancel}>
                           Cancel
                         </Button>
                       </Form.Item>

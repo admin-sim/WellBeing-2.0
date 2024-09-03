@@ -1,7 +1,7 @@
 import { Col as AntdCol, Col } from "antd";
 
 const ColWithThreeSpan = ({ children, ...props }) => (
-  <AntdCol xl={3} lg={5} md={7} sm={6} xs={9} span={12} {...props}>
+  <AntdCol xl={3} lg={5} md={7} sm={6} xs={6} span={12} {...props}>
     {children}
   </AntdCol>
 );
@@ -30,6 +30,11 @@ const ColWithTwelveSpan = ({ children, ...props }) => (
     {children}
   </Col>
 );
+const ColWithSixteenSpan = ({ children, ...props }) => (
+  <Col xl={16} lg={16} md={24} span={24} {...props}>
+    {children}
+  </Col>
+);
 
 export {
   ColWithSixSpan,
@@ -38,4 +43,5 @@ export {
   ColWithNineSpan,
   ColWithEightSpan,
   ColWithTwelveSpan,
+  ColWithSixteenSpan,
 };

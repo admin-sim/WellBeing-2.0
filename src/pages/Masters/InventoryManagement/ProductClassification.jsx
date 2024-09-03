@@ -4,14 +4,9 @@ import {
   EditOutlined,
   DeleteOutlined,
   PlusOutlined,
-  PlusCircleOutlined,
   DoubleRightOutlined,
 } from "@ant-design/icons";
-import Layout from "antd/es/layout/layout";
 import {
-  Spin,
-  Skeleton,
-  Tag,
   Typography,
   Modal,
   ConfigProvider,
@@ -21,16 +16,11 @@ import {
   Input,
   Row,
   Col,
-  DatePicker,
-  Card,
-  Divider,
   Popconfirm,
   Table,
-  Checkbox,
   message,
+  Layout,
 } from "antd";
-import dayjs from "dayjs";
-import TextArea from "antd/es/input/TextArea";
 import {
   urlProductClassificationIndex,
   urlGetList,
@@ -41,6 +31,9 @@ import {
 } from "../../../../endpoints";
 import { useNavigate } from "react-router";
 import FormItem from "antd/es/form/FormItem/index.js";
+import PageHeader from "../../../components/PageHeader/index.jsx";
+import CustomTable from "../../../components/customTable/index.jsx";
+import { ColWithEightSpan } from "../../../components/customGridColumns/index.jsx";
 
 const ProductClassification = () => {
   const [form] = Form.useForm();
@@ -51,8 +44,6 @@ const ProductClassification = () => {
   const [productGroupId, setProductGroupId] = useState();
   const [classificationAction, setClassificationAction] = useState();
   const [showTable, setShowTable] = useState(false);
-  const [paginationSize, setPaginationSize] = useState(5);
-  const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [buttonTitle, setButtonTitle] = useState("Save");
   const [dropDown, setDropDown] = useState({
@@ -132,13 +123,11 @@ const ProductClassification = () => {
   };
 
   const ModelDelete = (ProductClassificationId) => {
-    debugger;
     customAxios
       .post(
         `${urlDeleteProductClassification}?ProductClassificationId=${ProductClassificationId}&ProductGroupId=${productGroupId}`
       )
       .then((response) => {
-        debugger;
         const apiData = response.data;
         if (apiData === "Failure") {
           setIsModalOpen(false);
@@ -160,63 +149,29 @@ const ProductClassification = () => {
       title: "Short Name",
       dataIndex: "ShortName",
       key: "ShortName",
-      sorter: (a, b) => a.ShortName.localeCompare(b.ShortName),
-      sortDirections: ["descend", "ascend"],
+      width: 120,
     },
     {
       title: "Long Name",
       dataIndex: "LongName",
       key: "LongName",
-      sorter: (a, b) => a.LongName - b.LongName,
-      sortDirections: ["descend", "ascend"],
+      width: 120,
     },
     {
       title: "Product Group",
       dataIndex: "ProductGroup",
       key: "ProductGroup",
-      sorter: (a, b) => new Date(a.ProductGroup) - new Date(b.ProductGroup),
-      sortDirections: ["descend", "ascend"],
+      width: 150,
     },
     {
       title: "Status",
       dataIndex: "Status",
       key: "Status",
-      sorter: (a, b) => a.Status.localeCompare(b.Status),
-      sortDirections: ["descend", "ascend"],
+      width: 100,
       render: (text, record) => {
         if (text === true) {
           return "Active";
         }
-      },
-    },
-    {
-      title: (
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={ModelAdd}
-        ></Button>
-      ),
-      // dataIndex: 'add',
-      // key: 'add',
-      width: 50,
-      render: (text, record) => {
-        return (
-          <>
-            <Popconfirm
-              title="Sure to edit?"
-              onConfirm={() => ModelUpdate(record.ProductClassificationId)}
-            >
-              <EditOutlined style={{ marginRight: 4 }} />
-            </Popconfirm>
-            <Popconfirm
-              title="Sure to delete?"
-              onConfirm={() => ModelDelete(record.ProductClassificationId)}
-            >
-              <DeleteOutlined />
-            </Popconfirm>
-          </>
-        );
       },
     },
   ];
@@ -234,20 +189,17 @@ const ProductClassification = () => {
   };
 
   const onCancelModel = () => {
-    debugger;
     setIsModalOpen(false);
     form1.resetFields();
   };
 
   const onFinishModel = (values) => {
-    debugger;
     if (values.ProductClassificationId === undefined) {
       customAxios
         .post(
           `${urlSaveNewProductClassification}?ShortName=${values.ShortName}&LongName=${values.LongName}&ProductGroupId=${values.ProductGroupId}&Remarks=${values.Remarks}&Status=${values.Status}`
         )
         .then((response) => {
-          debugger;
           const apiData = response.data;
           if (apiData === "Failure") {
             setIsModalOpen(false);
@@ -268,7 +220,6 @@ const ProductClassification = () => {
           `${urlUpdateProductClassification}?ProductClassificationId=${values.ProductClassificationId}&LongName=${values.LongName}&ProductGroupId=${values.ProductGroupId}&Remarks=${values.Remarks}&Status=${values.Status}`
         )
         .then((response) => {
-          debugger;
           const apiData = response.data;
           if (apiData === "Failure") {
             setIsModalOpen(false);
@@ -287,7 +238,7 @@ const ProductClassification = () => {
   };
 
   return (
-    <div
+    <Layout
       style={{
         width: "100%",
         backgroundColor: "white",
@@ -295,48 +246,34 @@ const ProductClassification = () => {
         borderRadius: "10px",
       }}
     >
-      <Row
-        style={{
-          padding: "0.5rem 2rem 0.5rem 2rem",
-          backgroundColor: "#40A2E3",
-          borderRadius: "10px 10px 0px 0px ",
-        }}
-      >
-        <Col span={16}>
-          <Title
-            level={4}
-            style={{
-              color: "white",
-              fontWeight: 500,
-              margin: 0,
-              paddingTop: 0,
-            }}
-          >
-            Product Classification
-          </Title>
-        </Col>
-      </Row>
-      <Row>
+      <PageHeader title={"Product Classification"} button={false} />
+
+      <Row gutter={32} style={{ margin: "1rem 0 1rem 1rem" }}>
         <Col
-          span={7}
+          xl={6}
+          lg={12}
+          md={12}
+          xs={24}
+          span={24}
           style={{
             width: "100%",
             backgroundColor: "white",
             height: "min-content",
             borderRadius: "10px",
-            margin: "1rem 0 1rem 1rem",
             border: "1px solid grey",
+            padding: 0,
           }}
         >
           <Row
             style={{
               padding: "0.3rem 1rem",
+
               // backgroundColor: "#40A2E3",
               backgroundColor: "lavender",
               borderRadius: "10px 10px 0px 0px ",
             }}
           >
-            <Col>
+            <Col span={24}>
               <Title
                 level={5}
                 style={{
@@ -350,10 +287,8 @@ const ProductClassification = () => {
               </Title>
             </Col>
           </Row>
-
           <div
             style={{
-              width: "100%",
               display: "flex",
               flexDirection: "column",
               gap: "1rem",
@@ -390,27 +325,27 @@ const ProductClassification = () => {
             </ConfigProvider>
           </div>
         </Col>
-        <Col span={16} style={{ margin: "1rem 0 1rem 1rem" }}>
+        <Col
+          xl={18}
+          span={24}
+          style={{
+            marginTop: "1rem",
+            padding: 0,
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+          }}
+        >
           {showTable && (
             <>
-              <h4>{productGroup}</h4>
-              <Table
+              <h4 style={{ margin: "0 0 0 0.5rem" }}>{productGroup}</h4>
+              <CustomTable
                 dataSource={dPPData}
                 columns={columns}
-                pagination={{
-                  onChange: (current, pageSize) => {
-                    setPage(current);
-                    setPaginationSize(pageSize);
-                  },
-                  defaultPageSize: 5,
-                  hideOnSinglePage: true,
-                  showSizeChanger: true,
-                  showTotal: (total, range) =>
-                    `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                }}
-                rowKey={(row) => row.AppUserId}
-                size="small"
-                bordered
+                onEdit={(record) => ModelUpdate(record.ProductClassificationId)}
+                onDelete={(record) =>
+                  ModelDelete(record.ProductClassificationId)
+                }
               />
             </>
           )}
@@ -422,47 +357,30 @@ const ProductClassification = () => {
         onOk={onOkModal}
         onCancel={onCancelModel}
         open={isModalOpen}
-        layout="vertical"
         footer={[
           <Button key="submit" type="primary" onClick={onOkModal}>
             {buttonTitle}
           </Button>,
-          <Button key="back" onClick={onCancelModel}>
+          <Button key="back" danger onClick={onCancelModel}>
             Close
           </Button>,
         ]}
       >
         <Form
-          name="basic"
-          labelCol={{
-            span: 8,
-          }}
-          wrapperCol={{
-            span: 16,
-          }}
-          style={{
-            width: "100%",
-          }}
+          layout="vertical"
           onFinish={onFinishModel}
-          // onFinishFailed={onFinishFailed}
-          autoComplete="off"
           form={form1}
           initialValues={{
             Status: true,
             ProductGroupId: productGroupId,
-            // Remarks: '',
           }}
         >
           Product Group: <strong>{productGroup}</strong>
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-            style={{ margin: "1rem 0 0 0" }}
-          >
-            <Col className="gutter-row" span={12}>
+          <Row gutter={16} style={{ margin: "1rem 0 0 0" }}>
+            <Col span={12}>
               <Form.Item
                 label="Short Name"
                 name="ShortName"
-                style={{ marginLeft: "10px" }}
                 rules={[
                   {
                     required: true,
@@ -479,11 +397,11 @@ const ProductClassification = () => {
                 <Input></Input>
               </FormItem>
             </Col>
-            <Col className="gutter-row" span={12}>
+            <Col span={12}>
               <Form.Item
                 label="Status"
                 name="Status"
-                style={{ marginLeft: "10px" }}
+                // style={{ marginLeft: "10px" }}
                 rules={[
                   {
                     required: true,
@@ -501,13 +419,10 @@ const ProductClassification = () => {
                 </Select>
               </Form.Item>
             </Col>
-          </Row>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col span={24}>
               <Form.Item
                 label="Long Name"
                 name="LongName"
-                style={{ marginLeft: "10px" }}
                 rules={[
                   {
                     required: true,
@@ -519,18 +434,14 @@ const ProductClassification = () => {
               </Form.Item>
             </Col>
             <Col span={24}>
-              <Form.Item
-                label="Remarks"
-                name="Remarks"
-                style={{ marginLeft: "10px" }}
-              >
+              <Form.Item label="Remarks" name="Remarks">
                 <Input type="text" allowClear></Input>
               </Form.Item>
             </Col>
           </Row>
         </Form>
       </Modal>
-    </div>
+    </Layout>
   );
 };
 

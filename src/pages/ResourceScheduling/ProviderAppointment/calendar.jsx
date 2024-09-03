@@ -15,9 +15,15 @@ import {
   urlGetScheduledProviderAppointments,
   urlGetProviderCalenderBasedOnProviderId,
   urlGetProviderBasedOnDept,
-} from "../../../endpoints";
-import customAxios from "../../components/customAxios/customAxios";
+} from "../../../../endpoints";
+import customAxios from "../../../components/customAxios/customAxios";
 import ViewScheduledAppointment from "./ViewScheduledAppointment";
+import PageHeader from "../../../components/PageHeader";
+import {
+  ColWithSixSpan,
+  ColWithTwelveSpan,
+} from "../../../components/customGridColumns";
+import { isMobile } from "react-device-detect";
 
 const MyCalendar = ({}) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -346,57 +352,22 @@ const MyCalendar = ({}) => {
     }
   };
 
-  console.log("events", events);
-
   return (
-    <Layout>
+    <Layout
+      style={{
+        width: "100%",
+        backgroundColor: "white",
+        minHeight: "max-content",
+        borderRadius: "10px",
+      }}
+    >
       <Spin spinning={loading}>
         <div
-          // ref={tableRef}
-          style={{
-            width: "100%",
-            backgroundColor: "white",
-            minHeight: "max-content",
-            borderRadius: "10px",
-          }}
+        // ref={tableRef}
         >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={23}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Provider Appointment
-              </Title>
-            </Col>
-            {/* <Col span={1}> */}
-            {/* <Tooltip
-            title={isFullScreen ? "Exit Full Screen" : "Enter Full Screen"}
-          > */}
-            {/* <Button onClick={handleFullscreen}>
-              {isFullScreen ? (
-                <AiOutlineFullscreenExit style={{ fontSize: "1.5rem" }} />
-              ) : (
-                <AiOutlineFullscreen style={{ fontSize: "1.5rem" }} />
-              )}
-            </Button> */}
-            {/* </Tooltip> */}
-            {/* </Col> */}
-          </Row>
-
+          <PageHeader title={"Provider Appointment"} button={false} />
           <Form
-            style={{ margin: "0.5rem 0 0 0" }}
+            style={{ margin: "0.5rem 1rem" }}
             form={form}
             layout="vertical"
             size="small"
@@ -404,8 +375,8 @@ const MyCalendar = ({}) => {
               console.log(values);
             }}
           >
-            <Row style={{ margin: "0 0rem" }} gutter={32}>
-              <Col span={6}>
+            <Row style={{ margin: "0 0rem" }} gutter={16}>
+              <ColWithSixSpan>
                 <Form.Item name="department" label="Department">
                   <Select
                     loading={departmentLoading}
@@ -435,8 +406,8 @@ const MyCalendar = ({}) => {
                     ))}
                   </Select>
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="Provider" label="Provider">
                   <Select
                     loading={providerLoading}
@@ -467,60 +438,65 @@ const MyCalendar = ({}) => {
                     ))}
                   </Select>
                 </Form.Item>
-              </Col>
-              <Col
-                span={12}
+              </ColWithSixSpan>
+              <ColWithTwelveSpan
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "space-between",
+                  justifyContent: "space-evenly",
                 }}
               >
                 <Col
-                  span={7}
                   style={{
+                    width: "30%",
                     display: "flex",
                     alignItems: "center",
                     backgroundColor: "#4caf50",
                     justifyContent: "center",
-                    // margin: "1.5rem 1rem",
+                    padding: "0.2rem 0.5rem",
                     color: "#fff",
                   }}
                 >
-                  <span>Available Slot</span>
+                  <span>Available&nbsp;Slot</span>
                 </Col>
                 <Col
-                  span={7}
                   style={{
                     display: "flex",
+                    width: "30%",
                     alignItems: "center",
                     backgroundColor: "#fea010",
-                    // margin: "1.5rem 0",
+                    padding: "0.2rem 0.5rem",
                     justifyContent: "center",
                     color: "#fff",
                   }}
                 >
-                  <span>Booked Slot</span>
+                  <span>Booked&nbsp;Slot</span>
                 </Col>
                 <Col
-                  span={7}
                   style={{
+                    width: "35%",
                     display: "flex",
                     alignItems: "center",
                     backgroundColor: "#EE82EE",
-                    // margin: "1.5rem 0",
+                    padding: "0.2rem 0.5rem",
                     justifyContent: "center",
                     color: "#fff",
                   }}
                 >
-                  <span>OverBooking Slot</span>
+                  <span>OverBooking&nbsp;Slot</span>
                 </Col>
-              </Col>
+              </ColWithTwelveSpan>
             </Row>
           </Form>
         </div>
         {calendarData && (
-          <div style={{ backgroundColor: "white", padding: "0 0.5rem" }}>
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "0 0.5rem",
+              marginTop: "1rem",
+            }}
+          >
             <Row
               style={{
                 display: "flex",
@@ -540,6 +516,7 @@ const MyCalendar = ({}) => {
               </Col>
             </Row>
             <FullCalendar
+              windowResize={true}
               ref={calendarRef}
               plugins={[
                 dayGridPlugin,
@@ -548,11 +525,19 @@ const MyCalendar = ({}) => {
                 interactionPlugin,
               ]}
               initialView="timeGridWeek"
-              headerToolbar={{
-                left: "prev,next today",
-                center: "title",
-                right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-              }}
+              headerToolbar={
+                isMobile
+                  ? {
+                      left: "prev next today listWeek timeGridWeek title",
+                      center: "",
+                      right: "",
+                    }
+                  : {
+                      left: "prev,next today",
+                      center: "title",
+                      right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+                    }
+              }
               buttonText={{
                 today: "Today",
                 month: "Month",
