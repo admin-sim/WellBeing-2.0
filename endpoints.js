@@ -1,7 +1,7 @@
 // import config from "./appSettings.json";
 
 // const baseURL = config.baseUrl;
- const baseURL = import.meta.env.VITE_API_URL;
+const baseURL = import.meta.env.VITE_API_URL;
 export const urlAddNewVisit1 = `${baseURL}/api/Encounter/SaveNewEncounter1`;
 
 export const urlGetServiceCharge = `${baseURL}/api/Billing/GetServiceCharge`;
@@ -309,15 +309,15 @@ export const urlShowModal = `${baseURL}/api/WardManagement/ShowModal`;
 export const urlGetBeds = `${baseURL}/api/WardManagement/GetBeds`;
 export const urlSaveModal = `${baseURL}/api/WardManagement/SaveModal`;
 export const urlGetServiceLocation = `${baseURL}/api/WardManagement/GetServiceLocation`;
-export const urlCreateStoreReturn=`${baseURL}/api/StoreReturn/StoreReturnIndex`;
-export const urlGetStoreProductDetails=`${baseURL}/api/UrgentIssue/GetStoreProductDetails`;
-export const urlSearchReceipt=`${baseURL}/api/StoreReturn/SearchReceipt`;
-export const urlAddNewStoreReturn=`${baseURL}/api/StoreReturn/AddNewStoreReturn`;
-export const urlSearchStoreReturn=`${baseURL}/api/StoreReturn/SearchStoreReturn`;
-export const urlStoreReturnEdit=`${baseURL}/api/StoreReturn/StoreReturnEdit`;
-export const urlSearchAcknowledgeReturn=`${baseURL}/api/AcknowledgeReturn/SearchAcknowledgeReturn`;
-export const urlAcknowledgeReturnCreate=`${baseURL}/api/AcknowledgeReturn/AcknowledgeReturnCreate`;
-export const urlAddNewAcknowledgeReturn=`${baseURL}/api/AcknowledgeReturn/AddNewAcknowledgeReturn`;
+export const urlCreateStoreReturn = `${baseURL}/api/StoreReturn/StoreReturnIndex`;
+export const urlGetStoreProductDetails = `${baseURL}/api/UrgentIssue/GetStoreProductDetails`;
+export const urlSearchReceipt = `${baseURL}/api/StoreReturn/SearchReceipt`;
+export const urlAddNewStoreReturn = `${baseURL}/api/StoreReturn/AddNewStoreReturn`;
+export const urlSearchStoreReturn = `${baseURL}/api/StoreReturn/SearchStoreReturn`;
+export const urlStoreReturnEdit = `${baseURL}/api/StoreReturn/StoreReturnEdit`;
+
+export const urlAcknowledgeReturnCreate = `${baseURL}/api/AcknowledgeReturn/AcknowledgeReturnCreate`;
+
 export const urlCancelDischargeInitiation = `${baseURL}/api/WardManagement/CancelDischargeInitiation`;
 export const urlCreateWard = `${baseURL}/api/Ward/CreateWard`;
 export const urlSaveNewWard = `${baseURL}/api/Ward/SaveNewWard`;
@@ -359,4 +359,4 @@ export const urlDeleteSelectedAdditionalCharge = `${baseURL}/api/AdditionalCharg
 export const urlDeleteSelectedAdditionalChargeRule = `${baseURL}/api/AdditionalChargeSetup/DeleteSelectedAdditionalChargeRule`;
 export const urlDeleteSelectedSurgeryRule = `${baseURL}/api/AdditionalChargeSetup/DeleteSelectedSurgeryRule`;
 export const urlDeleteSelectedAssociation = `${baseURL}/api/AdditionalChargeSetup/DeleteSelectedAssociation`;
-
+export const urlAddNewAcknowledgeReturn = `${baseURL}/api/AcknowledgeReturn/AddNewAcknowledgeReturn`;

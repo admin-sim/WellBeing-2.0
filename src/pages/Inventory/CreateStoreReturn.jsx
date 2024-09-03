@@ -153,17 +153,7 @@ const CreateStoreReturn = () => {
     setInputValues((prevState) => ({ ...prevState, [key]: value }));
   };
 
-  const OpenModel = () => {
-    form1
-      .validateFields()
-      .then(() => {
-        // setRecordKeys(record.key)
-        setIsModalOpen(true);
-      })
-      .catch((error) => {
-        console.log('Validation error:', error);
-      });
-  }
+
   const handleOnFinish = async (values) => {
     debugger;
    
@@ -586,12 +576,7 @@ const CreateStoreReturn = () => {
             </Row>
           </Form>
         </Card>
-        <ConfigProvider
-          theme={{
-            token: {
-              zIndexPopupBase: 3000
-            }
-          }}>
+    
           <Modal
             title="Basic Modal"
             onOk={onOkModal}
@@ -618,6 +603,7 @@ const CreateStoreReturn = () => {
               autoComplete="off"
               form={form2}
             >
+              <Row>
               <Col className="gutter-row" span={6}>
                 <div>
                   <Form.Item

@@ -13,6 +13,7 @@ import {
   Switch,
   Divider,
 } from "antd";
+import { IoIosPeople } from "react-icons/io";
 import { TimePicker } from "antd";
 import Input from "antd/es/input";
 import Form from "antd/es/form";
@@ -523,436 +524,359 @@ const PatientVitalSigns = () => {
   ];
 
   return (
-    <Layout style={{ zIndex: "1" }}>
-      <div
+    <Layout
+      style={{
+        padding: "0 0.5rem",
+        width: "100%",
+        backgroundColor: "white",
+        minHeight: "max-content",
+        borderRadius: "10px",
+      }}
+    >
+      <PatientHeader patient={patientHeaderDetails}></PatientHeader>
+      <Row
+        gutter={16}
         style={{
-          backgroundColor: "white",
-          minHeight: "100vh",
-          borderRadius: "10px",
-          overflow: "hidden",
-          padding: "1rem",
+          margin: "1rem 0",
+          display: "flex",
+          justifyContent: "space-between",
         }}
       >
-        {/* <div
-          style={{
-            padding: "16px",
-            borderRadius: "4px",
-            margin: "10px",
-            backgroundColor: "#d9f7be",
-            // display: "flex",
-            // flexDirection: "row",
-            // justifyContent: "space-between",
-            boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
-          }}
-        >
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-            style={{ margin: "10px 0px" }}
+        <Col>
+          <Button
+            type="primary"
+            size="middle"
+            style={{
+              fontSize: "1rem",
+              display: "flex",
+              alignItems: "center",
+            }}
+            onClick={handleNavigateToQueue}
           >
-            <Col span={8}>
-              <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                UHID:
-              </span>
-              <span>{selectedPatientRecord && selectedPatientRecord.UhId}</span>
-            </Col>
-            <Col span={8}>
-              <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                Name:
-              </span>
-              <span>
-                {selectedPatientRecord && selectedPatientRecord.PatientName}
-              </span>
-            </Col>
-            <Col span={8}>
-              <span style={{ fontWeight: "bold" }}>Gender : </span>
-              <span>
-                {selectedPatientRecord &&
-                selectedPatientRecord.PatientGender === 7
-                  ? " Male "
-                  : " Female "}
-              </span>
-            </Col>
-          </Row>
-
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-            style={{ margin: "0px 0px" }}
+            <IoIosPeople
+              style={{
+                fontWeight: "bold",
+                fontSize: "1.5rem",
+                marginRight: "0.2rem",
+              }}
+            />
+            Queue List
+          </Button>
+        </Col>
+        <Col>
+          <Button
+            type="primary"
+            size="middle"
+            style={{
+              fontSize: "1rem",
+              display: "flex",
+              alignItems: "center",
+            }}
+            onClick={handleCaptureVitals}
           >
-            <Col span={8}>
-              <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                Encounter:
-              </span>
-              <span>
-                {selectedPatientRecord && selectedPatientRecord.Encounterstr}
-              </span>
-            </Col>
-            <Col span={8}>
-              <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                Age:
-              </span>
-              <span>{selectedPatientRecord && selectedPatientRecord.Age}</span>
-            </Col>
-            <Col span={8}>
-              <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                Dob:
-              </span>
-              <span>
-                {selectedPatientRecord &&
-                  formatDatefortable(selectedPatientRecord.DateOfBirth)}
-              </span>
-            </Col>
-          </Row>
-        </div> */}
-        <PatientHeader patient={patientHeaderDetails}></PatientHeader>
-        <Row
-          gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-          style={{ margin: "15px 0px" }}
-        >
-          <Col span={2}>
-            <Button
-              type="primary"
-              size="middle"
+            <BiBody
               style={{
-                margin: "2px 0px",
-                padding: "0px 5px",
-                fontSize: "15px",
-                display: "flex",
-                alignItems: "center",
+                fontWeight: "bold",
+                fontSize: "1.5rem",
+                marginRight: "0.1rem",
               }}
-              onClick={handleNavigateToQueue}
-            >
-              <BiBody style={{ fontWeight: "bold", fontSize: "20px" }} />
-              Queue List
-            </Button>
-          </Col>
-          <Col span={1} offset={18}>
-            <Button
-              type="primary"
-              size="middle"
-              style={{
-                margin: "0px 45px",
-                padding: "0px 5px",
-                fontSize: "15px",
-                display: "flex",
-                alignItems: "center",
+            />
+            Capture vitals
+          </Button>
+        </Col>
+      </Row>
+      <Spin spinning={isLoading}>
+        <Row>
+          <Col span={24}>
+            <Table
+              dataSource={vitalsDetails}
+              columns={encounterColumns}
+              rowKey={(row) => row.PatientVitalId}
+              size="small"
+              scroll={{ x: 1000 }}
+              className="vitals-table"
+              onChange={(pagination) => {
+                setCurrentPage(pagination.current);
+                setItemsPerPage(pagination.pageSize);
               }}
-              onClick={handleCaptureVitals}
-            >
-              <BiBody style={{ fontWeight: "bold", fontSize: "20px" }} />
-              Capture vitals
-            </Button>
+              bordered
+            />
           </Col>
         </Row>
-        <Spin spinning={isLoading}>
+      </Spin>
+
+      <Modal
+        width={1000}
+        title="CAPTURE VITALS"
+        open={isCaptureVitalsModalVisible}
+        onOk={handleSaveCaptureDetails}
+        onCancel={handleCaptureVitalsModalCancel}
+        okText="Save"
+        cancelText="Cancel"
+        maskClosable={false}
+      >
+        <div>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col span={24}>
-              <Table
-                dataSource={vitalsDetails}
-                columns={encounterColumns}
-                rowKey={(row) => row.PatientVitalId}
-                size="small"
-                className="vitals-table"
-                // scroll={{ x: 1700 }}
-                onChange={(pagination) => {
-                  setCurrentPage(pagination.current);
-                  setItemsPerPage(pagination.pageSize);
+              <div
+                style={{
+                  backgroundColor: "#d6e4ff",
+                  padding: "10px",
+                  borderRadius: "5px",
+                  marginBottom: "10px",
                 }}
-                bordered
-              />
-            </Col>
-          </Row>
-        </Spin>
-      </div>
-      <ConfigProvider
-        theme={{
-          token: {
-            zIndexPopupBase: 3000,
-          },
-        }}
-      >
-        {/* {contextHolder} */}
-        <Modal
-          width={1000}
-          title="CAPTURE VITALS"
-          open={isCaptureVitalsModalVisible}
-          onOk={handleSaveCaptureDetails}
-          onCancel={handleCaptureVitalsModalCancel}
-          okText="Save"
-          cancelText="Cancel"
-          maskClosable={false}
-        >
-          <div>
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col span={24}>
-                <div
+              >
+                You are capturing vitals for the above patient on
+                <span
                   style={{
-                    backgroundColor: "#d6e4ff",
-                    padding: "10px",
-                    borderRadius: "5px",
-                    marginBottom: "10px",
+                    marginLeft: "auto",
+                    display: "flex",
+                    alignItems: "center",
                   }}
                 >
-                  You are capturing vitals for the above patient on
-                  <span
-                    style={{
-                      marginLeft: "auto",
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    {currentTimeString}
-                    <FaRegClock style={{ marginLeft: "5px" }} />
-                  </span>
+                  {currentTimeString}
+                  <FaRegClock style={{ marginLeft: "5px" }} />
+                </span>
+              </div>
+            </Col>
+          </Row>
+          <Form
+            // key={selectedPatientRecord.PatientId}
+            form={form2}
+            layout="vertical"
+          >
+            <Row
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+              style={{ margin: "0px 10px" }}
+            >
+              <Col span={5}>
+                <Form.Item
+                  name="Height"
+                  label="Height"
+                  rules={[
+                    {
+                      pattern: /^\d{2,3}$/,
+                      message: "Please enter valid input for height",
+                    },
+                  ]}
+                >
+                  <Input addonAfter="Cm" onChange={onHeightChange} />
+                </Form.Item>
+              </Col>
+              <Col span={3}>
+                <Form.Item name="Feet" label="Feet">
+                  <Input disabled value={heightWeightValues.Feet} />
+                </Form.Item>
+              </Col>
+              <Col span={3}>
+                <Form.Item name="Inch" label="Inch">
+                  <Input disabled value={heightWeightValues.Inch} />
+                </Form.Item>
+              </Col>
+              <Col span={5}>
+                <Form.Item
+                  name="Weight"
+                  label="Weight"
+                  rules={[
+                    {
+                      pattern: /^\d{1,3}$/,
+                      message: "Please enter valid input for weight",
+                    },
+                  ]}
+                >
+                  <Input addonAfter="Kg" onChange={onWeightChange} />
+                </Form.Item>
+              </Col>
+              <Col span={5}>
+                <Form.Item name="BodyMassIndex" label="Body Mass Index">
+                  <Input disabled value={heightWeightValues.BMI} />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+              style={{ margin: "0px 10px" }}
+            >
+              <Col span={8}>
+                <Form.Item
+                  name="HeadCircumference"
+                  label="Head Circumference"
+                  rules={[
+                    {
+                      pattern: /^\d{2,3}$/,
+                      message:
+                        "Please enter valid input for head circumference",
+                    },
+                  ]}
+                >
+                  <Input addonAfter="cm" />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item
+                  name="Temperature"
+                  label="Temperature"
+                  rules={[
+                    {
+                      pattern: /^\d{2,3}$/,
+                      message: "Please enter valid input for Temperature",
+                    },
+                  ]}
+                >
+                  <Input addonAfter={tempOptions} />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="HeartRate"
+                  label="Heart Rate"
+                  rules={[
+                    {
+                      pattern: /^\d{2,3}$/,
+                      message: "Please enter valid input for Heart Rate",
+                    },
+                  ]}
+                >
+                  <Input addonAfter="bpm" />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+              style={{ margin: "0px 10px" }}
+            >
+              <Col span={6}>
+                <Form.Item
+                  name="SystolicBP"
+                  label="Systolic BP "
+                  rules={[
+                    {
+                      pattern: /^\d{2,3}$/,
+                      message: "Please enter valid input for Systolic BP",
+                    },
+                  ]}
+                >
+                  <Input addonAfter="mmHg" onChange={onSystolicBPChange} />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="DiastolicBP"
+                  label="Diastolic BP "
+                  rules={[
+                    {
+                      pattern: /^\d{2,3}$/,
+                      message: "Please enter valid input for Diastolic BP",
+                    },
+                  ]}
+                >
+                  <Input addonAfter="mmHg" onChange={onDiastolicBPChange} />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="MeanAtrialPressure"
+                  label="Mean Atrial Pressure"
+                >
+                  <Input
+                    disabled
+                    addonAfter="mmHg"
+                    value={MAPValues.MeanAtrialPressure}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <p style={{ margin: "2px" }}>Position</p>
+                <div
+                  style={{
+                    // border: "1px solid #d6e4ff",
+                    padding: "10px 10px",
+                  }}
+                >
+                  <Form.Item name="position">
+                    <Radio.Group>
+                      <Radio value="sitting">
+                        <MdAirlineSeatReclineNormal style={{ fontSize: 18 }} />
+                      </Radio>
+                      <Radio value="supine">
+                        <FaBed style={{ fontSize: 18 }} />
+                      </Radio>
+                      <Radio value="standing">
+                        <BsPersonStanding style={{ fontSize: 18 }} />
+                      </Radio>
+                    </Radio.Group>
+                  </Form.Item>
                 </div>
               </Col>
             </Row>
-            <Form
-              // key={selectedPatientRecord.PatientId}
-              form={form2}
-              layout="vertical"
+            <Row
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+              style={{ margin: "0px 10px" }}
             >
-              <Row
-                gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-                style={{ margin: "0px 10px" }}
-              >
-                <Col span={5}>
-                  <Form.Item
-                    name="Height"
-                    label="Height"
-                    rules={[
-                      {
-                        pattern: /^\d{2,3}$/,
-                        message: "Please enter valid input for height",
-                      },
-                    ]}
-                  >
-                    <Input addonAfter="Cm" onChange={onHeightChange} />
+              <Col span={6}>
+                <Form.Item
+                  name="RespiratoryRate"
+                  label="Respiratory Rate "
+                  rules={[
+                    {
+                      pattern: /^\d{2,3}$/,
+                      message: "Please enter valid input for Respiratory Rate",
+                    },
+                  ]}
+                >
+                  <Input addonAfter="(C/M)" />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="OxygenSaturation"
+                  label="SPO2 %"
+                  rules={[
+                    {
+                      pattern: /^\d{2,3}$/,
+                      message: "Please enter valid input for SPO2",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={3}>
+                <div style={{ marginLeft: "10px" }}>
+                  <p>Oedema</p>
+                  <Form.Item name="oedema">
+                    <Switch size="large" style={{ margin: "0px 5px" }}></Switch>
                   </Form.Item>
-                </Col>
-                <Col span={3}>
-                  <Form.Item name="Feet" label="Feet">
-                    <Input disabled value={heightWeightValues.Feet} />
+                </div>
+              </Col>
+              <Col span={3}>
+                <div>
+                  <p>Pallor</p>
+                  <Form.Item name="pallor" style={{ margin: "0px 0px" }}>
+                    <Switch size="large"></Switch>
                   </Form.Item>
-                </Col>
-                <Col span={3}>
-                  <Form.Item name="Inch" label="Inch">
-                    <Input disabled value={heightWeightValues.Inch} />
-                  </Form.Item>
-                </Col>
-                <Col span={5}>
-                  <Form.Item
-                    name="Weight"
-                    label="Weight"
-                    rules={[
-                      {
-                        pattern: /^\d{1,3}$/,
-                        message: "Please enter valid input for weight",
-                      },
-                    ]}
-                  >
-                    <Input addonAfter="Kg" onChange={onWeightChange} />
-                  </Form.Item>
-                </Col>
-                <Col span={5}>
-                  <Form.Item name="BodyMassIndex" label="Body Mass Index">
-                    <Input disabled value={heightWeightValues.BMI} />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row
-                gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-                style={{ margin: "0px 10px" }}
-              >
-                <Col span={8}>
-                  <Form.Item
-                    name="HeadCircumference"
-                    label="Head Circumference"
-                    rules={[
-                      {
-                        pattern: /^\d{2,3}$/,
-                        message:
-                          "Please enter valid input for head circumference",
-                      },
-                    ]}
-                  >
-                    <Input addonAfter="cm" />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    name="Temperature"
-                    label="Temperature"
-                    rules={[
-                      {
-                        pattern: /^\d{2,3}$/,
-                        message: "Please enter valid input for Temperature",
-                      },
-                    ]}
-                  >
-                    <Input addonAfter={tempOptions} />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="HeartRate"
-                    label="Heart Rate"
-                    rules={[
-                      {
-                        pattern: /^\d{2,3}$/,
-                        message: "Please enter valid input for Heart Rate",
-                      },
-                    ]}
-                  >
-                    <Input addonAfter="bpm" />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row
-                gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-                style={{ margin: "0px 10px" }}
-              >
-                <Col span={6}>
-                  <Form.Item
-                    name="SystolicBP"
-                    label="Systolic BP "
-                    rules={[
-                      {
-                        pattern: /^\d{2,3}$/,
-                        message: "Please enter valid input for Systolic BP",
-                      },
-                    ]}
-                  >
-                    <Input addonAfter="mmHg" onChange={onSystolicBPChange} />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="DiastolicBP"
-                    label="Diastolic BP "
-                    rules={[
-                      {
-                        pattern: /^\d{2,3}$/,
-                        message: "Please enter valid input for Diastolic BP",
-                      },
-                    ]}
-                  >
-                    <Input addonAfter="mmHg" onChange={onDiastolicBPChange} />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="MeanAtrialPressure"
-                    label="Mean Atrial Pressure"
-                  >
-                    <Input
-                      disabled
-                      addonAfter="mmHg"
-                      value={MAPValues.MeanAtrialPressure}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <p style={{ margin: "2px" }}>Position</p>
-                  <div
-                    style={{
-                      // border: "1px solid #d6e4ff",
-                      padding: "10px 10px",
+                </div>
+              </Col>
+            </Row>
+            <Row
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+              // style={{ margin: "0px 10px" }}
+            >
+              <Col span={12} style={{ marginLeft: "25px" }}>
+                <Form.Item name="otherComments" label="Other Comments (if any)">
+                  <TextArea
+                    placeholder="Add your thoughts on capturing vitals"
+                    autoSize={{
+                      minRows: 2,
+                      maxRows: 6,
                     }}
-                  >
-                    <Form.Item name="position">
-                      <Radio.Group>
-                        <Radio value="sitting">
-                          <MdAirlineSeatReclineNormal
-                            style={{ fontSize: 18 }}
-                          />
-                        </Radio>
-                        <Radio value="supine">
-                          <FaBed style={{ fontSize: 18 }} />
-                        </Radio>
-                        <Radio value="standing">
-                          <BsPersonStanding style={{ fontSize: 18 }} />
-                        </Radio>
-                      </Radio.Group>
-                    </Form.Item>
-                  </div>
-                </Col>
-              </Row>
-              <Row
-                gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-                style={{ margin: "0px 10px" }}
-              >
-                <Col span={6}>
-                  <Form.Item
-                    name="RespiratoryRate"
-                    label="Respiratory Rate "
-                    rules={[
-                      {
-                        pattern: /^\d{2,3}$/,
-                        message:
-                          "Please enter valid input for Respiratory Rate",
-                      },
-                    ]}
-                  >
-                    <Input addonAfter="(C/M)" />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    name="OxygenSaturation"
-                    label="SPO2 %"
-                    rules={[
-                      {
-                        pattern: /^\d{2,3}$/,
-                        message: "Please enter valid input for SPO2",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={3}>
-                  <div style={{ marginLeft: "10px" }}>
-                    <p>Oedema</p>
-                    <Form.Item name="oedema">
-                      <Switch
-                        size="large"
-                        style={{ margin: "0px 5px" }}
-                      ></Switch>
-                    </Form.Item>
-                  </div>
-                </Col>
-                <Col span={3}>
-                  <div>
-                    <p>Pallor</p>
-                    <Form.Item name="pallor" style={{ margin: "0px 0px" }}>
-                      <Switch size="large"></Switch>
-                    </Form.Item>
-                  </div>
-                </Col>
-              </Row>
-              <Row
-                gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-                // style={{ margin: "0px 10px" }}
-              >
-                <Col span={12} style={{ marginLeft: "25px" }}>
-                  <Form.Item
-                    name="otherComments"
-                    label="Other Comments (if any)"
-                  >
-                    <TextArea
-                      placeholder="Add your thoughts on capturing vitals"
-                      autoSize={{
-                        minRows: 2,
-                        maxRows: 6,
-                      }}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
-          </div>
-        </Modal>
-      </ConfigProvider>
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </div>
+      </Modal>
     </Layout>
   );
 };
