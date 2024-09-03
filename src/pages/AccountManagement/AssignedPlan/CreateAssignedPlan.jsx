@@ -48,10 +48,9 @@ import {
   urlGetAuthorizationListByAssignPlanId,
   urlGetDropDownsForBillAggrement,
   urlGetPatientHeaderDetails,
-  urlGetPriceTariffsAddnew,
-  urlGetSaveNewAuthorisation,
-  urlGetTariffPlanForPayerAndGetPayerBillAgreement,
+  //urlGetPriceTariffsAddnew,
   urlSaveNewAssignedPlan,
+  urlSaveNewAuthorisation,
   urlUpdateAssignedPlan,
   urlUpdateAuthorisation,
 } from "../../../../endpoints";
@@ -304,7 +303,7 @@ const CreateAssignedPlan = () => {
     values.ApprovedDays=values.ApprovedDays ? values.ApprovedDays : null;
     values.AmtDeductible=values.AmtDeductible ? values.AmtDeductible : 0;
 
-    const url = planAuthId ? urlUpdateAuthorisation : urlGetSaveNewAuthorisation;
+    const url = planAuthId ? urlUpdateAuthorisation : urlSaveNewAuthorisation;
     try {
       const response = await customAxios.post(
         url,
@@ -337,12 +336,12 @@ const CreateAssignedPlan = () => {
     form.resetFields();
     setPlanAuthId(null);
 
-    const response = await customAxios.get(
-      `${urlGetPriceTariffsAddnew}?patientId=${PatientId}&encounterId=${EncounterId}`
-    );
-    if (response.status === 200 && response.data.data != null) {
-      setBillagreementDropdown(response.data.data);
-    }
+    // const response = await customAxios.get(
+    //   `${urlGetPriceTariffsAddnew}?patientId=${PatientId}&encounterId=${EncounterId}`
+    // );
+    // if (response.status === 200 && response.data.data != null) {
+    //   setBillagreementDropdown(response.data.data);
+    // }
   };
 
   const handleAddAuthorisation = async () => {

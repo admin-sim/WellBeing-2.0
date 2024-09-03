@@ -85,8 +85,8 @@ import SpecialEvent from "./pages/Masters/ResourceScheduling/SpecialEvent/specia
 import Holiday from "./pages/Masters/ResourceScheduling/Holiday/holiday";
 import Billing from "./pages/AccountManagement/Billling/SearchPage.jsx";
 import CreateBilling from "./pages/AccountManagement/Billling/CreateBilling.jsx";
-import Vendor from "./pages/Masters/InventoryManagement/Vendor";
-import VendorSearch from "./pages/Masters/InventoryManagement/VendorSearch";
+import Vendor from "./pages/Masters/InventoryManagement/Vendor/Vendor.jsx";
+import VendorSearch from "./pages/Masters/InventoryManagement/Vendor/VendorSearch";
 import ProductClassification from "./pages/Masters/InventoryManagement/ProductClassification";
 import ProductDefinition from "./pages/Masters/InventoryManagement/ProductDefinition/ProductDefinition.jsx";
 import Store from "./pages/Masters/InventoryManagement/Store/Store.jsx";
