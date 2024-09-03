@@ -65,11 +65,12 @@ const Indent = () => {
   const navigate = useNavigate();
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Pending: "volcano",
-    "Partially Pending": "orange",
-    Completed: "green",
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Pending: "#F5004F",
+    "Partially Pending": "#8E3E63",
+    Finalize: "#52c41a",
+    Completed: "#FF9100",
   };
 
   const disableFromDate = (current) => {
@@ -400,7 +401,7 @@ const Indent = () => {
             </Row>
           </Form>
           <Spin spinning={loading}>
-            <CustomTable actionColumn={false} dataSource={filteredData} columns={columns} />
+            <CustomTable actionColumn={false} isFilter={true} dataSource={filteredData} columns={columns} />
           </Spin>
         </Card>
       </div>

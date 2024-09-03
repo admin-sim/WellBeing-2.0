@@ -50,6 +50,7 @@ const IndentIssue = () => {
   const navigate = useNavigate();
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
   const [toDate, setToDate] = useState(dayjs());
+  const [dropDownLoad, setDropDownLoading] = useState(true);
 
   useEffect(() => {
     try {
@@ -61,15 +62,16 @@ const IndentIssue = () => {
       console.error("Error fetching purchase order details:", error);
     }
     form.submit();
+    setDropDownLoading(false)
   }, []);
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Pending: "volcano",
-    "Partially Pending": "orange",
-    Completed: "green",
-     Finalize:"#52c41a"
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Pending: "#F5004F",
+    "Partially Pending": "#8E3E63",
+    Finalize: "#52c41a",
+    Completed: "#FF9100",
   };
 
   const GetIndentById = (record) => {
@@ -216,26 +218,26 @@ const IndentIssue = () => {
       },
     },
     {
-        width: 80,
+      width: 80,
       render: (_, row) => <Button type="link">Report</Button>,
     },
   ];
 
   const onFinish = async (values) => {
     debugger;
-   
+
     setLoading(true);
     try {
       const postData1 = {
-        IndentNumber: values.IndentNumber ?  values.IndentNumber : "",
-        IndentType: values.IndentType  ? values.IndentType : "",
-        RequestingStoreId : values.RequestingStore ?  values.RequestingStore : "",
-        IssuingStoreId : values.IssuingStore ? values.IssuingStore : "",
+        IndentNumber: values.IndentNumber ? values.IndentNumber : "",
+        IndentType: values.IndentType ? values.IndentType : "",
+        RequestingStoreId: values.RequestingStore ? values.RequestingStore : "",
+        IssuingStoreId: values.IssuingStore ? values.IssuingStore : "",
         FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : "",
         ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
         IndentStatus: values.IndentStatus ? values.IndentStatus : "",
-        IndentOwner : values.IndentOwner ? values.IndentOwner : "",
-        IssueStatus: values.IndentStatus  ?  values.IndentStatus : "",
+        IndentOwner: values.IndentOwner ? values.IndentOwner : "",
+        IssueStatus: values.IndentStatus ? values.IndentStatus : "",
       };
       customAxios
         .get(
@@ -260,7 +262,7 @@ const IndentIssue = () => {
       console.error("Error:", error);
       setLoading(false);
     }
-   
+
   };
 
   const onReset = () => {
@@ -304,7 +306,7 @@ const IndentIssue = () => {
             name="control-hooks"
             layout="vertical"
             variant="outlined"
-        
+
             initialValues={{
               FromDate: dayjs().subtract(1, "day"),
               ToDate: dayjs(),
@@ -317,7 +319,7 @@ const IndentIssue = () => {
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={6}>
                 <Form.Item label="Indent Type" name="IndentType">
-                  <Select>
+                  <Select loading={dropDownLoad}>
                     <Select.Option key={0} value={0}>
                       All
                     </Select.Option>
@@ -362,7 +364,7 @@ const IndentIssue = () => {
               </Col>
               <Col className="gutter-row" span={4}>
                 <Form.Item label="Issuing Store" name="IssuingStore">
-                  <Select allowClear placeholder="Select Value">
+                  <Select allowClear placeholder="Select Value" loading={dropDownLoad}>
                     {IndentIssueDropdown.StoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
@@ -378,7 +380,7 @@ const IndentIssue = () => {
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="RequestingStore" label="Requesting Store">
-                  <Select allowClear placeholder="Select Value">
+                  <Select allowClear placeholder="Select Value" loading={dropDownLoad}>
                     {IndentIssueDropdown.StoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
@@ -397,7 +399,7 @@ const IndentIssue = () => {
               </Col>
               <Col className="gutter-row" span={4}>
                 <Form.Item label="Indent Status" name="IndentStatus">
-                  <Select>
+                  <Select loading={dropDownLoad}> 
                     <Select.Option key={0} value={0}>
                       All
                     </Select.Option>
@@ -419,7 +421,7 @@ const IndentIssue = () => {
               </Col>
               <Col className="gutter-row" span={4}>
                 <Form.Item label="Issue Status" name="IssueStatus">
-                  <Select>
+                  <Select loading={dropDownLoad}>
                     <Select.Option key={0} value={0}>
                       All
                     </Select.Option>
@@ -450,7 +452,7 @@ const IndentIssue = () => {
             </Row>
           </Form>
           <Spin spinning={loading}>
-          <CustomTable dataSource={filteredData} isFilter={true} actionColumn={false} columns={columns} />
+            <CustomTable dataSource={filteredData} isFilter={true} actionColumn={false} columns={columns} />
           </Spin>
         </Card>
       </div>

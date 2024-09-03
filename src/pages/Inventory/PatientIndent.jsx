@@ -52,6 +52,7 @@ const PatientIndent = () => {
   const { Title } = Typography;
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
   const [toDate, setToDate] = useState(dayjs());
+  const [dropDownLoad, setDropDownLoading] = useState(true);
 
   useEffect(() => {
     try {
@@ -63,6 +64,7 @@ const PatientIndent = () => {
       console.error("Error fetching purchase order details:", error);
     }
     form.submit();
+    setDropDownLoading(false)
   }, []);
 
   const navigate = useNavigate();
@@ -82,11 +84,12 @@ const PatientIndent = () => {
   };
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Pending: "volcano",
-    "Partially Pending": "orange",
-    Completed: "green",
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Pending: "#F5004F",
+    "Partially Pending": "#8E3E63",
+    Finalize: "#52c41a",
+    Completed: "#FF9100",
   };
 
   const GetIndentById = (IndentId) => {
@@ -304,7 +307,7 @@ const PatientIndent = () => {
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={6}>
                 <Form.Item label="Indent Type" name="IndentType">
-                  <Select>
+                  <Select loading={dropDownLoad}>
                     <Select.Option key={0} value={0}>
                       All
                     </Select.Option>
@@ -342,7 +345,7 @@ const PatientIndent = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="ToDate" label="To Date">
-                <DatePicker
+                  <DatePicker
                     value={toDate}
                     onChange={(date) => setToDate(date)}
                     disabledDate={disableToDate}
@@ -353,7 +356,7 @@ const PatientIndent = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item label="Issuing Store" name="IssuingStore">
-                  <Select
+                  <Select loading={dropDownLoad}
                     allowClear
                     placeholder="Select Value"
                     onChange={handleStoreChange}

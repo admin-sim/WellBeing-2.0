@@ -124,6 +124,8 @@ import Configuration from "./pages/Masters/Configuration Management/Configuratio
 import WorkflowManager from "./pages/Masters/Configuration Management/CreateWorkflow/index.jsx";
 import CreateEditWorkFlow from "./pages/Masters/Configuration Management/CreateWorkflow/CreateEditWorkFlow.jsx";
 import Frequency from "./pages/Masters/SystemParameterSetup/Frequency/index.jsx";
+import AdditionalCharge from "./pages/Masters/GeneralMasters/AccountManagement/AdditionalCharge";
+import CreateAdditionalCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAdditionalCharge";
 
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
@@ -809,6 +811,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ServiceClassification />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="AdditionalCharge"
+              element={
+                <ProtectedRoute>
+                  <AdditionalCharge />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="CreateAdditionalCharge"
+              element={
+                <ProtectedRoute>
+                  <CreateAdditionalCharge />
                 </ProtectedRoute>
               }
             />

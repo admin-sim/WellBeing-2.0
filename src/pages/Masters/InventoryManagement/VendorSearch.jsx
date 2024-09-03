@@ -4,17 +4,19 @@ import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from '@ant-design/ic
 import Layout from 'antd/es/layout/layout';
 import { Spin, Skeleton, Tag, Typography, Select, Button, Form, Input, Row, Col, DatePicker, Card, Divider, Tooltip, Table, Checkbox } from 'antd';
 import dayjs from 'dayjs';
+import CustomTable from "../../../components/customTable/index.jsx";
 import TextArea from 'antd/es/input/TextArea';
 import { urlSearchVendor } from '../../../../endpoints';
 import { useNavigate } from "react-router";
 
 const VendorSearch = () => {
-
     const [form] = Form.useForm();
     const { Title } = Typography;
     const [filteredData, setFilteredData] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-    const onFinish = (values) => {        
+    const onFinish = (values) => {
+        setLoading(true);
         try {
             const postData1 = {
                 City: values.City === undefined ? null : values.City,
@@ -30,15 +32,22 @@ const VendorSearch = () => {
                     {
                         params: postData1,
                         headers: {
-                            "Content-Type": "application/json", 
+                            "Content-Type": "application/json",
                         },
                     }
                 )
-                .then((response) => {                    
-                    setFilteredData(response.data.data.VendorDetails);                    
+                .then((response) => {
+                    const newData = response.data.data.VendorDetails.map((item, index) => {
+                        return {
+                            ...item,
+                            key: index + 1
+                        }
+                    })
+                    setFilteredData(newData);
+                    setLoading(false);
                 })
         } catch (error) {
-                
+
         }
     }
 
@@ -46,15 +55,15 @@ const VendorSearch = () => {
         form.resetFields();
     }
     const navigate = useNavigate();
-    const handleVendor = (VendorId) => {        
+    const handleVendor = (VendorId) => {
         navigate('/Vendor', { state: { VendorId } });
     }
 
     const columns = [
         {
             title: "Sl No",
-            key: "index",
-            render: (text, record, index) => index + 1,
+            dataIndex: 'key',
+            key: "key"
         },
         {
             title: "Vendor Name",
@@ -101,7 +110,7 @@ const VendorSearch = () => {
                     return 'Active'
                 }
                 else {
-                    return 'Hidden'                    
+                    return 'Hidden'
                 }
             },
         },
@@ -187,7 +196,16 @@ const VendorSearch = () => {
                         </Row>
                     </Form>
                 </Card>
-                <Table
+                <Spin spinning={loading}>
+                    <CustomTable
+                        dataSource={filteredData}
+                        columns={columns}
+                        actionColumn={false}
+                        isFilter={true}
+                        bordered
+                    />
+                </Spin>
+                {/* <Table
                     dataSource={filteredData}
                     columns={columns}
                     pagination={{
@@ -204,7 +222,7 @@ const VendorSearch = () => {
                     rowKey={(row) => row.AppUserId}
                     size="small"
                     bordered
-                />
+                /> */}
             </div>
         </Layout>
     )

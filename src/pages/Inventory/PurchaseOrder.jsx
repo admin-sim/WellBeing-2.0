@@ -41,7 +41,7 @@ const PurchaseOrder = () => {
     SupplierList: [],
     DateFormat: [],
   });
- 
+
   const [filteredData, setFilteredData] = useState([]);
   const [dropDownLoad, setDropDownLoading] = useState(true);
   const [form] = Form.useForm();
@@ -56,27 +56,26 @@ const PurchaseOrder = () => {
         const apiData = response.data.data;
         setPurchaseOrderDropDown(apiData);
       });
-      
+
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
     setDropDownLoading(false);
-
     form.submit();
   }, []);
 
 
   const navigate = useNavigate();
 
-  
+
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Pending: "volcano",
-    "Partially Pending": "orange",
-    Finalize: "green",
-    Completed: "green",
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Pending: "#F5004F",
+    "Partially Pending": "#8E3E63",
+    Finalize: "#52c41a",
+    Completed: "#FF9100",
   };
 
   const GetPobyId = (PoHeaderId) => {
@@ -114,18 +113,18 @@ const PurchaseOrder = () => {
     },
     {
       title: "Po Date",
-      dataIndex: "PoDate",
-      key: "PoDate",
-      sorter: (a, b) => new Date(a.PoDate) - new Date(b.PoDate),
+      dataIndex: "PoDateString",
+      key: "PoDateString",
+      sorter: (a, b) => new Date(a.PoDateString) - new Date(b.PoDateString),
       sortDirections: ["descend", "ascend"],
-      render: (text) => {
-        const dateParts = text.split("T")[0].split("-");
-        const year = dateParts[0];
-        const month = dateParts[1];
-        const day = dateParts[2];
+      // render: (text) => {
+      //   const dateParts = text.split("T")[0].split("-");
+      //   const year = dateParts[0];
+      //   const month = dateParts[1];
+      //   const day = dateParts[2];
 
-        return `${day}-${month}-${year}`;
-      },
+      //   return `${day}-${month}-${year}`;
+      // },
     },
     {
       title: "Supplier Name",
@@ -142,7 +141,7 @@ const PurchaseOrder = () => {
       sortDirections: ["descend", "ascend"],
     },
     {
-      title: "PO Raised By",
+      title: "PO Auth By",
       dataIndex: "PORaisedBy",
       key: "PORaisedBy",
       sorter: (a, b) => a.PurchaseOrderId.localeCompare(b.PurchaseOrderId),
@@ -207,7 +206,7 @@ const PurchaseOrder = () => {
           }
         )
         .then((response) => {
-          
+
           const newColumnData = response.data.data.PurchaseOrderDetails.map((obj, index) => {
             return { ...obj, key: index + 1 };
           });
@@ -221,12 +220,12 @@ const PurchaseOrder = () => {
       // Handle any errors here
       console.error("Error:", error);
     }
-    
+
   };
-  
+
 
   const onReset = () => {
-    
+
     form.resetFields();
   };
 
@@ -406,7 +405,7 @@ const PurchaseOrder = () => {
                 <Form.Item>
                   <Button
                     type="primary"
-                 
+
                     htmlType="submit"
                   >
                     Search
@@ -430,7 +429,7 @@ const PurchaseOrder = () => {
               isFilter={true}
               bordered
             />
-            </Spin>
+          </Spin>
         </Card>
       </div>
     </Layout>

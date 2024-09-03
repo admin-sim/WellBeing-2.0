@@ -42,7 +42,7 @@ const DirectGRN = () => {
     SupplierList: [],
     DateFormat: [],
   });
- 
+
   const [filteredData, setFilteredData] = useState([]);
 
   const [form] = Form.useForm();
@@ -54,7 +54,7 @@ const DirectGRN = () => {
   const [toDate, setToDate] = useState(dayjs());
 
   useEffect(() => {
-    
+
     try {
       customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
         debugger;
@@ -89,12 +89,12 @@ const DirectGRN = () => {
   };
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Pending: "volcano",
-    "Partially Pending": "orange",
-    Completed: "green",
-     Finalize:"#52c41a"
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Pending: "#F5004F",
+    "Partially Pending": "#8E3E63",
+    Finalize: "#52c41a",
+    Completed: "#FF9100",
   };
 
   const columns = [
@@ -186,12 +186,12 @@ const DirectGRN = () => {
       render: (_, row) => <Button type="link">Report</Button>,
     },
   ];
-  
 
- 
+
+
 
   const onFinish = async (values) => {
-    
+
     setLoading(true);
     try {
       const postData1 = {
@@ -217,7 +217,7 @@ const DirectGRN = () => {
         )
         .then((response) => {
           debugger;
-    
+
 
           const newColumnData = response.data.data.GRNAgainstPODetails.map((obj, index) => {
             return { ...obj, key: index + 1 };
@@ -232,11 +232,11 @@ const DirectGRN = () => {
       // Handle any errors here
       console.error("Error:", error);
     }
- 
+
   };
 
   const onReset = () => {
-   
+
     form.resetFields();
   };
 
@@ -415,16 +415,16 @@ const DirectGRN = () => {
                 </Form.Item>
               </Col>
             </Row>
-            <Spin spinning={loading}>
-              <CustomTable
-                dataSource={filteredData}
-                columns={columns}
-                isFilter={true}
-                actionColumn={false}
-              bordered
-              />
-              </Spin>
           </Form>
+          <Spin spinning={loading}>
+            <CustomTable
+              dataSource={filteredData}
+              columns={columns}
+              isFilter={true}
+              actionColumn={false}
+              bordered
+            />
+          </Spin>
         </Card>
       </div>
     </Layout>

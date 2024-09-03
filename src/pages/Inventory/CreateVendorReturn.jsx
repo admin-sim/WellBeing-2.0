@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
 import { urlGetPurshaseOrderDetails, urlAutocompleteProduct, urlVendorReturnSearchGrn, urlVenderReturnEdit, urlShowGrnList, urlAddNewVendorReturn } from '../../../endpoints';
 import Select from 'antd/es/select';
-import { ConfigProvider, Typography, Checkbox, Tag, Modal, Popconfirm, Spin, Col, Divider, Row, AutoComplete, Radio, message } from 'antd';
+import { ConfigProvider, Typography, Checkbox, Tag, Modal, Popconfirm, Card, Col, Divider, Row, AutoComplete, Radio, message } from 'antd';
 import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
@@ -16,6 +16,7 @@ import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { render } from 'react-dom';
 import { useLocation } from "react-router-dom";
+import CustomTable from "../../components/customTable/index.jsx";
 
 const CreateVendorReturn = () => {
   const [DropDown, setDropDown] = useState({
@@ -510,137 +511,145 @@ const CreateVendorReturn = () => {
             </Button>
           </Col>
         </Row>
-        <Form
-          form={form1}
-          name="control-hooks"
-          layout="vertical"
-          variant="outlined"
-          style={{
-            maxWidth: 1500,
-          }}
-          initialValues={{
-            ReturnDate: dayjs(),
-          }}
-          onFinish={handleOnFinish}
-        >
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
-            <Col className="gutter-row" span={8}>
-              <div>
-                <Form.Item label="Returning Store" name="StoreId"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please input!'
-                    }
-                  ]}
-                >
-                  <Select allowClear placeholder='Select Value'>
-                    {DropDown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
-                        {option.LongName}
-                      </Select.Option>
-                    ))}
-                  </Select>
+        <Card>
+          <Form
+            form={form1}
+            name="control-hooks"
+            layout="vertical"
+            variant="outlined"
+            style={{
+              maxWidth: 1500,
+            }}
+            initialValues={{
+              ReturnDate: dayjs(),
+            }}
+            onFinish={handleOnFinish}
+          >
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
+              <Col className="gutter-row" span={8}>
+                <div>
+                  <Form.Item label="Returning Store" name="StoreId"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please input!'
+                      }
+                    ]}
+                  >
+                    <Select allowClear placeholder='Select Value'>
+                      {DropDown.StoreDetails.map((option) => (
+                        <Select.Option key={option.StoreId} value={option.StoreId}>
+                          {option.LongName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                  <Form.Item hidden name="ReturnHeaderId">
+                    <Input />
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={8}>
+                <div>
+                  <Form.Item label="Returning To Vendor" name="SupplierId"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please input!'
+                      }
+                    ]}
+                  >
+                    <Select allowClear placeholder='Select Value'>
+                      {DropDown.SupplierList.map((option) => (
+                        <Select.Option key={option.VendorId} value={option.VendorId}>
+                          {option.LongName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={8}>
+                <div>
+                  <Form.Item label="Returning Date" name="ReturnDate"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please input!'
+                      }
+                    ]}
+                  >
+                    <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' disabled />
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={4}>
+                <div>
+                  <Form.Item label="Status" name="ReturnStatus"
+                    rules={[
+                      {
+                        required: issueStatus,
+                        message: 'Please input!'
+                      }
+                    ]}
+                  >
+                    <Select allowClear placeholder='Select Value'>
+                      <Select.Option key='Draft' value='Draft'></Select.Option>
+                      <Select.Option key='Finalize' value='Finalize'></Select.Option>
+                    </Select>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }} valuePropName='checked'>
+                    <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item style={{ marginTop: '30px' }}>
+                    <Button type='link' onClick={OpenModel}>Search Product/Batch No</Button>
+                  </Form.Item>
+                </div>
+              </Col>
+            </Row>
+            <Row justify="end" style={{ padding: '0rem 1rem' }}>
+              <Col style={{ marginRight: '10px' }}>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit">
+                    {buttonTitle}
+                  </Button>
                 </Form.Item>
-                <Form.Item hidden name="ReturnHeaderId">
-                  <Input />
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button type="primary" onClick={handleToBack}>
+                    Cancel
+                  </Button>
                 </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={8}>
-              <div>
-                <Form.Item label="Returning To Vendor" name="SupplierId"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please input!'
-                    }
-                  ]}
-                >
-                  <Select allowClear placeholder='Select Value'>
-                    {DropDown.SupplierList.map((option) => (
-                      <Select.Option key={option.VendorId} value={option.VendorId}>
-                        {option.LongName}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={8}>
-              <div>
-                <Form.Item label="Returning Date" name="ReturnDate"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please input!'
-                    }
-                  ]}
-                >
-                  <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' disabled />
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={4}>
-              <div>
-                <Form.Item label="Status" name="ReturnStatus"
-                  rules={[
-                    {
-                      required: issueStatus,
-                      message: 'Please input!'
-                    }
-                  ]}
-                >
-                  <Select allowClear placeholder='Select Value'>
-                    <Select.Option key='Draft' value='Draft'></Select.Option>
-                    <Select.Option key='Finalize' value='Finalize'></Select.Option>
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }} valuePropName='checked'>
-                  <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item style={{ marginTop: '30px' }}>
-                  <Button type='link' onClick={OpenModel}>Search Product/Batch No</Button>
-                </Form.Item>
-              </div>
-            </Col>
-          </Row>
-          <Row justify="end" style={{ padding: '0rem 1rem' }}>
-            <Col style={{ marginRight: '10px' }}>
-              <Form.Item>
-                <Button type="primary" htmlType="submit">
-                  {buttonTitle}
-                </Button>
-              </Form.Item>
-            </Col>
-            <Col>
-              <Form.Item>
-                <Button type="primary" onClick={handleToBack}>
-                  Cancel
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
-          {/* <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} /> */}
-          <Table
-            bordered
-            columns={columns}
-            size="small"
-            dataSource={data.filter((item) => item.ActiveFlag !== false)}
-            locale={{ emptyText: "nodata " }}
-          // scroll={{
-          //   x: 2000,
-          // }}
-          />
-        </Form>
+              </Col>
+            </Row>
+            <CustomTable
+              dataSource={data.filter((item) => item.ActiveFlag !== false)}
+              columns={columns}
+              isFilter={false}
+              actionColumn={false}
+              bordered
+            />
+            {/* <Table
+              bordered
+              columns={columns}
+              size="small"
+              dataSource={data.filter((item) => item.ActiveFlag !== false)}
+              locale={{ emptyText: "nodata " }}
+            // scroll={{
+            //   x: 2000,
+            // }}
+            /> */}
+          </Form>
+        </Card>
         <Modal
           width={1200}
           maskClosable={false}

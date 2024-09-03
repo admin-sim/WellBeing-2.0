@@ -15,7 +15,7 @@ import { Table, InputNumber } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useLocation } from "react-router-dom";
-//import { useParams } from 'react-router-dom';
+import CustomTable from "../../components/customTable/index.jsx";
 
 const CreatePatientIndent = () => {
     const [DropDown, setDropDown] = useState({
@@ -72,17 +72,17 @@ const CreatePatientIndent = () => {
 
     useEffect(() => {
         customAxios.get(urlCreatePurchaseOrder).then((response) => {
-          const apiData = response.data.data;
-          setDropDown(apiData);
+            const apiData = response.data.data;
+            setDropDown(apiData);
         });
         setDropDownLoading(false);
-      }, []);
-      useEffect(() => {
+    }, []);
+    useEffect(() => {
         debugger;
-    
+
         fetchData();
-      }, []);
-      const fetchData = async () => {
+    }, []);
+    const fetchData = async () => {
         if (indentId > 0) {
             setLoading(true);
             setButtonTitle('Update');
@@ -116,7 +116,7 @@ const CreatePatientIndent = () => {
             });
             setLoading(false);
         }
-      }
+    }
 
 
     const onOkModal = () => {
@@ -401,10 +401,10 @@ const CreatePatientIndent = () => {
 
     const handleOnFinish = async (values) => {
         debugger;
-        if(!values.EncounterId){
+        if (!values.EncounterId) {
             message.warning("Selected Patient Encounter Is Not Created");
             return false;
-          }
+        }
         await form2.validateFields()
         const products = [];
         if (data.length == 0) {
@@ -437,11 +437,11 @@ const CreatePatientIndent = () => {
                 products.push(mergedData[i])
             }
         }
-  
+
 
         const Indent = {
             IndentId: values.IndentId ? values.IndentId : 0,
-            IndentDate: values.IndentDate,
+            IndentDatestring: values.IndentDate ? values.IndentDate.format('DD-MM-YYYY') : '',
             IndentStatus: !indentStatus ? 'Created' : values.IndentStatus,
             IndentTemplateId: values.IndentTemplate ? values.IndentTemplate : 0,
             IndentType: values.IndentType,
@@ -451,7 +451,7 @@ const CreatePatientIndent = () => {
             UHID: values.UHID === undefined ? 0 : values.UHID,
             SubmitCheck: values.SubmitCheck,
             PatientId: values.PatientId,
-            EncounterId:  values.EncounterId,
+            EncounterId: values.EncounterId,
             IndentCategory: 'PatientIndent',
             RequestingStoreId: 0
         }
@@ -515,12 +515,12 @@ const CreatePatientIndent = () => {
         });
     }
 
-    const handleStoreChange = (value) => {       
+    const handleStoreChange = (value) => {
         setData([]);
         setAutoCompleteProduct([]);
         form2.resetFields();
         setIsTableVisible(true);
-      
+
     }
 
     return (
@@ -581,7 +581,7 @@ const CreatePatientIndent = () => {
                                         }
                                     ]}
                                 >
-                                    <Select  loading={dropDownLoad} placeholder='Select Value' onChange={handleStoreChange} disabled={!!indentId}>
+                                    <Select loading={dropDownLoad} placeholder='Select Value' onChange={handleStoreChange} disabled={!!indentId}>
                                         {DropDown.StoreDetails.map((option) => (
                                             <Select.Option key={option.StoreId} value={option.StoreId}>
                                                 {option.LongName}
@@ -668,7 +668,7 @@ const CreatePatientIndent = () => {
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
-                                <Form.Item label="Encounter" name="EncounterId">
+                                <Form.Item label="Encounter" name="Encounter">
                                     <Select disabled={encounter.length > 1 ? false : true}>
                                         {encounter.map((option) => (
                                             <Select.Option key={option.EncounterId} value={option.EncounterId}>{option.GeneratedEncounterId}</Select.Option>
@@ -706,12 +706,21 @@ const CreatePatientIndent = () => {
                         }}
                         form={form2}
                     >
-                         <Spin spinning={loading}>
-                        {isTableVisible ? (
-                            <div>
-                                <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} scroll={{ x: 0 }} />
-                            </div>
-                        ) : null}
+                        <Spin spinning={loading}>
+                            {isTableVisible ? (
+                                <div>
+                                    {/* <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} scroll={{ x: 0 }} /> */}
+                                    {/* <Spin spinning={loading}> */}
+                                    <CustomTable
+                                        dataSource={data.filter((item) => item.ActiveFlag !== false)}
+                                        columns={columns}
+                                        isFilter={false}
+                                        actionColumn={false}
+                                        bordered
+                                    />
+                                    {/* </Spin> */}
+                                </div>
+                            ) : null}
                         </Spin>
                     </Form>
                 </Card>

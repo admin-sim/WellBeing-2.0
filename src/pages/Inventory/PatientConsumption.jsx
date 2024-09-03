@@ -87,12 +87,14 @@ const PatientConsumption = () => {
   };
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Pending: "volcano",
-    "Partially Pending": "orange",
-    Completed: "green",
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Pending: "#F5004F",
+    "Partially Pending": "#8E3E63",
+    Finalize: "#52c41a",
+    Completed: "#FF9100",
   };
+  
   const handleIssueNumber = (IssueId) => {
     navigate("/CreatePatientConsumption", { state: { IssueId } });
   }

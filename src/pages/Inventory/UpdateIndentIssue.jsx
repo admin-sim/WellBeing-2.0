@@ -721,7 +721,7 @@ const UpdateIndentIssue = () => {
         ProductId: "",
         IssueQty: 0,
         BalanceQty: 0,
-        Uom: "",
+        Uom: productDetails.Uom,
         EXPDate: "",
         IssueRate: 0,
         amount: 0,

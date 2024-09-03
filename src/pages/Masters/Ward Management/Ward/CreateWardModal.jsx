@@ -1,7 +1,8 @@
+import { FlagFilled } from "@ant-design/icons";
 import { Button, Col, Form, Input, Modal, Row, Select } from "antd";
 import React, { useEffect } from "react";
 
-function CreateWardModal({ open, handleClose, handleSubmit, record }) {
+function CreateWardModal({ open, handleClose, Dropdown, handleSubmit, record }) {
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -59,7 +60,13 @@ function CreateWardModal({ open, handleClose, handleSubmit, record }) {
                   { required: true, message: "Please Select WardCategory" },
                 ]}
               >
-                <Select />
+                <Select>
+                  {Dropdown.WardCategory.map((option) => (
+                    <Select.Option key={option.LookupID} value={option.LookupID}>
+                      {option.LookupDescription}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -70,7 +77,13 @@ function CreateWardModal({ open, handleClose, handleSubmit, record }) {
                   { required: true, message: "Please select Service Location" },
                 ]}
               >
-                <Select />
+                <Select>
+                  {Dropdown.FacilityDeptServiceLocation.map((option) => (
+                    <Select.Option key={option.FacilityDepartmentServiceLocationId} value={option.FacilityDepartmentServiceLocationId}>
+                      {option.ServiceLocationName}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -79,7 +92,13 @@ function CreateWardModal({ open, handleClose, handleSubmit, record }) {
                 label="Gender"
                 rules={[{ required: true, message: "Please select Gender" }]}
               >
-                <Select />
+                <Select>
+                  {(Dropdown.Gender || []).map((item) => (
+                    <Select.Option key={item.LookupID} value={item.LookupID}>
+                      {item.LookupDescription}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -88,7 +107,10 @@ function CreateWardModal({ open, handleClose, handleSubmit, record }) {
                 label="Status"
                 rules={[{ required: true, message: "Please select Status" }]}
               >
-                <Select />
+                <Select>
+                  <Select.Option key={true} value={true}>Active</Select.Option>
+                  <Select.Option key={false} value={false}>Hidden</Select.Option>
+                </Select>
               </Form.Item>
             </Col>
           </Row>

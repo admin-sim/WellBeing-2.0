@@ -68,12 +68,12 @@ const UrgentIssue = () => {
   };
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Pending: "volcano",
-    "Partially Pending": "orange",
-    Completed: "green",
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Pending: "#F5004F",
+    "Partially Pending": "#8E3E63",
     Finalize: "#52c41a",
+    Completed: "#FF9100",
   };
 
   const columns = [
@@ -274,7 +274,7 @@ const UrgentIssue = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="ToDate" label="To Date">
-                <DatePicker
+                  <DatePicker
                     value={toDate}
                     onChange={(date) => setToDate(date)}
                     disabledDate={disableToDate}
@@ -347,16 +347,16 @@ const UrgentIssue = () => {
               </Col>
             </Row>
           </Form>
+          <Spin spinning={loading}>
+            <CustomTable
+              dataSource={filteredData}
+              columns={columns}
+              isFilter={true}
+              size="small"
+              bordered
+            />
+          </Spin>
         </Card>
-        <Spin spinning={loading}>
-          <CustomTable
-            dataSource={filteredData}
-            columns={columns}
-            isFilter={true}
-            size="small"
-            bordered
-          />
-        </Spin>
       </div>
     </Layout>
   );

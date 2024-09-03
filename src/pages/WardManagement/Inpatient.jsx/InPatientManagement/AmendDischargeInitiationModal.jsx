@@ -9,26 +9,38 @@ import {
   Form,
   Input,
   Modal,
+  message,
   Row,
   Select,
-  Tooltip,
+  Checkbox,
   Typography,
 } from "antd";
-import React from "react";
+import React, { useEffect, useState } from "react";
 const { Text } = Typography;
 import male from "../../../../assets/m.png";
 import { FcDocument, FcInfo, FcOpenedFolder } from "react-icons/fc";
 import { DollarTwoTone, FolderOpenTwoTone } from "@ant-design/icons";
 import PatientHeader from "../../../../components/PatientHeader";
+import customAxios from '../../../../components/customAxios/customAxios.jsx'
+import { urlGetBeds, urlSaveModal, urlGetServiceLocation } from "../../../../../endpoints.js";
 import dayjs from "dayjs";
 
-function RecordExpectedDischarge({ bed, patient, Dropdown, open, handleClose, handleFinish }) {
+
+function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClose }) {
   const [form] = Form.useForm();
-  console.log("bed info", bed);
+  const [beds, setBeds] = useState([])
+  const [bedNumber, setBedNumber] = useState()
+  const [blockChecked, setBlockChecked] = useState(false)
   const handleCancel = () => {
     form.resetFields();
     handleClose();
   };
+
+  const onFinish = async (values) => {
+    debugger
+
+    handleCancel();
+  }
 
   return (
     <div>
@@ -38,7 +50,7 @@ function RecordExpectedDischarge({ bed, patient, Dropdown, open, handleClose, ha
         centered
         title={
           <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>
-            Record Expected Discharge
+            Amend Discharge Initiation
           </span>
         }
         open={open}
@@ -48,7 +60,7 @@ function RecordExpectedDischarge({ bed, patient, Dropdown, open, handleClose, ha
       >
         <PatientHeader patient={patient} />
         <Row gutter={16}>
-          <Col span={10}>
+          <Col span={8}>
             <div
               style={{
                 border: "1px solid silver",
@@ -70,6 +82,7 @@ function RecordExpectedDischarge({ bed, patient, Dropdown, open, handleClose, ha
                     <b>{Dropdown.PatientsCurrentDetails.DepartmentName}</b>
                   </Col>
                 </Col>
+
                 <Col span={12}>
                   <Col span={24}>Service Location</Col>
                   <Col span={24}>
@@ -84,6 +97,7 @@ function RecordExpectedDischarge({ bed, patient, Dropdown, open, handleClose, ha
                     <b>{Dropdown.PatientsCurrentDetails.Provider}</b>
                   </Col>
                 </Col>
+
                 <Col span={12}>
                   <Col span={24}>Ward Category</Col>
                   <Col span={24}>
@@ -98,6 +112,7 @@ function RecordExpectedDischarge({ bed, patient, Dropdown, open, handleClose, ha
                     <b>{Dropdown.PatientsCurrentDetails.Ward}</b>
                   </Col>
                 </Col>
+
                 <Col span={12}>
                   <Col span={24}>Bed</Col>
                   <Col span={24}>
@@ -107,28 +122,28 @@ function RecordExpectedDischarge({ bed, patient, Dropdown, open, handleClose, ha
               </Row>
             </div>
           </Col>
-          <Col span={14}>
+          <Col span={16}>
             <Form
               style={{ marginTop: "1rem" }}
               layout="vertical"
               form={form}
-              onFinish={handleFinish}
-              initialValues={{ DateTimeDischarge: dayjs() }}
+              onFinish={onFinish}
             >
               <Row gutter={16}>
                 <Col span={24}>
                   <Form.Item
-                    style={{ marginBottom: "0.9rem" }}
-                    name="Department"
+                    style={{ marginBottom: "0.5rem" }}
+                    name="FacilityDepartmentProvider"
                     label="Discharge Advised By"
-                    // rules={[
-                    //   {
-                    //     required: true,
-                    //     message: "Please select Reason",
-                    //   },
-                    // ]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select Reason",
+                      },
+                    ]}
+                    initialValue={Dropdown.PatientsCurrentDetails.ProviderId}
                   >
-                    <Select style={{ width: "100%" }}>
+                    <Select style={{ width: "100%" }} defaultValue={Dropdown.PatientsCurrentDetails.ProviderId}>
                       {Dropdown.FacilityDepartmentProvider.map((option) => (
                         <Select.Option key={option.ProviderId} value={option.ProviderId}>
                           {option.ProviderName}
@@ -136,6 +151,8 @@ function RecordExpectedDischarge({ bed, patient, Dropdown, open, handleClose, ha
                       ))}
                     </Select>
                   </Form.Item>
+                </Col>
+                <Col span={24}>
                   <Form.Item hidden
                     name="PatientId"
                     initialValue={Dropdown.PatientsCurrentDetails.PatientID}
@@ -148,43 +165,97 @@ function RecordExpectedDischarge({ bed, patient, Dropdown, open, handleClose, ha
                   >
                     <Input />
                   </Form.Item>
-                  <Form.Item hidden
-                    name="Bed"
-                    initialValue={Dropdown.PatientsCurrentDetails.BedID}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={24}>
                   <Form.Item
-                    style={{ marginBottom: "0.9rem" }}
-                    name="DateTimeDischarge"
-                    label="Expected Date and Time of Discharge"
+                    style={{ marginBottom: "0.5rem" }}
+                    name="AdvisedDate&Time"
+                    label="Advised Date&Time"
                     rules={[
                       {
                         required: true,
-                        message: "Please Enter Lookup Description",
+                        message: "Please select Reason",
                       },
                     ]}
+                    // initialValue={Dropdown.DischargeDetails.AdvisedDateTime}
                   >
                     <DatePicker
-                      placeholder="Select Date and Time"
                       style={{ width: "100%" }}
                       showTime={{ format: "hh:mm A" }}
                       format="dddd , DD-MM-YYYY , hh:mm A"
                     />
                   </Form.Item>
                 </Col>
+                <Col span={24}>
+                  <Form.Item
+                    style={{ marginBottom: "0.5rem" }}
+                    name="ExpectedDate&TimeofDischarge"
+                    label="Expected Date & Time of Discharge"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select",
+                      },
+                    ]}
+                    // initialValue={Dropdown.DischargeDetails.ExpectedDischargeDate}
+                  >
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      showTime={{ format: "hh:mm A" }}
+                      format="dddd , DD-MM-YYYY , hh:mm A"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={24}>
+                  <Form.Item
+                    style={{ marginBottom: "0.5rem" }}
+                    name="DispositionType"
+                    label="Disposition Type"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select Reason",
+                      },
+                    ]}
+                  >
+                    <Select style={{ width: "100%" }}>
+                      {Dropdown.DispositionType.map((option) => (
+                        <Select.Option key={option.LookupID} value={option.LookupID}>
+                          {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={24}>
+                  <Form.Item
+                    style={{ marginBottom: "0.5rem" }}
+                    name="Reason"
+                    label="Reason"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select",
+                      },
+                    ]}
+                  >
+                    <Select style={{ width: "100%" }}>
+                      {(Dropdown.ReasonForAmend || []).map(option => (
+                        <Select.Option key={option.LookupID} value={option.LookupID}>
+                          {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
               </Row>
-              <Row gutter={32} style={{ height: "1.8rem", marginTop: "8rem" }}>
-                <Col offset={15} span={4}>
+              <Row gutter={32} style={{ height: "1.8rem" }}>
+                <Col offset={17} span={3}>
                   <Form.Item>
                     <Button type="primary" htmlType="submit">
-                      Submit
+                      Save
                     </Button>
                   </Form.Item>
                 </Col>
-                <Col span={4}>
+                <Col span={3}>
                   <Form.Item>
                     <Button type="default" danger onClick={handleCancel}>
                       Cancel
@@ -200,4 +271,4 @@ function RecordExpectedDischarge({ bed, patient, Dropdown, open, handleClose, ha
   );
 }
 
-export default RecordExpectedDischarge;
+export default AmendDischargeInitiationModal;

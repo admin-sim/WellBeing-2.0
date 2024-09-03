@@ -4,14 +4,10 @@ import {
   EditOutlined,
   DeleteOutlined,
   PlusOutlined,
-  PlusCircleOutlined,
   DoubleRightOutlined,
 } from "@ant-design/icons";
-import Layout from "antd/es/layout/layout";
+
 import {
-  Spin,
-  Skeleton,
-  Tag,
   Typography,
   Modal,
   ConfigProvider,
@@ -21,16 +17,11 @@ import {
   Input,
   Row,
   Col,
-  DatePicker,
-  Card,
-  Divider,
   Popconfirm,
   Table,
-  Checkbox,
   message,
 } from "antd";
-import dayjs from "dayjs";
-import TextArea from "antd/es/input/TextArea";
+
 import {
   urlProductClassificationIndex,
   urlGetList,
@@ -39,6 +30,7 @@ import {
   urlShowEditClassification,
   urlDeleteProductClassification,
 } from "../../../../endpoints";
+
 import { useNavigate } from "react-router";
 import FormItem from "antd/es/form/FormItem/index.js";
 
@@ -55,10 +47,9 @@ const ProductClassification = () => {
   const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [buttonTitle, setButtonTitle] = useState("Save");
-  const [dropDown, setDropDown] = useState({
-    ProductGroup: [],
-  });
+  const [dropDown, setDropDown] = useState({ ProductGroup: [] });
   const [activeButton, setActiveButton] = useState(null);
+  const { TextArea } = Input;
 
   useEffect(() => {
     try {
@@ -91,7 +82,7 @@ const ProductClassification = () => {
           setDPPData(response.data.data.ProductClassification);
           setActiveButton(index);
         });
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const ModelAdd = () => {
@@ -203,12 +194,7 @@ const ProductClassification = () => {
       render: (text, record) => {
         return (
           <>
-            <Popconfirm
-              title="Sure to edit?"
-              onConfirm={() => ModelUpdate(record.ProductClassificationId)}
-            >
-              <EditOutlined style={{ marginRight: 4 }} />
-            </Popconfirm>
+            <EditOutlined onClick={() => ModelUpdate(record.ProductClassificationId)} />
             <Popconfirm
               title="Sure to delete?"
               onConfirm={() => ModelDelete(record.ProductClassificationId)}
@@ -416,13 +402,13 @@ const ProductClassification = () => {
           )}
         </Col>
       </Row>
-
       <Modal
         title="Add Product Classification"
         onOk={onOkModal}
         onCancel={onCancelModel}
         open={isModalOpen}
         layout="vertical"
+        width={700}
         footer={[
           <Button key="submit" type="primary" onClick={onOkModal}>
             {buttonTitle}
@@ -450,10 +436,9 @@ const ProductClassification = () => {
           initialValues={{
             Status: true,
             ProductGroupId: productGroupId,
-            // Remarks: '',
           }}
         >
-          Product Group: <strong>{productGroup}</strong>
+          Product Group: <strong style={{ margin: "2rem 0 0 0" }}>{productGroup}</strong>
           <Row
             gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
             style={{ margin: "1rem 0 0 0" }}
@@ -462,7 +447,6 @@ const ProductClassification = () => {
               <Form.Item
                 label="Short Name"
                 name="ShortName"
-                style={{ marginLeft: "10px" }}
                 rules={[
                   {
                     required: true,
@@ -470,7 +454,7 @@ const ProductClassification = () => {
                   },
                 ]}
               >
-                <Input type="text" disabled={true} allowClear></Input>
+                <Input type="text" disabled={!!form1.getFieldValue('ProductClassificationId')} allowClear></Input>
               </Form.Item>
               <FormItem hidden name="ProductClassificationId">
                 <Input></Input>
@@ -483,7 +467,6 @@ const ProductClassification = () => {
               <Form.Item
                 label="Status"
                 name="Status"
-                style={{ marginLeft: "10px" }}
                 rules={[
                   {
                     required: true,
@@ -501,13 +484,10 @@ const ProductClassification = () => {
                 </Select>
               </Form.Item>
             </Col>
-          </Row>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col span={24}>
               <Form.Item
                 label="Long Name"
                 name="LongName"
-                style={{ marginLeft: "10px" }}
                 rules={[
                   {
                     required: true,
@@ -522,9 +502,8 @@ const ProductClassification = () => {
               <Form.Item
                 label="Remarks"
                 name="Remarks"
-                style={{ marginLeft: "10px" }}
               >
-                <Input type="text" allowClear></Input>
+                <TextArea rows={2} />
               </Form.Item>
             </Col>
           </Row>

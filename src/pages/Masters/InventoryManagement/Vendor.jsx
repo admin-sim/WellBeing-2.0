@@ -79,7 +79,7 @@ const Vendor = () => {
             });
         }
         setVendorId(0);
-    },[]);
+    }, []);
 
     const DateBindtoDatepicker = (value) => {
         const isoDateString = value;
@@ -97,23 +97,23 @@ const Vendor = () => {
         debugger;
         const VenderModel = {
             VendorId: values.VendorId === undefined ? 0 : values.VendorId,
-            ShortName: values.ShortName === undefined ? '' : values.ShortName,
-            LongName: values.LongName === undefined ? '' : values.LongName,
-            VendorGroup: values.VendorGroup === undefined ? '' : values.VendorGroup,
-            ContactPerson: values.ContactPerson === undefined ? null : values.ContactPerson,
-            EffectiveFrom: values.EffectiveFrom,
-            EffectiveTo: values.EffectiveTo,
+            ShortName: values.ShortName,
+            LongName: values.LongName,
+            VendorGroup: values.VendorGroup,
+            ContactPerson: values.ContactPerson ? values.ContactPerson : '',
+            EffectiveFromString: values.EffectiveFrom ? values.EffectiveFrom.format('DD-MM-YYYY') : '',
+            EffectiveToString: values.EffectiveTo ? values.EffectiveTo.format('DD-MM-YYYY') : '',
             IsSupplier: values.isSupplier === undefined ? false : values.isSupplier,
             IsManufacturer: values.isManufacturer === undefined ? false : values.isManufacturer,
-            Address1: values.Address === undefined ? '' : values.Address,
-            CountryId: values.Country === undefined ? 0 : values.Country,
-            StateId: values.State === undefined ? 0 : values.State,
-            Place: values.Place === undefined ? 0 : values.Place,
-            Area: values.Area === undefined ? 0 : values.Area,
-            PinCode: values.Zip === undefined ? 0 : values.Zip,
-            MobileNumber: values.Mobile === undefined ? '' : values.Mobile,
-            EmailId: values.Email === undefined ? null : values.Email,
-            LandlineNumber: values.Landline === undefined ? null : values.Landline,
+            Address1: values.Address,
+            CountryId: values.Country,
+            StateId: values.State,
+            Place: values.Place,
+            Area: values.Area,
+            PinCode: values.Zip ? values.Zip : '',
+            MobileNumber: values.Mobile,
+            EmailId: values.Email ? values.Email : '',
+            LandlineNumber: values.Landline ? values.Landline : '',
             CreditDays: values.CreditDays === undefined ? 0 : values.CreditDays,
             ActiveFlag: values.Status === 'true' ? true : false,
         }
@@ -211,13 +211,16 @@ const Vendor = () => {
     }
 
     const disabledEffectiveToDate = (current) => {
-        debugger;
         const effectiveFrom = form.getFieldValue('EffectiveFrom');
         if (!effectiveFrom) {
             return false;
         }
         return current && current < effectiveFrom.startOf('day');
     };
+
+    const onSearch = (value) => {
+        console.log(value)
+    }
 
     return (
         <Layout style={{ zIndex: '999999999' }}>
@@ -392,9 +395,9 @@ const Vendor = () => {
                                         }
                                     ]}
                                 >
-                                    <Select onChange={handleState}>
+                                    <Select onChange={handleState} placeholder='Search Country' optionFilterProp='label' showSearch onSearch={onSearch} allowClear>
                                         {DropDown.Countries.map((Option) => (
-                                            <Select.Option key={Option.LookupID} value={Option.LookupID}>
+                                            <Select.Option key={Option.LookupID} value={Option.LookupID} label={Option.LookupDescription}>
                                                 {Option.LookupDescription}
                                             </Select.Option>
                                         ))}
@@ -410,9 +413,9 @@ const Vendor = () => {
                                         }
                                     ]}
                                 >
-                                    <Select onChange={handlePlace}>
+                                    <Select onChange={handlePlace} placeholder='Search State' optionFilterProp='label' showSearch onSearch={onSearch} allowClear>
                                         {state.StateModel.map((Option) => (
-                                            <Select.Option key={Option.StateID} value={Option.StateID}>
+                                            <Select.Option key={Option.StateID} value={Option.StateID} label={Option.StateName}>
                                                 {Option.StateName}
                                             </Select.Option>
                                         ))}
@@ -434,9 +437,9 @@ const Vendor = () => {
                                         }
                                     ]}
                                 >
-                                    <Select onChange={handleArea}>
+                                    <Select onChange={handleArea} placeholder='Search Place' optionFilterProp='label' showSearch onSearch={onSearch} allowClear>
                                         {place.PlaceModels.map((Option) => (
-                                            <Select.Option key={Option.PlaceId} value={Option.PlaceId}>
+                                            <Select.Option key={Option.PlaceId} value={Option.PlaceId} label={Option.PlaceName}>
                                                 {Option.PlaceName}
                                             </Select.Option>
                                         ))}
@@ -452,9 +455,9 @@ const Vendor = () => {
                                         }
                                     ]}
                                 >
-                                    <Select>
+                                    <Select placeholder='Search Area' optionFilterProp='label' showSearch onSearch={onSearch} allowClear>
                                         {area.AreaModel.map((Option) => (
-                                            <Select.Option key={Option.AreaId} value={Option.AreaId}>
+                                            <Select.Option key={Option.AreaId} value={Option.AreaId} label={Option.AreaName}>
                                                 {Option.AreaName}
                                             </Select.Option>
                                         ))}

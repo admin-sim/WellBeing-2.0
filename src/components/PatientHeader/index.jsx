@@ -16,7 +16,6 @@ const { Text } = Typography;
 import male from "../../assets/m.png";
 
 function PatientHeader({ patient, encounterId }) {
-  debugger;
   const displayEncounterId = patient?.GeneratedEncounterId || encounterId;
   return (
     <Row

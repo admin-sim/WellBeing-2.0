@@ -42,7 +42,7 @@ const GRNAgainstPO = () => {
     DateFormat: [],
   });
 
- 
+
   const [filteredData, setFilteredData] = useState([]);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -64,7 +64,7 @@ const GRNAgainstPO = () => {
     setDropDownLoading(false);
   }, []);
 
-  
+
   const disableFromDate = (current) => {
     // Disable dates that are after today
     return current && current.isAfter(dayjs().endOf("day"));
@@ -82,9 +82,9 @@ const GRNAgainstPO = () => {
   const navigate = useNavigate();
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Finalize:"#52c41a"
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Finalize: "#52c41a"
   };
 
   const handleGRN = (GrnHeaderId) => {
@@ -123,18 +123,18 @@ const GRNAgainstPO = () => {
     },
     {
       title: "GRN Date",
-      dataIndex: "GRNDate",
-      key: "GRNDate",
-      sorter: (a, b) => new Date(a.GRNDate) - new Date(b.GRNDate),
+      dataIndex: "GRNDatestring",
+      key: "GRNDatestring",
+      sorter: (a, b) => new Date(a.GRNDatestring) - new Date(b.GRNDatestring),
       sortDirections: ["descend", "ascend"],
-      render: (text) => {
-        const dateParts = text.split("T")[0].split("-");
-        const year = dateParts[0];
-        const month = dateParts[1];
-        const day = dateParts[2];
+      // render: (text) => {
+      //   const dateParts = text.split("T")[0].split("-");
+      //   const year = dateParts[0];
+      //   const month = dateParts[1];
+      //   const day = dateParts[2];
 
-        return `${day}-${month}-${year}`;
-      },
+      //   return `${day}-${month}-${year}`;
+      // },
     },
     {
       title: "Supplier Name",
@@ -213,13 +213,13 @@ const GRNAgainstPO = () => {
           }
         )
         .then((response) => {
-          
+
           const newColumnData = response.data.data.GRNAgainstPODetails.map((obj, index) => {
             return { ...obj, key: index + 1 };
           });
           setFilteredData(newColumnData);
-          
-          
+
+
         })
         .finally(() => {
           setLoading(false);
@@ -397,7 +397,7 @@ const GRNAgainstPO = () => {
                 <Form.Item>
                   <Button
                     type="primary"
-                  
+
                     htmlType="submit"
                   >
                     Search
@@ -413,15 +413,15 @@ const GRNAgainstPO = () => {
               </Col>
             </Row>
           </Form>
-            <Spin spinning={loading}>
-              <CustomTable
-                dataSource={filteredData}
-                columns={columns}
-                isFilter={true}
-                actionColumn={false}
-              
-              />
-              </Spin>
+          <Spin spinning={loading}>
+            <CustomTable
+              dataSource={filteredData}
+              columns={columns}
+              isFilter={true}
+              actionColumn={false}
+
+            />
+          </Spin>
         </Card>
       </div>
     </Layout>

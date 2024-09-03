@@ -1,6 +1,7 @@
 import customAxios from "../../components/customAxios/customAxios.jsx";
 import React, { useEffect, useState } from "react";
 import Button from "antd/es/button";
+import CustomTable from "../../components/customTable/index.jsx";
 import {
   urlCreatePurchaseOrder,
   urlShowBatchDetails,
@@ -86,7 +87,7 @@ const UpdateItemReceipt = () => {
           const apiData = response.data.data;
 
           if (apiData.IndentIssueModel.IndentId != null) {
-                 setIndentId(apiData.IndentIssueModel.IndentId);
+            setIndentId(apiData.IndentIssueModel.IndentId);
             const dataSource = apiData.IndentDetails.map((item) => {
               let issueqty = 0,
                 remarks = "",
@@ -656,7 +657,8 @@ const UpdateItemReceipt = () => {
                             <Select.Option key={option.UomId} value={option.UomId}>{option.FullName}</Select.Option>
                         ))}
                     </Select> */}
-          {record.Uom}
+          <Tag color="#7C00FE">{record.Uom}</Tag>
+          {/* {record.Uom} */}
         </Form.Item>
       ),
     },
@@ -998,7 +1000,14 @@ const UpdateItemReceipt = () => {
           <Divider style={{ marginTop: "0" }}></Divider>
           {istablevisible ? (
             <div>
-              <Table columns={columns} dataSource={data} scroll={{ x: 0 }} />
+              {/* <Table columns={columns} dataSource={data} scroll={{ x: 0 }} /> */}
+              <CustomTable
+                dataSource={data}
+                columns={columns}
+                isFilter={false}
+                actionColumn={false}
+                bordered
+              />
             </div>
           ) : null}
         </Form>
@@ -1033,15 +1042,15 @@ const UpdateItemReceipt = () => {
                 autoComplete="off"
                 form={form2}
               >
-                <Tag>Product: {productDetails.ProductName}</Tag>
-                <Tag>Issued Quantity: {productDetails.IssueQty}</Tag>
+                <Tag color="#1890ff">Product: {productDetails.ProductName}</Tag>
+                <Tag color="#52c41a">Issued Quantity: {productDetails.IssueQty}</Tag>
                 <Table
                   columns={Batchmodal}
                   dataSource={
                     productDetails?.ProductId
                       ? dataModel.filter(
-                          (item) => item.ProductId === productDetails.ProductId
-                        )
+                        (item) => item.ProductId === productDetails.ProductId
+                      )
                       : []
                   }
                   size="small"

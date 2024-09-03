@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
 // import { urlCreateStoreReturn/*, urlAutocompleteProduct, urlAddNewStoreReturn*/ } from '../../../endpoints';
 import Select from 'antd/es/select';
-import { ConfigProvider, Typography, Checkbox, Tag, Modal, Popconfirm, Spin, Col, Divider, Row, AutoComplete } from 'antd';
+import { ConfigProvider, Typography, Checkbox, Tag, Modal, Popconfirm, Card, Col, Divider, Row, AutoComplete } from 'antd';
 import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
@@ -220,11 +220,11 @@ const CreateStoreReturn = () => {
   const handleInputChange = (value, option, key) => {
     setInputValues((prevState) => ({ ...prevState, [key]: value }));
   };
- 
+
   const OpenModel = () => {
     form1
       .validateFields()
-      .then(() => {        
+      .then(() => {
         // setRecordKeys(record.key)
         setIsModalOpen(true);
       })
@@ -477,160 +477,162 @@ const CreateStoreReturn = () => {
             </Button>
           </Col>
         </Row>
-        <Form
-          layout="vertical"
-          onFinish={handleOnFinish}
-          variant="outlined"
-          size="default"
-          style={{
-            maxWidth: 1500
-          }}
-          form={form1}
-          initialValues={{
-            ReturningDate: dayjs(),
-          }}
-          onValuesChange={(changedValues, allValues) => {
-            debugger;
-            for (let i = 0; i < 9; i++) {
-              if (changedValues[i] !== undefined) {
-                if (changedValues[i].product !== undefined) {
-                  getPanelValue(form1.getFieldValue([i, 'product']));
-                }
-                const poQty = allValues[i]['poQty'];
-                const poRate = allValues[i]['poRate'];
+        <Card>
+          <Form
+            layout="vertical"
+            onFinish={handleOnFinish}
+            variant="outlined"
+            size="default"
+            style={{
+              maxWidth: 1500
+            }}
+            form={form1}
+            initialValues={{
+              ReturningDate: dayjs(),
+            }}
+          // onValuesChange={(changedValues, allValues) => {
+          //   debugger;
+          //   for (let i = 0; i < 9; i++) {
+          //     if (changedValues[i] !== undefined) {
+          //       if (changedValues[i].product !== undefined) {
+          //         getPanelValue(form1.getFieldValue([i, 'product']));
+          //       }
+          //       const poQty = allValues[i]['poQty'];
+          //       const poRate = allValues[i]['poRate'];
 
-                if (poQty !== "" && poRate !== "") {
-                  const total = poQty * poRate;
-                  // Update the total value in the form fields
-                  if (allValues[i]['discount'] !== "") {
-                    form1.setFieldsValue({ [i]: { discountAmt: (total * (allValues[i]['discount'] / 100)).toFixed(2) } });
-                    form1.setFieldsValue({ [i]: { amount: (total - (total * (allValues[i]['discount'] / 100))) } });
-                    form1.setFieldsValue({ [i]: { totalAmount: (total - (total * (allValues[i]['discount'] / 100))) } });
-                    // form1.setFieldsValue({ Amount: form1.getFieldValue('Amount') + (total - (total * (allValues[i]['discount'] / 100))) })
-                  } else {
-                    form1.setFieldsValue({ [i]: { amount: total } });
-                    form1.setFieldsValue({ [i]: { totalAmount: total } });
-                  }
-                }
-                break;
-              }
-            }
-            let totalAmount = 0;
-            for (let j = 0; j < 10; j++) {
-              if (allValues[j] !== undefined) {
-                const Amount = form1.getFieldValue([j, 'amount']);
-                totalAmount += Amount;
-              }
-            }
-            form1.setFieldsValue({ Amount: totalAmount });
-            form1.setFieldsValue({ totalpoAmount: totalAmount });
-            // Assuming 'poQty' and 'poRate' are the names of the fields
+          //       if (poQty !== "" && poRate !== "") {
+          //         const total = poQty * poRate;
+          //         // Update the total value in the form fields
+          //         if (allValues[i]['discount'] !== "") {
+          //           form1.setFieldsValue({ [i]: { discountAmt: (total * (allValues[i]['discount'] / 100)).toFixed(2) } });
+          //           form1.setFieldsValue({ [i]: { amount: (total - (total * (allValues[i]['discount'] / 100))) } });
+          //           form1.setFieldsValue({ [i]: { totalAmount: (total - (total * (allValues[i]['discount'] / 100))) } });
+          //           // form1.setFieldsValue({ Amount: form1.getFieldValue('Amount') + (total - (total * (allValues[i]['discount'] / 100))) })
+          //         } else {
+          //           form1.setFieldsValue({ [i]: { amount: total } });
+          //           form1.setFieldsValue({ [i]: { totalAmount: total } });
+          //         }
+          //       }
+          //       break;
+          //     }
+          //   }
+          //   let totalAmount = 0;
+          //   for (let j = 0; j < 10; j++) {
+          //     if (allValues[j] !== undefined) {
+          //       const Amount = form1.getFieldValue([j, 'amount']);
+          //       totalAmount += Amount;
+          //     }
+          //   }
+          //   form1.setFieldsValue({ Amount: totalAmount });
+          //   form1.setFieldsValue({ totalpoAmount: totalAmount });
+          //   // Assuming 'poQty' and 'poRate' are the names of the fields
 
-            // Check if both values are valid numbers              
-          }}
-        >
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
-            <Col className="gutter-row" span={8}>
-              <div>
-                <Form.Item
-                  label="Returning Store"
-                  name="ReturningStore"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please input!'
-                    }
-                  ]}
-                >
-                  <Select allowClear placeholder='Select Value'>
-                    {DropDown.SupplierList.map((option) => (
-                      <Select.Option key={option.VendorId} value={option.VendorId}>
-                        {option.LongName}
-                      </Select.Option>
-                    ))}
-                  </Select>
+          //   // Check if both values are valid numbers              
+          // }}
+          >
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
+              <Col className="gutter-row" span={8}>
+                <div>
+                  <Form.Item
+                    label="Returning Store"
+                    name="ReturningStore"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please input!'
+                      }
+                    ]}
+                  >
+                    <Select allowClear placeholder='Select Value'>
+                      {DropDown.SupplierList.map((option) => (
+                        <Select.Option key={option.VendorId} value={option.VendorId}>
+                          {option.LongName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={8}>
+                <div>
+                  <Form.Item label="Returning To Vendor" name="ReturningToVendor"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please input!'
+                      }
+                    ]}
+                  >
+                    <Select allowClear placeholder='Select Value'>
+                      {DropDown.StoreDetails.map((option) => (
+                        <Select.Option key={option.StoreId} value={option.StoreId}>
+                          {option.StoreType}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={8}>
+                <div>
+                  <Form.Item label="Returning Date" name="ReturningDate"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please input!'
+                      }
+                    ]}
+                  >
+                    <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' disabled />
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={4}>
+                <div>
+                  <Form.Item label="Status" name="Status">
+                    <Select allowClear placeholder='Select Value'>
+                      {DropDown.StoreDetails.map((option) => (
+                        <Select.Option key={option.StoreId} value={option.StoreId}>
+                          {option.StoreType}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item name="Remarks" style={{ marginTop: '30px' }}>
+                    <Checkbox>Submit</Checkbox>
+                  </Form.Item>
+                </div>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <div>
+                  <Form.Item name="Remarks" style={{ marginTop: '30px' }}>
+                    <Button type='link' onClick={OpenModel}>Search Product/Batch No</Button>
+                  </Form.Item>
+                </div>
+              </Col>
+            </Row>
+            <Row justify="end" style={{ padding: '0rem 1rem' }}>
+              <Col style={{ marginRight: '10px' }}>
+                <Form.Item>
+                  <Button type="primary" loading={isSearchLoading} htmlType="submit">
+                    Submit
+                  </Button>
                 </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={8}>
-              <div>
-                <Form.Item label="Returning To Vendor" name="ReturningToVendor"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please input!'
-                    }
-                  ]}
-                >
-                  <Select allowClear placeholder='Select Value'>
-                    {DropDown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
-                        {option.StoreType}
-                      </Select.Option>
-                    ))}
-                  </Select>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button type="primary" onClick={handleCancel}>
+                    Cancel
+                  </Button>
                 </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={8}>
-              <div>
-                <Form.Item label="Returning Date" name="ReturningDate"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please input!'
-                    }
-                  ]}
-                >
-                  <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' disabled />
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={4}>
-              <div>
-                <Form.Item label="Status" name="Status">
-                  <Select allowClear placeholder='Select Value'>
-                  {DropDown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
-                        {option.StoreType}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item name="Remarks" style={{ marginTop: '30px' }}>
-                  <Checkbox>Submit</Checkbox>
-                </Form.Item>
-              </div>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <div>
-                <Form.Item  name="Remarks" style={{ marginTop: '30px' }}>
-                  <Button type='link' onClick={OpenModel}>Search Product/Batch No</Button>
-                </Form.Item>
-              </div>
-            </Col>
-          </Row>          
-          <Row justify="end" style={{ padding: '0rem 1rem' }}>
-            <Col style={{ marginRight: '10px' }}>
-              <Form.Item>
-                <Button type="primary" loading={isSearchLoading} htmlType="submit">
-                  Submit
-                </Button>
-              </Form.Item>
-            </Col>
-            <Col>
-              <Form.Item>
-                <Button type="primary" onClick={handleCancel}>
-                  Cancel
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>          
-        </Form>
+              </Col>
+            </Row>
+          </Form>
+        </Card>
         <ConfigProvider
           theme={{
             token: {

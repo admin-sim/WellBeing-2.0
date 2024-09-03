@@ -6,6 +6,7 @@ import {
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import CustomTable from "../../components/customTable/index.jsx";
 import {
   Spin,
   Skeleton,
@@ -26,7 +27,7 @@ import {
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
 
-import { urlGetPurshaseOrderDetails } from "../../../endpoints.js";
+import { urlGetPurshaseOrderDetails, urlSearchAcknowledgeReturn } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
@@ -60,11 +61,12 @@ const AcknowledageReturn = () => {
   }, []);
 
   const colorMapping = {
-    Created: "blue",
-    Draft: "geekblue",
-    Pending: "volcano",
-    "Partially Pending": "orange",
-    Completed: "green",
+    Created: "#4E31AA",
+    Draft: "#6EACDA",
+    Pending: "#F5004F",
+    "Partially Pending": "#8E3E63",
+    Finalize: "#52c41a",
+    Completed: "#FF9100",
   };
 
   const GetModelDetails = (text, record, index) => {
@@ -217,7 +219,7 @@ const AcknowledageReturn = () => {
     try {
       const postData1 = {
         DocumentType:
-          values.DocumentType === undefined ? "" : values.DocumentType, // Set to empty string when left blank
+          values.DocumentType === undefined ? "" : values.DocumentType, 
         Supplier: values.Supplier === undefined ? "" : values.Supplier,
         ProcurementStore:
           values.ProcurementStore === undefined ? "" : values.ProcurementStore,
@@ -226,27 +228,27 @@ const AcknowledageReturn = () => {
           values.FromDate === undefined || values.FromDate === null
             ? ""
             : (
-                values.FromDate.$D.toString().padStart(2, "0") +
-                "-" +
-                (values.FromDate.$M + 1).toString().padStart(2, "0") +
-                "-" +
-                values.FromDate.$y
-              ).toString(),
+              values.FromDate.$D.toString().padStart(2, "0") +
+              "-" +
+              (values.FromDate.$M + 1).toString().padStart(2, "0") +
+              "-" +
+              values.FromDate.$y
+            ).toString(),
         ToDate:
           values.ToDate === undefined || values.ToDate === null
             ? ""
             : (
-                values.ToDate.$D.toString().padStart(2, "0") +
-                "-" +
-                (values.ToDate.$M + 1).toString().padStart(2, "0") +
-                "-" +
-                values.ToDate.$y
-              ).toString(), // A sample value
+              values.ToDate.$D.toString().padStart(2, "0") +
+              "-" +
+              (values.ToDate.$M + 1).toString().padStart(2, "0") +
+              "-" +
+              values.ToDate.$y
+            ).toString(), // A sample value
         PONumber: values.PONumber === undefined ? "" : values.PONumber, // A sample value
       };
       customAxios
         .get(
-          `${urlSearchAcknowledageReturn}?DocumentType=${postData1.DocumentType}&Supplier=${postData1.Supplier}&ProcurementStore=${postData1.ProcurementStore}&DocumentStatus=${postData1.POStatus}&FromDate=${postData1.FromDate}&ToDate=${postData1.ToDate}&PoNumber=${postData1.PONumber}`,
+          `${urlSearchAcknowledgeReturn}?DocumentType=${postData1.DocumentType}&Supplier=${postData1.Supplier}&ProcurementStore=${postData1.ProcurementStore}&DocumentStatus=${postData1.POStatus}&FromDate=${postData1.FromDate}&ToDate=${postData1.ToDate}&PoNumber=${postData1.PONumber}`,
           null,
           {
             params: postData1,
@@ -330,7 +332,7 @@ const AcknowledageReturn = () => {
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={4}>
-                <Form.Item name="FormDate" label="Form Date">
+                <Form.Item name="FromDate" label="From Date">
                   <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
                 </Form.Item>
               </Col>
@@ -433,26 +435,35 @@ const AcknowledageReturn = () => {
               </Col>
             </Row>
           </Form>
+          <Spin spinning={loading}>
+            <CustomTable
+              dataSource={filteredData}
+              columns={columns}
+              isFilter={true}
+              actionColumn={false}
+              bordered
+            />
+          </Spin>
+          {/* <Table
+            display={setIsTable}
+            dataSource={filteredData}
+            columns={columns}
+            pagination={{
+              onChange: (current, pageSize) => {
+                setPage(current);
+                setPaginationSize(pageSize);
+              },
+              defaultPageSize: 5,
+              hideOnSinglePage: true,
+              showSizeChanger: true,
+              showTotal: (total, range) =>
+                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+            }}
+            rowKey={(row) => row.AppUserId}
+            size="small"
+            bordered
+          /> */}
         </Card>
-        <Table
-          display={setIsTable}
-          dataSource={filteredData}
-          columns={columns}
-          pagination={{
-            onChange: (current, pageSize) => {
-              setPage(current);
-              setPaginationSize(pageSize);
-            },
-            defaultPageSize: 5,
-            hideOnSinglePage: true,
-            showSizeChanger: true,
-            showTotal: (total, range) =>
-              `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-          }}
-          rowKey={(row) => row.AppUserId}
-          size="small"
-          bordered
-        />
       </div>
     </Layout>
   );

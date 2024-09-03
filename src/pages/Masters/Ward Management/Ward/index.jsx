@@ -1,89 +1,117 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader/index.jsx";
 import CustomTable from "../../../../components/customTable/index.jsx";
 import { useNavigate } from "react-router-dom";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import CreateWardModal from "./CreateWardModal.jsx";
+import customAxios from "../../../../components/customAxios/customAxios.jsx";
+import { urlWardIndex, urlCreateWard, urlSaveNewWard } from "../../../../../endpoints.js";
+import { message } from "antd";
 
 function Ward() {
   const [createWardModal, setCreateWardModal] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
+  const [tableData, setTableData] = useState()
+  const [dropDown, setDropDown] = useState({
+    Gender: [],
+    WardCategory: [],
+    FacilityDeptServiceLocation: []
+  });
+
+  useEffect(() => {
+    try {
+      customAxios.get(urlWardIndex, {}).then((response) => {
+        const apiData = response.data.data;
+        if (response.status === 200 && apiData != null) {
+          const newdata = apiData.WardModel.map((item, index) => {
+            return {
+              ...item,
+              key: index + 1
+            }
+          })
+          setTableData(newdata);
+        }
+      });      
+    } catch (error) {
+      console.error("Error fetching purchase order details:", error);
+    }    
+  }, [])
 
   const columns = [
     {
       title: "Sl No",
-      dataIndex: "SlNo",
-      key: "1",
+      dataIndex: 'key',
+      key: 'key',
     },
     {
       title: "Ward Code",
       dataIndex: "WardCode",
-      key: "2",
+      key: "WardCode",
     },
     {
       title: "Ward Name",
       dataIndex: "WardName",
-      key: "3",
+      key: "WardName",
     },
     {
       title: "Ward Category",
       dataIndex: "WardCategory",
-      key: "4",
+      key: "WardCategory",
     },
     {
       title: "Service Location",
       dataIndex: "ServiceLocation",
-      key: "5",
+      key: "ServiceLocation",
     },
     {
       title: "Gender",
       dataIndex: "Gender",
-      key: "6",
+      key: "Gender",
     },
     {
       title: "Status",
       dataIndex: "Status",
-      key: "7",
+      key: "Status",
     },
-  ];
-
-  const tableData = [
-    {
-      SlNo: 1,
-      WardCode: "EWGF",
-      WardName: "Emergency Ward Ground Floor",
-      WardCategory: "Emergency Ward",
-      ServiceLocation: "Ground Floor",
-      Gender: "Both",
-      Status: "Active",
-    },
-    {
-      SlNo: 2,
-      WardCode: "FSWFF",
-      WardName: "Female Surgical Ward First Floor",
-      WardCategory: "Surgical Ward",
-      ServiceLocation: "First Floor",
-      Gender: "Both",
-      Status: "Active",
-    },
-  ];
+  ];  
 
   const handleEdit = (record) => {
+    debugger
     setCurrentRecord(record);
     setCreateWardModal(true);
   };
 
-  const handleAddNewDepartment = () => {
+  const handleAddNewDepartment = async () => {
+    debugger
     setCurrentRecord(null);
+    try {
+      const response = await customAxios.get(urlCreateWard);
+      if (response.status === 200 && response.data.data != null) {
+        setDropDown(response.data.data);
+      } else {
+        console.error("Failed to fetch patient details");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
     setCreateWardModal(true);
   };
 
   const handleDelete = (record) => {
     console.log(record);
   };
-  const handleSubmit = (record) => {
-    console.log(record);
-    setCreateWardModal(false);
+
+  const handleSubmit = async (record) => {
+    debugger
+    const response = await customAxios.get(
+      `${urlSaveNewWard}?WardCode=${record.WardCode}&WardName=${record.WardName}&WardCategoryID=${record.WardCategory}&GenderID=${record.Gender}&ServiceLocationID=${record.ServiceLocation}&Status=${record.Status}`
+    );
+    if (response.status === 200 && response.data === "Success") {
+      message.success('Ward Created Success')
+      setCreateWardModal(false);
+    } else {
+      console.error("Failed to Create");
+    }
   };
 
   return (
@@ -116,6 +144,7 @@ function Ward() {
           }}
           handleSubmit={handleSubmit}
           record={currentRecord}
+          Dropdown={dropDown}
         />
       </div>
     </>

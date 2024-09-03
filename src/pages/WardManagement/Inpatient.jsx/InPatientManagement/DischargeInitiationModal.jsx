@@ -10,18 +10,50 @@ import {
   Input,
   Modal,
   Row,
+  message,
   Select,
 } from "antd";
-import React from "react";
+import React, { useState } from "react";
 import PatientHeader from "../../../../components/PatientHeader";
+import customAxios from '../../../../components/customAxios/customAxios.jsx'
+import { urlSaveDischargeInitiation } from "../../../../../endpoints.js";
+import dayjs from "dayjs";
 
 function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose }) {
   const [form] = Form.useForm();
-
+  const [provider, setProvider] = useState(true)
+  const [disposition, setDisposition] = useState(true)
   const handleCancel = () => {
+    setProvider(true)
+    setDisposition(true)
     form.resetFields();
     handleClose();
   };
+
+  const SelectProvider = (e) => {
+    debugger
+    if (e) {
+      setProvider(false)
+
+    } else {
+      setProvider(true)
+
+    }
+  }
+
+  const SelectDisposition = (e) => {
+    debugger
+    if (e) {
+      if (e === 9070) {
+        setDisposition(false)
+      }
+      else {
+        setDisposition(true)
+      }
+    } else {
+      setDisposition(true)
+    }
+  }
 
   return (
     <div>
@@ -53,20 +85,20 @@ function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose })
               <Row>
                 <Col span={24}>Admitted Date and Time</Col>
                 <Col span={24}>
-                  <b>14-05-2024 04:18:00 PM</b>
+                  <b>{Dropdown.PatientsCurrentDetails.AdmittedDateString}</b>
                 </Col>
               </Row>
               <Row style={{ marginTop: "0.5rem" }}>
                 <Col span={12}>
                   <Col span={23}>Department</Col>
                   <Col span={23}>
-                    <b>General Medicine</b>
+                    <b>{Dropdown.PatientsCurrentDetails.DepartmentName}</b>
                   </Col>
                 </Col>
                 <Col span={12}>
                   <Col span={24}>Service Location</Col>
                   <Col span={24}>
-                    <b>First Floor</b>
+                    <b>{Dropdown.PatientsCurrentDetails.ServiceLocationName}</b>
                   </Col>
                 </Col>
               </Row>
@@ -74,13 +106,13 @@ function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose })
                 <Col span={12}>
                   <Col span={23}>Provider</Col>
                   <Col span={23}>
-                    <b>Dr. Clement Atlee</b>
+                    <b>{Dropdown.PatientsCurrentDetails.Provider}</b>
                   </Col>
                 </Col>
                 <Col span={12}>
                   <Col span={24}>Ward Category</Col>
                   <Col span={24}>
-                    <b>General Ward</b>
+                    <b>{Dropdown.PatientsCurrentDetails.WardCategory}</b>
                   </Col>
                 </Col>
               </Row>
@@ -88,13 +120,13 @@ function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose })
                 <Col span={12}>
                   <Col span={23}>Ward</Col>
                   <Col span={23}>
-                    <b>Female Ward First Floor</b>
+                    <b>{Dropdown.PatientsCurrentDetails.Ward}</b>
                   </Col>
                 </Col>
                 <Col span={12}>
                   <Col span={24}>Bed</Col>
                   <Col span={24}>
-                    <b>{bed.name}</b>
+                    <b>{Dropdown.PatientsCurrentDetails.Bed}</b>
                   </Col>
                 </Col>
               </Row>
@@ -105,16 +137,52 @@ function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose })
               style={{ marginTop: "1rem" }}
               layout="vertical"
               form={form}
-              onFinish={(values) => {
-                console.log(values);
-                handleCancel();
+              onFinish={async (values) => {
+                debugger
+                const discharge = {
+                  Department: values.Department,
+                  ServiceLocationId: values.LocationId,
+                  BedID: values.BedId,
+                  PatientID: values.PatientId,
+                  DischargeAdvisedBy: values.Provider,
+                  dateExpected: values.ExpectedDateTime ? values.ExpectedDateTime.format('DD-MM-YYYY') : '',
+                  timeExpected: values.ExpectedDateTime ? values.ExpectedDateTime.format('HH:mm:ss') : '',
+                  DispositionTypeId: values.DispositionType,
+                  dateAdvised: values.AdvisedDateTime ? values.AdvisedDateTime.format('DD-MM-YYYY') : '',
+                  timeAdvised: values.AdvisedDateTime ? values.AdvisedDateTime.format('HH:mm:ss') : '',
+                  dateDeceased: !disposition ? values.DeceasedDateTime.format('DD-MM-YYYY') : null,
+                  timeDeceased: !disposition ? values.DeceasedDateTime.format('HH:mm:ss') : null,
+                  DischargeStatus: 'Initiated',
+                  EncounterId: values.EncounterId,
+                  AmendReason: 0,
+                  WardCategoryID: values.WardCategoryID
+                };
+                try {
+                  const response = await customAxios.get(
+                    `${urlSaveDischargeInitiation}?Department=${discharge.Department}&LocationId=${discharge.ServiceLocationId}&BedID=${discharge.BedID}&PatientID=${discharge.PatientID}&DischargeAdvisedBy=${discharge.DischargeAdvisedBy}&dateExpected=${discharge.dateExpected}&timeExpected=${discharge.timeExpected}&ID=${discharge}&DispositionTypeId=${discharge.DispositionTypeId}
+                    &dateAdvised=${discharge.dateAdvised}&timeAdvised=${discharge.timeAdvised}&dateDeceased=${discharge.dateDeceased}&timeDeceased=${discharge.timeDeceased}&DischargeStatus=${discharge.DischargeStatus}&EncounterId=${discharge.EncounterId}&AmendReason=${discharge.AmendReason}&WardCategoryID=${discharge.WardCategoryID}`
+                  );
+                  if (response.status === 200 && response.data === 'Success') {
+                    message.success(response.data)
+                    handleCancel()
+                  }
+                } catch (error) {
+                  console.error("Error:", error);
+                }
+                // form.resetFields()
+                // handleCancel();
+              }}
+              initialValues={{
+                ExpectedDateTime: dayjs(),
+                AdvisedDateTime: dayjs(),
+                DeceasedDateTime: dayjs()
               }}
             >
               <Row gutter={16}>
                 <Col span={24}>
                   <Form.Item
                     // style={{ marginBottom: "0.9rem" }}
-                    name="DateTimeDischarge"
+                    name="ExpectedDateTime"
                     label="Expected Date and Time of Discharge"
                     rules={[
                       {
@@ -133,8 +201,7 @@ function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose })
                 </Col>
                 <Col span={24}>
                   <Form.Item
-                    // style={{ marginBottom: "0.9rem" }}
-                    name="Department"
+                    name="Provider"
                     label="Discharge Advised By"
                     rules={[
                       {
@@ -143,7 +210,7 @@ function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose })
                       },
                     ]}
                   >
-                    <Select style={{ width: "100%" }}>
+                    <Select style={{ width: "100%" }} placeholder='Select Provider' allowClear onChange={SelectProvider}>
                       {Dropdown.FacilityDepartmentProvider.map((option) => (
                         <Select.Option key={option.ProviderId} value={option.ProviderId}>
                           {option.ProviderName}
@@ -153,9 +220,27 @@ function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose })
                   </Form.Item>
                 </Col>
                 <Col span={24}>
+                  <Form.Item hidden={provider}
+                    name="AdvisedDateTime"
+                    label="Advised Date&Time"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please Enter",
+                      },
+                    ]}
+                  >
+                    <DatePicker
+                      placeholder="Select Date and Time"
+                      style={{ width: "100%" }}
+                      showTime={{ format: "hh:mm A" }}
+                      format="dddd , DD-MM-YYYY , hh:mm A"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={24}>
                   <Form.Item
-                    // style={{ marginBottom: "0" }}
-                    name="Provider"
+                    name="DispositionType"
                     label="Disposition Type"
                     rules={[
                       {
@@ -164,13 +249,50 @@ function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose })
                       },
                     ]}
                   >
-                    <Select style={{ width: "100%" }}>
+                    <Select style={{ width: "100%" }} allowClear onChange={SelectDisposition}>
                       {Dropdown.DispositionType.map((option) => (
                         <Select.Option key={option.LookupID} value={option.LookupID}>
                           {option.LookupDescription}
                         </Select.Option>
                       ))}
                     </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={24}>
+                  <Form.Item hidden={disposition}
+                    name="DeceasedDateTime"
+                    label="Deceased Date&Time"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please Enter",
+                      },
+                    ]}
+                  >
+                    <DatePicker
+                      placeholder="Select Date and Time"
+                      style={{ width: "100%" }}
+                      showTime={{ format: "hh:mm A" }}
+                      format="dddd , DD-MM-YYYY , hh:mm A"
+                    />
+                  </Form.Item>
+                  <Form.Item hidden name="PatientId" initialValue={Dropdown.PatientsCurrentDetails.PatientID}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item hidden name="EncounterId" initialValue={Dropdown.PatientsCurrentDetails.EncounterId}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item hidden name="LocationId" initialValue={Dropdown.PatientsCurrentDetails.ServiceLocationId}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item hidden name="BedId" initialValue={Dropdown.PatientsCurrentDetails.BedID}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item hidden name="WardCategoryID" initialValue={Dropdown.PatientsCurrentDetails.WardCategoryID}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item hidden name="Department" initialValue={Dropdown.PatientsCurrentDetails.DepartmentId}>
+                    <Input />
                   </Form.Item>
                 </Col>
               </Row>
