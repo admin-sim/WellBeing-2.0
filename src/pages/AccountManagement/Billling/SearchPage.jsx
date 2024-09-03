@@ -1,5 +1,5 @@
-import { urlSearchUHID, urlGetAllVisitsForPatientId } from "../../../endpoints";
-import customAxios from "../../components/customAxios/customAxios";
+import { urlSearchUHID, urlGetAllVisitsForPatientId } from "../../../../endpoints";
+import customAxios from "../../../components/customAxios/customAxios";
 import React, { useEffect, useState } from "react";
 
 import { useNavigate } from "react-router";
@@ -18,7 +18,7 @@ import { Table, Tabs } from "antd";
 import {
   ColWithSixSpan,
   ColWithThreeSpan,
-} from "../../components/customGridColumns";
+} from "../../../components/customGridColumns";
 
 function Billing() {
   const [form] = Form.useForm();

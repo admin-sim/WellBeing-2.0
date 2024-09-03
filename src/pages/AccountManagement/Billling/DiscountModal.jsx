@@ -14,11 +14,10 @@ import {
 } from "antd";
 import React, { useState } from "react";
 const { Text } = Typography;
-// import customAxios from "../../components/customAxios/customAxios";
-import { urlUpdateInvoiceDiscount } from "../../../endpoints";
+import customAxios from "../../../components/customAxios/customAxios";
+import { urlUpdateDiscount } from "../../../../endpoints";
 import { useEffect } from "react";
-import customAxios from "../../components/customAxios/customAxios";
-function InvoiceDiscountModal({
+function DiscountModal({
   options,
   open,
   handleClose,
@@ -30,8 +29,9 @@ function InvoiceDiscountModal({
   useEffect(() => {
     if (discountDetails) {
       form.setFieldsValue({
-        ServiceCatalogue: "All",
-        PatientChargeAmount: discountDetails.TotalChargeAmount,
+        ServiceCatalogue: discountDetails.ServiceName,
+        PatientChargeAmount:
+          discountDetails.ServiceChargeAmountIncludingPriceTariff,
       });
     }
   }, [discountDetails]);
@@ -47,21 +47,17 @@ function InvoiceDiscountModal({
     debugger;
     values.ChargeID = discountDetails.ChargeID;
     values.ServiceId = discountDetails.ServiceId;
-    values.Flag = "";
     values.PatientId = discountDetails.PatientId;
     values.EncounterId = discountDetails.EncounterId;
 
     try {
-      const response = await customAxios.post(
-        urlUpdateInvoiceDiscount,
-        values,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response.status == 200 && response.data.data!=null) {
+      const response = await customAxios.post(urlUpdateDiscount, values, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.status === 200 && response.data.data != null) {
         setCharges(response.data.data.PatientAccountCharges);
         message.success("Discount Applied");
         handleCancel();
@@ -107,7 +103,7 @@ function InvoiceDiscountModal({
     <div>
       <Spin spinning={loading}>
         <Modal
-          title="Invoive Discount Modal"
+          title="Discount Modal"
           open={open}
           maskClosable={false}
           footer={null}
@@ -127,7 +123,7 @@ function InvoiceDiscountModal({
             // }}
           >
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col   span={12}>
+              <Col span={12}>
                 <Form.Item
                   name="ServiceCatalogue"
                   label="Service/Catalogue"
@@ -136,7 +132,7 @@ function InvoiceDiscountModal({
                   <Input disabled style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
-              <Col   span={12}>
+              <Col span={12}>
                 <Form.Item
                   name="PatientChargeAmount"
                   label="ChargeAmount"
@@ -149,7 +145,7 @@ function InvoiceDiscountModal({
               </Col>
             </Row>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col   span={12}>
+              <Col span={12}>
                 <Form.Item
                   name="PatientDiscountRate"
                   label="DiscountRate"
@@ -167,7 +163,7 @@ function InvoiceDiscountModal({
                   />
                 </Form.Item>
               </Col>
-              <Col   span={12}>
+              <Col span={12}>
                 <Form.Item
                   name="PatientDiscountAmount"
                   label="DiscountAmount"
@@ -180,7 +176,7 @@ function InvoiceDiscountModal({
               </Col>
             </Row>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col   span={12}>
+              <Col span={12}>
                 <Form.Item
                   name="PatientNetAmount"
                   label="NetAmount"
@@ -191,7 +187,7 @@ function InvoiceDiscountModal({
                   <Input disabled style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
-              <Col   span={12}>
+              <Col span={12}>
                 <Form.Item
                   name="DiscountReasonId"
                   label="DiscountReason"
@@ -235,4 +231,4 @@ function InvoiceDiscountModal({
   );
 }
 
-export default InvoiceDiscountModal;
+export default DiscountModal;

@@ -45,10 +45,6 @@ function CreatePriceTariff() {
   const EditedPricetariffId = location.state?.PriceTariffId;
   console.log("EditedPricetariffId", EditedPricetariffId);
   const navigate = useNavigate();
-  const [effectiveFromDate, setEffectiveFromDate] = useState(null);
-  const [effectiveToDate, setEffectiveToDate] = useState(null);
-  const [effectiveFromDatemodal, setEffectiveFromDateModal] = useState(null);
-  const [effectiveToDatemodal, setEffectiveToDateModal] = useState(null);
   const [loading, setLoading] = useState(false);
   const [transferData, setTransferData] = useState([]);
   const [targetKeys, setTargetKeys] = useState([]);
@@ -59,7 +55,7 @@ function CreatePriceTariff() {
   const [priceTariffId, setPriceTariffId] = useState(0);
   const [linedata, setLinedata] = useState(null);
 
-  const [editedpriceTariffId, setEditedPriceTariffId] = useState(0);
+
   const [editedpriceTarifflineId, setEditedPriceTariffLineId] = useState(null);
   const [pricetariffDropdown, setPriceariffDropdown] = useState({
     PatientType: [],
@@ -220,62 +216,47 @@ function CreatePriceTariff() {
   };
 
   const onFinish = async (values) => {
-    debugger;
     setLoading(true);
-
-    values.EffectiveFromDate = values.EffectiveFrom
-      ? values.EffectiveFrom.format("DD-MM-YYYY")
-      : "";
-    values.EffectiveToDate = values.EffectiveTo
-      ? values.EffectiveTo.format("DD-MM-YYYY")
-      : "";
-    if (EditedPricetariffId > 0) {
-      values.PriceTariffId = EditedPricetariffId;
-
-      try {
-        const response = await customAxios.post(urlUpdatePriceTariff, values, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        if (response.status == 200 && response.data) {
-          if (response.data > 0 && response.data != "") {
-            message.success("PriceTariffUpdated Successfully");
-            setLoading(false);
+  
+    values = {
+      ...values,
+      EffectiveFromDate: values.EffectiveFrom?.format("DD-MM-YYYY") || "",
+      EffectiveToDate: values.EffectiveTo?.format("DD-MM-YYYY") || "",
+      PriceTariffId: EditedPricetariffId > 0 ? EditedPricetariffId : 0,
+    };
+  
+    const url = EditedPricetariffId > 0 ? urlUpdatePriceTariff : urlSaveNewPriceTariff;
+  
+    try {
+      const response = await customAxios.post(url, values, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (response.status === 200 && response.data) {
+        if (response.data > 0) {
+          if (EditedPricetariffId > 0) {
+            message.success("PriceTariff Updated Successfully");
             navigate("/PriceTariff");
           } else {
-            message.error("Something Went Wrong");
-          }
-        }
-      } catch (error) {
-        message.error("Something went wrong");
-        console.error(error);
-        setLoading(false);
-      }
-    } else {
-      try {
-        const response = await customAxios.post(urlSaveNewPriceTariff, values, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        if (response.status == 200 && response.data) {
-          if (response.data > 0 && response.data != null) {
             setPriceTariffId(response.data);
-            message.success("PriceTariffCreated Successfully");
-          } else {
-            message.error("PriceTariff With Same Name Already Exists");
+            message.success("PriceTariff Created Successfully");
           }
+        } else {
+          message.error(
+            EditedPricetariffId > 0 ? "Something Went Wrong" : "PriceTariff With Same Name Already Exists"
+          );
         }
-      } catch (error) {
-        message.error("Something went wrong");
-        console.error(error);
-        setLoading(false);
       }
+    } catch (error) {
+      message.error("Something went wrong");
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
+  
 
   const showModal = async () => {
     if (targetKeys.length === 0) {

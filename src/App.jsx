@@ -83,8 +83,8 @@ import PublishCalender from "./pages/Masters/ResourceScheduling/PublishCalender/
 import ProviderAbsence from "./pages/Masters/ResourceScheduling/ProviderAbsence/providerAbsence";
 import SpecialEvent from "./pages/Masters/ResourceScheduling/SpecialEvent/specialEvent";
 import Holiday from "./pages/Masters/ResourceScheduling/Holiday/holiday";
-import Billing from "./pages/Billling/SearchPage";
-import CreateBilling from "./pages/Billling/CreateBilling";
+import Billing from "./pages/AccountManagement/Billling/SearchPage.jsx";
+import CreateBilling from "./pages/AccountManagement/Billling/CreateBilling.jsx";
 import Vendor from "./pages/Masters/InventoryManagement/Vendor";
 import VendorSearch from "./pages/Masters/InventoryManagement/VendorSearch";
 import ProductClassification from "./pages/Masters/InventoryManagement/ProductClassification";
@@ -125,7 +125,8 @@ import WorkflowManager from "./pages/Masters/Configuration Management/CreateWork
 import CreateEditWorkFlow from "./pages/Masters/Configuration Management/CreateWorkflow/CreateEditWorkFlow.jsx";
 import Frequency from "./pages/Masters/SystemParameterSetup/Frequency/index.jsx";
 import PatientTrackingBoard from "./pages/ClinicalDocuments/PatientTrackingBoard/index.jsx";
-
+import AssignedPlanSearchPage from "./pages/AccountManagement/AssignedPlan/AssignedPlanSearchPage.jsx";
+import CreateAssignedPlan from "./pages/AccountManagement/AssignedPlan/CreateAssignedPlan.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -934,10 +935,26 @@ function App() {
               }
             />
             <Route
+              path="AssignedPlan"
+              element={
+                <ProtectedRoute>
+                  <AssignedPlanSearchPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="CreateBilling"
               element={
                 <ProtectedRoute>
                   <CreateBilling />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="CreateAssignedPlan"
+              element={
+                <ProtectedRoute>
+                  <CreateAssignedPlan />
                 </ProtectedRoute>
               }
             />

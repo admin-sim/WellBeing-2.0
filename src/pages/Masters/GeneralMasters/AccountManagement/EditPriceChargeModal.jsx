@@ -126,6 +126,7 @@ function EditPriceChargeModal({
     console.log("Selected value:", value);
     console.log("Selected option:", option);
     form.setFieldsValue({ IndicatorDescriptionId: undefined });
+    setValue(undefined);
     setData([]);
   
     form.resetFields(['IndicatorDescriptionId']); // Corrected to use an array

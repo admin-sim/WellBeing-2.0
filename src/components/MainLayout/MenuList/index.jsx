@@ -423,6 +423,12 @@ const menuData = [
         title: "Billing",
         link: "Billing",
       },
+      {
+        key: "AssignedPlan",
+        icons: "FaUserFriends",
+        title: "Assigned Plan",
+        link: "AssignedPlan",
+      },
     ],
   },
   {

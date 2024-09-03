@@ -19,6 +19,7 @@ import {
   AutoComplete,
   Typography,
   Empty,
+  Spin,
 } from "antd";
 import {
   EditOutlined,
@@ -30,7 +31,7 @@ import {
 import Layout from "antd/es/layout/layout";
 const { Text } = Typography;
 import { useNavigate } from "react-router";
-import customAxios from "../../components/customAxios/customAxios";
+import customAxios from "../../../components/customAxios/customAxios.jsx";
 import DiscountModal from "./DiscountModal.jsx";
 import InvoiceDiscountModal from "./InvoiceDiscountModal.jsx";
 import {
@@ -40,15 +41,15 @@ import {
   urlGetAllProviders,
   urlAddNewCharge,
   urlBillingCreate,
- 
   urlEditDiscount,
   urlUpdateDiscount,
   urlInvoiceDiscount,
   urlGetPatientHeaderDetails,
-} from "../../../endpoints";
+  urlDeleteBillCharge,
+} from "../../../../endpoints";
 import Title from "antd/es/typography/Title";
 import { useLocation } from "react-router-dom";
-import PatientHeader from "../../components/PatientHeader";
+import PatientHeader from "../../../components/PatientHeader";
 import { CiDiscount1 } from "react-icons/ci";
 import dayjs from "dayjs";
 import { debounce } from "lodash";
@@ -64,7 +65,7 @@ const CreateBilling = () => {
   const [totalInstrumentAmount, setTotalInstrumentAmount] = useState(0);
   const [serviceId, setSelectedServiceId] = useState(null);
   const [providerId, setSelectedProviderId] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [tableloading, setTableLoading] = useState(false);
   const [serviceDate, setServiceDate] = useState(null);
   const [receiptDate, setReceiptDate] = useState(null);
   const [banks, setBanks] = useState(null);
@@ -76,7 +77,7 @@ const CreateBilling = () => {
   const [PatientAmount2, setPatientAmount2] = useState(0);
   const [invoicediscountDetails, setInvoiceDiscountDetails] = useState([]);
   const [invoicediscountReason, setInvoiceDiscountReason] = useState([]);
-
+  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isinvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [form] = Form.useForm();
@@ -110,6 +111,7 @@ const CreateBilling = () => {
   }, []);
 
   const fetchData = async () => {
+    setTableLoading(true);
     try {
       const response = await customAxios.get(
         `${urlBillingCreate}?PatientId=${PatientId}&EncounterId=${EncounterId}`
@@ -120,12 +122,15 @@ const CreateBilling = () => {
         setPaymentTypes(details.PaymentType);
         console.log("ptypes", details.PaymentType);
         setCharges(details.PatientAccountCharges);
+        setTableLoading(false);
         console.log("charges", details.PatientAccountCharges);
       } else {
         console.error("Failed to fetch patient details");
+        setTableLoading(false);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
+      setTableLoading(false);
     }
   };
 
@@ -322,6 +327,20 @@ const CreateBilling = () => {
     }
   };
 
+  const handleDeleteCharge =async(record) =>{
+     debugger;
+     const amt=0;
+     const response = await customAxios.delete(
+      `${urlDeleteBillCharge}?chargeId=${record.ChargeID}&patientId=${record.PatientId}&encounterId=${record.EncounterId}&amt=${amt}`
+    );
+    if (response.status === 200 && response.data.data != null) {
+      setCharges(response.data.data.PatientAccountCharges);
+      message.success("Charge Deleted Successfully...");
+    }else{
+      message.warning("Something Went Wrong...");
+    }
+  };
+
   const columns = [
     {
       title: (
@@ -335,12 +354,13 @@ const CreateBilling = () => {
           title: "ServiceName",
           dataIndex: "ServiceName",
           key: "ServiceName",
+          width: 200,
         },
         {
           title: "Date",
           dataIndex: "StrServiceDate",
           key: "StrServiceDate",
-          width: 130,
+          width: 110,
         },
         {
           title: "Provider",
@@ -440,14 +460,21 @@ const CreateBilling = () => {
             return (
               <span style={{ display: "flex" }}>
                 <Tooltip title="Delete">
-                  <Button type="danger" onClick={() => handleEdit(row)}>
-                    <DeleteOutlined style={{ fontSize: ".8rem" }} />
-                  </Button>
+                  <Popconfirm
+                    title="Are you sure you want to delete this Charge?"
+                    onConfirm={() => handleDeleteCharge(row)} // Function to call on confirm
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <Button danger type="link">
+                      <DeleteOutlined style={{ fontSize: ".8rem" }} />
+                    </Button>
+                  </Popconfirm>
                 </Tooltip>
               </span>
             );
           },
-        }
+        },
         
       ],
     },
@@ -701,6 +728,7 @@ const CreateBilling = () => {
   };
 
   const handleOnFinish = async (values) => {
+    setTableLoading(true);
     debugger;
     console.log("values", values);
     const Charge = {
@@ -727,6 +755,7 @@ const CreateBilling = () => {
       if (response.status == 200) {
         console.log("response", response);
         setCharges(response.data.data.PatientAccountCharges);
+        setTableLoading(false);
         message.success("Charge Added Successfully");
         form.resetFields();
       } else {
@@ -758,7 +787,10 @@ const CreateBilling = () => {
         : 0,
       PaymentTypeId: item.PaymentTypeId,
     }));
-
+    if(!charges){
+      message.warning("Please Add Charges To Proceed Billing....");
+      return false;
+    }
     try {
       const billingData = {
         PatientAccountReceiptModel: {
@@ -991,6 +1023,7 @@ const CreateBilling = () => {
             },
           }}
         >
+           <Spin spinning={tableloading}>
           <Table
             // style={{ padding: '0rem 2rem' }}
             dataSource={charges}
@@ -1004,7 +1037,7 @@ const CreateBilling = () => {
               showTotal: (total, range) =>
                 `Showing ${range[0]} to ${range[1]} of ${total} entries`,
             }}
-            scroll={{ x: 1400 }}
+            scroll={{ x: 1000 }}
             summary={(pageData) => {
               let netamt = 0;
               let insamt = 0;
@@ -1082,6 +1115,7 @@ const CreateBilling = () => {
               );
             }}
           />
+          </Spin>
         </ConfigProvider>
         <InvoiceDiscountModal
           options={invoicediscountReason}

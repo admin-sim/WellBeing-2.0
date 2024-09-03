@@ -1,5 +1,6 @@
 import {
   Button,
+  Checkbox,
   Col,
   DatePicker,
   Form,
@@ -11,49 +12,120 @@ import {
   Typography,
   message,
 } from "antd";
-import React, { useCallback, useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 const { Text } = Typography;
-import customAxios from "../../../../components/customAxios/customAxios";
+import customAxios from "../../../components/customAxios/customAxios";
 import {
-  urlSaveNewPriceTariffChargeParameter,
   urlPackageDescriptionServiceForInsurance,
   urlPackageDescriptionServiceGroup,
   urlPackageDescriptionServiceClassification,
-} from "../../../../../endpoints";
+  urlUpdateAuthorisationLineChargeParameterAsync,
+} from "../../../../endpoints";
+
+import dayjs from "dayjs";
 import { debounce } from "lodash";
 
-function PriceChargeModal({
+function EditAssignedPlanModal({
   options,
   open,
   handleClose,
-  priceTariffId,
+  editedAuthlineId,
   setColumnData,
+  linedata,
 }) {
   const [form] = Form.useForm();
-  // const [effectiveFromDatemodal, setEffectiveFromDateModal] = useState(null);
-  // const [effectiveToDatemodal, setEffectiveToDateModal] = useState(null);
-  const [loading, setLoading] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState([]);
+  const [value, setValue] = useState(undefined);
+  const [fetching, setFetching] = useState(false);
+  const [descriptionDisabled, setDescriptionDisabled] = useState(false);
+
+  //setValue(linedata?.IndicatorDescriptionId);
   const [url, setUrl] = useState();
+  useEffect(() => {
+    if (linedata) {
+      form.setFieldsValue({
+        Nationality: linedata.Nationality,
+        PatientTypeId: linedata.PatientTypeId,
+        Payer: linedata.Payer,
+        Gender: linedata.Gender,
+        WardType: linedata.WardTypeId,
+        Provider: linedata.Provider,
+        IncomeLimit: linedata.IncomeLimit,
+        Indicator: linedata.Indicator,
+        IndicatorDescriptionId: linedata.IndicatorDescriptionName,
+        IsExcluded: linedata.IsExcluded,
+        DenialCode: linedata.DenialCode,
+        Qty: linedata.Qty,
+        AmtIndicator: linedata.AmtIndicator,
+        Value: linedata.Value,
+        Priority: linedata.Priority,
+        AmtRequested: linedata.AmtRequested,
+        AmtDeductible: linedata.AmtDeductible,
+        CoverageType: linedata.CoverageType,
+        CoverageBy: linedata.CoverageBy,
+        MaxCoverageAmt: linedata.MaxCoverageAmt,
+        ApprovalCode: linedata.ApprovalCode,
+        Remarks: linedata.Remarks,
+      });
+      setValue(linedata.IndicatorDescriptionId);
+      //setDescriptionName(linedata.IndicatorDescriptionName);
+    }
+  }, [linedata]);
 
   const handleCancel = () => {
     form.resetFields();
     setData([]);
+    setValue(undefined);
     setUrl(undefined);
     handleClose();
   };
-  const [data, setData] = useState([]);
-  const [value, setValue] = useState(undefined);
-  const [fetching, setFetching] = useState(false);
-  const [descriptionDisabled, setDescriptionDisabled] = useState(true);
+
+  const onFinishForUpdateChargeParameters = async (values) => {
+    debugger;
+    console.log("value", value);
+    setLoading(true);
+
+    values.PlanAuthId = linedata.PlanAuthId;
+    values.AuthLineId = editedAuthlineId;
+    values.IndicatorDescriptionId = value;
+    console.log(linedata, "linedata");
+    try {
+      const response = await customAxios.post(
+        urlUpdateAuthorisationLineChargeParameterAsync,
+        values,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.status == 200 && response.data) {
+        if (response.status === 200 && response.data.data != null) {
+          const resdata = response.data.data;
+          setColumnData(resdata.AuthorisationLine);
+          handleCancel();
+          message.success("BillAgrementChargeParameter Updated  Successfully");
+        } else {
+          message.error("Something Went Wrong");
+        }
+      }
+    } catch (error) {
+      message.error("Something went wrong");
+      console.error(error);
+    }
+    setLoading(false);
+  };
 
   const IndicatorOnchange = (value, option) => {
     console.log("Selected value:", value);
     console.log("Selected option:", option);
     form.setFieldsValue({ IndicatorDescriptionId: undefined });
+    setValue(undefined);
     setData([]);
-  
-    form.resetFields(['IndicatorDescriptionId']); // Corrected to use an array
+
+    form.resetFields(["IndicatorDescriptionId"]); // Corrected to use an array
     // Update the URL based on the selected option
     if (option.children !== "All") {
       setDescriptionDisabled(false);
@@ -68,51 +140,10 @@ function PriceChargeModal({
           setUrl(urlPackageDescriptionServiceForInsurance);
           break;
       }
-    }
-    else{
+    } else {
       setDescriptionDisabled(true);
     }
-    
   };
-
-  const onFinishForAddChargeParameters = async (values) => {
-    setLoading(true);
-    // values.EffectiveFromDate = effectiveFromDatemodal;
-    // values.EffectiveToDate = effectiveToDatemodal;
-    values.EffectiveFromDate = values.EffectiveFrom
-      ? values.EffectiveFrom.format("DD-MM-YYYY")
-      : "";
-    values.EffectiveToDate = values.EffectiveTo
-      ? values.EffectiveTo.format("DD-MM-YYYY")
-      : "";
-    values.PriceTariffId = priceTariffId;
-    try {
-      const response = await customAxios.post(
-        urlSaveNewPriceTariffChargeParameter,
-        values,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response.status == 200 && response.data) {
-        if (response.status === 200 && response.data.data != null) {
-          const resdata = response.data.data;
-          setColumnData(resdata.BillTariffLineModels);
-          handleCancel();
-          message.success("PriceTariffCreated Successfully");
-        } else {
-          message.error("PriceTariff With Same Name Already Exists");
-        }
-      }
-    } catch (error) {
-      message.error("Something went wrong");
-      console.error(error);
-    }
-    setLoading(false);
-  };
-
 
   const fetchOptions = async (value) => {
     debugger;
@@ -122,15 +153,14 @@ function PriceChargeModal({
       return;
     }
     setFetching(true);
-    if(value){
+    if (value) {
       try {
         const response = await customAxios.get(`${url}?Description=${value}`);
         setData(response.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-    }
-    else{
+    } else {
       setData([]);
     }
     setFetching(false);
@@ -138,25 +168,41 @@ function PriceChargeModal({
 
   const debounceFetchOptions = useCallback(debounce(fetchOptions, 800), [url]);
 
+  const handleDescription = (newValue, option) => {
+    setValue(newValue);
+    //setDescriptionName(option.children);
+    form.setFieldsValue({
+      IndicatorDescriptionId: newValue,
+    });
+  };
+
   return (
     <div>
       <Spin spinning={loading}>
         <Modal
-          title="Add New General Lookup"
+          title="Edit Authorisation Line Details"
           open={open}
           maskClosable={false}
           footer={null}
           onCancel={handleCancel}
-          width={800}
+          width={600}
         >
           <Form
             style={{ margin: "1rem 0" }}
             layout="vertical"
             form={form}
-            onFinish={onFinishForAddChargeParameters}
+            onFinish={onFinishForUpdateChargeParameters}
             onCancel={handleCancel}
+            initialValues={{
+              IsExcluded: false, // Set default value to false
+              AmtIndicator: "P",
+              Priority: "Q",
+              CoverageType: "PD",
+              CoverageBy: "Payer",
+              ApprovalCode: "L",
+            }}
           >
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+            <Row gutter={16}>
               {options.NationalityFlag && (
                 <Col className="gutter-row" span={8}>
                   <Form.Item
@@ -195,6 +241,29 @@ function PriceChargeModal({
                           value={option.LookupID}
                         >
                           {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+              )}
+              {options.PayerFlag && (
+                <Col className="gutter-row" span={8}>
+                  <Form.Item
+                    name="Payer"
+                    label="Payer"
+                    initialValue={options.Payer[0]?.PayerId}
+                    rules={[
+                      { required: true, message: "Please select Payer " },
+                    ]}
+                  >
+                    <Select>
+                      {options.Payer?.map((option) => (
+                        <Select.Option
+                          key={option.PayerId}
+                          value={option.PayerId}
+                        >
+                          {option.PayerName}
                         </Select.Option>
                       ))}
                     </Select>
@@ -255,7 +324,7 @@ function PriceChargeModal({
                     ]}
                   >
                     <Select>
-                      {options.Provider?.map((option) => (
+                      {options.WardType?.map((option) => (
                         <Select.Option
                           key={option.ProviderId}
                           value={option.ProviderId}
@@ -280,6 +349,8 @@ function PriceChargeModal({
                   </Form.Item>
                 </Col>
               )}
+            </Row>
+            <Row gutter={16}>
               <Col className="gutter-row" span={8}>
                 <Form.Item
                   name="Indicator"
@@ -311,7 +382,7 @@ function PriceChargeModal({
                     notFoundContent={fetching ? <Spin size="small" /> : null}
                     filterOption={false}
                     onSearch={debounceFetchOptions}
-                    onChange={(newValue) => setValue(newValue)}
+                    onChange={handleDescription}
                     disabled={descriptionDisabled}
                     style={{ width: "100%" }}
                   >
@@ -323,88 +394,161 @@ function PriceChargeModal({
                   </Select>
                 </Form.Item>
               </Col>
+              <Col span={8}>
+                <Form.Item
+                  valuePropName="checked"
+                  name="IsExcluded"
+                  label="&nbsp;"
+                >
+                  <Checkbox>Is Excluded</Checkbox>
+                </Form.Item>
+              </Col>
             </Row>
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+            <Row gutter={16}>
+              <Col span={8}>
+                <Form.Item name="Qty" label="Qty">
+                  <Input></Input>
+                </Form.Item>
+              </Col>
               <Col className="gutter-row" span={8}>
-                <Form.Item name="TariffLineIndicator" label="TariffIndicator">
+                <Form.Item
+                  name="AmtIndicator"
+                  label="Amount Indicator"
+                  rules={[{ required: true }]}
+                >
+                  <Select disabled>
+                    <Select.Option key="A" value="A">
+                      Amount
+                    </Select.Option>
+                    <Select.Option key="P" value="P">
+                      Percentage
+                    </Select.Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={8}>
+                <Form.Item initialValue={0} name="Value" label="Value">
+                  <Input></Input>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={8}>
+                <Form.Item
+                  name="Priority"
+                  label="Priority"
+                  rules={[{ required: true }]}
+                >
+                  <Select disabled>
+                    <Select.Option key="A" value="A">
+                      Amount
+                    </Select.Option>
+                    <Select.Option key="Q" value="Q">
+                      Quantity
+                    </Select.Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item name="AmtRequested" label="RequestedAmount">
+                  <Input type="number"></Input>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={8}>
+                <Form.Item
+                  initialValue={0}
+                  name="AmtDeductible"
+                  label="Deductible"
+                >
+                  <Input></Input>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={8}>
+                <Form.Item
+                  name="CoverageType"
+                  label="CoverageType"
+                  // rules={[{ required: true }]}
+                >
                   <Select>
-                    <Select.Option
-                      key="Mark Up"
-                      value="Mark Up"
-                    ></Select.Option>
-                    <Select.Option
-                      key="Mark Down"
-                      value="Mark Down"
-                    ></Select.Option>
-                    <Select.Option
-                      key="Tariff Price"
-                      value="Tariff Price"
-                    ></Select.Option>
+                    <Select.Option key="PD" value="PD">
+                      Per day
+                    </Select.Option>
+                    <Select.Option key="PE" value="PE">
+                      Per encounter
+                    </Select.Option>
                   </Select>
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
                 <Form.Item
-                  name="FactorAmount"
-                  label="Factor/Amount"
-                  rules={[{ required: true }]}
+                  name="CoverageBy"
+                  label="Coverage"
+                  //rules={[{ required: true }]}
                 >
                   <Select>
-                    <Select.Option key="Amount" value="Amount"></Select.Option>
-                    <Select.Option key="Factor" value="Factor"></Select.Option>
+                    <Select.Option key="Payer" value="Payer"></Select.Option>
+                    <Select.Option
+                      key="Patient"
+                      value="Patient"
+                    ></Select.Option>
                   </Select>
                 </Form.Item>
               </Col>
-              <Col className="gutter-row" span={8}>
-                <Form.Item name="TariffLineValue" label="Value">
-                  <Input style={{ width: "100%" }} />
+            </Row>
+            <Row gutter={16}>
+              <Col span={8}>
+                <Form.Item
+                  initialValue={0}
+                  name="MaxCoverageAmt"
+                  label="MaxCoverage"
+                  rules={[
+                    { required: true},
+                  ]}
+                >
+                  <Input type="number"></Input>
                 </Form.Item>
               </Col>
-            </Row>
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={8}>
                 <Form.Item
-                  name="Status"
-                  label="Status"
-                  rules={[{ required: true }]}
+                  name="ApprovalCode"
+                  label="ApprovalCode"
+                  //  rules={[{ required: true }]}
                 >
                   <Select>
-                    <Select.Option key="Active" value="Active"></Select.Option>
-                    <Select.Option key="Hidden" value="Hidden"></Select.Option>
+                    <Select.Option key="L" value="L">
+                      LifeTime
+                    </Select.Option>
+                    <Select.Option key="E" value="E">
+                      Encounter
+                    </Select.Option>
                   </Select>
                 </Form.Item>
               </Col>
-              <Col className="gutter-row" span={8}>
-                <Form.Item label="EffectiveFrom" name="EffectiveFrom">
-                  <DatePicker
-                    style={{ width: "100%" }}
-                    //onChange={handleEfeectiveFromModal}
-                    format="DD-MM-YYYY"
-                  />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={8}>
-                <Form.Item label="EffectiveTo" name="EffectiveTo">
-                  <DatePicker
-                    style={{ width: "100%" }}
-                    // onChange={handleEfeectiveToModal}
-                    format="DD-MM-YYYY"
-                  />
+              <Col span={8}>
+                <Form.Item name="Remarks" label="Remarks">
+                  <Input></Input>
                 </Form.Item>
               </Col>
             </Row>
+
             <Row gutter={16} justify="end">
-            <Col>
-              <Form.Item>
-              <Button type="primary" htmlType="submit" style={{ marginRight: '8px' }}>
-                  Submit
-                </Button>
-                <Button type="default" onClick={handleCancel} >
-                  Cancel
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
+              <Col>
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    style={{ marginRight: "8px" }}
+                  >
+                    Update
+                  </Button>
+                  <Button type="default" onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
           </Form>
         </Modal>
       </Spin>
@@ -412,4 +556,4 @@ function PriceChargeModal({
   );
 }
 
-export default PriceChargeModal;
+export default EditAssignedPlanModal;
