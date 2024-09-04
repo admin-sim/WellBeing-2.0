@@ -14,15 +14,15 @@ import { DollarTwoTone, FolderOpenTwoTone } from "@ant-design/icons";
 import male from "../../assets/m.png";
 import { isMobile } from "react-device-detect";
 
-function PatientHeader({ encounterId }) {
-  const patient = {
-    PatientName: "Nitish Arali",
-    UhId: "COH-001",
-    PatientGender: "Male",
-    GeneratedEncounterId: "EID-501",
-    Age: "28Y",
-    DateOfBirthstring: "01-01-1995",
-  };
+function PatientHeader({ patient, encounterId }) {
+  // const patient = {
+  //   PatientName: "Nitish Arali",
+  //   UhId: "COH-001",
+  //   PatientGender: "Male",
+  //   GeneratedEncounterId: "EID-501",
+  //   Age: "28Y",
+  //   DateOfBirthstring: "01-01-1995",
+  // };
   const displayEncounterId = patient?.GeneratedEncounterId || encounterId;
   return isMobile ? (
     <>
