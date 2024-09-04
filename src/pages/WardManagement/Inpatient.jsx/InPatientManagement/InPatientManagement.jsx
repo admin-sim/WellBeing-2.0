@@ -159,6 +159,7 @@ function InPatientManagement() {
           backgroundColor: "white",
           height: "max-content",
           borderRadius: "10px",
+          width: "100%",
         }}
       >
         <PageHeader title={"In-Patient Management"} button={false} />
@@ -287,83 +288,82 @@ function InPatientManagement() {
         </Row>
         {/* summary end*/}
         {/*Color Coding div start*/}
-        <Row>
-          <div
+        <div>
+          <Row
             style={{
               border: "2px solid lavender",
               margin: "0 1rem",
               borderRadius: "0.5rem",
-              width: "100%",
+              width: "inherit",
               textAlign: "center",
+              display: "flex",
             }}
           >
-            <Row style={{ display: "flex" }}>
-              <Col
-                style={{
-                  backgroundColor: "#C5EBAA",
-                  flexGrow: 1,
-                  padding: "0.2rem",
-                }}
-              >
-                Available
-              </Col>
-              <Col
-                style={{
-                  backgroundColor: "#FFBABA",
-                  flexGrow: 1,
-                  padding: "0.2rem",
-                }}
-              >
-                Occupied
-              </Col>
-              <Col
-                style={{
-                  backgroundColor: "#FF8356",
-                  flexGrow: 1,
-                  padding: "0.2rem",
-                }}
-              >
-                Blocked
-              </Col>
-              <Col
-                style={{
-                  backgroundColor: "#F0A8D0",
-                  flexGrow: 1,
-                  padding: "0.2rem",
-                }}
-              >
-                Transfer Requested
-              </Col>
-              <Col
-                style={{
-                  backgroundColor: "#D1E9F6",
-                  flexGrow: 1,
-                  padding: "0.2rem",
-                }}
-              >
-                Request Confirmed
-              </Col>
-              <Col
-                style={{
-                  backgroundColor: "#CADABF",
-                  flexGrow: 1,
-                  padding: "0.2rem",
-                }}
-              >
-                Discharge Initiated
-              </Col>
-              <Col
-                style={{
-                  backgroundColor: "#C8A1E0",
-                  flexGrow: 1,
-                  padding: "0.2rem",
-                }}
-              >
-                Movement
-              </Col>
-            </Row>
-          </div>
-        </Row>
+            <Col
+              style={{
+                backgroundColor: "#C5EBAA",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Available
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#FFBABA",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Occupied
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#FF8356",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Blocked
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#F0A8D0",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Transfer Requested
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#D1E9F6",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Request Confirmed
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#CADABF",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Discharge Initiated
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#C8A1E0",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Movement
+            </Col>
+          </Row>
+        </div>
         {/*Color Coding div end*/}
         {view === "" || view === "Tabular" ? (
           <Spin spinning={tableLoading}>
