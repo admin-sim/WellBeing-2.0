@@ -42,6 +42,7 @@ import {
   ColWithEightSpan,
   ColWithSixSpan,
 } from "../../../../components/customGridColumns";
+import PageHeader from "../../../../components/PageHeader";
 
 function InPatientManagement() {
   const [view, setView] = useState("");
@@ -160,43 +161,20 @@ function InPatientManagement() {
           borderRadius: "10px",
         }}
       >
-        <div
-          style={{
-            width: "100%",
-            minHeight: "max-content",
-            borderRadius: "10px",
-          }}
-        >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                In-Patient Management
-              </Title>
-            </Col>
-          </Row>
-        </div>
+        <PageHeader title={"In-Patient Management"} button={false} />
         <Row
+          gutter={16}
           style={{
-            padding: "1rem 2rem",
-            display: "flex",
-            justifyContent: "space-between",
+            padding: "1rem 1rem",
           }}
         >
-          <Col span={10}>
+          <Col
+            xl={10}
+            sm={24}
+            xs={24}
+            span={10}
+            style={{ marginBottom: "1rem" }}
+          >
             <Segmented
               defaultValue="Tabular"
               options={[
@@ -216,7 +194,7 @@ function InPatientManagement() {
               }}
             />
           </Col>
-          <Col span={8}>
+          <ColWithEightSpan style={{ marginBottom: "1rem" }}>
             <Search
               placeholder="Search Patients"
               style={{
@@ -224,8 +202,8 @@ function InPatientManagement() {
                 marginRight: "2rem",
               }}
             />
-          </Col>
-          <Col span={4}>
+          </ColWithEightSpan>
+          <ColWithSixSpan>
             <Select
               placeholder="Select Floor"
               loading={isLoading}
@@ -242,7 +220,7 @@ function InPatientManagement() {
                 </Select.Option>
               ))}
             </Select>
-          </Col>
+          </ColWithSixSpan>
         </Row>
 
         {/* summary start*/}
@@ -251,7 +229,7 @@ function InPatientManagement() {
           style={{
             border: "2px solid lavender",
             margin: "0 1rem 1rem 1rem",
-            padding: "0.5rem 1rem",
+            padding: "0.5rem",
             borderRadius: "0.5rem",
           }}
         >

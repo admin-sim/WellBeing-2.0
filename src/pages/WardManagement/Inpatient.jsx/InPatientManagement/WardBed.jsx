@@ -20,38 +20,54 @@ import DirectTransferModal from "./DirectTransferModal";
 import DischargeInitiationModal from "./DischargeInitiationModal";
 import RecordExpectedDischarge from "./RecordExpectedDischargeModal";
 import Movement from "./MovementModal";
-import DischargeModal from './DischargeModal.jsx'
+import DischargeModal from "./DischargeModal.jsx";
 import Prescription from "./PrescriptionModal";
 import OrderEntry from "./OrderEntryModal";
-import AmendDischargeInitiationModal from './AmendDischargeInitiationModal.jsx'
-import CancelDischargeInitiationModal from './CancelDischargeInitiationModal.jsx'
+import AmendDischargeInitiationModal from "./AmendDischargeInitiationModal.jsx";
+import CancelDischargeInitiationModal from "./CancelDischargeInitiationModal.jsx";
 import PatientVitalModal from "./PatientVitalModal";
-import DrNoteModal from './DrNoteModal'
-import ArrivalModal from './ArrivalModal'
-import DrugChartModal from './DrugChartModal'
-import FluidChartModal from './FluidChartModal'
+import DrNoteModal from "./DrNoteModal";
+import ArrivalModal from "./ArrivalModal";
+import DrugChartModal from "./DrugChartModal";
+import FluidChartModal from "./FluidChartModal";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
-import { urlGetPatientHeaderDetails, urlShowModal, urlSavePatientMovement, urlRecordExpectedDischargeDate, urlShowConfirmUnblock, urlGetWards, urlGetBeds, urlGetWardCategory, urlGetServiceLocation } from "../../../../../endpoints.js";
+import {
+  urlGetPatientHeaderDetails,
+  urlShowModal,
+  urlSavePatientMovement,
+  urlRecordExpectedDischargeDate,
+  urlShowConfirmUnblock,
+  urlGetWards,
+  urlGetBeds,
+  urlGetWardCategory,
+  urlGetServiceLocation,
+} from "../../../../../endpoints.js";
 import { values } from "lodash";
 
 function WardBed({ bed }) {
   const [blockBedModalOpen, setBlockBedModalOpen] = useState(false);
   const [dischargeBedModalOpen, setDischargeBedModalOpen] = useState(false);
-  const [amendDischargeBedModalOpen, setAmendDischargeBedModalOpen] = useState(false);
-  const [cancelDischargeBedModalOpen, setCancelDischargeBedModalOpen] = useState(false);
+  const [amendDischargeBedModalOpen, setAmendDischargeBedModalOpen] =
+    useState(false);
+  const [cancelDischargeBedModalOpen, setCancelDischargeBedModalOpen] =
+    useState(false);
   const [directTransferModalOpen, setDirectTransferModalOpen] = useState(false);
-  const [dischargeInitiationModalOpen, setDischargeInitiationModalOpen] = useState(false);
-  const [recordExpectedDischargeModalOpen, setRecordExpectedDischargeModalOpen] = useState(false);
+  const [dischargeInitiationModalOpen, setDischargeInitiationModalOpen] =
+    useState(false);
+  const [
+    recordExpectedDischargeModalOpen,
+    setRecordExpectedDischargeModalOpen,
+  ] = useState(false);
   const [movementModalOpen, setMovementModalOpen] = useState(false);
   const [drugChartModalOpen, setDrugChartModalOpen] = useState(false);
   const [fluidChartModalOpen, setFluidChartModalOpen] = useState(false);
   const [prescriptionModalOpen, setPrescriptionModalOpen] = useState(false);
   const [orderEntryModalOpen, setOrderEntryModalOpen] = useState(false);
   const [drNoteModalOpen, setDrNoteModalOpen] = useState(false);
-  const [arrivalModalOpen, setArrivalModalOpen] = useState(false)
-  const [patientVitalModalOpen, setPatientVitalModalOpen] = useState()
-  const [patientData, setPatientData] = useState()
-  const [locaton, setLocation] = useState(0)
+  const [arrivalModalOpen, setArrivalModalOpen] = useState(false);
+  const [patientVitalModalOpen, setPatientVitalModalOpen] = useState();
+  const [patientData, setPatientData] = useState();
+  const [locaton, setLocation] = useState(0);
   const [dropDown, setDropDown] = useState({
     FacilityDepartment: [],
     FacilityDeptServiceLocation: [],
@@ -68,69 +84,71 @@ function WardBed({ bed }) {
   const [dropDown1, setDropDown1] = useState({
     StoreModel: [],
     ReasonForBlock: [],
-    NewWardModel: {}
+    NewWardModel: {},
   });
 
   const vacantBedItems = [
-    (bed.PatientStatus === 'Blocked' ? {
-      label: "Unblock Bed",
-      key: "12",
-      onClick: (record) => {
-        ShowConfirmUnblock(record)
-      },
-    } : {
-      label: "Block Bed",
-      key: "11",
-      onClick: (record) => {
-        ShowConfirmUnblock(record)
-      },
-    })
+    bed.PatientStatus === "Blocked"
+      ? {
+          label: "Unblock Bed",
+          key: "12",
+          onClick: (record) => {
+            ShowConfirmUnblock(record);
+          },
+        }
+      : {
+          label: "Block Bed",
+          key: "11",
+          onClick: (record) => {
+            ShowConfirmUnblock(record);
+          },
+        },
   ];
 
   const ShowConfirmUnblock = async (record) => {
-    debugger
+    debugger;
     const block = {
-      Type: record.key === '11' ? 'Block' : 'Unblock'
-    }
+      Type: record.key === "11" ? "Block" : "Unblock",
+    };
     const response = await customAxios.get(
       `${urlShowConfirmUnblock}?BedId=${bed.BedID}&LocationID=${bed.ServiceLocationId}&Type=${block.Type}`
     );
     if (response.status === 200 && response.data.data != null) {
-      setDropDown1(response.data.data)
+      setDropDown1(response.data.data);
       setBlockBedModalOpen(true);
     }
-  }
+  };
 
   const MovementBedItems = [
     {
       label: "Arival",
       key: "9",
       onClick: (record) => {
-        OpenModel(record)
+        OpenModel(record);
       },
-    }
-  ]
+    },
+  ];
 
   const DischargeBedItems = [
     {
       label: "Discharge",
       key: "10",
       onClick: (record) => {
-        OpenModel(record)
+        OpenModel(record);
       },
     },
     {
       label: "Cancel Discharge Initiation",
       key: "11",
       onClick: (record) => {
-        OpenModel(record)
+        OpenModel(record);
       },
     },
     {
       label: "Amend Discharge Initiation",
       key: "12",
       onClick: (record) => {
-        OpenModel(record)
+        OpenModel(record);
       },
     },
   ];
@@ -166,7 +184,7 @@ function WardBed({ bed }) {
   );
 
   const OpenModel = async (record) => {
-    debugger
+    debugger;
     try {
       const response = await customAxios.get(
         `${urlGetPatientHeaderDetails}?PatientId=${bed.PatientId}&EncounterId=${bed.EncounterId}`
@@ -182,14 +200,25 @@ function WardBed({ bed }) {
     }
     try {
       const response = await customAxios.get(
-        `${urlShowModal}?Id=${parseInt(record.key)}&PatientID=${bed.PatientId}&LocationID=${bed.ServiceLocationId}&WardCategoryId=${bed.WardCategoryID}&BedStatus=${null}&EncounterId=${bed.EncounterId}&FromDate=${null}&ToDate=${null}&flag=${1}`
+        `${urlShowModal}?Id=${parseInt(record.key)}&PatientID=${
+          bed.PatientId
+        }&LocationID=${bed.ServiceLocationId}&WardCategoryId=${
+          bed.WardCategoryID
+        }&BedStatus=${null}&EncounterId=${
+          bed.EncounterId
+        }&FromDate=${null}&ToDate=${null}&flag=${1}`
       );
       if (response.status === 200 && response.data.data != null) {
-        if (record.key !== '14' && record.key !== '20' && record.key !== '18' && record.key !== '15' && record.key !== '17') {
+        if (
+          record.key !== "14" &&
+          record.key !== "20" &&
+          record.key !== "18" &&
+          record.key !== "15" &&
+          record.key !== "17"
+        ) {
           setDropDown(response.data.data);
-        }
-        else {
-          setDropDown1(response.data.data)
+        } else {
+          setDropDown1(response.data.data);
         }
       } else {
         console.error("Failed to fetch patient details");
@@ -197,62 +226,62 @@ function WardBed({ bed }) {
     } catch (error) {
       console.error("Error:", error);
     }
-    if (record.key == '1') {
-      setDirectTransferModalOpen(true)
-    } else if (record.key == '5') {
+    if (record.key == "1") {
+      setDirectTransferModalOpen(true);
+    } else if (record.key == "5") {
       setDischargeInitiationModalOpen(true);
-    } else if (record.key == '6') {
+    } else if (record.key == "6") {
       setRecordExpectedDischargeModalOpen(true);
-    } else if (record.key == '3') {
+    } else if (record.key == "3") {
       setMovementModalOpen(true);
-    } else if (record.key == '14') {
+    } else if (record.key == "14") {
       setPatientVitalModalOpen(true);
-    } else if (record.key == '20') {
+    } else if (record.key == "20") {
       setPrescriptionModalOpen(true);
-    } else if (record.key == '10') {
-      setDischargeBedModalOpen(true)
-    } else if (record.key == '11') {
-      setCancelDischargeBedModalOpen(true)
-    } else if (record.key == '12') {
-      setAmendDischargeBedModalOpen(true)
-    } else if (record.key == '18') {
-      setDrNoteModalOpen(true)
-    } else if (record.key == '9') {
-      setArrivalModalOpen(true)
-    } else if (record.key === '15') {
-      setDrugChartModalOpen(true)
-    } else if (record.key === '17') {
-      setFluidChartModalOpen(true)
+    } else if (record.key == "10") {
+      setDischargeBedModalOpen(true);
+    } else if (record.key == "11") {
+      setCancelDischargeBedModalOpen(true);
+    } else if (record.key == "12") {
+      setAmendDischargeBedModalOpen(true);
+    } else if (record.key == "18") {
+      setDrNoteModalOpen(true);
+    } else if (record.key == "9") {
+      setArrivalModalOpen(true);
+    } else if (record.key === "15") {
+      setDrugChartModalOpen(true);
+    } else if (record.key === "17") {
+      setFluidChartModalOpen(true);
     }
-  }
+  };
 
   const occupiedBedItems = [
     {
       label: "Direct Transfer",
       key: "1",
       onClick: (record) => {
-        OpenModel(record)
+        OpenModel(record);
       },
     },
     {
       label: "Discharge Initiation",
       key: "5",
       onClick: (record) => {
-        OpenModel(record)
+        OpenModel(record);
       },
     },
     {
       label: "Record Expected Discharge",
       key: "6",
       onClick: (record) => {
-        OpenModel(record)
+        OpenModel(record);
       },
     },
     {
       label: "Movement",
       key: "3",
       onClick: (record) => {
-        OpenModel(record)
+        OpenModel(record);
       },
     },
     {
@@ -266,7 +295,7 @@ function WardBed({ bed }) {
       label: "Prescription",
       key: "20",
       onClick: (record) => {
-        OpenModel(record)
+        OpenModel(record);
       },
     },
     {
@@ -287,35 +316,35 @@ function WardBed({ bed }) {
       label: "Patient Vital",
       key: "14",
       onClick: (record) => {
-        OpenModel(record)
+        OpenModel(record);
       },
     },
     {
       label: "Drug Chart",
       key: "15",
       onClick: (record) => {
-        OpenModel(record)
+        OpenModel(record);
       },
     },
     {
       label: "Fluid Chart",
       key: "17",
       onClick: (record) => {
-        OpenModel(record)
+        OpenModel(record);
       },
     },
     {
       label: "Dr Notes",
       key: "18",
       onClick: (record) => {
-        OpenModel(record)
+        OpenModel(record);
       },
     },
     {
       label: "Nurse Notes",
       key: "18",
       onClick: (record) => {
-        OpenModel(record)
+        OpenModel(record);
       },
     },
     {
@@ -324,7 +353,7 @@ function WardBed({ bed }) {
       onClick: (record) => {
         setIsBlockBedModalOpen(true);
       },
-    }
+    },
   ];
 
   const occupiedBedMenu = (
@@ -338,7 +367,7 @@ function WardBed({ bed }) {
   );
 
   const handleSubmit = async (values) => {
-    debugger
+    debugger;
     const movement = {
       MovementId: values.MovementId ? values.MovementId : 0,
       Department: values.Department,
@@ -346,68 +375,109 @@ function WardBed({ bed }) {
       BedID: values.BedId,
       PatientID: values.PatientId,
       MovementReason: values.MovementReason,
-      timeMovement: values.ExpectedReturnTime ? values.ExpectedReturnTime.format('HH:mm:ss') : '0',
-      Actualtime: values.ActualTime ? values.ActualTime.format('HH:mm:ss') : 0,
+      timeMovement: values.ExpectedReturnTime
+        ? values.ExpectedReturnTime.format("HH:mm:ss")
+        : "0",
+      Actualtime: values.ActualTime ? values.ActualTime.format("HH:mm:ss") : 0,
       ReasonforDelay: values.ReasonforDelay ? values.ReasonforDelay : 0,
-      Status: values.MovementId ? 2 : 1
-    }
+      Status: values.MovementId ? 2 : 1,
+    };
     try {
       const response = await customAxios.get(
-        `${urlSavePatientMovement}?MovementId=${parseInt(movement.MovementId)}&Department=${movement.Department}&ServiceLocationId=${movement.ServiceLocationId}&BedID=${movement.BedID}&BedStatus=${null}&PatientID=${movement.PatientID}&MovementReason=${movement.MovementReason}&timeMovement=${movement.timeMovement}&Actualtime=${movement.Actualtime}&ReasonforDelay=${movement.ReasonforDelay}&Status=${movement.Status}`
+        `${urlSavePatientMovement}?MovementId=${parseInt(
+          movement.MovementId
+        )}&Department=${movement.Department}&ServiceLocationId=${
+          movement.ServiceLocationId
+        }&BedID=${movement.BedID}&BedStatus=${null}&PatientID=${
+          movement.PatientID
+        }&MovementReason=${movement.MovementReason}&timeMovement=${
+          movement.timeMovement
+        }&Actualtime=${movement.Actualtime}&ReasonforDelay=${
+          movement.ReasonforDelay
+        }&Status=${movement.Status}`
       );
-      if (response.status === 200 && response.data === 'Success') {
-        message.success(response.data)
-        setMovementModalOpen(false)
-        setArrivalModalOpen(false)
+      if (response.status === 200 && response.data === "Success") {
+        message.success(response.data);
+        setMovementModalOpen(false);
+        setArrivalModalOpen(false);
       } else {
         console.error("Failed to fetch patient details");
       }
     } catch (error) {
       console.error("Error:", error);
     }
-  }
+  };
 
   const handleFinish = async (values) => {
-    debugger
+    debugger;
     const RecordEDD = {
-      dateDischarge: values.DateTimeDischarge ? values.DateTimeDischarge.format('DD-MM-YYYY') : '',
-      timeDischarge: values.DateTimeDischarge ? values.DateTimeDischarge.format('HH:mm:ss') : '',
+      dateDischarge: values.DateTimeDischarge
+        ? values.DateTimeDischarge.format("DD-MM-YYYY")
+        : "",
+      timeDischarge: values.DateTimeDischarge
+        ? values.DateTimeDischarge.format("HH:mm:ss")
+        : "",
       PatientID: values.PatientId,
       BedID: values.Bed,
-      EncounterId: values.EncounterId
-    }
+      EncounterId: values.EncounterId,
+    };
     try {
       const response = await customAxios.get(
         `${urlRecordExpectedDischargeDate}?dateDischarge=${RecordEDD.dateDischarge}&timeDischarge=${RecordEDD.timeDischarge}&PatientID=${RecordEDD.PatientID}&BedID=${RecordEDD.BedID}&EncounterId=${RecordEDD.EncounterId}`
       );
-      if (response.status === 200 && response.data === 'Success') {
-        message.success(response.data)
-        setRecordExpectedDischargeModalOpen(false)
+      if (response.status === 200 && response.data === "Success") {
+        message.success(response.data);
+        setRecordExpectedDischargeModalOpen(false);
       } else {
         console.error("Failed to fetch Record EDD");
       }
     } catch (error) {
       console.error("Error:", error);
     }
-  }
+  };
 
   const getStatusInfo = (status) => {
     switch (status) {
       case "Vacant":
-        return { text: "Vacant", color: "green", backgroundColor: '#C5EBAA', menu: vacantBedMenu };
+        return {
+          text: "Vacant",
+          color: "green",
+          backgroundColor: "#C5EBAA",
+          menu: vacantBedMenu,
+        };
       case "Occupied":
-        return { text: "Occupied", color: "red", backgroundColor: '#FFBABA', menu: occupiedBedMenu };
+        return {
+          text: "Occupied",
+          color: "red",
+          backgroundColor: "#FFBABA",
+          menu: occupiedBedMenu,
+        };
       case "Movement":
-        return { text: "Movement", color: "#674188", backgroundColor: '#C8A1E0', menu: MovementBedMenu };
+        return {
+          text: "Movement",
+          color: "#674188",
+          backgroundColor: "#C8A1E0",
+          menu: MovementBedMenu,
+        };
       case "Blocked":
-        return { text: "Blocked", color: "#F54D42", backgroundColor: '#FF8356', menu: vacantBedMenu };
+        return {
+          text: "Blocked",
+          color: "#F54D42",
+          backgroundColor: "#FF8356",
+          menu: vacantBedMenu,
+        };
       default:
-        return { text: "Discharge Init", color: "#86AB89", backgroundColor: '#CADABF', menu: DischargeBedMenu };
+        return {
+          text: "Discharge Init",
+          color: "#86AB89",
+          backgroundColor: "#CADABF",
+          menu: DischargeBedMenu,
+        };
     }
   };
 
   const handleDropdown = async (value, SLId, Id, PId) => {
-    debugger
+    debugger;
     if (Id === 1) {
       const response = await customAxios.get(
         `${urlGetServiceLocation}?FacilityDepartmentId=${value}`
@@ -416,17 +486,18 @@ function WardBed({ bed }) {
         setDropDown((prevDropdown) => {
           const updatedDropdown = {
             ...prevDropdown,
-            FacilityDeptServiceLocation: response.data.data.FacilityDeptServiceLocation,
+            FacilityDeptServiceLocation:
+              response.data.data.FacilityDeptServiceLocation,
             PatientsCurrentDetails: {
               ...prevDropdown.PatientsCurrentDetails,
               ServiceLocationId: undefined,
-              WardCategoryID: '',
-              WardID: '',
-              BedID: ''
+              WardCategoryID: "",
+              WardID: "",
+              BedID: "",
             },
             WardCategory: [],
             Wards: [],
-            Beds: []
+            Beds: [],
           };
           return updatedDropdown;
         });
@@ -441,7 +512,7 @@ function WardBed({ bed }) {
             ...prevDropdown,
             WardCategory: response.data.data.masters,
             Wards: [],
-            Beds: []
+            Beds: [],
           };
           return updatedDropdown;
         });
@@ -455,13 +526,12 @@ function WardBed({ bed }) {
           const updatedDropdown = {
             ...prevDropdown,
             Wards: response.data.data.Wards,
-            Beds: []
+            Beds: [],
           };
           return updatedDropdown;
         });
       }
-    }
-    else {
+    } else {
       const response = await customAxios.get(
         `${urlGetBeds}?WardId=${value}&ID=${1}`
       );
@@ -469,7 +539,7 @@ function WardBed({ bed }) {
         setDropDown((prevDropdown) => {
           const updatedDropdown = {
             ...prevDropdown,
-            Beds: response.data.data.Beds
+            Beds: response.data.data.Beds,
           };
           return updatedDropdown;
         });
@@ -479,17 +549,18 @@ function WardBed({ bed }) {
 
   return (
     <Col key={bed.BedID}>
-      <Badge.Ribbon text={getStatusInfo(bed.PatientStatus).text}
+      <Badge.Ribbon
+        text={getStatusInfo(bed.PatientStatus).text}
         // text={bed.PatientStatus === "Vacant" ? "Vacant" :
         //   bed.PatientStatus === "Occupied" ? 'Occupied' :
         //     bed.PatientStatus === "Movement" ? 'Movement' :
         //       'Discharge Init'}
         color={getStatusInfo(bed.PatientStatus).color}
-      // color={bed.PatientStatus === "Vacant" ? "green" :
-      //   bed.PatientStatus === "Occupied" ? "red" :
-      //     bed.PatientStatus = "Movement" ? '#C8A1E0' :
-      //       '#B5CFB7'}
-      // color={bedColor}
+        // color={bed.PatientStatus === "Vacant" ? "green" :
+        //   bed.PatientStatus === "Occupied" ? "red" :
+        //     bed.PatientStatus = "Movement" ? '#C8A1E0' :
+        //       '#B5CFB7'}
+        // color={bedColor}
       >
         <Card
           hoverable
@@ -497,7 +568,7 @@ function WardBed({ bed }) {
           style={{
             width: "15rem",
             height: "10rem",
-            backgroundColor: getStatusInfo(bed.PatientStatus).backgroundColor
+            backgroundColor: getStatusInfo(bed.PatientStatus).backgroundColor,
             // bed.PatientStatus === "Vacant" ? "#C5EBAA" :
             //   bed.PatientStatus === 'Occupied' ? "#FFBABA" :
             //     bed.PatientStatus === 'Movement' ? '#C8A1E0' :
@@ -521,7 +592,8 @@ function WardBed({ bed }) {
             }}
           >
             <Dropdown
-              overlay={getStatusInfo(bed.PatientStatus).menu
+              overlay={
+                getStatusInfo(bed.PatientStatus).menu
                 // bed.PatientStatus === "Vacant" ? vacantBedMenu :
                 //   bed.PatientStatus === 'Occupied' ? occupiedBedMenu :
                 //     bed.PatientStatus === "Movement" ? MovementBedMenu :
@@ -699,7 +771,7 @@ function WardBed({ bed }) {
         open={fluidChartModalOpen}
         handleClose={() => setFluidChartModalOpen(false)}
       />
-    </Col >
+    </Col>
   );
 }
 
