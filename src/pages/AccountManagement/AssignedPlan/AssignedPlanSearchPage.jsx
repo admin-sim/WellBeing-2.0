@@ -1,6 +1,6 @@
 import { urlSearchUHID, urlGetAllVisitsForPatientId } from "../../../../endpoints";
 import customAxios from "../../../components/customAxios/customAxios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { useNavigate } from "react-router";
 import {
@@ -38,6 +38,11 @@ function AssignedPlanSearchPage() {
     visit: "",
   });
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const myInput = useRef();
+
+  useEffect(() => {
+    myInput.current.focus();
+  }, []);
 
   // Define your functions
   const handleAutocompleteChange = async (newValue) => {
@@ -201,6 +206,7 @@ function AssignedPlanSearchPage() {
                 ]}
               >
                 <AutoComplete
+                ref={myInput}
                   options={options.map((option) => ({
                     value: option.UhId,
                     key: option.PatientId,
