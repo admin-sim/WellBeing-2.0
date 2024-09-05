@@ -38,6 +38,11 @@ import { CgMoreO } from "react-icons/cg";
 import { TfiMoreAlt } from "react-icons/tfi";
 import Item from "antd/es/list/Item";
 import dayjs from "dayjs";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+} from "../../../../components/customGridColumns";
+import PageHeader from "../../../../components/PageHeader";
 
 function InPatientManagement() {
   const [view, setView] = useState("");
@@ -47,7 +52,7 @@ function InPatientManagement() {
   const [locationDropDown, setLocationDropDown] = useState([]);
   const [inPatientDetails, setInPatientDetails] = useState([]);
   const [beds, setBeds] = useState([]);
-  const [banner, setBanner] = useState({})
+  const [banner, setBanner] = useState({});
 
   useEffect(() => {
     setIsLoading(true);
@@ -58,7 +63,6 @@ function InPatientManagement() {
   }, []);
 
   const handleMenuClick = async (e) => {
-    debugger
     setTableLoading(true);
     if (e !== undefined) {
       const response = await customAxios.get(
@@ -71,7 +75,7 @@ function InPatientManagement() {
         });
         setInPatientDetails(inPatient);
         setBeds(response.data.data.Beds);
-        setBanner(response.data.data)
+        setBanner(response.data.data);
       } else {
         console.log("data is not clear ");
       }
@@ -144,60 +148,34 @@ function InPatientManagement() {
   const groupedBeds = groupBedsByWard();
   const firstWardKey = Object.keys(groupedBeds)[0];
 
-  const IncomingTransfer = () => {
-    debugger
-  }
+  const IncomingTransfer = () => {};
 
-  const OutgoingTransfer = () => {
-    debugger
-  }
+  const OutgoingTransfer = () => {};
 
   return (
     <>
       <Layout
         style={{
           backgroundColor: "white",
-          height: "auto",
+          height: "max-content",
           borderRadius: "10px",
+          width: "100%",
         }}
       >
-        <div
-          style={{
-            width: "100%",
-            minHeight: "max-content",
-            borderRadius: "10px",
-          }}
-        >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                In-Patient Management
-              </Title>
-            </Col>
-          </Row>
-        </div>
+        <PageHeader title={"In-Patient Management"} button={false} />
         <Row
+          gutter={16}
           style={{
-            padding: "1rem 2rem",
-            display: "flex",
-            justifyContent: "space-between",
+            padding: "1rem 1rem",
           }}
         >
-          <Col span={10}>
+          <Col
+            xl={10}
+            sm={24}
+            xs={24}
+            span={10}
+            style={{ marginBottom: "1rem" }}
+          >
             <Segmented
               defaultValue="Tabular"
               options={[
@@ -217,7 +195,7 @@ function InPatientManagement() {
               }}
             />
           </Col>
-          <Col span={8}>
+          <ColWithEightSpan style={{ marginBottom: "1rem" }}>
             <Search
               placeholder="Search Patients"
               style={{
@@ -225,8 +203,8 @@ function InPatientManagement() {
                 marginRight: "2rem",
               }}
             />
-          </Col>
-          <Col span={4}>
+          </ColWithEightSpan>
+          <ColWithSixSpan>
             <Select
               placeholder="Select Floor"
               loading={isLoading}
@@ -243,92 +221,150 @@ function InPatientManagement() {
                 </Select.Option>
               ))}
             </Select>
+          </ColWithSixSpan>
+        </Row>
+
+        {/* summary start*/}
+        <Row
+          gutter={24}
+          style={{
+            border: "2px solid lavender",
+            margin: "0 1rem 1rem 1rem",
+            padding: "0.5rem",
+            borderRadius: "0.5rem",
+          }}
+        >
+          <Col xl={3} lg={3} md={4} sm={4} xs={4} span={8}>
+            As on : <strong>{dayjs().format("DD-MM-YYYY")}</strong>
+          </Col>
+          <Col
+            xl={10}
+            lg={10}
+            md={10}
+            sm={10}
+            span={10}
+            style={{
+              borderLeft: "1px solid grey",
+              borderRight: "1px solid grey",
+            }}
+          >
+            <Row>
+              <Col span={24} style={{ marginBottom: "0.5rem" }}>
+                Total Beds : <strong>{banner.TotalBeds}</strong>
+              </Col>
+              <ColWithEightSpan>
+                Occupied : <strong>{banner.Occupied}</strong>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                Available : <strong>{banner.Available}</strong>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                Blocked : <strong>{banner.Blocked}</strong>
+              </ColWithEightSpan>
+            </Row>
+          </Col>
+          <Col xl={11} lg={10} md={10} sm={10} span={10}>
+            <Row gutter={0}>
+              <Col span={24} style={{ marginBottom: "0.5rem" }}>
+                Todays :
+              </Col>
+              <Col xl={6} lg={6} md={12} xs={24} span={24}>
+                New Admission:&nbsp;
+                <strong>{banner.NewAdmissionsCount}</strong>
+              </Col>
+              <Col xl={6} lg={6} md={12} xs={24} span={24}>
+                Discharges:&nbsp;
+                <strong>{banner.DischargedPatientsCount}</strong>
+              </Col>
+              <Col xl={6} lg={6} md={12} xs={24} span={24}>
+                Transfer In:&nbsp;<strong>{banner.TransferInCount}</strong>
+              </Col>
+              <Col xl={6} lg={6} md={12} xs={24} span={24}>
+                Transfer Out:&nbsp;
+                <strong>{banner.TransferOutCount}</strong>
+              </Col>
+            </Row>
           </Col>
         </Row>
-        <Row>
-          <div
+        {/* summary end*/}
+        {/*Color Coding div start*/}
+        <div>
+          <Row
             style={{
               border: "2px solid lavender",
               margin: "0 1rem",
               borderRadius: "0.5rem",
-              // height: "5rem",
-              width: "100%",
+              width: "inherit",
               textAlign: "center",
+              display: "flex",
             }}
           >
-            <Row>
-              <Col span={12} >
-                Total Beds:{banner.TotalBeds}
-              </Col>
-              <Col span={12}>
-                Todays:
-              </Col>
-            </Row>
-            <Row>
-              <Col span={3}>
-                As on:{dayjs().format('DD-MM-YYYY')}
-              </Col>
-              <Col span={3} >
-                Occupied:{banner.Occupied}
-              </Col>
-              <Col span={3} >
-                Available:{banner.Available}
-              </Col>
-              <Col span={3}>
-                Blocked:{banner.Blocked}
-              </Col>
-              <Col span={3}>
-                New Admission:{banner.NewAdmissionsCount}
-              </Col>
-              <Col span={3} >
-                Discharges:{banner.DischargedPatientsCount}
-              </Col>
-              <Col span={3} >
-                Transfer In:{banner.TransferInCount}
-              </Col>
-              <Col span={3}>
-                Transfer Out:{banner.TransferOutCount}
-              </Col>
-            </Row>
-          </div>
-        </Row>
-        <br />
-        <Row>
-          <div
-            style={{
-              border: "2px solid lavender",
-              margin: "0 1rem",
-              borderRadius: "0.5rem",
-              // height: "5rem",
-              width: "100%",
-              textAlign: "center",
-            }}
-          >
-            <Row>
-              <Col span={3} style={{ backgroundColor: '#C5EBAA' }}>
-                Available
-              </Col>
-              <Col span={3} style={{ backgroundColor: '#FFBABA' }}>
-                Occupied
-              </Col>
-              <Col span={3} style={{ backgroundColor: '#FF8356' }}>
-                Blocked
-              </Col>
-              <Col span={3} style={{ backgroundColor: '#F0A8D0' }}>
-                Transfer Requested
-              </Col>
-              <Col span={3} style={{ backgroundColor: '#D1E9F6' }}>
-                Request Confirmed
-              </Col>
-              <Col span={3} style={{ backgroundColor: '#CADABF' }}>
-                Discharge Initiated
-              </Col>
-              <Col span={3} style={{ backgroundColor: '#C8A1E0' }}>
-                Movement
-              </Col>
-            </Row>
-          </div>
-        </Row>
+            <Col
+              style={{
+                backgroundColor: "#C5EBAA",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Available
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#FFBABA",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Occupied
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#FF8356",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Blocked
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#F0A8D0",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Transfer Requested
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#D1E9F6",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Request Confirmed
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#CADABF",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Discharge Initiated
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#C8A1E0",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Movement
+            </Col>
+          </Row>
+        </div>
+        {/*Color Coding div end*/}
         {view === "" || view === "Tabular" ? (
           <Spin spinning={tableLoading}>
             <CustomTable
@@ -366,7 +402,8 @@ function InPatientManagement() {
                 <div style={{ width: "100%", marginTop: "1rem" }}>
                   <Divider orientation="left">Tasks</Divider>
                   <Collapse>
-                    <Collapse.Panel onClick={IncomingTransfer}
+                    <Collapse.Panel
+                      onClick={IncomingTransfer}
                       header={
                         <div
                           style={{
@@ -380,7 +417,8 @@ function InPatientManagement() {
                       }
                       key="3"
                     ></Collapse.Panel>
-                    <Collapse.Panel onClick={OutgoingTransfer}
+                    <Collapse.Panel
+                      onClick={OutgoingTransfer}
                       header={
                         <div
                           style={{

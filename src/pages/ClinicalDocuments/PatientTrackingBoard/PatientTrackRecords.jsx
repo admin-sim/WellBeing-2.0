@@ -411,8 +411,7 @@ function PatientTrackRecords() {
                   </Form>
                 </div>
                 {patientTrackRecordTable && (
-                  <div
-                  >
+                  <div>
                     <PatientHeader />
                     <div style={{ marginTop: "1rem" }}>
                       <CustomTable
