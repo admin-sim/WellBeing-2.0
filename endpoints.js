@@ -261,7 +261,7 @@ export const urlStoreIndex = `${baseURL}/api/Store/Index`;
 export const urlCreateStore = `${baseURL}/api/Store/CreateStore`;
 export const urlEditStore = `${baseURL}/api/Store/EditStore`;
 export const urlStockExpiryBasedOnExpiryCondition = `${baseURL}/api/Indent/StockExpiryBasedOnExpiryCondition`;
-export const urlGetLastEncounter = `${baseURL}/api/ReFund/GetLastEncounter`;
+export const urlGetLastEncounter = `${baseURL}/api/Patient/GetLastEncounter`;
 export const urlLoadContInfoGrid = `${baseURL}/api/LabTestMaster/LoadContInfoGrid`;
 export const urlTestMethodIndex = `${baseURL}/api/LabTestMaster/TestMethodIndex`;
 export const urlAddNewGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/AddNewGRNAgainstPO`;
@@ -384,4 +384,3 @@ export const urlSaveNewAuthorisation = `${baseURL}/api/AssignedPlan/SaveNewAutho
 export const urlUpdateAuthorisation = `${baseURL}/api/AssignedPlan/UpdateAuthorisation`;
 export const urlSaveNewAssignedPlan = `${baseURL}/api/AssignedPlan/SaveNewAssignedPlan`;
 export const urlUpdateAssignedPlan = `${baseURL}/api/AssignedPlan/UpdateAssignedPlan`;
-

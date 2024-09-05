@@ -18,7 +18,7 @@ import {
 import React, { useState } from "react";
 
 import PatientHeader from "../../../../components/PatientHeader";
-import ShowAddNewTemplate from '../../../Masters/GeneralMasters/TemplateMaster/ShowAddNewTemplate.jsx'
+import ShowAddNewTemplate from '../../../Masters/GeneralMasters/TemplateMaster/ShowAddNewTemplate'
 
 function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
   const [form] = Form.useForm();

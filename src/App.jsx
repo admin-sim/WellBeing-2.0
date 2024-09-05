@@ -83,7 +83,7 @@ import PublishCalender from "./pages/Masters/ResourceScheduling/PublishCalender/
 import ProviderAbsence from "./pages/Masters/ResourceScheduling/ProviderAbsence/providerAbsence";
 import SpecialEvent from "./pages/Masters/ResourceScheduling/SpecialEvent/specialEvent";
 import Holiday from "./pages/Masters/ResourceScheduling/Holiday/holiday";
-import Billing from "./pages/AccountManagement/Billling/SearchPage.jsx";
+import Billing from "./pages/AccountManagement/Billling/index.jsx";
 import CreateBilling from "./pages/AccountManagement/Billling/CreateBilling.jsx";
 import Vendor from "./pages/Masters/InventoryManagement/Vendor/Vendor.jsx";
 import VendorSearch from "./pages/Masters/InventoryManagement/Vendor/VendorSearch";
@@ -105,7 +105,7 @@ import UpdateItemReceipt from "./pages/Inventory/UpdateItemReceipt";
 import UpdatePatientIssue from "./pages/Inventory/UpdatePatientIssue";
 import ShowCreateEditDefinition from "./pages/Masters/InventoryManagement/ProductDefinition/ShowCreateEditDefinition";
 import Templates from "./pages/Masters/GeneralMasters/TemplateMaster";
-import ShowAddNewTemplate from "./pages/Masters/GeneralMasters/TemplateMaster/ShowAddNewTemplate.jsx";
+import ShowAddNewTemplate from "./pages/Masters/GeneralMasters/TemplateMaster/ShowAddNewTemplate";
 import Enterprise from "./pages/Masters/Identity Management/Enterprise/index.jsx";
 import Department from "./pages/Masters/Identity Management/Department/index.jsx";
 import ServiceLocation from "./pages/Masters/Identity Management/ServiceLocation/index.jsx";
@@ -127,7 +127,7 @@ import Frequency from "./pages/Masters/SystemParameterSetup/Frequency/index.jsx"
 import PatientTrackingBoard from "./pages/ClinicalDocuments/PatientTrackingBoard/index.jsx";
 import AdditionalCharge from "./pages/Masters/GeneralMasters/AccountManagement/AdditionalCharge";
 import CreateAdditionalCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAdditionalCharge";
-import AssignedPlanSearchPage from "./pages/AccountManagement/AssignedPlan/AssignedPlanSearchPage.jsx";
+import AssignedPlanSearchPage from "./pages/AccountManagement/AssignedPlan/index.jsx";
 import CreateAssignedPlan from "./pages/AccountManagement/AssignedPlan/CreateAssignedPlan.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
