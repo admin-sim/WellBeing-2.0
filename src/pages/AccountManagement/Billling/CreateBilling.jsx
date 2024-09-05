@@ -751,6 +751,7 @@ const CreateBilling = () => {
       if (response.status == 200) {
         console.log("response", response);
         setCharges(response.data.data.PatientAccountCharges);
+        setServices(null);
         setTableLoading(false);
         message.success("Charge Added Successfully");
         form.resetFields();

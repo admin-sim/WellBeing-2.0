@@ -45,11 +45,17 @@ function AssignedPlanModal({
   const [loading, setLoading] = useState(false);
 
   const [url, setUrl] = useState();
-
+  const [amtIndDisable, setAmtIndDisable] = useState(false);
+  const [priorityDisable, setpriorityDisable] = useState(false);
+  const [isMaxCoverageRequired, setIsMaxCoverageRequired] = useState(false);
+  const  [IsExcludeDisable, setIsExcludeDisable] = useState(false);
   const handleCancel = () => {
     form.resetFields();
     setData([]);
     setUrl(undefined);
+    setAmtIndDisable(false);
+    setpriorityDisable(false);
+    setIsExcludeDisable(false);
     handleClose();
   };
   const [data, setData] = useState([]);
@@ -88,7 +94,11 @@ function AssignedPlanModal({
     setLoading(true);
     values.PlanAuthId = planAuthId;
     values.AuthLineId = 0;
-
+    values.Value = values.Value ? values.Value :null;
+    values.AmtDeductible = values.AmtDeductible ? values.AmtDeductible : null;
+    values.Qty = values.Qty ? values.Qty : null;
+    values.MaxCoverageAmt = values.MaxCoverageAmt ? values.MaxCoverageAmt : null;
+    values.AmtRequested = values.AmtRequested ? values.AmtRequested : null;
     try {
       const response = await customAxios.post(
         urlSaveNewAuthorisationLineChargeParameter,
@@ -139,6 +149,90 @@ function AssignedPlanModal({
 
   const debounceFetchOptions = useCallback(debounce(fetchOptions, 800), [url]);
 
+
+  const handleQtyChange = (e) => {
+    // If qty is changed, set both AmountIndicator to 'P' and Priority to 'A'
+    const qty = e.target.value;
+    if (qty) {
+      form.setFieldsValue({
+        AmtIndicator: "P", // Set AmountIndicator to Percentage
+        Priority: "Q", // Set Priority to Amount
+      });
+
+      setAmtIndDisable(true);
+      setpriorityDisable(true);
+      setIsMaxCoverageRequired(true);
+      // Check if Value is greater than 100 when Qty is present
+      const currentValue = form.getFieldValue("Value");
+      if (currentValue > 100) {
+        form.setFieldsValue({ Value: 100 }); // Set Value to 100 if greater than 100
+      }
+    } else {
+      setAmtIndDisable(false);
+      form.setFieldsValue({
+        AmtIndicator: "A", // Set AmountIndicator to Percentage
+        Priority: "A", // Set Priority to Amount
+      });
+      setIsMaxCoverageRequired(false);
+      //setpriorityDisable(false);
+    }
+  };
+
+  // Handle changes to the Value input field
+  const handleValueChange = (e) => {
+    const currentValue = e.target.value;
+    const amountIndicator = form.getFieldValue("AmtIndicator");
+
+    // Check if AmountIndicator is 'P' and Value is greater than 100
+    if (amountIndicator === "P" && currentValue > 100) {
+      form.setFieldsValue({ Value: 100 }); // Set Value to 100 if it's greater than 100
+    }
+  };
+
+  // Handle changes to the AmountIndicator Select
+  const handleAmountIndicatorChange = (value) => {
+    const currentValue = form.getFieldValue("Value");
+
+    // If AmountIndicator is changed to 'P' and Value is greater than 100, set it to 100
+    if (value === "P") {
+      setIsMaxCoverageRequired(true); // Make MaxCoverage required
+      if (currentValue > 100) {
+        form.setFieldsValue({ Value: 100 }); // Set Value to 100 if it's greater than 100
+      }
+    } else {
+      setIsMaxCoverageRequired(false); // Make MaxCoverage not required
+    }
+  };
+  const handleIsExcludedd = (e) => {
+    debugger;
+    if (e.target.checked) {
+      form.setFieldsValue({
+        Qty: null,
+        Priority: null,
+        Value: null,
+        AmtIndicator:null,
+        AmtDeductible:0,
+        CoverageType:null,
+        CoverageBy:null,
+        MaxCoverageAmt:null,
+        ApprovalCode:null,
+        Remarks:null,
+        AmtRequested:null,
+        DenialCode:null,
+
+      });
+      setIsMaxCoverageRequired(false);
+      setAmtIndDisable(true);
+      setpriorityDisable(true);
+     setIsExcludeDisable(true);
+    }else{
+      setAmtIndDisable(false);
+      setpriorityDisable(false);
+     setIsExcludeDisable(false);
+    }
+
+  };
+
   return (
     <div>
       <Spin spinning={loading}>
@@ -158,8 +252,8 @@ function AssignedPlanModal({
             onCancel={handleCancel}
             initialValues={{
               IsExcluded: false, // Set default value to false
-              AmtIndicator: "P",
-              Priority: "Q",
+              //AmtIndicator: "P",
+              Priority: "A",
               CoverageType: "PD",
               CoverageBy: "Payer",
               ApprovalCode: "L",
@@ -220,7 +314,7 @@ function AssignedPlanModal({
                       { required: true, message: "Please select Payer " },
                     ]}
                   >
-                    <Select>
+                    <Select disabled>
                       {options.Payer?.map((option) => (
                         <Select.Option
                           key={option.PayerId}
@@ -363,28 +457,30 @@ function AssignedPlanModal({
                   name="IsExcluded"
                   label="&nbsp;"
                 >
-                  <Checkbox>Is Excluded</Checkbox>
+                  <Checkbox onChange={handleIsExcludedd}>Is Excluded</Checkbox>
                 </Form.Item>
               </Col>
             </Row>
             <Row gutter={16}>
               <Col span={8}>
                 <Form.Item name="DenialCode" label="DenialCode">
-                  <Input></Input>
+                  <Input disabled={IsExcludeDisable}></Input>
                 </Form.Item>
               </Col>
               <Col span={8}>
                 <Form.Item name="Qty" label="Qty">
-                  <Input></Input>
+                  <Input disabled={IsExcludeDisable} onChange={handleQtyChange}></Input>
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
                 <Form.Item
                   name="AmtIndicator"
                   label="Amount Indicator"
-                  rules={[{ required: true }]}
+                  //rules={[{ required: true }]}
                 >
-                  <Select disabled>
+                  <Select   onChange={handleAmountIndicatorChange}
+                    disabled={amtIndDisable}
+                    allowClear>
                     <Select.Option key="A" value="A">
                       Amount
                     </Select.Option>
@@ -398,16 +494,16 @@ function AssignedPlanModal({
             <Row gutter={16}>
               <Col span={8}>
                 <Form.Item initialValue={0} name="Value" label="Value">
-                  <Input></Input>
+                  <Input disabled={IsExcludeDisable} onChange={handleValueChange}></Input>
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
                 <Form.Item
                   name="Priority"
                   label="Priority"
-                  rules={[{ required: true }]}
+                 // rules={[{ required: true }]}
                 >
-                  <Select disabled>
+                  <Select disabled={priorityDisable} >
                     <Select.Option key="A" value="A">
                       Amount
                     </Select.Option>
@@ -419,7 +515,7 @@ function AssignedPlanModal({
               </Col>
               <Col span={8}>
                 <Form.Item name="AmtRequested" label="RequestedAmount">
-                  <Input type="number"></Input>
+                  <Input disabled={IsExcludeDisable} type="number"></Input>
                 </Form.Item>
               </Col>
             </Row>
@@ -430,7 +526,7 @@ function AssignedPlanModal({
                   name="AmtDeductible"
                   label="Deductible"
                 >
-                  <Input></Input>
+                  <Input disabled={IsExcludeDisable}></Input>
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
@@ -439,7 +535,7 @@ function AssignedPlanModal({
                   label="Coverage Limit"
                   // rules={[{ required: true }]}
                 >
-                  <Select>
+                  <Select disabled={IsExcludeDisable}>
                     <Select.Option key="PD" value="PD">
                       Per day
                     </Select.Option>
@@ -455,7 +551,7 @@ function AssignedPlanModal({
                   label="Coverage"
                   //rules={[{ required: true }]}
                 >
-                  <Select>
+                  <Select disabled={IsExcludeDisable}>
                     <Select.Option key="Payer" value="Payer"></Select.Option>
                     <Select.Option
                       key="Patient"
@@ -467,10 +563,41 @@ function AssignedPlanModal({
             </Row>
             <Row gutter={16}>
               <Col span={8}>
-                <Form.Item name="MaxCoverageAmt" label="Max Coverage Limit"   rules={[
-                      { required: true },
-                    ]}>
-                  <Input type="number"></Input>
+                <Form.Item name="MaxCoverageAmt" label="Max Coverage Limit"  
+                 rules={[
+                  ...(isMaxCoverageRequired
+                    ? [
+                        {
+                          required: true,
+                          message:
+                            "MaxCoverage is required when Amount Indicator is Percentage",
+                        },
+                      ]
+                    : []),
+                  {
+                    validator(_, value) {
+                      if (!value || /^[0-9]{1,10}$/.test(value)) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(
+                        new Error(
+                          "MaxCoverage must be an integer and at most 10 digits"
+                        )
+                      );
+                    },
+                  },
+                ]}>
+               <Input
+                  disabled={IsExcludeDisable}
+                    type="number"
+                    maxLength={10}
+                    onInput={(e) => {
+                      e.target.value = e.target.value
+                        .replace(/[^0-9]/g, "")
+                        .slice(0, 10);
+                    }}
+                    inputMode="numeric"
+                  />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
@@ -479,7 +606,7 @@ function AssignedPlanModal({
                   label="ApprovalCode"
                   //  rules={[{ required: true }]}
                 >
-                  <Select>
+                  <Select disabled={IsExcludeDisable}>
                     <Select.Option key="L" value="L">
                       LifeTime
                     </Select.Option>
@@ -491,7 +618,7 @@ function AssignedPlanModal({
               </Col>
               <Col span={8}>
                 <Form.Item name="Remarks" label="Remarks">
-                  <Input></Input>
+                  <Input disabled={IsExcludeDisable}></Input>
                 </Form.Item>
               </Col>
             </Row>

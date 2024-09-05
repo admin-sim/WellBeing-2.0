@@ -298,12 +298,12 @@ function CreateBillAgrement() {
       AgreementDescription: values.AgreementDescription,
       FacilityId: 1,
       Remarks: values.Remarks,
-      RestrictedDays: values.RestrictedDays,
+      RestrictedDays: values.RestrictedDays ? values.RestrictedDays : null ,
       IsDaysRestricted: values.IsDaysRestricted,
-      RestrictedDeductible: values.RestrictedDeductible,
+      RestrictedDeductible: values.RestrictedDeductible  ? values.RestrictedDeductible  : null ,
       RestrictedDeductibleType: values.RestrictedDeductibleType,
       IsDeductibleRestricted: values.IsDeductibleRestricted,
-      RestrictedAuthLimit: values.RestrictedAuthLimit,
+      RestrictedAuthLimit: values.RestrictedAuthLimit ? values.RestrictedAuthLimit : null ,
       IsAuthLimitRestricted: values.IsAuthLimitRestricted,
       RestrictedAuthLimitType: values.RestrictedAuthLimitType,
       PayerId: values.PayerId,
@@ -412,7 +412,9 @@ function CreateBillAgrement() {
       dataIndex: "ListOfChargeParameters",
       key: "chargeParameters",
       render: (text, record) => {
+        debugger;
         const chargeParameters = [];
+
         if (record.NationalityName)
           chargeParameters.push(record.NationalityName);
         if (record.PatientTypeName)
