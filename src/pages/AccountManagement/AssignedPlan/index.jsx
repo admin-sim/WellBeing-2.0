@@ -28,7 +28,7 @@ function AssignedPlan() {
     >
       <PageHeader
         title={"Assigned Plan"}
-        buttonIcon={<FaAnglesLeft style={{ fontSize: "1.1rem" }} />}
+        buttonIcon={<FaAnglesLeft style={{ fontSize: "1rem" }} />}
         buttonLabel={"Back"}
         onButtonClick={() => navigate("/AssignedPlan")}
       />

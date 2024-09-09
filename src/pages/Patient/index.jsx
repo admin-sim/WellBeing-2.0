@@ -2,7 +2,15 @@ import customAxios from "../../components/customAxios/customAxios.jsx";
 import React, { useEffect, useState } from "react";
 import { FaUsers } from "react-icons/fa";
 import { useNavigate } from "react-router";
-import { Col, ConfigProvider, Row, Typography, Spin, notification } from "antd";
+import {
+  Col,
+  ConfigProvider,
+  Row,
+  Typography,
+  Spin,
+  notification,
+  Tooltip,
+} from "antd";
 import { LuCalendarSearch } from "react-icons/lu";
 import Form from "antd/es/form";
 import { Modal, Table, Layout, Tag, Avatar } from "antd";
@@ -22,6 +30,7 @@ import female from "../../assets/f.png";
 import defaultPic from "../../assets/defaultPic.png";
 import PatientHeader from "../../components/PatientHeader/index.jsx";
 import VisitModal from "./NewVisit/visitModal.jsx";
+import { isMobile } from "react-device-detect";
 
 const Patient = () => {
   const [patientDetails, setPatientDetails] = useState([]);
@@ -457,8 +466,9 @@ const Patient = () => {
             alignItems: "center",
             display: "flex",
             justifyContent: "space-between",
+            padding: "0.5rem",
           }}
-          gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+          gutter={16}
         >
           <Col
             style={{
@@ -467,85 +477,79 @@ const Patient = () => {
               alignItems: "center",
             }}
           >
-            <Col>
-              <Button
-                type="default"
-                size="large"
-                onClick={navigateToNewPatient}
-                className="dfja"
-              >
-                <UserAddOutlined
-                  style={{
-                    fontWeight: "bold",
-                    fontSize: "1.2rem",
-                  }}
-                />
-                <span style={{ fontWeight: "500" }}> Register Patient </span>
-              </Button>
-            </Col>
-            <Col>
-              <Button type="default" size="large" className="dfja">
-                <LuCalendarSearch
-                  style={{ fontSize: "1.2rem", marginRight: "0.3rem" }}
-                />
-                <span style={{ fontWeight: "500" }}>Appointment Search</span>
-              </Button>
-            </Col>
-            <Col>
-              <div
+            <Row gutter={16}>
+              <Col>
+                <Button
+                  type="default"
+                  size="middle"
+                  onClick={navigateToNewPatient}
+                  className="dfja"
+                >
+                  <UserAddOutlined
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: "1.2rem",
+                    }}
+                  />
+                  {!isMobile && (
+                    <span style={{ fontWeight: "500" }}>Register Patient</span>
+                  )}
+                </Button>
+              </Col>
+              <Col>
+                <Button type="default" size="middle" className="dfja">
+                  <LuCalendarSearch
+                    style={{ fontSize: "1.2rem", marginRight: "0.3rem" }}
+                  />
+                  {!isMobile && (
+                    <span style={{ fontWeight: "500" }}>
+                      Appointment Search
+                    </span>
+                  )}
+                </Button>
+              </Col>
+            </Row>
+          </Col>
+          <Col>
+            <Tooltip title="Visits for Today" placement="bottom">
+              <span
                 style={{
-                  margin: "0.2rem",
-                  borderRadius: "10px",
                   display: "flex",
-                  justifyContent: "center",
-                  flexDirection: "column",
                   alignItems: "center",
-                  width: "100%",
-                  backgroundColor: "white",
+                  justifyContent: "end",
                 }}
               >
-                <span
+                <FaUsers style={{ fontSize: "30px", color: "#fff" }} />
+                <div
                   style={{
+                    height: "1rem",
+                    color: "#fff",
+                    padding: "0.5rem",
+                    fontSize: "1.5rem",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-around",
-                    width: "60%",
+                    fontWeight: 600,
                   }}
                 >
-                  <FaUsers style={{ fontSize: "1.9rem", color: "#1a9bf0" }} />
-                  <div
-                    style={{
-                      fontSize: "1.3rem",
-                      fontWeight: "600",
-                    }}
-                  >
-                    {patientDetails.length}
-                  </div>
-                </span>
-                <span
-                  style={{
-                    fontWeight: 500,
-                    fontSize: "0.8rem",
-                    padding: "0 0.4rem",
-                  }}
-                >
-                  Visits for Today
-                </span>
-              </div>
-            </Col>
+                  {patientDetails?.length}
+                </div>
+              </span>
+            </Tooltip>
           </Col>
           <Col>
             <Col>
-              <Button type="default" size="large" onClick={navigateToNewVisit}>
+              <Button type="default" size="middle" onClick={navigateToNewVisit}>
                 <span style={{ fontWeight: "500" }}>Create Visit</span>
               </Button>
             </Col>
           </Col>
         </Row>
-        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+        <Row gutter={16} style={{ marginTop: "0.8rem" }}>
           <Col span={24}>
-            <Title level={4}> List of Patients in Visits</Title>
-            <Title level={5}>
+            <Title level={4} style={{ margin: 0 }}>
+              List of Patients in Visit
+            </Title>
+            <Title level={5} style={{ marginTop: "0.3rem" }}>
               Showing {startIndex + 1} to {Math.min(endIndex, totalPatients)} of{" "}
               {totalPatients} Patients
             </Title>
