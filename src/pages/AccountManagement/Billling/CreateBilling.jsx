@@ -87,15 +87,15 @@ const CreateBilling = () => {
         const response = await customAxios.get(
           `${urlGetPatientHeaderDetails}?PatientId=${PatientId}&EncounterId=${EncounterId}`
         );
-        if (response.status === 200 && response.data.data != null) {
-          const detailsheader = response.data.data.EncounterModel;
+        if (response.status === 200 && response.data != null) {
+          const detailsheader = response.data.EncounterModel;
           setPatientData(detailsheader);
-          console.log("headerdata", detailsheader.PatientDetail);
+  
         } else {
-          console.error("Failed to fetch patient details");
+       
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+      
       }
     };
     fetchDataHeader();
@@ -107,30 +107,29 @@ const CreateBilling = () => {
 
   const fetchData = async () => {
     setTableLoading(true);
+    debugger;
     try {
       const response = await customAxios.get(
         `${urlBillingCreate}?PatientId=${PatientId}&EncounterId=${EncounterId}`
       );
-      if (response.status === 200 && response.data.data != null) {
-        const details = response.data.data;
+      if (response.status === 200 && response.data != null) {
+        setTableLoading(false);
+        const details = response.data;
         setBanks(details.Bank);
         setPaymentTypes(details.PaymentType);
-        console.log("ptypes", details.PaymentType);
         setCharges(details.PatientAccountCharges);
-        setTableLoading(false);
-        console.log("charges", details.PatientAccountCharges);
       } else {
-        console.error("Failed to fetch patient details");
+        
         setTableLoading(false);
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+   
       setTableLoading(false);
     }
   };
 
   const totalAmount =
-    charges?.reduce((total, row) => total + row.PatientNetAmount, 0) ?? 0;
+    charges?.reduce((total, row) => total + row.PatientChargeAmount, 0) ?? 0;
 
   useEffect(() => {
     form1.setFieldsValue({
@@ -139,7 +138,7 @@ const CreateBilling = () => {
     });
   }, [form, totalAmount]);
 
-  console.log("totalamt", totalAmount);
+
   const initialDataSource = [
     {
       key: 1,
@@ -206,7 +205,7 @@ const CreateBilling = () => {
         form.setFieldValue("Services", "");
       }
     } catch (error) {
-      console.error("Error fetching suggestions:", error);
+   
       setServices(null); // Set options to an empty array in case of an error
     }
     setLoading(false); // Stop loading
@@ -235,7 +234,7 @@ const CreateBilling = () => {
         setPatientAmount2(newData[0].OriginalPatientChargeAmount);
         setSelectedProviderId(newData[0].ProviderID);
       } catch (error) {
-        console.error("Error handling selected client data:", error);
+       
         setLoading(false);
       }
     }
@@ -283,7 +282,7 @@ const CreateBilling = () => {
         form.setFieldValue("Provider", "");
       }
     } catch (error) {
-      console.error("Error fetching suggestions:", error);
+     
       setProviders(null); // Set options to an empty array in case of an error
     }
     setLoading(false); // Stop loading
@@ -303,9 +302,9 @@ const CreateBilling = () => {
     const response = await customAxios.get(
       `${urlEditDiscount}?DiscountChargeId=${row.ChargeID}&PatientId=${row.PatientId}&EncounterId=${row.EncounterId}`
     );
-    if (response.status === 200 && response.data.data != null) {
-      setDiscountReason(response.data.data.DiscountReasons);
-      setDiscountDetails(response.data.data.AddDiscountModel);
+    if (response.status === 200 && response.data != null) {
+      setDiscountReason(response.data.DiscountReasons);
+      setDiscountDetails(row);
       setIsModalOpen(true);
     }
   };
@@ -328,8 +327,8 @@ const CreateBilling = () => {
      const response = await customAxios.delete(
       `${urlDeleteBillCharge}?chargeId=${record.ChargeID}&patientId=${record.PatientId}&encounterId=${record.EncounterId}&amt=${amt}`
     );
-    if (response.status === 200 && response.data.data != null) {
-      setCharges(response.data.data.PatientAccountCharges);
+    if (response.status === 200 && response.data!= null) {
+      setCharges(response.data.PatientAccountCharges);
       message.success("Charge Deleted Successfully...");
     }else{
       message.warning("Something Went Wrong...");
@@ -719,13 +718,13 @@ const CreateBilling = () => {
     setReceiptInsAmtData(
       receiptInsAmtData.filter((item) => item.key !== record.key)
     );
-    console.log("deletedreceiptdata", receiptInsAmtData);
+   
   };
 
   const handleOnFinish = async (values) => {
     setTableLoading(true);
     debugger;
-    console.log("values", values);
+
     const Charge = {
       PatientId: PatientId,
       EncounterId: EncounterId,
@@ -747,12 +746,11 @@ const CreateBilling = () => {
         },
       });
 
-      if (response.status == 200) {
-        console.log("response", response);
-        setCharges(response.data.data.PatientAccountCharges);
-        setServices(null);
-        setTableLoading(false);
+      if (response.status == 200 && response.data!=null) {
         message.success("Charge Added Successfully");
+        setTableLoading(false);
+        setCharges(response.data.PatientAccountCharges);
+        setServices(null);
         form.resetFields();
       } else {
         message.error("Something went wrong");
@@ -1034,82 +1032,84 @@ const CreateBilling = () => {
                 `Showing ${range[0]} to ${range[1]} of ${total} entries`,
             }}
             scroll={{ x: 1000 }}
-            summary={(pageData) => {
-              let netamt = 0;
-              let insamt = 0;
-              let taxamt = 0;
-              let netinsamt = 0;
-              let discamt = 0;
-              let taxrate = 0;
-              let patientnetamt = 0;
-              let adjamt = 0;
-              pageData.forEach(
-                ({
-                  NetAmount,
-                  InsuranceCoveredAmount,
-                  TaxRate,
-                  NetInsurenceAmount,
-                  PatientDiscountAmount,
-                  PatientTaxRate,
-                  PatientNetAmount,
-                  AdjustedAmount,
-                }) => {
-                  netamt += NetAmount;
-                  insamt += InsuranceCoveredAmount;
-                  taxamt += TaxRate;
-                  netinsamt += NetInsurenceAmount;
-                  discamt += PatientDiscountAmount;
-                  taxrate += PatientTaxRate;
-                  patientnetamt += PatientNetAmount;
-                  adjamt += AdjustedAmount;
-                }
-              );
-              return (
-                <>
-                  <Table.Summary.Row>
-                    {/* Adjust the cell spans based on your column structure */}
-                    <Table.Summary.Cell
-                      index={0}
-                      colSpan={4}
-                    ></Table.Summary.Cell>
-                    <Table.Summary.Cell index={3}>
-                      <Text type="danger">Total</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Text type="danger">{netamt}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Text type="danger">{insamt}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Text type="danger">{taxamt}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Text type="danger">{netinsamt}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Text type="danger">Total</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Text type="danger">{discamt.toFixed(2)}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Text type="danger">{taxrate}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Text type="danger">{patientnetamt}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Text type="danger">{adjamt}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell
-                      index={2}
-                      colSpan={9}
-                    ></Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </>
-              );
-            }}
+            // summary={(pageData) => {
+            //   let netamt = 0;
+            //   let insamt = 0;
+            //   let taxamt = 0;
+            //   let netinsamt = 0;
+            //   let discamt = 0;
+            //   let taxrate = 0;
+            //   let patientnetamt = 0;
+            //   let adjamt = 0;
+            //   pageData.forEach(
+            //     ({
+            //       NetAmount,
+            //       InsuranceCoveredAmount,
+            //       TaxRate,
+            //       NetInsurenceAmount,
+            //       PatientDiscountAmount,
+            //       PatientTaxRate,
+            //       PatientNetAmount,
+            //       AdjustedAmount,
+            //     }) => {
+            //       netamt += NetAmount;
+            //       insamt += InsuranceCoveredAmount;
+            //       taxamt += TaxRate;
+            //       netinsamt += NetInsurenceAmount;
+            //       discamt += PatientDiscountAmount;
+            //       taxrate += PatientTaxRate;
+            //       patientnetamt += PatientNetAmount;
+            //       adjamt += AdjustedAmount;
+            //     }
+            //   );
+            //   return (
+            //     <>
+            //       <Table.Summary.Row>
+            //         {/* Adjust the cell spans based on your column structure */}
+            //         <Table.Summary.Cell
+            //           index={0}
+            //           colSpan={4}
+            //         ></Table.Summary.Cell>
+            //         <Table.Summary.Cell index={3}>
+            //           <Text type="danger">Total</Text>
+            //         </Table.Summary.Cell>
+            //         <Table.Summary.Cell index={2}>
+            //           <Text type="danger">{netamt}</Text>
+            //         </Table.Summary.Cell>
+            //         <Table.Summary.Cell index={2}>
+            //           <Text type="danger">{insamt}</Text>
+            //         </Table.Summary.Cell>
+            //         <Table.Summary.Cell index={2}>
+            //           <Text type="danger">{taxamt}</Text>
+            //         </Table.Summary.Cell>
+            //         <Table.Summary.Cell index={2}>
+            //           <Text type="danger">{netinsamt}</Text>
+            //         </Table.Summary.Cell>
+            //         <Table.Summary.Cell index={2}>
+            //           <Text type="danger">Total</Text>
+            //         </Table.Summary.Cell>
+            //         <Table.Summary.Cell index={2}>
+            //           <Text type="danger">{discamt.toFixed(2)}</Text>
+            //         </Table.Summary.Cell>
+            //         <Table.Summary.Cell index={2}>
+            //           <Text type="danger">{taxrate}</Text>
+            //         </Table.Summary.Cell>
+            //         <Table.Summary.Cell index={2}>
+            //           <Text type="danger">{patientnetamt}</Text>
+            //         </Table.Summary.Cell>
+            //         <Table.Summary.Cell index={2}>
+            //           <Text type="danger">{adjamt}</Text>
+            //         </Table.Summary.Cell>
+            //         <Table.Summary.Cell
+            //           index={2}
+            //           colSpan={9}
+            //         ></Table.Summary.Cell>
+            //       </Table.Summary.Row>
+            //     </>
+            //   );
+            // }
+
+          
           />
           </Spin>
         </ConfigProvider>
