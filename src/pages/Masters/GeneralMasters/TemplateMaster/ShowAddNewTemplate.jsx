@@ -11,7 +11,7 @@ import {
   message,
 } from "antd";
 import React, { useEffect, useState } from "react";
-import PageHeader from "../../../../components/PageHeader";
+import PageHeader from "../../../../components/PageHeader/index.jsx";
 import { LeftOutlined } from "@ant-design/icons";
 import { useForm } from "antd/es/form/Form";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -19,8 +19,8 @@ import {
   urlEditTemplate,
   urlLoadAllDropDownsTemplate,
   urlSaveNewTemplate,
-} from "../../../../../endpoints";
-import customAxios from "../../../../components/customAxios/customAxios";
+} from "../../../../../endpoints.js";
+import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import CkEditor from "../../../../components/CKEditor/index.jsx";
 import { template } from "lodash";
 import { ColWithSixSpan } from "../../../../components/customGridColumns/index.jsx";

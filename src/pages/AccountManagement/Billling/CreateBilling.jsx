@@ -80,6 +80,8 @@ const CreateBilling = () => {
   const navigate = useNavigate();
   const [counter, setCounter] = useState(2);
 
+  console.log("l", location.state);
+
   useEffect(() => {
     debugger;
     const fetchDataHeader = async () => {
@@ -321,16 +323,16 @@ const CreateBilling = () => {
     }
   };
 
-  const handleDeleteCharge =async(record) =>{
-     debugger;
-     const amt=0;
-     const response = await customAxios.delete(
+  const handleDeleteCharge = async (record) => {
+    debugger;
+    const amt = 0;
+    const response = await customAxios.delete(
       `${urlDeleteBillCharge}?chargeId=${record.ChargeID}&patientId=${record.PatientId}&encounterId=${record.EncounterId}&amt=${amt}`
     );
     if (response.status === 200 && response.data!= null) {
       setCharges(response.data.PatientAccountCharges);
       message.success("Charge Deleted Successfully...");
-    }else{
+    } else {
       message.warning("Something Went Wrong...");
     }
   };
@@ -469,7 +471,6 @@ const CreateBilling = () => {
             );
           },
         },
-        
       ],
     },
   ];
@@ -781,7 +782,7 @@ const CreateBilling = () => {
         : 0,
       PaymentTypeId: item.PaymentTypeId,
     }));
-    if(!charges){
+    if (!charges) {
       message.warning("Please Add Charges To Proceed Billing....");
       return false;
     }
@@ -1017,100 +1018,98 @@ const CreateBilling = () => {
             },
           }}
         >
-           <Spin spinning={tableloading}>
-          <Table
-            // style={{ padding: '0rem 2rem' }}
-            dataSource={charges}
-            columns={columns}
-            rowKey={(row) => row.ChargeID} // Specify the custom id property here
-            locale={{
-              emptyText: <span style={{ color: "" }}>No data available</span>,
-            }}
-            bordered
-            pagination={{
-              showTotal: (total, range) =>
-                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-            }}
-            scroll={{ x: 1000 }}
-            // summary={(pageData) => {
-            //   let netamt = 0;
-            //   let insamt = 0;
-            //   let taxamt = 0;
-            //   let netinsamt = 0;
-            //   let discamt = 0;
-            //   let taxrate = 0;
-            //   let patientnetamt = 0;
-            //   let adjamt = 0;
-            //   pageData.forEach(
-            //     ({
-            //       NetAmount,
-            //       InsuranceCoveredAmount,
-            //       TaxRate,
-            //       NetInsurenceAmount,
-            //       PatientDiscountAmount,
-            //       PatientTaxRate,
-            //       PatientNetAmount,
-            //       AdjustedAmount,
-            //     }) => {
-            //       netamt += NetAmount;
-            //       insamt += InsuranceCoveredAmount;
-            //       taxamt += TaxRate;
-            //       netinsamt += NetInsurenceAmount;
-            //       discamt += PatientDiscountAmount;
-            //       taxrate += PatientTaxRate;
-            //       patientnetamt += PatientNetAmount;
-            //       adjamt += AdjustedAmount;
-            //     }
-            //   );
-            //   return (
-            //     <>
-            //       <Table.Summary.Row>
-            //         {/* Adjust the cell spans based on your column structure */}
-            //         <Table.Summary.Cell
-            //           index={0}
-            //           colSpan={4}
-            //         ></Table.Summary.Cell>
-            //         <Table.Summary.Cell index={3}>
-            //           <Text type="danger">Total</Text>
-            //         </Table.Summary.Cell>
-            //         <Table.Summary.Cell index={2}>
-            //           <Text type="danger">{netamt}</Text>
-            //         </Table.Summary.Cell>
-            //         <Table.Summary.Cell index={2}>
-            //           <Text type="danger">{insamt}</Text>
-            //         </Table.Summary.Cell>
-            //         <Table.Summary.Cell index={2}>
-            //           <Text type="danger">{taxamt}</Text>
-            //         </Table.Summary.Cell>
-            //         <Table.Summary.Cell index={2}>
-            //           <Text type="danger">{netinsamt}</Text>
-            //         </Table.Summary.Cell>
-            //         <Table.Summary.Cell index={2}>
-            //           <Text type="danger">Total</Text>
-            //         </Table.Summary.Cell>
-            //         <Table.Summary.Cell index={2}>
-            //           <Text type="danger">{discamt.toFixed(2)}</Text>
-            //         </Table.Summary.Cell>
-            //         <Table.Summary.Cell index={2}>
-            //           <Text type="danger">{taxrate}</Text>
-            //         </Table.Summary.Cell>
-            //         <Table.Summary.Cell index={2}>
-            //           <Text type="danger">{patientnetamt}</Text>
-            //         </Table.Summary.Cell>
-            //         <Table.Summary.Cell index={2}>
-            //           <Text type="danger">{adjamt}</Text>
-            //         </Table.Summary.Cell>
-            //         <Table.Summary.Cell
-            //           index={2}
-            //           colSpan={9}
-            //         ></Table.Summary.Cell>
-            //       </Table.Summary.Row>
-            //     </>
-            //   );
-            // }
-
-          
-          />
+          <Spin spinning={tableloading}>
+            <Table
+              // style={{ padding: '0rem 2rem' }}
+              dataSource={charges}
+              columns={columns}
+              rowKey={(row) => row.ChargeID} // Specify the custom id property here
+              locale={{
+                emptyText: <span style={{ color: "" }}>No data available</span>,
+              }}
+              bordered
+              pagination={{
+                showTotal: (total, range) =>
+                  `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+              }}
+              scroll={{ x: 1000 }}
+              summary={(pageData) => {
+                let netamt = 0;
+                let insamt = 0;
+                let taxamt = 0;
+                let netinsamt = 0;
+                let discamt = 0;
+                let taxrate = 0;
+                let patientnetamt = 0;
+                let adjamt = 0;
+                pageData.forEach(
+                  ({
+                    NetAmount,
+                    InsuranceCoveredAmount,
+                    TaxRate,
+                    NetInsurenceAmount,
+                    PatientDiscountAmount,
+                    PatientTaxRate,
+                    PatientNetAmount,
+                    AdjustedAmount,
+                  }) => {
+                    netamt += NetAmount;
+                    insamt += InsuranceCoveredAmount;
+                    taxamt += TaxRate;
+                    netinsamt += NetInsurenceAmount;
+                    discamt += PatientDiscountAmount;
+                    taxrate += PatientTaxRate;
+                    patientnetamt += PatientNetAmount;
+                    adjamt += AdjustedAmount;
+                  }
+                );
+                return (
+                  <>
+                    <Table.Summary.Row>
+                      {/* Adjust the cell spans based on your column structure */}
+                      <Table.Summary.Cell
+                        index={0}
+                        colSpan={4}
+                      ></Table.Summary.Cell>
+                      <Table.Summary.Cell index={3}>
+                        <Text type="danger">Total</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={2}>
+                        <Text type="danger">{netamt}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={2}>
+                        <Text type="danger">{insamt}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={2}>
+                        <Text type="danger">{taxamt}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={2}>
+                        <Text type="danger">{netinsamt}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={2}>
+                        <Text type="danger">Total</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={2}>
+                        <Text type="danger">{discamt.toFixed(2)}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={2}>
+                        <Text type="danger">{taxrate}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={2}>
+                        <Text type="danger">{patientnetamt}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={2}>
+                        <Text type="danger">{adjamt}</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        index={2}
+                        colSpan={9}
+                      ></Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </>
+                );
+              }}
+            />
           </Spin>
         </ConfigProvider>
         <InvoiceDiscountModal

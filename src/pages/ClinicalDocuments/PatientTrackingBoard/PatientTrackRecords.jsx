@@ -443,7 +443,6 @@ function PatientTrackRecords() {
                       <Form.Item label="UHID" name="Uhid">
                         <AutoComplete
                           options={options}
-                          //loading={AutoCompleteLoader}
                           onSearch={handleAutoCompleteChange}
                           onSelect={handleSelect}
                           value={selectedUhId}

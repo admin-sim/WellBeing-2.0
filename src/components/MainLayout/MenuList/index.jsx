@@ -429,6 +429,24 @@ const menuData = [
         title: "Assigned Plan",
         link: "AssignedPlan",
       },
+      {
+        key: "Receipt",
+        icons: "FaUserFriends",
+        title: "Receipt",
+        link: "Receipt",
+      },
+      {
+        key: "CancelBill",
+        icons: "FaUserFriends",
+        title: "Cancel Bill",
+        link: "CancelBill",
+      },
+      {
+        key: "Refund",
+        icons: "FaUserFriends",
+        title: "Refund",
+        link: "Refund",
+      },
     ],
   },
   {
