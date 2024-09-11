@@ -1000,7 +1000,7 @@ const Queue = () => {
           </Row>
         </div>
         <Spin spinning={isLoading}>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+          <Row gutter={16}>
             <Col span={24}>
               <Form
                 key={selectedPatientRecord.QId}

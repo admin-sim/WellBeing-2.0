@@ -181,7 +181,7 @@ const menuData = [
         ],
       },
       {
-        key: "WardManagement",
+        key: "WardManagement1",
         icon: "GiBed",
         title: "Ward Management",
         children: [
@@ -192,7 +192,7 @@ const menuData = [
             link: "/Ward",
           },
           {
-            key: "Bed",
+            key: "Bed1",
             icon: "GoDotFill",
             title: "Bed",
             link: "/Bed",

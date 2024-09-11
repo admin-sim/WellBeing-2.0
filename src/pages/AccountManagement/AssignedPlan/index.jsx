@@ -26,12 +26,7 @@ function AssignedPlan() {
         borderRadius: "10px",
       }}
     >
-      <PageHeader
-        title={"Assigned Plan"}
-        buttonIcon={<FaAnglesLeft style={{ fontSize: "1rem" }} />}
-        buttonLabel={"Back"}
-        onButtonClick={() => navigate("/AssignedPlan")}
-      />
+      <PageHeader title={"Assigned Plan"} button={false} />
       <AdvancedPatientSearch handleOnSubmit={handleOnSubmit} />
     </Layout>
   );

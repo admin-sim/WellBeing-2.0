@@ -22,6 +22,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import { debounce } from "lodash";
 import CustomTable from "../../components/customTable";
 import dayjs from "dayjs";
+import { v4 as uuidv4 } from "uuid";
 
 function AdvancedPatientSearch({ handleOnSubmit }) {
   const [form1] = Form.useForm();
@@ -202,6 +203,7 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
           setLoading(false);
           //resetForm();
           setPatientSearchDetails(response.data.data.Patients);
+          console.log(response.data.data.Patients);
         });
     } catch (error) {
       setLoading(false);
@@ -251,7 +253,7 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
     {
       title: "UHID",
       dataIndex: "UhId",
-      key: "UhId",
+      key: uuidv4(),
       sorter: (a, b) => {
         const numA = parseInt(a.UhId.split("/")[1], 10);
         const numB = parseInt(b.UhId.split("/")[1], 10);
@@ -274,7 +276,7 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
     {
       title: "Name",
       dataIndex: "PatientName",
-      key: "PatientName",
+      key: uuidv4(),
       // sorter: (a, b) => a.PatientName.localeCompare(b.PatientName),
       // sortDirections: ["descend", "ascend"],
       render: (text, record) => <p>{record.PatientName}</p>,
@@ -282,7 +284,7 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
     {
       title: "Gender",
       dataIndex: "PatientName",
-      key: "Gender",
+      key: uuidv4(),
       // sorter: (a, b) => a.PatientName.localeCompare(b.PatientName),
       // sortDirections: ["descend", "ascend"],
       render: (text, record) => <p>{record.PatientGender}</p>,
@@ -290,7 +292,7 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
     {
       title: "Date of Birth",
       dataIndex: "PatientName",
-      key: "DOB",
+      key: uuidv4(),
       // sorter: (a, b) => a.PatientName.localeCompare(b.PatientName),
       // sortDirections: ["descend", "ascend"],
       render: (text, record) => (
@@ -300,14 +302,14 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
     {
       title: "Age",
       dataIndex: "PatientName",
-      key: "Age",
+      key: uuidv4(),
       // sorter: (a, b) => a.PatientName.localeCompare(b.PatientName),
       // sortDirections: ["descend", "ascend"],
       render: (text, record) => <p>{record.Age}</p>,
     },
     {
       title: "Contact Details",
-      key: "contact",
+      key: uuidv4(),
       dataIndex: "PatientName",
       render: (text, record) => (
         <>
@@ -322,7 +324,7 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
     {
       title: "City",
       dataIndex: "PatientName",
-      key: "City",
+      key: uuidv4(),
       // sorter: (a, b) => a.PatientName.localeCompare(b.PatientName),
       // sortDirections: ["descend", "ascend"],
       render: (text, record) => <p>{record.PlaceName}</p>,
@@ -330,7 +332,7 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
     {
       title: "State",
       dataIndex: "PatientName",
-      key: "Gender",
+      key: uuidv4(),
       // sorter: (a, b) => a.PatientName.localeCompare(b.PatientName),
       // sortDirections: ["descend", "ascend"],
       render: (text, record) => <p>{record.StateName}</p>,
@@ -381,7 +383,6 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
               rules={[
                 {
                   required: true,
-                  message: "Please enter UHID",
                 },
               ]}
             >
@@ -413,7 +414,6 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
               rules={[
                 {
                   required: true,
-                  message: "Please add Last Name",
                 },
               ]}
             >
@@ -428,7 +428,6 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
               rules={[
                 {
                   required: true,
-                  message: "Please add Last Name",
                 },
               ]}
             >
