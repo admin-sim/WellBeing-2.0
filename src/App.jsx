@@ -36,11 +36,11 @@ import Service from "./pages/Masters/GeneralMasters/AccountManagement/Service";
 import CreateService from "./pages/Masters/GeneralMasters/AccountManagement/CreateService";
 import FacilityPriceDefinition from "./pages/Masters/GeneralMasters/AccountManagement/FacilityPriceDefinition";
 import EditPriceDefinition from "./pages/Masters/GeneralMasters/AccountManagement/EditPriceDefinition";
-import CreatePurchaseOrder from "./pages/Inventory/CreatePurchaseOrder";
-import DirectGRN from "./pages/Inventory/DirectGRN";
-import CreateDirectGRN from "./pages/Inventory/CreateDirectGRN";
-import GRNAgainstPO from "./pages/Inventory/GRNAgainstPO";
-import CreateGRNAgainstPO from "./pages/Inventory/CreateGRNAgainstPO";
+import CreatePurchaseOrder from "./pages/Inventory/PurchaseOrder/CreatePurchaseOrder";
+import DirectGRN from "./pages/Inventory/DirectGRN/index.jsx";
+import CreateDirectGRN from "./pages/Inventory/DirectGRN/CreateDirectGRN.jsx";
+import GRNAgainstPO from "./pages/Inventory/GRNAgainstPO/index.jsx";
+import CreateGRNAgainstPO from "./pages/Inventory/GRNAgainstPO/CreateGRNAgainstPO.jsx";
 import InventoryIndent from "./pages/Inventory/Indent";
 import CreateIndent from "./pages/Inventory/CreateIndent";
 import PatientIndent from "./pages/Inventory/PatientIndent";
@@ -129,6 +129,10 @@ import AdditionalCharge from "./pages/Masters/GeneralMasters/AccountManagement/A
 import CreateAdditionalCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAdditionalCharge";
 import AssignedPlanSearchPage from "./pages/AccountManagement/AssignedPlan/index.jsx";
 import CreateAssignedPlan from "./pages/AccountManagement/AssignedPlan/CreateAssignedPlan.jsx";
+import CancelBill from "./pages/AccountManagement/CancelBill/index.jsx";
+import Refund from "./pages/AccountManagement/Refund/index.jsx";
+import Receipt from "./pages/AccountManagement/Receipt/index.jsx";
+import CreateReceipt from "./pages/AccountManagement/Receipt/CreateReceipt.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -989,6 +993,38 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CreateBillAgrement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="CancelBill"
+              element={
+                <ProtectedRoute>
+                  <CancelBill />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Refund"
+              element={
+                <ProtectedRoute>
+                  <Refund />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Receipt"
+              element={
+                <ProtectedRoute>
+                  <Receipt />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="CreateReceipt"
+              element={
+                <ProtectedRoute>
+                  <CreateReceipt />
                 </ProtectedRoute>
               }
             />

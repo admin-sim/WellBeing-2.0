@@ -450,7 +450,6 @@ const Patient = () => {
     <>
       <Layout
         style={{
-          padding: "0.5rem",
           width: "100%",
           backgroundColor: "white",
           minHeight: "max-content",
@@ -459,10 +458,10 @@ const Patient = () => {
       >
         <Row
           style={{
+            width: "inherit",
             backgroundColor: "#40A2E3",
-            borderRadius: "10px",
-            marginLeft: "5px",
-            marginRight: "5px",
+            borderRadius: "10px 10px 0px 0px",
+            margin: "0",
             alignItems: "center",
             display: "flex",
             justifyContent: "space-between",
@@ -544,7 +543,7 @@ const Patient = () => {
             </Col>
           </Col>
         </Row>
-        <Row gutter={16} style={{ marginTop: "0.8rem" }}>
+        <Row gutter={16} style={{ marginTop: "0.8rem", padding: "0 1rem" }}>
           <Col span={24}>
             <Title level={4} style={{ margin: 0 }}>
               List of Patients in Visit
@@ -556,7 +555,7 @@ const Patient = () => {
           </Col>
         </Row>
         <Spin spinning={isLoading}>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+          <Row gutter={16} style={{ padding: "0.5rem" }}>
             <Col span={24}>
               <Table
                 dataSource={patientDetails}
