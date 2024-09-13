@@ -134,6 +134,7 @@ import Refund from "./pages/AccountManagement/Refund/index.jsx";
 import Receipt from "./pages/AccountManagement/Receipt/index.jsx";
 import CreateReceipt from "./pages/AccountManagement/Receipt/CreateReceipt.jsx";
 import PatientRefund from "./pages/AccountManagement/Refund/PatientRefund.jsx";
+import Reprint from "./pages/AccountManagement/Reprint/index.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -1034,6 +1035,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CreateReceipt />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Reprint"
+              element={
+                <ProtectedRoute>
+                  <Reprint />
                 </ProtectedRoute>
               }
             />

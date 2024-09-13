@@ -11,7 +11,7 @@ import {
   Table,
   Tabs,
 } from "antd";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageHeader from "../../../components/PageHeader";
 import PatientHeader from "../../../components/PatientHeader";
 import { useForm } from "antd/es/form/Form";
@@ -264,7 +264,7 @@ function CreateReceipt() {
                   </Form.Item>
                 </ColWithSixSpan>
                 <ColWithSixSpan>
-                  <Form.Item name="Receipt Date" label="Receipt Date">
+                  <Form.Item name="ReceiptDate" label="Receipt Date">
                     <Input />
                   </Form.Item>
                 </ColWithSixSpan>

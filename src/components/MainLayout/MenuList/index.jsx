@@ -447,6 +447,12 @@ const menuData = [
         title: "Refund",
         link: "Refund",
       },
+      {
+        key: "Reprint",
+        icons: "FaUserFriends",
+        title: "Reprint",
+        link: "Reprint",
+      },
     ],
   },
   {

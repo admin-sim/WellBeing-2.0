@@ -90,15 +90,11 @@ const CreateBilling = () => {
           `${urlGetPatientHeaderDetails}?PatientId=${PatientId}&EncounterId=${EncounterId}`
         );
         if (response.status === 200 && response.data != null) {
-          const detailsheader = response.data.EncounterModel;
+          const detailsheader = response.data.data.EncounterModel;
           setPatientData(detailsheader);
-  
         } else {
-       
         }
-      } catch (error) {
-      
-      }
+      } catch (error) {}
     };
     fetchDataHeader();
   }, []);
@@ -116,16 +112,14 @@ const CreateBilling = () => {
       );
       if (response.status === 200 && response.data != null) {
         setTableLoading(false);
-        const details = response.data;
+        const details = response.data.data;
         setBanks(details.Bank);
         setPaymentTypes(details.PaymentType);
         setCharges(details.PatientAccountCharges);
       } else {
-        
         setTableLoading(false);
       }
     } catch (error) {
-   
       setTableLoading(false);
     }
   };
@@ -139,7 +133,6 @@ const CreateBilling = () => {
       ReceiptAmount: totalAmount,
     });
   }, [form, totalAmount]);
-
 
   const initialDataSource = [
     {
@@ -207,7 +200,6 @@ const CreateBilling = () => {
         form.setFieldValue("Services", "");
       }
     } catch (error) {
-   
       setServices(null); // Set options to an empty array in case of an error
     }
     setLoading(false); // Stop loading
@@ -236,7 +228,6 @@ const CreateBilling = () => {
         setPatientAmount2(newData[0].OriginalPatientChargeAmount);
         setSelectedProviderId(newData[0].ProviderID);
       } catch (error) {
-       
         setLoading(false);
       }
     }
@@ -284,7 +275,6 @@ const CreateBilling = () => {
         form.setFieldValue("Provider", "");
       }
     } catch (error) {
-     
       setProviders(null); // Set options to an empty array in case of an error
     }
     setLoading(false); // Stop loading
@@ -329,8 +319,8 @@ const CreateBilling = () => {
     const response = await customAxios.delete(
       `${urlDeleteBillCharge}?chargeId=${record.ChargeID}&patientId=${record.PatientId}&encounterId=${record.EncounterId}&amt=${amt}`
     );
-    if (response.status === 200 && response.data!= null) {
-      setCharges(response.data.PatientAccountCharges);
+    if (response.status === 200 && response.data != null) {
+      setCharges(response.data.data.PatientAccountCharges);
       message.success("Charge Deleted Successfully...");
     } else {
       message.warning("Something Went Wrong...");
@@ -719,7 +709,6 @@ const CreateBilling = () => {
     setReceiptInsAmtData(
       receiptInsAmtData.filter((item) => item.key !== record.key)
     );
-   
   };
 
   const handleOnFinish = async (values) => {
@@ -747,10 +736,10 @@ const CreateBilling = () => {
         },
       });
 
-      if (response.status == 200 && response.data!=null) {
+      if (response.status == 200 && response.data != null) {
         message.success("Charge Added Successfully");
         setTableLoading(false);
-        setCharges(response.data.PatientAccountCharges);
+        setCharges(response.data.data.PatientAccountCharges);
         setServices(null);
         form.resetFields();
       } else {
@@ -810,8 +799,8 @@ const CreateBilling = () => {
       });
       if (response.status === 200 && response.data) {
         if (
-          response.data === "Failed To Generate Bill" ||
-          response.data === ""
+          response.data.data === "Failed To Generate Bill" ||
+          response.data.data === ""
         ) {
           message.error("Failed to generate bill");
         } else {
