@@ -286,12 +286,24 @@ function CreateReceipt() {
                     name="DocumentType"
                     label="Document Type"
                   >
-                    <Select />
+                  <Select  >
+                    <Select.Option key="Regular" value="Regular"></Select.Option>
+                    <Select.Option
+                      key="Pharmacy"
+                      value="Pharmacy"
+                    ></Select.Option>
+                  </Select>
                   </Form.Item>
                 </ColWithSixSpan>
                 <ColWithEightSpan>
                   <Form.Item name="DepositType" label="Deposit Type">
-                    <Select disabled={!isDepositChecked} />
+                  <Select  >
+                    <Select.Option key="Pre payment" value="Pre payment"></Select.Option>
+                    <Select.Option
+                      key="Security Deposit"
+                      value="Security Deposit"
+                    ></Select.Option>
+                  </Select>
                   </Form.Item>
                 </ColWithEightSpan>
                 <ColWithEightSpan>
