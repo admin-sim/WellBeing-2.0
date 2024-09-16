@@ -16,47 +16,38 @@ function CancelBill() {
     {
       title: "Cancel Date",
       dataIndex: "cancelDate",
-      // key: uuidv4(),
     },
     {
       title: "Document Date",
       dataIndex: "documentDate",
-      // key: uuidv4(),
     },
     {
       title: "Document Ref. ID",
       dataIndex: "documentRefID",
-      // key: uuidv4(),
     },
     {
       title: "Patient/Payer",
       dataIndex: "patientPayer",
-      // key: uuidv4(),
     },
     {
       title: "Provider",
       dataIndex: "Provider",
-      // key: uuidv4(),
     },
     {
       title: "Document Amount",
       dataIndex: "DocumentAmount",
-      // key: uuidv4(),
     },
     {
       title: "Outstanding Amount",
       dataIndex: "OutstandingAmount",
-      // key: uuidv4(),
     },
     {
       title: "Cancellation Reason",
       dataIndex: "CancellationReason",
-      // key: uuidv4(),
     },
     {
       title: "Cancellation Action",
       dataIndex: "CancellationAction",
-      // key: uuidv4(),
     },
   ];
 
