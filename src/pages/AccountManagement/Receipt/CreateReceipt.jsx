@@ -75,7 +75,7 @@ function CreateReceipt() {
           `${urlGetPatientHeaderDetails}?PatientId=${PatientId}&EncounterId=${EncounterId}`
         );
         if (response.status === 200 && response.data != null) {
-          const detailsheader = response.data.EncounterModel;
+          const detailsheader = response.data.data.EncounterModel;
           setPatientData(detailsheader);
         } else {
         }
