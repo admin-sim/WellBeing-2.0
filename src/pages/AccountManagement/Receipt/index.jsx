@@ -8,6 +8,7 @@ function Receipt() {
   const navigate = useNavigate();
 
   const handleOnSubmit = (values) => {
+    debugger;
     const url = `/CreateReceipt`;
     console.log("Values ", values);
 

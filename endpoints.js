@@ -324,9 +324,7 @@ export const urlSearchReceipt = `${baseURL}/api/StoreReturn/SearchReceipt`;
 export const urlAddNewStoreReturn = `${baseURL}/api/StoreReturn/AddNewStoreReturn`;
 export const urlSearchStoreReturn = `${baseURL}/api/StoreReturn/SearchStoreReturn`;
 export const urlStoreReturnEdit = `${baseURL}/api/StoreReturn/StoreReturnEdit`;
-
 export const urlAcknowledgeReturnCreate = `${baseURL}/api/AcknowledgeReturn/AcknowledgeReturnCreate`;
-
 export const urlCancelDischargeInitiation = `${baseURL}/api/WardManagement/CancelDischargeInitiation`;
 export const urlCreateWard = `${baseURL}/api/Ward/CreateWard`;
 export const urlSaveNewWard = `${baseURL}/api/Ward/SaveNewWard`;
@@ -384,3 +382,7 @@ export const urlSaveNewAuthorisation = `${baseURL}/api/AssignedPlan/SaveNewAutho
 export const urlUpdateAuthorisation = `${baseURL}/api/AssignedPlan/UpdateAuthorisation`;
 export const urlSaveNewAssignedPlan = `${baseURL}/api/AssignedPlan/SaveNewAssignedPlan`;
 export const urlUpdateAssignedPlan = `${baseURL}/api/AssignedPlan/UpdateAssignedPlan`;
+export const urlReceiptCreate = `${baseURL}/api/Receipt/Create`;
+export const urlShowOutStandingAmount = `${baseURL}/api/Receipt/ShowOutStandingAmount`;
+export const urlSaveNewReceipt = `${baseURL}/api/Receipt/SaveNewReceipt`;
+
