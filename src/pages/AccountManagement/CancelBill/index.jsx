@@ -4,9 +4,11 @@ import PageHeader from "../../../components/PageHeader";
 import { ColWithSixSpan } from "../../../components/customGridColumns";
 import CustomTable from "../../../components/customTable";
 import { v4 as uuidv4 } from "uuid";
+import UhidSelectComponent from "../../../components/UhidSelectComponent";
 
 function CancelBill() {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedUhId, setSelectedUhId] = useState(null);
 
   const [form] = Form.useForm();
 
@@ -14,57 +16,62 @@ function CancelBill() {
     {
       title: "Cancel Date",
       dataIndex: "cancelDate",
-      key: uuidv4(),
+      // key: uuidv4(),
     },
     {
       title: "Document Date",
       dataIndex: "documentDate",
-      key: uuidv4(),
+      // key: uuidv4(),
     },
     {
       title: "Document Ref. ID",
       dataIndex: "documentRefID",
-      key: uuidv4(),
+      // key: uuidv4(),
     },
     {
       title: "Patient/Payer",
       dataIndex: "patientPayer",
-      key: uuidv4(),
+      // key: uuidv4(),
     },
     {
       title: "Provider",
       dataIndex: "Provider",
-      key: uuidv4(),
+      // key: uuidv4(),
     },
     {
       title: "Document Amount",
       dataIndex: "DocumentAmount",
-      key: uuidv4(),
+      // key: uuidv4(),
     },
     {
       title: "Outstanding Amount",
       dataIndex: "OutstandingAmount",
-      key: uuidv4(),
+      // key: uuidv4(),
     },
     {
       title: "Cancellation Reason",
       dataIndex: "CancellationReason",
-      key: uuidv4(),
+      // key: uuidv4(),
     },
     {
       title: "Cancellation Action",
       dataIndex: "CancellationAction",
-      key: uuidv4(),
+      // key: uuidv4(),
     },
   ];
 
-  const dataSource = [{}];
+  const dataSource = [{ key: 1 }];
 
   const rowSelection = {
     selectedRowKeys,
     onChange: (selectedKeys) => {
       setSelectedRowKeys(selectedKeys);
     },
+  };
+
+  const handleSelectUHID = (value, option) => {
+    setSelectedUhId(value);
+    console.log("op", option);
   };
 
   return (
@@ -85,7 +92,10 @@ function CancelBill() {
         <Row gutter={16} style={{ margin: "1rem" }}>
           <ColWithSixSpan>
             <Form.Item name="uhid" label="UHID">
-              <Input />
+              <UhidSelectComponent
+                selectedUhId={selectedUhId}
+                handleSelectUHID={handleSelectUHID}
+              />
             </Form.Item>
           </ColWithSixSpan>
           <ColWithSixSpan>

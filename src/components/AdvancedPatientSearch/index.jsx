@@ -23,6 +23,7 @@ import { debounce } from "lodash";
 import CustomTable from "../../components/customTable";
 import dayjs from "dayjs";
 import { v4 as uuidv4 } from "uuid";
+import UhidSelectComponent from "../../components/UhidSelectComponent/index.jsx";
 
 function AdvancedPatientSearch({ handleOnSubmit }) {
   const [form1] = Form.useForm();
@@ -128,29 +129,8 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
 
   const handleReset = () => {
     form1.resetFields();
+    setSelectedUhId(null);
   };
-
-  const fetchOptionsCallback = async (inputValue) => {
-    try {
-      const response = await customAxios.get(
-        `${urlSearchUHID}?Uhid=${inputValue}`
-      );
-      if (response.data && Array.isArray(response.data.data)) {
-        setOptions(response.data.data);
-      } else {
-        setOptions([]);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setOptions([]);
-    }
-  };
-
-  const myInput = useRef();
-
-  useEffect(() => {
-    myInput.current.focus();
-  }, []);
 
   const handleSearchClick = () => {
     setSearchContainer(!searchContainer);
@@ -224,6 +204,7 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
 
       const response = await customAxios.get(`${urlSearchUHID}?Uhid=${value}`);
       const responseData = response.data.data || [];
+      setOptions(responseData);
 
       // Ensure responseData is an array and has the expected structure
       if (
@@ -340,6 +321,7 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
   ];
 
   const handleUhidClick = async (record) => {
+    setSelectedUhId(record?.UhId);
     form1.setFieldsValue({
       Uhid: record?.UhId,
       PatientName: record?.PatientName,
@@ -357,6 +339,29 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
 
   const handleSearchReset = () => {
     form2.resetFields();
+  };
+
+  const handleSelectUHID = (value, option) => {
+    setSelectedUhId(value);
+
+    if (option) {
+      const selectedPatientData = option;
+      console.log("Selected Patient Data:", selectedPatientData);
+    }
+
+    form1.setFieldsValue({
+      Uhid: option?.data?.UhId,
+      PatientName: option?.data?.PatientFirstName,
+      patientId: option?.data?.PatientId,
+    });
+
+    setIsEncounterDisabled(false);
+    getencounters(option?.data?.PatientId);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+    setSearchContainer(false);
   };
 
   return (
@@ -386,7 +391,7 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
                 },
               ]}
             >
-              <AutoComplete
+              {/* <AutoComplete
                 ref={myInput}
                 options={options.map((option) => ({
                   value: option.UhId,
@@ -400,6 +405,10 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
                   option.value.toUpperCase().includes(inputValue.toUpperCase())
                 }
                 allowClear
+              /> */}
+              <UhidSelectComponent
+                selectedUhId={selectedUhId}
+                handleSelectUHID={handleSelectUHID}
               />
             </Form.Item>
           </ColWithSixSpan>
@@ -499,14 +508,19 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
               <ColWithSixSpan>
                 <Form.Item label="UHID" name="Uhid">
                   <AutoComplete
-                    options={options}
+                    options={options.map((option) => ({
+                      value: option.UhId,
+                      label: option.UhId,
+                      key: option.PatientId,
+                      data: option,
+                    }))}
                     onSearch={handleSearchAutoCompleteChange}
                     onSelect={handleSearchSelect}
                     value={selectedSearchUhId}
                     filterOption={(inputValue, option) =>
-                      option.value
-                        .toUpperCase()
-                        .includes(inputValue.toUpperCase())
+                      option?.value
+                        ?.toUpperCase()
+                        .includes(inputValue?.toUpperCase())
                     }
                     allowClear
                   />
@@ -534,7 +548,7 @@ function AdvancedPatientSearch({ handleOnSubmit }) {
                 </Form.Item>
               </ColWithSixSpan>
               <ColWithSixSpan>
-                <Form.Item label=" Patient Name" name="PatientName">
+                <Form.Item label="Patient Name" name="PatientName">
                   <Input allowClear />
                 </Form.Item>
               </ColWithSixSpan>
