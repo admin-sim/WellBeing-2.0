@@ -638,7 +638,6 @@ const CreateBilling = () => {
     {
       title: "IfscCode",
       dataIndex: "IFSC",
-
       key: "IFSC",
       render: (text, record, index) => (
         <Form.Item
@@ -657,7 +656,6 @@ const CreateBilling = () => {
     {
       title: "AuthRefNo",
       dataIndex: "AuthorizationReference",
-
       key: "AuthorizationReference",
       render: (text, record, index) => (
         <Form.Item
@@ -782,6 +780,10 @@ const CreateBilling = () => {
         : 0,
       PaymentTypeId: item.PaymentTypeId,
     }));
+    const totalInstrumentAmount = formattedReceiptInsAmtData.reduce(
+      (acc, item) => acc + item.InstrumentAmount,
+      0
+    );
     if (!charges) {
       message.warning("Please Add Charges To Proceed Billing....");
       return false;
@@ -789,8 +791,7 @@ const CreateBilling = () => {
     try {
       const billingData = {
         PatientAccountReceiptModel: {
-          ReceiptAmount: values.ReceiptAmount,
-
+          ReceiptAmount: totalInstrumentAmount,
           CashReceiptDate: receiptDate
             ? receiptDate
             : dayjs().format("DD-MM-YYYY"),

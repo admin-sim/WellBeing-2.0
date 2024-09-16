@@ -2,16 +2,20 @@ import {
   Button,
   Checkbox,
   Col,
+  DatePicker,
   Divider,
   Form,
   Input,
+  InputNumber,
   Layout,
+  message,
+  Popconfirm,
   Row,
   Select,
   Table,
   Tabs,
 } from "antd";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageHeader from "../../../components/PageHeader";
 import PatientHeader from "../../../components/PatientHeader";
 import { useForm } from "antd/es/form/Form";
@@ -21,48 +25,121 @@ import {
   ColWithSixteenSpan,
 } from "../../../components/customGridColumns";
 import TextArea from "antd/es/input/TextArea";
-import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  PlusCircleOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import CustomTable from "../../../components/customTable";
 import AddAllocationModal from "./AddAllocationModal";
 import { FaAnglesLeft } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
-
+import {
+  urlGetPatientHeaderDetails,
+  urlReceiptCreate,
+  urlSaveNewReceipt,
+  urlShowOutStandingAmount,
+} from "../../../../endpoints";
+import customAxios from "../../../components/customAxios/customAxios";
+import { useLocation } from "react-router-dom";
+import dayjs from "dayjs";
 function CreateReceipt() {
   const [form] = useForm();
+  const location = useLocation();
   const [addAllocationModalOpen, setAddAllocationModalOpen] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [isDepositChecked, setIsDepositChecked] = useState(false);
-  const [recievedFromField, setRecievedFromField] = useState(true);
-
-  const [dataSource1, setDataSource1] = useState([
-    {
-      key: uuidv4(), // Ensure each row has a unique key
-      PaymentType: "",
-      Amount: "",
-      Bank: "",
-      Branch: "",
-      IFSCCode: "",
-      AuthorizationRefNo: "",
-      CardChequeNumber: "",
-      Date: "",
-      ExpiryDate: "",
-      Remarks: "",
-    },
-  ]);
+  const [isDepositChecked, setIsDepositChecked] = useState(true);
+  const [recievedFromField, setRecievedFromField] = useState(false);
+  const [patientData, setPatientData] = useState(null);
+  const PatientId = location.state.patientId;
+  const EncounterId = location.state.encounterId;
+  const [banks, setBanks] = useState(null);
+  const [paymentTypes, setPaymentTypes] = useState(null);
+  const [counter, setCounter] = useState(2);
+  const [assosiateBills, setAssosiateBills] = useState([]);
+  const [options, setOptions] = useState([]);
+  const [allocations, setAllocations] = useState([]);
+  const [receiptAmount, setReceiptAmount] = useState(0);
+  const [activeTab, setActiveTab] = useState("1");
+  const [activeTabDisable, setActiveTabDisable] = useState(true);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    debugger;
+    const fetchDataHeader = async () => {
+      try {
+        const response = await customAxios.get(
+          `${urlGetPatientHeaderDetails}?PatientId=${PatientId}&EncounterId=${EncounterId}`
+        );
+        if (response.status === 200 && response.data != null) {
+          const detailsheader = response.data.EncounterModel;
+          setPatientData(detailsheader);
+        } else {
+        }
+      } catch (error) {}
+    };
+    fetchDataHeader();
+  }, []);
+
+  useEffect(() => {
+    debugger;
+
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await customAxios.get(
+        `${urlReceiptCreate}?Patient=${PatientId}&EncounterId=${EncounterId}`
+      );
+      if (response.status === 200 && response.data != null) {
+        form.setFieldsValue({
+          ReceivedFrom: response.data.PatientRecord.PatientName,
+        });
+        setBanks(response.data.Bank);
+        setPaymentTypes(response.data.PaymentType);
+        // Assign a unique key using uuidv4 for each item in ReceiptAllocations
+        const updatedReceiptAllocations = response.data.ReceiptAllocations.map(
+          (item) => ({
+            ...item,
+            key: uuidv4(),
+          })
+        );
+        setAssosiateBills(updatedReceiptAllocations);
+        setOptions(response.data);
+      } else {
+      }
+    } catch (error) {}
+  };
 
   function handleAddAllocationModalOpen() {
     setAddAllocationModalOpen(true);
   }
 
   function handleAddAllocationModalSubmit(values) {
-    console.log("Values from Add Allocation Modal ", values);
+    debugger;
+
+    // Create the new data object
+    const newEntry = {
+      key: uuidv4(), // Unique key for the table row
+      ...values, // Spread the values object into this new object
+    };
+
+    console.log("Formatted data for Ant Design Table:", newEntry);
+
+    // Append the new entry to the previous state
+    setAllocations((prev) => [...prev, newEntry]);
   }
 
   const handleCheckboxChange = (e) => {
     setIsDepositChecked(e.target.checked);
+    form.resetFields();
+    if (e.target.checked === true) {
+      form.resetFields(["DocumentType", "Outstanding"]); // Use strings for field names
+    }
   };
 
   const rowSelection = {
@@ -72,98 +149,416 @@ function CreateReceipt() {
     },
   };
 
-  const columns1 = [
+  const handleDelete = (record) => {
+    setAllocations((prev) => prev.filter((item) => item.key !== record.key));
+  };
+
+  const initialDataSource = [
     {
-      title: "Payment Type",
-      dataIndex: "PaymentType",
-      key: uuidv4(),
-      render: (text, record, key) => <Select style={{ width: "100%" }} />,
+      key: 1,
+      PaymentTypeId: "",
+      InstrumentAmount: "",
+      BankId: "",
+      BranchName: "",
+      IFSC: "",
+      AuthorizationReference: "",
+      CardExpiryDate: "",
+    },
+  ];
+  const [receiptInsAmtData, setReceiptInsAmtData] = useState(initialDataSource);
+
+  const handleAddRow = async () => {
+    await form.validateFields();
+    setReceiptInsAmtData([
+      ...receiptInsAmtData,
+      {
+        key: counter, // use counter as key
+        PaymentTypeId: "",
+        InstrumentAmount: "",
+        BankId: "",
+        BranchName: "",
+        IFSC: "",
+        AuthorizationReference: "",
+        CardExpiryDate: "",
+      },
+    ]);
+    setCounter(counter + 1); // increment counter
+  };
+
+  const handleInputChange = (value, column, key) => {
+    const newData = receiptInsAmtData.map((item) => {
+      if (item.key === key) {
+        return { ...item, [column]: value };
+      }
+      return item;
+    });
+    setReceiptInsAmtData(newData);
+    if (column === "InstrumentAmount") {
+      const newTotal = newData.reduce(
+        (sum, item) => sum + (parseFloat(item.InstrumentAmount) || 0),
+        0
+      );
+      setTotalInstrumentAmount(newTotal);
+      form.validateFields(); // Trigger validation after changing the value
+    }
+  };
+
+  const handleDocumentType = async (value) => {
+    debugger;
+    if (value) {
+      const response = await customAxios.get(
+        `${urlShowOutStandingAmount}?EncounterId=${EncounterId}`
+      );
+      if (response.status === 200 && response.data != null) {
+        if (value === "Regular") {
+          form.setFieldsValue({
+            Outstanding: response.data.OutstandingAmountsRegular,
+          });
+        } else {
+          form.setFieldsValue({
+            Outstanding: response.data.OutstandingAmountsPharmacy,
+          });
+        }
+      } else {
+      }
+    }
+  };
+  const handleReceiptAmount = (e) => {
+    debugger;
+
+    if(e.target.value===""){
+      setActiveTabDisable(true);
+      return; 
+    }
+    const outstand = form.getFieldValue("Outstanding");
+    setReceiptAmount(Number(e.target.value));
+    if (Number(e.target.value)&& isDepositChecked) {
+      setActiveTabDisable(false);
+    }
+    if (!isDepositChecked && outstand > 0) {
+      setActiveTabDisable(false);
+    }
+  };
+
+  const receiptInscolumns = [
+    {
+      title: "PaymentType",
+      dataIndex: "PaymentTypeId",
+      width: 180,
+      key: "PaymentTypeId",
+      render: (text, record, index) => (
+        <Form.Item
+          name={["PaymentTypeId", record.key - 1]} // subtract 1 from key
+          rules={[
+            { required: true, message: "Required" },
+            {
+              validator: (_, value) => {
+                const otherRows = receiptInsAmtData.filter(
+                  (row) => row.key !== record.key
+                );
+                const duplicateExists = otherRows.some(
+                  (row) => row.PaymentTypeId === value
+                );
+                if (duplicateExists) {
+                  // return Promise.reject('Payment Type already selected in another row');
+                  return Promise.reject(
+                    new Error("Payment Type should not be same")
+                  );
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
+          // initialValue={record.LookupDescription} // Set initial value of the field to UomId
+        >
+          <Select
+            onChange={(value) =>
+              handleInputChange(value, "PaymentTypeId", record.key)
+            }
+          >
+            {paymentTypes?.map((option) => (
+              <Option key={option.LookupID} value={option.LookupID}>
+                {option.LookupDescription}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+      ),
     },
     {
       title: "Amount",
-      dataIndex: "Amount",
-      key: uuidv4(),
-      render: (text, record, key) => <Input />,
+      dataIndex: "InstrumentAmount",
+      width: 200,
+      key: "InstrumentAmount",
+      render: (text, record) => (
+        <Form.Item
+          name={["InstrumentAmount", record.key - 1]}
+          style={{ width: "100%" }}
+          //  initialValue={record.InstrumentAmount}
+        >
+          <InputNumber
+            style={{ width: "100%" }}
+            min={0}
+            onChange={(value) =>
+              handleInputChange(value, "InstrumentAmount", record.key)
+            }
+          />
+        </Form.Item>
+      ),
     },
     {
       title: "Bank",
-      dataIndex: "Bank",
-      key: uuidv4(),
-      render: (text, record, key) => <Select style={{ width: "100%" }} />,
+      dataIndex: "BankId",
+      width: 150,
+      key: "BankId",
+      render: (text, record, index) => (
+        <Form.Item name={["BankId", record.key - 1]}>
+          <Select
+            onChange={(value) => handleInputChange(value, "BankId", record.key)}
+          >
+            {banks?.map((option) => (
+              <Option key={option.LookupID} value={option.LookupID}>
+                {option.LookupDescription}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+      ),
     },
     {
       title: "Branch",
-      dataIndex: "Branch",
-      key: uuidv4(),
-      render: (text, record, key) => <Input />,
+      dataIndex: "BranchName",
+
+      key: "BranchName",
+      render: (text, record, index) => (
+        <Form.Item
+          name={["BranchName", record.key - 1]}
+          style={{ width: "100%" }}
+          // initialValue={record.Branch}
+        >
+          <Input
+            min={0}
+            defaultValue={text}
+            onChange={(value) =>
+              handleInputChange(value, "BranchName", record.key)
+            }
+          />
+        </Form.Item>
+      ),
     },
     {
-      title: "IFSC Code",
-      dataIndex: "IFSCCode",
-      key: uuidv4(),
-      render: (text, record, key) => <Input />,
+      title: "IfscCode",
+      dataIndex: "IFSC",
+      key: "IFSC",
+      render: (text, record, index) => (
+        <Form.Item
+          name={["IFSC", record.key - 1]}
+          style={{ width: "100%" }}
+          //initialValue={record.IfscCode}
+        >
+          <Input
+            min={0}
+            defaultValue={text}
+            onChange={(value) => handleInputChange(value, "IFSC", record)}
+          />
+        </Form.Item>
+      ),
     },
     {
-      title: "Authorization Ref No.",
-      dataIndex: "AuthorizationRefNo",
-      key: uuidv4(),
-      render: (text, record, key) => <Input />,
+      title: "AuthRefNo",
+      dataIndex: "AuthorizationReference",
+      key: "AuthorizationReference",
+      render: (text, record, index) => (
+        <Form.Item
+          name={["AuthorizationReference", record.key - 1]}
+          style={{ width: "100%" }}
+          //initialValue={record.AuthRefNo}
+        >
+          <Input
+            min={0}
+            defaultValue={text}
+            onChange={(value) =>
+              handleInputChange(value, "AuthorizationReference", record)
+            }
+          />
+        </Form.Item>
+      ),
     },
+
     {
-      title: "Card/Cheque Number",
-      dataIndex: "CardChequeNumber",
-      key: uuidv4(),
-      render: (text, record, key) => <Input />,
+      title: "ExpiryDate",
+      dataIndex: "CardExpiryDate",
+      key: "CardExpiryDate",
+      render: (text, record, index) => (
+        <Form.Item
+          name={["CardExpiryDate", record.key - 1]}
+          style={{ width: "100%" }}
+          // initialValue={record.ExpiryDate}
+        >
+          <Input min={0} defaultValue={text} />
+        </Form.Item>
+      ),
     },
+
     {
-      title: "Date",
-      dataIndex: "Date",
-      key: uuidv4(),
-      render: (text, record, key) => <Input />,
-    },
-    {
-      title: "Expiry Date",
-      dataIndex: "ExpiryDate",
-      key: uuidv4(),
-      render: (text, record, key) => <Input />,
-    },
-    {
-      title: "Remarks",
-      dataIndex: "Remarks",
-      key: uuidv4(),
-      render: (text, record, key) => <Input />,
+      title: (
+        <Button
+          type="primary"
+          size="small"
+          icon={<PlusOutlined style={{ fontSize: "12px" }} />}
+          onClick={handleAddRow}
+        ></Button>
+      ),
+      dataIndex: "add",
+      key: "add",
+      width: 50,
+      render: (text, record) => (
+        <Popconfirm
+          title="Sure to delete?"
+          onConfirm={() => handleInstrumentDelete(record)}
+        >
+          <DeleteOutlined />
+        </Popconfirm>
+      ),
+      //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>
     },
   ];
+
+  const handleInstrumentDelete = (record) => {
+    setReceiptInsAmtData(
+      receiptInsAmtData.filter((item) => item.key !== record.key)
+    );
+  };
+
+  const handleFinish = async (values) => {
+    debugger;
+    console.log("instrument", receiptInsAmtData);
+    console.log("allocation", allocations);
+    console.log("object", values);
+    console.log("assosiatebills", assosiateBills);
+
+    const updatedBills = assosiateBills.map((bill) => {
+      const receiptAmountKey = `ReceiptAmt_${bill.key}`;
+      return {
+        // ...bill,
+        AssocitedReceiptAmount:
+          Number(values[receiptAmountKey]) || bill.ReceiptAmount, // Convert to number
+        AssocitedBillNumber: bill.BillNumber,
+        AssociatedBillID: bill.AssociateBillID,
+        AssocitedOutStandingAmount: bill.OutStandingAmount,
+        IsPharmacyBill: bill.IsPharmacyBill,
+      };
+    });
+    // Calculate the total sum of ReceiptAmount for all records
+    const totalReceiptAmount = updatedBills.reduce((sum, bill) => {
+      return sum + (Number(bill.AssocitedReceiptAmount) || 0);
+    }, 0);
+
+    const updatedBillsWithTotal = updatedBills.map((bill) => ({
+      ...bill,
+      ReceiptAmount: totalReceiptAmount,
+    }));
+
+    const updatedReceiptInsAmtData = receiptInsAmtData.map((item) => ({
+      ...item,
+      EncounterID: EncounterId,
+      BankId: item.BankId ? item.BankId : null,
+    }));
+
+    // Append EncounterID to each item in allocations
+    const updatedAllocations = allocations.map((item) => ({
+      ...item,
+      EncounterID: EncounterId,
+      ReceiptAllocationId: 0,
+    }));
+
+    const Receipt = {
+      DocumentType: isDepositChecked ? "Deposit" : "Receipt",
+      CashReceiptDate: values.CashReceiptDate
+        ? values.CashReceiptDate.format("DD-MM-YYYY")
+        : "",
+      DepositType: values.DepositType,
+      EncounterId: EncounterId,
+      IsDeposit: isDepositChecked,
+      PatientId: PatientId,
+      ReceiptAmount: values.ReceiptAmount,
+      ReceivedFrom: values.ReceivedFrom,
+    };
+
+    const ReceiptDetails = {
+      NewReceipt: Receipt, // This maps to 'NewReceipt' in the backend
+      ReceiptAllocations:  isDepositChecked ? updatedAllocations : [], // Maps to 'ReceiptAllocations'
+      ReceiptInstruments: updatedReceiptInsAmtData, // Maps to 'ReceiptInstruments'
+      PatientAccountBills: isDepositChecked ? updatedBillsWithTotal :[] , // Maps to 'Receipts'
+    };
+
+    const response = await customAxios.post(urlSaveNewReceipt, ReceiptDetails, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (response.status === 200) {
+      const assosiateBills = response.data.bills.map((item) => ({
+        ...item,
+        key: uuidv4(),
+      }));
+      setAssosiateBills(assosiateBills);
+      form.resetFields();
+      setAllocations([]);
+      setActiveTab("1");
+      message.success("Saved Successfully....");
+    }
+  };
+  const validateReceiptAmount = (_, value) => {
+    if (!isDepositChecked) {
+      const outstanding = form.getFieldValue('Outstanding');
+      if (value > outstanding) {
+        return Promise.reject(new Error('Receipt Amount cannot be greater than Outstanding amount.'));
+      }
+    }
+    return Promise.resolve();
+  };
+
+  // const handleReceiptAmountChange = (key, value) => {
+  //   debugger;
+  //   const updatedBills = assosiateBills.map((bill) => {
+  //     if (bill.key === key) {
+  //       return { ...bill, ReceiptAmount: value };
+  //     }
+  //     return bill;
+  //   });
+  //   setAssosiateBills(updatedBills);
+  // };
 
   const columns2 = [
     {
       title: "Indicator",
-      dataIndex: "Indicator",
+      dataIndex: "IndicatorDescriptionName",
       key: uuidv4(),
     },
     {
       title: "Description",
-      dataIndex: "Description",
+      dataIndex: "SelectedDescriptionName",
       key: uuidv4(),
     },
     {
       title: "Patient Type",
-      dataIndex: "PatientType",
+      dataIndex: "PatientTypeDescription",
       key: uuidv4(),
     },
     {
       title: "Encounter Id",
-      dataIndex: "EncounterId",
+      dataIndex: "Encounter",
       key: uuidv4(),
     },
     {
       title: "Percentage",
-      dataIndex: "Percentage",
+      dataIndex: "AllocationPercentage",
       key: uuidv4(),
     },
     {
       title: "Amount",
-      dataIndex: "Amount",
+      dataIndex: "AllocationAmount",
       key: uuidv4(),
     },
     {
@@ -178,7 +573,6 @@ function CreateReceipt() {
     },
   ];
 
-  const dataSource2 = [{}];
   const columns3 = [
     {
       title: "Bill Number",
@@ -187,17 +581,26 @@ function CreateReceipt() {
     },
     {
       title: "Bill Date",
-      dataIndex: "BillDate",
+      dataIndex: "BillDatestring",
       key: uuidv4(),
     },
     {
       title: "Document Type",
-      dataIndex: "DocumentType",
+      dataIndex: "IsPharmacyBill",
       key: uuidv4(),
-      render: (text, record, key) => (
-        <span style={{ color: "#272EFD", fontWeight: "600" }}>{text}</span>
+      render: (text) => (
+        <span
+          style={{
+            color: text ? "black" : "blue", // Black for Pharmacy, Green for Regular
+            fontWeight: "600",
+          }}
+        >
+          {text ? "Pharmacy" : "Regular"}{" "}
+          {/* Show Pharmacy if true, Regular if false */}
+        </span>
       ),
     },
+
     {
       title: "Encounter Id",
       dataIndex: "EncounterId",
@@ -216,27 +619,20 @@ function CreateReceipt() {
     {
       title: "Receipt Amount",
       key: uuidv4(),
-      render: (text, record, key) => (
-        <Input disabled={!selectedRowKeys.includes(record.key)} />
+      render: (text, record) => (
+        <Form.Item name={`ReceiptAmt_${record.key}`}>
+          <Input
+            type="number"
+            disabled={!selectedRowKeys.includes(record.key)}
+          />
+        </Form.Item>
       ),
-    },
-  ];
-
-  const dataSource3 = [
-    {
-      key: "1",
-      BillNumber: "Bill1",
-      BillDate: "2020-01-01",
-      DocumentType: "Document1",
-      EncounterId: "Encounter1",
-      BillAmount: "100.00",
-      OutStandingAmount: "50.00",
     },
   ];
 
   const items = [
     {
-      key: 1,
+      key: "1",
       label: "Receipt Details",
       children: (
         <>
@@ -245,7 +641,7 @@ function CreateReceipt() {
               <Row gutter={16}>
                 <ColWithSixSpan>
                   <Form.Item
-                    name="RecievedFrom"
+                    name="ReceivedFrom"
                     label={
                       <div>
                         <span>Recieved From</span>
@@ -260,12 +656,16 @@ function CreateReceipt() {
                       </div>
                     }
                   >
-                    <Input disabled={recievedFromField} />
+                    <Input disabled={!recievedFromField} />
                   </Form.Item>
                 </ColWithSixSpan>
                 <ColWithSixSpan>
-                  <Form.Item name="Receipt Date" label="Receipt Date">
-                    <Input />
+                  <Form.Item name="CashReceiptDate" label="Receipt Date">
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      format="DD-MM-YYYY"
+                      // onChange={handleServiceDate}
+                    />
                   </Form.Item>
                 </ColWithSixSpan>
                 <ColWithSixSpan
@@ -286,29 +686,36 @@ function CreateReceipt() {
                     name="DocumentType"
                     label="Document Type"
                   >
-                  <Select  >
-                    <Select.Option key="Regular" value="Regular"></Select.Option>
-                    <Select.Option
-                      key="Pharmacy"
-                      value="Pharmacy"
-                    ></Select.Option>
-                  </Select>
+                    <Select onChange={handleDocumentType}>
+                      <Select.Option key="0" value="Regular"></Select.Option>
+                      <Select.Option key="1" value="Pharmacy"></Select.Option>
+                    </Select>
                   </Form.Item>
                 </ColWithSixSpan>
                 <ColWithEightSpan>
-                  <Form.Item name="DepositType" label="Deposit Type">
-                  <Select  >
-                    <Select.Option key="Pre payment" value="Pre payment"></Select.Option>
-                    <Select.Option
-                      key="Security Deposit"
-                      value="Security Deposit"
-                    ></Select.Option>
-                  </Select>
+                  <Form.Item
+                    name="DepositType"
+                    label="Deposit Type"
+                    initialValue="Pre payment"
+                  >
+                    <Select>
+                      <Select.Option
+                        key="Pre payment"
+                        value="Pre payment"
+                      ></Select.Option>
+                      <Select.Option
+                        key="Security Deposit"
+                        value="Security Deposit"
+                      ></Select.Option>
+                    </Select>
                   </Form.Item>
                 </ColWithEightSpan>
                 <ColWithEightSpan>
-                  <Form.Item name="ReceiptAmount" label="Receipt Amount">
-                    <Input />
+                  <Form.Item name="ReceiptAmount"  label="Receipt Amount" rules={[{ validator: validateReceiptAmount }]}>
+                    <Input
+                      value={receiptAmount}
+                      onChange={handleReceiptAmount} // Handle input change
+                    />
                   </Form.Item>
                 </ColWithEightSpan>
                 <ColWithEightSpan>
@@ -316,8 +723,9 @@ function CreateReceipt() {
                     hidden={isDepositChecked}
                     name="Outstanding"
                     label="Total Bill Outstanding Amount"
+                    initialValue={0}
                   >
-                    <Input />
+                    <Input disabled />
                   </Form.Item>
                 </ColWithEightSpan>
               </Row>
@@ -338,8 +746,9 @@ function CreateReceipt() {
       ),
     },
     {
-      key: 2,
+      key: "2",
       label: "Allocation Details",
+      disabled: activeTabDisable,
       children: (
         <div
           style={{ border: "1px solid #ddd", borderRadius: "10px 10px 0 0" }}
@@ -352,21 +761,23 @@ function CreateReceipt() {
           />
           <CustomTable
             columns={columns2}
-            dataSource={dataSource2}
-            isFilter={false}
+            dataSource={allocations}
+            onDelete={handleDelete}
+            // isFilter={false}
           />
         </div>
       ),
     },
     {
-      key: 3,
-      label: "Associate Bills   ",
+      key: "3",
+      label: "Associate Bills",
+      disabled: activeTabDisable,
       children: (
         <div style={{ border: "1px solid #ddd" }}>
           <Table
             rowSelection={rowSelection}
             columns={columns3}
-            dataSource={dataSource3}
+            dataSource={assosiateBills}
           />
         </div>
       ),
@@ -377,27 +788,9 @@ function CreateReceipt() {
     ? [items[0], items[1]]
     : [items[0], items[2]];
 
-  const handleAddRow = () => {
-    const newRow = {
-      key: uuidv4(),
-      PaymentType: "",
-      Amount: "",
-      Bank: "",
-      Branch: "",
-      IFSCCode: "",
-      AuthorizationRefNo: "",
-      CardChequeNumber: "",
-      Date: "",
-      ExpiryDate: "",
-      Remarks: "",
-    };
-    setDataSource1([...dataSource1, newRow]);
+  const handleTabChange = (key) => {
+    setActiveTab(key);
   };
-
-  const handleDeleteRow = (key) => {
-    setDataSource1(dataSource1.filter((row) => row.key !== key));
-  };
-
   return (
     <Layout
       style={{
@@ -414,30 +807,35 @@ function CreateReceipt() {
         onButtonClick={() => navigate("/Receipt")}
       />
       <div style={{ margin: "0 1rem 1rem 1rem" }}>
-        <PatientHeader style={{ marginBottom: "1rem" }} />
+        <PatientHeader patient={patientData} style={{ marginBottom: "1rem" }} />
         <Form
           form={form}
-          onFinish={(values) => console.log(values)}
+          onFinish={handleFinish}
           layout="vertical"
+          initialValues={{
+            CashReceiptDate: dayjs(),
+          }}
         >
-          <Tabs type="card" defaultActiveKey="1" items={visibleItems} />
+          <Tabs
+            type="card"
+            defaultActiveKey="1"
+            activeKey={activeTab}
+            onChange={handleTabChange}
+            items={visibleItems}
+          />
           <Divider style={{ marginTop: "0" }} />
-          <CustomTable
-            actionColumnName={
-              <Button
-                type="link"
-                onClick={handleAddRow}
-                icon={<PlusCircleOutlined style={{ fontSize: "1.5rem" }} />}
-              />
-            }
-            onDelete={handleDeleteRow}
-            columns={columns1}
-            dataSource={dataSource1}
+
+          <Table
+            dataSource={receiptInsAmtData}
+            columns={receiptInscolumns}
+            size="small"
+            bordered
+            pagination={false}
           />
           <Row justify={"end"} gutter={16}>
             <Col>
               <Form.Item>
-                <Button htmlType="submit" type="primary">
+                <Button  htmlType="submit" type="primary">
                   Save
                 </Button>
               </Form.Item>
@@ -454,8 +852,10 @@ function CreateReceipt() {
       </div>
       <AddAllocationModal
         open={addAllocationModalOpen}
+        options={options}
         handleClose={() => setAddAllocationModalOpen(false)}
         onSubmit={handleAddAllocationModalSubmit}
+        receiptAmount={receiptAmount}
       />
     </Layout>
   );
