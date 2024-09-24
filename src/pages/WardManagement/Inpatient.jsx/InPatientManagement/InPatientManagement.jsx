@@ -303,29 +303,69 @@ function InPatientManagement() {
               display: "flex",
             }}
           >
-            <Row>
-              <Col span={3} style={{ backgroundColor: '#C5EBAA' }}>
-                Available
-              </Col>
-              <Col span={3} style={{ backgroundColor: '#FFBABA' }}>
-                Occupied
-              </Col>
-              <Col span={3} style={{ backgroundColor: '#FF8356' }}>
-                Blocked
-              </Col>
-              <Col span={3} style={{ backgroundColor: '#F0A8D0' }}>
-                Transfer Requested
-              </Col>
-              <Col span={3} style={{ backgroundColor: '#D1E9F6' }}>
-                Request Confirmed
-              </Col>
-              <Col span={3} style={{ backgroundColor: '#7C93C3' }}>
-                Discharge Initiated
-              </Col>
-              <Col span={3} style={{ backgroundColor: '#C8A1E0' }}>
-                Movement
-              </Col>
-            </Row>
+            <Col
+              style={{
+                backgroundColor: "#C5EBAA",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Available
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#FFBABA",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Occupied
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#FF8356",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Blocked
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#F0A8D0",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Transfer Requested
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#D1E9F6",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Request Confirmed
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#CADABF",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Discharge Initiated
+            </Col>
+            <Col
+              style={{
+                backgroundColor: "#C8A1E0",
+                flexGrow: 1,
+                padding: "0.2rem",
+              }}
+            >
+              Movement
+            </Col>
           </Row>
         </div>
         {view === "" || view === "Tabular" ? (
