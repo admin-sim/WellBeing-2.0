@@ -51,7 +51,7 @@ function CancelBill() {
     },
   ];
 
-  const dataSource = [{ key: 1 }];
+  const dataSource = [{ key: uuidv4() }];
 
   const rowSelection = {
     selectedRowKeys,

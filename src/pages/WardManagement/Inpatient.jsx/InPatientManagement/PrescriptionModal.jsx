@@ -12,53 +12,63 @@ import {
   Tabs,
   AutoComplete,
   message,
-  Popconfirm
+  Popconfirm,
 } from "antd";
 import React, { useState } from "react";
 import { DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
-import { urlSearchExistingPrescription, urlGetAllDrugs, urlGetProductDetails, urlAddNewNewRequest, urlUpdateIndent, urlAddNewPatientIndent, urlGetPrescriptionByPrescriptionHedderId, urlUpdateRequest } from "../../../../../endpoints.js";
+import {
+  urlSearchExistingPrescription,
+  urlGetAllDrugs,
+  urlGetProductDetails,
+  urlAddNewNewRequest,
+  urlUpdateIndent,
+  urlAddNewPatientIndent,
+  urlGetPrescriptionByPrescriptionHedderId,
+  urlUpdateRequest,
+} from "../../../../../endpoints.js";
 import PatientHeader from "../../../../components/PatientHeader";
 import CustomTable from "../../../../components/customTable";
 import dayjs from "dayjs";
 import { validate } from "uuid";
 import { render } from "react-dom";
+import { v4 as uuidv4 } from "uuid";
 
 function Prescription({ bed, patient, Dropdown, open, handleClose }) {
   const [form1] = Form.useForm();
   const [form2] = Form.useForm();
   const [form3] = Form.useForm();
   const [defaultActiveKey, setDefaultActiveKey] = useState("1");
-  const [buttonTitle, setButtonTitle] = useState('Save')
-  const [tabName, setTabName] = useState('New')
+  const [buttonTitle, setButtonTitle] = useState("Save");
+  const [tabName, setTabName] = useState("New");
 
   const initial = [
     {
-      key: 0,
+      key: uuidv4(),
       Drug: "",
       Route: "",
       Frequency: "",
       IntervalInDays: "",
       TotalQty: "",
       Instruction: "",
-      ActiveFlag: true
-    }
-  ]
+      ActiveFlag: true,
+    },
+  ];
 
   const [tableData1, setTableData1] = useState(initial);
   const [tableData2, setTableData2] = useState([]);
-  const [productOptions, setProductOptions] = useState([])
+  const [productOptions, setProductOptions] = useState([]);
 
   const handleCancel = () => {
     form1.resetFields();
     form2.resetFields();
     form3.resetFields();
-    setTableData1(initial)
-    setTableData2[[]]
-    setProductOptions([])
-    setDefaultActiveKey("1")
-    setButtonTitle('Save')
-    setTabName('New')
+    setTableData1(initial);
+    setTableData2[[]];
+    setProductOptions([]);
+    setDefaultActiveKey("1");
+    setButtonTitle("Save");
+    setTabName("New");
     handleClose();
   };
 
@@ -70,14 +80,14 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     setTableData1([
       ...tableData1,
       {
-        key: tableData1.length + 1,
+        key: uuidv4(),
         Drug: "",
         Route: "",
         Frequency: "",
         IntervalInDays: "",
         TotalQty: "",
         Instruction: "",
-        ActiveFlag: true
+        ActiveFlag: true,
       },
     ]);
   };
@@ -94,24 +104,31 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
   };
 
   const handleSearch = async (searchText) => {
-    debugger
+    debugger;
     if (searchText) {
-      const response = await customAxios.get(`${urlGetAllDrugs}?Type=${searchText}`);
+      const response = await customAxios.get(
+        `${urlGetAllDrugs}?Type=${searchText}`
+      );
       const apiData = response.data.data;
       const newdata = apiData.map((item) => {
-        return { label: item.ProductName + " (Stock)" + item.CurrentStock, value: item.ProductName, id: item.ProductId };
+        return {
+          label: item.ProductName + " (Stock)" + item.CurrentStock,
+          value: item.ProductName,
+          id: item.ProductId,
+        };
       });
-      setProductOptions(newdata)
+      setProductOptions(newdata);
     }
   };
 
   const handleReset = () => {
-    form2.resetFields()
-  }
+    form2.resetFields();
+  };
 
   const handleInputChange = async (value, record, option) => {
-    debugger
-    const response = await customAxios.get(`${urlGetProductDetails}?ProductId=${option.id}`);
+    const response = await customAxios.get(
+      `${urlGetProductDetails}?ProductId=${option.id}`
+    );
     const apiData = response.data.data;
     if (response.status === 200 && apiData != null) {
       form3.setFieldsValue({
@@ -129,23 +146,32 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
         },
       });
     }
-  }
+  };
 
   const getInstruction = (value) => {
-    debugger
+    debugger;
     switch (value) {
-      case 5: return { text: 'Afternoon', round: 1 }
-      case 4: return { text: 'Night', round: 1 }
-      case 3: return { text: 'Morning, Afternoon and Night', round: 3 }
-      case 2: return { text: 'Morning', round: 1 }
-      default: return { text: 'Morning and Night', round: 2 }
+      case 5:
+        return { text: "Afternoon", round: 1 };
+      case 4:
+        return { text: "Night", round: 1 };
+      case 3:
+        return { text: "Morning, Afternoon and Night", round: 3 };
+      case 2:
+        return { text: "Morning", round: 1 };
+      default:
+        return { text: "Morning and Night", round: 2 };
     }
-  }
+  };
 
   const SelectFrequency = (value, option, record) => {
-    debugger
-    const total = 0
-    const interval = form3.getFieldValue(["tableData", record.key, "IntervalInDays"])
+    debugger;
+    const total = 0;
+    const interval = form3.getFieldValue([
+      "tableData",
+      record.key,
+      "IntervalInDays",
+    ]);
     if (value) {
       form3.setFieldsValue({
         tableData: {
@@ -161,7 +187,7 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
               TotalQty: getInstruction(value).round * parseInt(interval),
             },
           },
-        })
+        });
       } else {
         form3.setFieldsValue({
           tableData: {
@@ -169,13 +195,13 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
               TotalQty: total,
             },
           },
-        })
+        });
       }
     } else {
       form3.setFieldsValue({
         tableData: {
           [record.key]: {
-            Instruction: '',
+            Instruction: "",
           },
         },
       });
@@ -185,12 +211,12 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
             TotalQty: 1,
           },
         },
-      })
+      });
     }
-  }
+  };
 
   const Interval = (value, record) => {
-    debugger
+    debugger;
     const form3data = form3.getFieldsValue();
     const specific = form3data.tableData?.[record.key];
     form3.setFieldsValue({
@@ -199,14 +225,14 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
           TotalQty: getInstruction(specific.Frequency).round * parseInt(value),
         },
       },
-    })
-  }
-
+    });
+  };
+  console.log("form3", form3.getFieldsValue().tableData);
   const columns = [
     {
       title: "Drug",
       dataIndex: "Drug",
-      key: "Drug",
+
       render: (text, record) => (
         <>
           <Form.Item
@@ -221,7 +247,8 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
               handleInputChange(e.target.value, record.key, "Drug")
             }
           /> */}
-            <AutoComplete disabled={!!record.PrescriptionLineId}
+            <AutoComplete
+              disabled={!!record.PrescriptionLineId}
               options={productOptions}
               onSearch={handleSearch}
               onSelect={(value, option) =>
@@ -229,17 +256,41 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
               }
             />
           </Form.Item>
-          <Form.Item hidden name={["tableData", record.key, "ProductId"]} initialValue={record.ProductId}><Input /></Form.Item >
-          <Form.Item hidden name={["tableData", record.key, "UomId"]} initialValue={record.UomId}><Input /></Form.Item>
-          <Form.Item hidden name={["tableData", record.key, "PrescriptionLineId"]} initialValue={record.PrescriptionLineId}><Input /></Form.Item >
-          <Form.Item hidden name={["tableData", record.key, "IndentLineId"]} initialValue={record.IndentLineId}><Input /></Form.Item >
+          <Form.Item
+            hidden
+            name={["tableData", record.key, "ProductId"]}
+            initialValue={record.ProductId}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            hidden
+            name={["tableData", record.key, "UomId"]}
+            initialValue={record.UomId}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            hidden
+            name={["tableData", record.key, "PrescriptionLineId"]}
+            initialValue={record.PrescriptionLineId}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            hidden
+            name={["tableData", record.key, "IndentLineId"]}
+            initialValue={record.IndentLineId}
+          >
+            <Input />
+          </Form.Item>
         </>
       ),
     },
     {
       title: "Route",
       dataIndex: "Route",
-      key: "Route",
+
       render: (text, record) => (
         <Form.Item
           name={["tableData", record.key, "Route"]}
@@ -260,7 +311,7 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     {
       title: "Frequency",
       dataIndex: "Frequency",
-      key: "Frequency",
+
       render: (text, record) => (
         <Form.Item
           name={["tableData", record.key, "Frequency"]}
@@ -268,9 +319,16 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
           rules={[{ required: true, message: "Please input frequency!" }]}
           initialValue={record.FrequencyId}
         >
-          <Select style={{ width: "100%" }} onChange={(value, option) => SelectFrequency(value, option, record)} allowClear>
+          <Select
+            style={{ width: "100%" }}
+            onChange={(value, option) => SelectFrequency(value, option, record)}
+            allowClear
+          >
             {(Dropdown.Frequency || []).map((option) => (
-              <Select.Option key={option.FrequencyId} value={option.FrequencyId}>
+              <Select.Option
+                key={option.FrequencyId}
+                value={option.FrequencyId}
+              >
                 {option.FrequencyName}
               </Select.Option>
             ))}
@@ -281,30 +339,33 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     {
       title: "IntervalInDays",
       dataIndex: "IntervalInDays",
-      key: "IntervalInDays",
+
       render: (text, record) => (
         <Form.Item
           name={["tableData", record.key, "IntervalInDays"]}
           style={{ marginBottom: 0 }}
           initialValue={record.Interval}
-        // rules={[
-        //   { required: true, message: "Please input interval in days!" },
-        // ]}
+          // rules={[
+          //   { required: true, message: "Please input interval in days!" },
+          // ]}
         >
-          <Input value={text} onChange={(e) => Interval(e.target.value, record)} />
+          <Input
+            value={text}
+            onChange={(e) => Interval(e.target.value, record)}
+          />
         </Form.Item>
       ),
     },
     {
       title: "TotalQty",
       dataIndex: "TotalQty",
-      key: "TotalQty",
+
       render: (text, record) => (
         <Form.Item
           name={["tableData", record.key, "TotalQty"]}
           style={{ marginBottom: 0 }}
           initialValue={record.TotalQty}
-        // rules={[{ required: true, message: "Please input total quantity!" }]}
+          // rules={[{ required: true, message: "Please input total quantity!" }]}
         >
           <Input
             value={text}
@@ -318,19 +379,19 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     {
       title: "Instruction",
       dataIndex: "Instruction",
-      key: "Instruction",
+
       render: (text, record) => (
         <Form.Item
           name={["tableData", record.key, "Instruction"]}
           style={{ marginBottom: 0 }}
           initialValue={record.Instruction}
-        // rules={[{ required: true, message: "Please input instruction!" }]}
+          // rules={[{ required: true, message: "Please input instruction!" }]}
         >
           <Input
             value={text}
-          // onChange={(e) =>
-          //   handleInputChange(e.target.value, record.key, "Instruction")
-          // }
+            // onChange={(e) =>
+            //   handleInputChange(e.target.value, record.key, "Instruction")
+            // }
           />
         </Form.Item>
       ),
@@ -341,14 +402,15 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
           <PlusCircleOutlined />
         </Button>
       ),
-      key: "action",
+
       // render: (_, record) => (
       //   <Button type="link" danger onClick={() => handleDeleteRow(record.key)}>
       //     <DeleteOutlined />
       //   </Button>
       // ),
       render: (_, record) => (
-        <Popconfirm danger
+        <Popconfirm
+          danger
           title="Sure to delete?"
           onConfirm={() => handleDeleteRow(record)}
         >
@@ -359,19 +421,21 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
   ];
 
   const EditTab = () => {
-    debugger
-    setDefaultActiveKey("1")
-    setButtonTitle('Update')
-    setTabName('Edit')
-  }
+    debugger;
+    setDefaultActiveKey("1");
+    setButtonTitle("Update");
+    setTabName("Edit");
+  };
 
   const EditPrescription = async (record) => {
-    debugger
+    debugger;
     const input = {
-      EncounterId: form1.getFieldValue('EncounterId'),
-      PatientId: form1.getFieldValue('PatientId'),
-    }
-    const response = await customAxios.get(`${urlGetPrescriptionByPrescriptionHedderId}?EncounterId=${input.EncounterId}&PatientId=${input.PatientId}&PriscptionHedderId=${record.PriscptionHedderId}`);
+      EncounterId: form1.getFieldValue("EncounterId"),
+      PatientId: form1.getFieldValue("PatientId"),
+    };
+    const response = await customAxios.get(
+      `${urlGetPrescriptionByPrescriptionHedderId}?EncounterId=${input.EncounterId}&PatientId=${input.PatientId}&PriscptionHedderId=${record.PriscptionHedderId}`
+    );
     const apiData = response.data.data;
     if (response.status === 200 && apiData !== null) {
       const newData = apiData.PrescriptionModel.map((item, index) => {
@@ -384,69 +448,64 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
         });
         return {
           ...item,
-          key: index,
+          key: uuidv4(),
           Route: parseInt(item.Route),
           index: index + 1,
-        }
-      })
-      setTableData1(newData)
-      EditTab()
+        };
+      });
+      setTableData1(newData);
+      EditTab();
     }
-  }
+  };
 
   const columns2 = [
     {
       title: "Sl. No.",
       dataIndex: "key",
-      key: "key",
     },
     {
       title: "Order Id",
       dataIndex: "PrescriptionId",
-      key: "key",
+
       render: (text, record, index) => {
-        if (record.IndentStatus === 'Pending') {
-          return <Button type="link" onClick={() => EditPrescription(record)}>{record.PrescriptionId}</Button>
+        if (record.IndentStatus === "Pending") {
+          return (
+            <Button type="link" onClick={() => EditPrescription(record)}>
+              {record.PrescriptionId}
+            </Button>
+          );
+        } else {
+          return record.PrescriptionId;
         }
-        else {
-          return record.PrescriptionId
-        }
-      }
+      },
     },
     {
       title: "Indent Number",
       dataIndex: "IndentNumber",
-      key: "key",
     },
     {
       title: "Indent Status",
       dataIndex: "IndentStatus",
-      key: "key",
     },
     {
       title: "Order Date",
       dataIndex: "PresDate",
-      key: "key",
     },
     {
       title: "Encounter",
       dataIndex: "Encounter",
-      key: "key",
     },
     {
       title: "Patient Type",
       dataIndex: "PatientType",
-      key: "key",
     },
     {
       title: "Department",
       dataIndex: "DeptName",
-      key: "key",
     },
     {
       title: "Ordering Physician",
       dataIndex: "ProviderName",
-      key: "key",
     },
   ];
 
@@ -467,7 +526,8 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
         onCancel={handleCancel}
       >
         <PatientHeader patient={patient} />
-        <Tabs defaultActiveKey={defaultActiveKey}
+        <Tabs
+          defaultActiveKey={defaultActiveKey}
           size="small"
           onChange={onChange}
           tabBarGutter={0}
@@ -494,12 +554,14 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
               form={form1}
               // onFinish={handlePreFinish}
               onFinish={async (values) => {
-                debugger
-                const Drugss = []
-                await form3.validateFields()
+                debugger;
+                const Drugss = [];
+                await form3.validateFields();
                 const obj = {
                   IssueingStoreId: values.Store,
-                  IndentDatestring: values.IndentDate ? values.IndentDate.format('DD-MM-YYYY') : '',
+                  IndentDatestring: values.IndentDate
+                    ? values.IndentDate.format("DD-MM-YYYY")
+                    : "",
                   // Remarks: $("#Remarks").val(),
                   FacilityId: 1,
                   IndentTemplateId: 0,
@@ -507,9 +569,9 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                   PatientId: values.PatientId,
                   EncounterId: values.EncounterId,
                   IndentCategory: "PatientIndent",
-                  IndentStatus: "Pending"
-                }
-                const form2data = form3.getFieldsValue().tableData
+                  IndentStatus: "Pending",
+                };
+                const form2data = form3.getFieldsValue().tableData;
                 for (let i = 0; i < form2data.length; i++) {
                   const Drug = {
                     DrugId: form2data[i].ProductId,
@@ -523,47 +585,66 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                     PatientId: values.PatientId,
                     Stock: form2data[i].Stock,
                     TotalQty: form2data[i].TotalQty,
-                    FoodRelation: form2data[i].FoodRelation ? form2data[i].FoodRelation : 0,
+                    FoodRelation: form2data[i].FoodRelation
+                      ? form2data[i].FoodRelation
+                      : 0,
                     ProductId: form2data[i].ProductId,
                     RequestQty: form2data[i].TotalQty,
-                    PrescriptionLineId: form2data[i].PrescriptionLineId
-                  }
-                  Drugss.push(Drug)
+                    PrescriptionLineId: form2data[i].PrescriptionLineId,
+                  };
+                  Drugss.push(Drug);
                 }
                 const IndentViewModel = {
                   newIndentModel: obj,
-                  IndentDetails: Drugss
+                  IndentDetails: Drugss,
+                };
+                const urlIndent = !!form2data[0]?.PrescriptionLineId
+                  ? urlUpdateIndent
+                  : urlAddNewPatientIndent;
+                const urlPres = !!form2data[0]?.PrescriptionLineId
+                  ? urlUpdateRequest
+                  : urlAddNewNewRequest;
+                const response = await customAxios.post(
+                  urlIndent,
+                  IndentViewModel,
+                  {
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                  }
+                );
+                console.log("prescription ", response.data);
+
+                if (response.status === 200 && response.data.data != null) {
+                  const Prescription = Drugss.map((item) => {
+                    return {
+                      ...item,
+                      IndentId: response.data.data.IndentId,
+                      IndentNumber: response.data.data.IndentNumber,
+                      Stock: item.Stock ? item.Stock : 0,
+                    };
+                  });
+                  const response1 = await customAxios.post(
+                    urlPres,
+                    Prescription,
+                    {
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                    }
+                  );
+                  if (
+                    response1.status === 200 &&
+                    response1.data === "Success"
+                  ) {
+                    message.success("Success");
+                    form3.resetFields();
+                    // handleCancel()
+                  }
                 }
-                const urlIndent = !!form2data[0].PrescriptionLineId ? urlUpdateIndent : urlAddNewPatientIndent
-                const urlPres = !!form2data[0].PrescriptionLineId ? urlUpdateRequest : urlAddNewNewRequest
-                // const response = await customAxios.post(urlIndent, IndentViewModel, {
-                //   headers: {
-                //     "Content-Type": "application/json",
-                //   },
-                // });
-                // if (response.status === 200 && response.data.data != null) {
-                //   const Prescription = Drugss.map((item) => {
-                //     return {
-                //       ...item,
-                //       IndentId: response.data.data.IndentId,
-                //       IndentNumber: response.data.data.IndentNumber,
-                //       Stock: item.Stock ? item.Stock : 0
-                //     }
-                //   })
-                //   const response1 = await customAxios.post(urlPres, Prescription, {
-                //     headers: {
-                //       "Content-Type": "application/json",
-                //     },
-                //   });
-                //   if (response1.status === 200 && response1.data === 'Success') {
-                //     message.success('Success')
-                //     form3.resetFields()
-                //     // handleCancel()
-                //   }
-                // }
               }}
               initialValues={{
-                IndentDate: dayjs()
+                IndentDate: dayjs(),
               }}
             >
               <Row gutter={16}>
@@ -578,12 +659,20 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                       },
                     ]}
                   >
-                    <DatePicker style={{ width: "100%" }} format='DD-MM-YYYY' />
+                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
                   </Form.Item>
-                  <Form.Item name="EncounterId" hidden initialValue={(Dropdown.LastEncounter || {}).EncounterId}>
+                  <Form.Item
+                    name="EncounterId"
+                    hidden
+                    initialValue={(Dropdown.LastEncounter || {}).EncounterId}
+                  >
                     <Input />
                   </Form.Item>
-                  <Form.Item name="PatientId" hidden initialValue={Dropdown.PatientId}>
+                  <Form.Item
+                    name="PatientId"
+                    hidden
+                    initialValue={Dropdown.PatientId}
+                  >
                     <Input />
                   </Form.Item>
                   <Form.Item name="IndentId" hidden>
@@ -602,9 +691,15 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                     ]}
                     initialValue={Dropdown.StoreId}
                   >
-                    <Select style={{ width: "100%" }} disabled={Dropdown.StoreId === 0 ? false : true}>
+                    <Select
+                      style={{ width: "100%" }}
+                      disabled={Dropdown.StoreId === 0 ? false : true}
+                    >
                       {(Dropdown.StoreModel || []).map((option) => (
-                        <Select.Option key={option.StoreId} value={option.StoreId}>
+                        <Select.Option
+                          key={option.StoreId}
+                          value={option.StoreId}
+                        >
                           {option.LongName}
                         </Select.Option>
                       ))}
@@ -634,7 +729,9 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                 <Col span={24} style={{ marginTop: "1rem" }}>
                   <Table
                     columns={columns}
-                    dataSource={tableData1.filter((item) => item.ActiveFlag !== false)}
+                    dataSource={tableData1.filter(
+                      (item) => item.ActiveFlag !== false
+                    )}
                     pagination={false}
                     bordered
                     scroll={{
@@ -664,25 +761,32 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
               form={form2}
               // onFinish={handlePreFinish}
               onFinish={async (values) => {
-                debugger
+                debugger;
                 const Pre = {
-                  FromDateString: values.FromDate ? values.FromDate.format('DD-MM-YYYY') : '',
-                  ToDateString: values.ToDate ? values.ToDate.format('DD-MM-YYYY') : '',
+                  FromDateString: values.FromDate
+                    ? values.FromDate.format("DD-MM-YYYY")
+                    : "",
+                  ToDateString: values.ToDate
+                    ? values.ToDate.format("DD-MM-YYYY")
+                    : "",
                   Provider: 0,
                   Patientid: values.PatientId,
-                }
+                };
                 try {
                   const response = await customAxios.get(
                     `${urlSearchExistingPrescription}?Provider=${Pre.Provider}&Patientid=${Pre.Patientid}&FromDateString=${Pre.FromDateString}&ToDateString=${Pre.ToDateString}`
                   );
                   if (response.status === 200 && response.data.data !== null) {
-                    const newdata = response.data.data.ExistingPrescriptionModel.map((item, index) => {
-                      return {
-                        ...item,
-                        key: index + 1
-                      }
-                    })
-                    setTableData2(newdata)
+                    const newdata =
+                      response.data.data.ExistingPrescriptionModel.map(
+                        (item, index) => {
+                          return {
+                            ...item,
+                            key: uuidv4(),
+                          };
+                        }
+                      );
+                    setTableData2(newdata);
                     // setRecordExpectedDischargeModalOpen(false)
                   } else {
                     console.error("Failed to fetch Record EDD");
@@ -693,8 +797,8 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                 // handleCancel();
               }}
               initialValues={{
-                FromDate: dayjs().subtract(1, 'day'),
-                ToDate: dayjs()
+                FromDate: dayjs().subtract(1, "day"),
+                ToDate: dayjs(),
               }}
             >
               <Row gutter={16}>
@@ -709,7 +813,7 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                       },
                     ]}
                   >
-                    <DatePicker style={{ width: "100%" }} format='DD-MM-YYYY' />
+                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
                   </Form.Item>
                 </Col>
                 <Col span={6}>
@@ -723,12 +827,16 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                       },
                     ]}
                   >
-                    <DatePicker style={{ width: "100%" }} format='DD-MM-YYYY' />
+                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
                   </Form.Item>
                   <Form.Item name="Provider" hidden>
                     <Input />
                   </Form.Item>
-                  <Form.Item name="PatientId" hidden initialValue={Dropdown.PatientId}>
+                  <Form.Item
+                    name="PatientId"
+                    hidden
+                    initialValue={Dropdown.PatientId}
+                  >
                     <Input />
                   </Form.Item>
                 </Col>
@@ -772,7 +880,7 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
           </Tabs.TabPane>
         </Tabs>
       </Modal>
-    </div >
+    </div>
   );
 }
 
