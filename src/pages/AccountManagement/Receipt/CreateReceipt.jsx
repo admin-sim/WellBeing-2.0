@@ -101,14 +101,16 @@ function CreateReceipt() {
         });
         setBanks(response.data.Bank);
         setPaymentTypes(response.data.PaymentType);
-        // Assign a unique key using uuidv4 for each item in ReceiptAllocations
-        const updatedReceiptAllocations = response.data.ReceiptAllocations.map(
-          (item) => ({
+
+      
+          const assosiateBills = response.data?.ReceiptAllocations?.map((item) => ({
             ...item,
             key: uuidv4(),
-          })
-        );
-        setAssosiateBills(updatedReceiptAllocations);
+          }));
+          setAssosiateBills(assosiateBills);
+        
+  
+        
         setOptions(response.data);
       } else {
       }
@@ -294,6 +296,9 @@ function CreateReceipt() {
         <Form.Item
           name={["InstrumentAmount", record.key - 1]}
           style={{ width: "100%" }}
+          rules={[
+            { required: true, message: "Required" },
+          ]}
           //  initialValue={record.InstrumentAmount}
         >
           <InputNumber
@@ -485,6 +490,15 @@ function CreateReceipt() {
       ReceivedFrom: values.ReceivedFrom,
     };
 
+    // Perform conditional validation based on isDepositChecked
+  if (isDepositChecked && updatedAllocations?.length === 0) {
+    message.warning("Please Fill Allocation Details when isDepositChecked is Checked.");
+    return; // Exit early if validation fails
+  } else if (!isDepositChecked && updatedBillsWithTotal?.length === 0) {
+    message.warning("Please Pay  Assosiate bills To Proceed.");
+    return; // Exit early if validation fails
+  }
+
     const ReceiptDetails = {
       NewReceipt: Receipt, // This maps to 'NewReceipt' in the backend
       ReceiptAllocations:  isDepositChecked ? updatedAllocations : [], // Maps to 'ReceiptAllocations'
@@ -492,17 +506,21 @@ function CreateReceipt() {
       PatientAccountBills: isDepositChecked ? updatedBillsWithTotal :[] , // Maps to 'Receipts'
     };
 
+
+
     const response = await customAxios.post(urlSaveNewReceipt, ReceiptDetails, {
       headers: {
         "Content-Type": "application/json",
       },
     });
     if (response.status === 200) {
-      const assosiateBills = response.data.bills.map((item) => ({
-        ...item,
-        key: uuidv4(),
-      }));
-      setAssosiateBills(assosiateBills);
+     
+        const assosiateBills = response.data?.bills?.map((item) => ({
+          ...item,
+          key: uuidv4(),
+        }));
+        setAssosiateBills(assosiateBills);
+      
       form.resetFields();
       setAllocations([]);
       setActiveTab("1");
@@ -534,42 +552,42 @@ function CreateReceipt() {
     {
       title: "Indicator",
       dataIndex: "IndicatorDescriptionName",
-      key: uuidv4(),
+
     },
     {
       title: "Description",
       dataIndex: "SelectedDescriptionName",
-      key: uuidv4(),
+  
     },
     {
       title: "Patient Type",
       dataIndex: "PatientTypeDescription",
-      key: uuidv4(),
+
     },
     {
       title: "Encounter Id",
       dataIndex: "Encounter",
-      key: uuidv4(),
+
     },
     {
       title: "Percentage",
       dataIndex: "AllocationPercentage",
-      key: uuidv4(),
+
     },
     {
       title: "Amount",
       dataIndex: "AllocationAmount",
-      key: uuidv4(),
+ 
     },
     {
       title: "Utilized",
       dataIndex: "Utilized",
-      key: uuidv4(),
+
     },
     {
       title: "Balance",
       dataIndex: "Balance",
-      key: uuidv4(),
+
     },
   ];
 
@@ -577,17 +595,17 @@ function CreateReceipt() {
     {
       title: "Bill Number",
       dataIndex: "BillNumber",
-      key: uuidv4(),
+
     },
     {
       title: "Bill Date",
       dataIndex: "BillDatestring",
-      key: uuidv4(),
+
     },
     {
       title: "Document Type",
       dataIndex: "IsPharmacyBill",
-      key: uuidv4(),
+
       render: (text) => (
         <span
           style={{
@@ -604,21 +622,21 @@ function CreateReceipt() {
     {
       title: "Encounter Id",
       dataIndex: "EncounterId",
-      key: uuidv4(),
+
     },
     {
       title: "Bill Amount",
       dataIndex: "BillAmount",
-      key: uuidv4(),
+
     },
     {
       title: "OutStanding Amount",
       dataIndex: "OutStandingAmount",
-      key: uuidv4(),
+
     },
     {
       title: "Receipt Amount",
-      key: uuidv4(),
+
       render: (text, record) => (
         <Form.Item name={`ReceiptAmt_${record.key}`}>
           <Input

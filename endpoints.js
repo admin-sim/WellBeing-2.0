@@ -385,4 +385,15 @@ export const urlUpdateAssignedPlan = `${baseURL}/api/AssignedPlan/UpdateAssigned
 export const urlReceiptCreate = `${baseURL}/api/Receipt/Create`;
 export const urlShowOutStandingAmount = `${baseURL}/api/Receipt/ShowOutStandingAmount`;
 export const urlSaveNewReceipt = `${baseURL}/api/Receipt/SaveNewReceipt`;
+export const urlCancelBillIndex = `${baseURL}/api/Billing/CancelBillIndex`;
+export const urlGetPatientBills = `${baseURL}/api/Billing/GetPatientBills`;
+export const urlSaveBillCancelAction = `${baseURL}/api/Billing/SaveBillCancelAction`;
+export const urlSaveReceiptCancelAction = `${baseURL}/api/Receipt/SaveReceiptCancelAction`;
+export const urlSaveDepositCancelAction = `${baseURL}/api/Receipt/SaveDepositCancelAction`;
+export const urlSaveRefundCancelAction = `${baseURL}/api/Refund/SaveRefundCancelAction`;
+export const urlRefundAction = `${baseURL}/api/Refund/Create`;
+export const urlCreateReFund = `${baseURL}/api/Refund/CreateReFund`;
+export const urlUpdateReFundDetails = `${baseURL}/api/Refund/UpdateReFundDetails`;
+export const urlShowAllPendingBills = `${baseURL}/api/Receipt/ShowAllPendingBills`;
+
 
