@@ -74,16 +74,14 @@ function CreateAdditionalCharge() {
                     );
                     if (response.status === 200 && response.data.data != null) {
                         const editedCharge = response.data.data.AddNewAdditionalCharges;
-                        setFromDate(dayjs(editedCharge.EffectiveFromDate, 'DD-MM-YYYY'))
-                        setToDate(dayjs(editedCharge.EffectiveToDate, 'DD-MM-YYYY'))
                         setDropdown(response.data.data)
                         handleAdditionalChargeType(editedCharge.AdditionalChargeType)
                         form.setFieldsValue({
                             Facility: editedCharge.FacilityId,
                             ShortName: editedCharge.ShortName,
                             LongName: editedCharge.LongName,
-                            // EffectiveFrom: parseDate(EffectiveFrom),
-                            // EffectiveTo: editedCharge.EffectiveTo.format('DD-MM-YYYY'),
+                            EffectiveFrom: dayjs(editedCharge.EffectiveFromDate, 'DD-MM-YYYY'),
+                            EffectiveTo: dayjs(editedCharge.EffectiveToDate, 'DD-MM-YYYY'),
                             AdditionalChargeType: editedCharge.AdditionalChargeType,
                             TaxType: editedCharge.TaxType,
                             CoveredByPayer: editedCharge.CoveredByPayer,
@@ -164,31 +162,31 @@ function CreateAdditionalCharge() {
         //     key: "Status",
         //     render: (text, record) => (record.Status ? "Active" : "Hidden"),
         // },
-        {
-            title: '',
-            dataIndex: 'actions',
-            key: 'actions',
-            render: (_, record, index) => (
-                <span style={{ display: 'flex' }}>
-                    {/* <Tooltip title="Edit">
-                        <EditOutlined style={{ fontSize: '0.8rem', cursor: 'pointer', marginRight: '10px' }} onClick={() => handleEdit(record.AdditionalChargeId)} />
-                    </Tooltip> */}
-                    {/* <Tooltip title="Delete">
-                        <DeleteOutlined style={{ fontSize: '0.8rem', cursor: 'pointer' }} onClick={() => handleDeleteRule(record.AdditionalChargeRuleId)} />
-                    </Tooltip> */}
-                    <Popconfirm
-                        title="Are you sure you want to delete this record?"
-                        onConfirm={() => handleDeleteRule(record.AdditionalChargeRuleId)}
-                    >
-                        <Button
-                            size="small"
-                            danger
-                            icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
-                        ></Button>
-                    </Popconfirm>
-                </span>
-            ),
-        },
+        // {
+        //     title: '',
+        //     dataIndex: 'actions',
+        //     key: 'actions',
+        //     render: (_, record, index) => (
+        //         <span style={{ display: 'flex' }}>
+        //             {/* <Tooltip title="Edit">
+        //                 <EditOutlined style={{ fontSize: '0.8rem', cursor: 'pointer', marginRight: '10px' }} onClick={() => handleEdit(record.AdditionalChargeId)} />
+        //             </Tooltip> */}
+        //             {/* <Tooltip title="Delete">
+        //                 <DeleteOutlined style={{ fontSize: '0.8rem', cursor: 'pointer' }} onClick={() => handleDeleteRule(record.AdditionalChargeRuleId)} />
+        //             </Tooltip> */}
+        //             <Popconfirm
+        //                 title="Are you sure you want to delete this record?"
+        //                 onConfirm={() => handleDeleteRule(record.AdditionalChargeRuleId)}
+        //             >
+        //                 <Button
+        //                     size="small"
+        //                     danger
+        //                     icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
+        //                 ></Button>
+        //             </Popconfirm>
+        //         </span>
+        //     ),
+        // },
     ];
 
     const columns2 = [
@@ -222,31 +220,31 @@ function CreateAdditionalCharge() {
             dataIndex: "DependOnServiceName",
             key: "DependOnServiceName",
         },
-        {
-            title: '',
-            dataIndex: 'actions',
-            key: 'actions',
-            render: (_, record, index) => (
-                <span style={{ display: 'flex' }}>
-                    {/* <Tooltip title="Edit">
-                        <EditOutlined style={{ fontSize: '0.8rem', cursor: 'pointer', marginRight: '10px' }} onClick={() => handleEdit(record.AdditionalChargeId)} />
-                    </Tooltip> */}
-                    {/* <Tooltip title="Delete">
-                        <DeleteOutlined style={{ fontSize: '0.8rem', cursor: 'pointer' }} onClick={() => handleDeleteSurgery(record.SurgeryRuleId)} />
-                    </Tooltip> */}
-                    <Popconfirm
-                        title="Are you sure you want to delete this record?"
-                        onConfirm={() => handleDeleteSurgery(record.SurgeryRuleId)}
-                    >
-                        <Button
-                            size="small"
-                            danger
-                            icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
-                        ></Button>
-                    </Popconfirm>
-                </span>
-            ),
-        },
+        // {
+        //     title: '',
+        //     dataIndex: 'actions',
+        //     key: 'actions',
+        //     render: (_, record, index) => (
+        //         <span style={{ display: 'flex' }}>
+        //             {/* <Tooltip title="Edit">
+        //                 <EditOutlined style={{ fontSize: '0.8rem', cursor: 'pointer', marginRight: '10px' }} onClick={() => handleEdit(record.AdditionalChargeId)} />
+        //             </Tooltip> */}
+        //             {/* <Tooltip title="Delete">
+        //                 <DeleteOutlined style={{ fontSize: '0.8rem', cursor: 'pointer' }} onClick={() => handleDeleteSurgery(record.SurgeryRuleId)} />
+        //             </Tooltip> */}
+        //             <Popconfirm
+        //                 title="Are you sure you want to delete this record?"
+        //                 onConfirm={() => handleDeleteSurgery(record.SurgeryRuleId)}
+        //             >
+        //                 <Button
+        //                     size="small"
+        //                     danger
+        //                     icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
+        //                 ></Button>
+        //             </Popconfirm>
+        //         </span>
+        //     ),
+        // },
     ];
 
     const columns3 = [
@@ -270,41 +268,41 @@ function CreateAdditionalCharge() {
             dataIndex: "EffectiveToDate1",
             key: "EffectiveToDate1",
         },
-        {
-            title: '',
-            dataIndex: 'actions',
-            key: 'actions',
-            render: (_, record, index) => (
-                <span style={{ display: 'flex' }}>
-                    {/* <Tooltip title="Edit">
-                        <EditOutlined style={{ fontSize: '0.8rem', cursor: 'pointer', marginRight: '10px' }} onClick={() => handleEdit(record.AdditionalChargeId)} />
-                    </Tooltip> */}
-                    {/* <Tooltip title="Delete">
-                        <DeleteOutlined style={{ fontSize: '0.8rem', cursor: 'pointer' }} onClick={() => handleDeleteAssociation(record.AssociationId)} />
-                    </Tooltip> */}
-                    <Popconfirm
-                        title="Are you sure you want to delete this record?"
-                        onConfirm={() => handleDeleteAssociation(record.AssociationId)}
-                    >
-                        <Button
-                            size="small"
-                            danger
-                            icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
-                        ></Button>
-                    </Popconfirm>
-                </span>
-            ),
-        },
+        // {
+        //     title: '',
+        //     dataIndex: 'actions',
+        //     key: 'actions',
+        //     render: (_, record, index) => (
+        //         <span style={{ display: 'flex' }}>
+        //             {/* <Tooltip title="Edit">
+        //                 <EditOutlined style={{ fontSize: '0.8rem', cursor: 'pointer', marginRight: '10px' }} onClick={() => handleEdit(record.AdditionalChargeId)} />
+        //             </Tooltip> */}
+        //             {/* <Tooltip title="Delete">
+        //                 <DeleteOutlined style={{ fontSize: '0.8rem', cursor: 'pointer' }} onClick={() => handleDeleteAssociation(record.AssociationId)} />
+        //             </Tooltip> */}
+        //             <Popconfirm
+        //                 title="Are you sure you want to delete this record?"
+        //                 onConfirm={() => handleDeleteAssociation(record.AssociationId)}
+        //             >
+        //                 <Button
+        //                     size="small"
+        //                     danger
+        //                     icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
+        //                 ></Button>
+        //             </Popconfirm>
+        //         </span>
+        //     ),
+        // },
     ];
 
     const handleEdit = (record) => {
         debugger;
         navigate("/CreateAutoCharge", { state: { AdditionalChargeId: record.AdditionalChargeId } });
     };
-    const handleDeleteRule = async (AdditionalChargeRuleId) => {
+    const handleDeleteRule = async (record) => {
         debugger;
         const response = await customAxios.get(
-            `${urlDeleteSelectedAdditionalChargeRule}?AdditionalChargeRuleId=${AdditionalChargeRuleId}&AdditionalChargeId=${form.getFieldValue('AdditionalChargeId')}`
+            `${urlDeleteSelectedAdditionalChargeRule}?AdditionalChargeRuleId=${record.AdditionalChargeRuleId}&AdditionalChargeId=${form.getFieldValue('AdditionalChargeId')}`
         );
         if (response.status === 200) {
             setDropdown((prevDropdown) => {
@@ -317,10 +315,10 @@ function CreateAdditionalCharge() {
         }
     };
 
-    const handleDeleteAssociation = async (Id) => {
+    const handleDeleteAssociation = async (record) => {
         debugger;
         const response = await customAxios.get(
-            `${urlDeleteSelectedAssociation}?AssociationId=${Id}&AdditionalChargeId=${form.getFieldValue('AdditionalChargeId')}`
+            `${urlDeleteSelectedAssociation}?AssociationId=${record.AssociationId}&AdditionalChargeId=${form.getFieldValue('AdditionalChargeId')}`
         );
         if (response.status === 200) {
             setDropdown((prevDropdown) => {
@@ -333,10 +331,10 @@ function CreateAdditionalCharge() {
         }
     }
 
-    const handleDeleteSurgery = async (Id) => {
+    const handleDeleteSurgery = async (record) => {
         debugger;
         const response = await customAxios.get(
-            `${urlDeleteSelectedSurgeryRule}?SurgeryRuleId=${Id}&AdditionalChargeId=${form.getFieldValue('AdditionalChargeId')}`
+            `${urlDeleteSelectedSurgeryRule}?SurgeryRuleId=${record.SurgeryRuleId}&AdditionalChargeId=${form.getFieldValue('AdditionalChargeId')}`
         );
         if (response.status === 200) {
             setDropdown((prevDropdown) => {
@@ -754,6 +752,7 @@ function CreateAdditionalCharge() {
                                         columns={columns1}
                                         dataSource={dropdown.AdditionalChargesRule}
                                         isFilter={true}
+                                        onDelete={handleDeleteRule}
                                     />
                                 </Form>
                             </Card>
@@ -910,6 +909,7 @@ function CreateAdditionalCharge() {
                                         columns={columns2}
                                         dataSource={dropdown.AdditionalChargesSurgery}
                                         isFilter={true}
+                                        onDelete={handleDeleteSurgery}
                                     />
                                 </Form>
                             </Card>
@@ -1028,6 +1028,7 @@ function CreateAdditionalCharge() {
                                         columns={columns3}
                                         dataSource={dropdown.AdditionalChargesAssociation}
                                         isFilter={true}
+                                        onDelete={handleDeleteAssociation}
                                     />
                                 </Form>
                             </Card>

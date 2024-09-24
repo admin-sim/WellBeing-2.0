@@ -6,6 +6,7 @@ import {
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import {
   Spin,
   Skeleton,
@@ -214,7 +215,7 @@ const UrgentIssue = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -243,7 +244,13 @@ const UrgentIssue = () => {
               Add Urgent Issue
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Urgent Issue"}
+          buttonLabel="Add Urgent Issue"
+          buttonIcon={<PlusCircleOutlined />}
+          onButtonClick={() => handleAddTemplate(0)}
+        />
         <Card>
           <Form
             form={form}

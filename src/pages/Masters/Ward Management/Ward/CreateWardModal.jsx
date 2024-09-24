@@ -7,16 +7,26 @@ function CreateWardModal({ open, handleClose, Dropdown, handleSubmit, record }) 
 
   useEffect(() => {
     if (record) {
-      form.setFieldsValue(record);
+      form.setFieldsValue(record)
+      // form.setFieldsValue({
+      //   WardID: record.WardID,
+      //   WardCode: record.WardCode,
+      //   WardName: record.WardName,
+      //   ServiceLocation: record.ServiceLocationID,
+      //   Gender: record.GenderID,
+      //   WardCategory: record.WardCategoryID,
+      //   Status: record.ActiveFlag
+      // });
     } else {
       form.resetFields();
     }
-  }, [record, form]);
+  }, [record]);
 
   const handleCancel = () => {
     form.resetFields();
     handleClose();
   };
+
   return (
     <div>
       <Modal
@@ -39,6 +49,11 @@ function CreateWardModal({ open, handleClose, Dropdown, handleSubmit, record }) 
                 name="WardCode"
                 label="Ward Code"
                 rules={[{ required: true, message: "Please enter Ward Code " }]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="WardID" hidden
               >
                 <Input />
               </Form.Item>
@@ -138,7 +153,7 @@ function CreateWardModal({ open, handleClose, Dropdown, handleSubmit, record }) 
           </Row>
         </Form>
       </Modal>
-    </div>
+    </div >
   );
 }
 

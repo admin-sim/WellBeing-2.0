@@ -6,6 +6,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import Layout from "antd/es/layout/layout";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import {
   Spin,
   Skeleton,
@@ -130,7 +131,7 @@ const Indent = () => {
       key: "IndentDatestring",
       sorter: (a, b) => new Date(a.IndentDatestring) - new Date(b.IndentDatestring),
       sortDirections: ["descend", "ascend"],
-    
+
     },
     {
       title: "Issue Store",
@@ -152,7 +153,7 @@ const Indent = () => {
       key: "PatientName",
       sorter: (a, b) => a.PatientName.localeCompare(b.PatientName),
       sortDirections: ["descend", "ascend"],
-     
+
     },
     {
       title: "Status",
@@ -177,11 +178,11 @@ const Indent = () => {
     setLoading(true);
     try {
       const postData1 = {
-        IndentNumber : values.IndentNumber ?  values.IndentNumber : "",
-        IndentType : values.IndentType  ?  values.IndentType  : "",
-        RequestingStoreId : values.RequestingStore ? values.RequestingStore : "",
-        IssuingStoreId :values.IssuingStore ?   values.IssuingStore : "",
-        IndentStatus: values.IndentStatus  ?  values.IndentStatus : "",
+        IndentNumber: values.IndentNumber ? values.IndentNumber : "",
+        IndentType: values.IndentType ? values.IndentType : "",
+        RequestingStoreId: values.RequestingStore ? values.RequestingStore : "",
+        IssuingStoreId: values.IssuingStore ? values.IssuingStore : "",
+        IndentStatus: values.IndentStatus ? values.IndentStatus : "",
         FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : "",
         ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
       };
@@ -225,7 +226,7 @@ const Indent = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -254,7 +255,13 @@ const Indent = () => {
               Add Indent
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Indent"}
+          buttonLabel="Add Indent"
+          buttonIcon={<PlusCircleOutlined />}
+          onButtonClick={() => GetIndentById(0)}
+        />
         <Card>
           <Form
             form={form}
@@ -313,7 +320,7 @@ const Indent = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="ToDate" label="To Date">
-                <DatePicker
+                  <DatePicker
                     value={toDate}
                     onChange={(date) => setToDate(date)}
                     disabledDate={disableToDate}

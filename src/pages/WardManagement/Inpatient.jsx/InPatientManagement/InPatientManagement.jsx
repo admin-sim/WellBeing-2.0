@@ -108,6 +108,10 @@ function InPatientManagement() {
     </Row>
   );
 
+  const ReLoad = (value) => {
+    handleMenuClick(value)
+  }
+
   const renderAwaitingPatients = () => (
     <div>
       {beds.map((bed) => (
@@ -299,72 +303,31 @@ function InPatientManagement() {
               display: "flex",
             }}
           >
-            <Col
-              style={{
-                backgroundColor: "#C5EBAA",
-                flexGrow: 1,
-                padding: "0.2rem",
-              }}
-            >
-              Available
-            </Col>
-            <Col
-              style={{
-                backgroundColor: "#FFBABA",
-                flexGrow: 1,
-                padding: "0.2rem",
-              }}
-            >
-              Occupied
-            </Col>
-            <Col
-              style={{
-                backgroundColor: "#FF8356",
-                flexGrow: 1,
-                padding: "0.2rem",
-              }}
-            >
-              Blocked
-            </Col>
-            <Col
-              style={{
-                backgroundColor: "#F0A8D0",
-                flexGrow: 1,
-                padding: "0.2rem",
-              }}
-            >
-              Transfer Requested
-            </Col>
-            <Col
-              style={{
-                backgroundColor: "#D1E9F6",
-                flexGrow: 1,
-                padding: "0.2rem",
-              }}
-            >
-              Request Confirmed
-            </Col>
-            <Col
-              style={{
-                backgroundColor: "#CADABF",
-                flexGrow: 1,
-                padding: "0.2rem",
-              }}
-            >
-              Discharge Initiated
-            </Col>
-            <Col
-              style={{
-                backgroundColor: "#C8A1E0",
-                flexGrow: 1,
-                padding: "0.2rem",
-              }}
-            >
-              Movement
-            </Col>
-          </Row>
-        </div>
-        {/*Color Coding div end*/}
+            <Row>
+              <Col span={3} style={{ backgroundColor: '#C5EBAA' }}>
+                Available
+              </Col>
+              <Col span={3} style={{ backgroundColor: '#FFBABA' }}>
+                Occupied
+              </Col>
+              <Col span={3} style={{ backgroundColor: '#FF8356' }}>
+                Blocked
+              </Col>
+              <Col span={3} style={{ backgroundColor: '#F0A8D0' }}>
+                Transfer Requested
+              </Col>
+              <Col span={3} style={{ backgroundColor: '#D1E9F6' }}>
+                Request Confirmed
+              </Col>
+              <Col span={3} style={{ backgroundColor: '#7C93C3' }}>
+                Discharge Initiated
+              </Col>
+              <Col span={3} style={{ backgroundColor: '#C8A1E0' }}>
+                Movement
+              </Col>
+            </Row>
+          </div>
+        </Row>
         {view === "" || view === "Tabular" ? (
           <Spin spinning={tableLoading}>
             <CustomTable
@@ -389,7 +352,7 @@ function InPatientManagement() {
                         <Col xs={24}>
                           <Row gutter={[32, 32]} justify="start">
                             {groupedBeds[wardName].map((bed) => (
-                              <WardBed key={bed.BedID} bed={bed} />
+                              <WardBed key={bed.BedID} bed={bed} ReLoad={ReLoad} />
                             ))}
                           </Row>
                         </Col>

@@ -5,26 +5,49 @@ import { useNavigate } from "react-router-dom";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import CreateWardModal from "../Ward/CreateWardModal.jsx";
 import customAxios from '../../../../components/customAxios/customAxios.jsx'
-import { urlBedIndex } from "../../../../../endpoints.js";
+import { urlBedIndex, urlDeleteSelectedBed } from "../../../../../endpoints.js";
+import { message } from "antd";
 
 function Bed() {
   const [currentRecord, setCurrentRecord] = useState(null);
   const [tableData, setTableData] = useState();
+  const [loading, setLoading] = useState()
 
   const navigate = useNavigate();
 
   useEffect(() => {
+    debugger
+    setLoading(true)
     try {
       customAxios.get(urlBedIndex, {}).then((response) => {
         const apiData = response.data.data;
         if (response.status === 200 && apiData != null) {
-          const newdata = apiData.BedModel.map((item, index) => {
-            return {
-              ...item,
-              key: index + 1
+          const groupedData = [];
+          // ServiceLocationID
+          apiData.BedModel.forEach((item) => {
+            const existingWard = groupedData.find(
+              (ward) => ward.WardID === item.WardID
+            );
+
+            if (existingWard) {
+              existingWard.BedNo.push(item.BedNo);
+            } else {
+              groupedData.push({
+                ...item,
+                BedNo: [item.BedNo],
+                ServiceLocationID: item.ServiceLocationID,
+                ServiceLocation: item.ServiceLocation
+              });
             }
-          })
-          setTableData(newdata);
+          });
+
+          const newData = groupedData.map((ward, index) => ({
+            ...ward,
+            key: index + 1,
+            BedNo: ward.BedNo.join(', '),
+          }));
+          setTableData(newData);
+          setLoading(false)
         }
       });
     } catch (error) {
@@ -55,29 +78,6 @@ function Bed() {
     },
   ];
 
-  // const tableData = [
-  //   {
-  //     SlNo: 1,
-  //     ServiceLocation: "First Floor",
-  //     Ward: "Emergency Ward Ground Floor",
-  //     Bed: "EWGF1 ,EWGF2 ,EWGF3 ,EWGF4 ,EWGF5",
-  //   },
-
-  //   {
-  //     SlNo: 2,
-  //     ServiceLocation: "First Floor",
-  //     Ward: "Female Ward First Floor",
-  //     Bed: "FWFF1 ,FWFF2 ,FWFF3 ,FWFF4",
-  //   },
-
-  //   {
-  //     SlNo: 3,
-  //     ServiceLocation: "First Floor",
-  //     Ward: "Male Ward First Floor",
-  //     Bed: "MWFF1 ,MWFF2 ,MWFF3 ,MWFF4 ,MWFF5 ,MWFF6 ,MWFF7",
-  //   },
-  // ];
-
   const handleEdit = (record) => {
     setCurrentRecord(record);
     navigate("EditBed", { state: record });
@@ -89,7 +89,17 @@ function Bed() {
   };
 
   const handleDelete = (record) => {
-    console.log(record);
+    debugger
+    try {
+      customAxios.get(`${urlDeleteSelectedBed}?WardId=${record.WardID}`).then((response) => {
+        const apiData = response.data.data;
+        if (response.status === 200) {
+          message.success(`Deleted ${response.data}`)
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching details:", error);
+    }
   };
 
   return (
@@ -109,6 +119,7 @@ function Bed() {
           onButtonClick={handleAddNewBed}
         />
         <CustomTable
+          loading={loading}
           isFilter={true}
           columns={columns}
           dataSource={tableData}

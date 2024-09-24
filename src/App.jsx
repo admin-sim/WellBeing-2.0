@@ -18,6 +18,7 @@ import NewVisit from "./pages/Patient/NewVisit";
 import PatientEdit from "./pages/Patient/EditPatientReg";
 import LabDashboard from "./pages/Laboratory/LabDashboard";
 import SampleCollection from "./pages/Laboratory/LabDashboard/SampleCollection";
+import ClinicalChartFlow from "./pages/ClinicalDocuments/ClinicalChart/ClinicalChartFlow.jsx";
 import ClinicalChart from "./pages/ClinicalDocuments/ClinicalChart/index.jsx";
 import PurchaseOrder from "./pages/Inventory/PurchaseOrder";
 import Lookup from "./pages/Masters/GeneralMasters/Lookup";
@@ -235,6 +236,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PatientVitalSigns />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ClinicalChartFlow"
+              element={
+                <ProtectedRoute>
+                  <ClinicalChartFlow />
                 </ProtectedRoute>
               }
             />

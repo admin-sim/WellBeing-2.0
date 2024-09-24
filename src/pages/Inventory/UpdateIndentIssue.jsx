@@ -1,6 +1,7 @@
 import customAxios from "../../components/customAxios/customAxios.jsx";
 import React, { useEffect, useState, useCallback } from "react";
 import Button from "antd/es/button";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import {
   urlCreatePurchaseOrder,
   urlShowBatchDetails,
@@ -176,7 +177,7 @@ const UpdateIndentIssue = () => {
 
     // Filter dataModel based on ProductId and ActiveFlag
     const filteredDataModel = dataModel.filter(
-      (item) => item.ProductId === record.ProductId 
+      (item) => item.ProductId === record.ProductId
       //&& item.ActiveFlag === true
       //&&
       //item.IssueBatchId > 0
@@ -301,21 +302,22 @@ const UpdateIndentIssue = () => {
       const updatedDataModel = dataModel.map((item) =>
         item.key === recordKey
           ? {
-              ...item,
-              BatchNo: selectedBatch.BatchNo,
-              StockId: selectedBatch.StockId,
-              IssueBatchId: selectedBatch.IssueBatchId,
-              IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
-              IssueRate: selectedBatch.MRP,
-              //LineAmount:item.LineAmount,
-              BalanceQty: selectedBatch.BalanceQty,
-              EXPDate: selectedBatch.EXPDate
-                ? dayjs(selectedBatch.EXPDate)
-                : null,
-              MRP: selectedBatch.MRP,
-              // qty:item.qty,
-              amount: selectedBatch.amount,
-            }
+            ...item,
+            BatchNo: selectedBatch.BatchNo,
+            StockId: selectedBatch.StockId,
+            IssueBatchId: selectedBatch.IssueBatchId,
+            IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
+            IssueRate: selectedBatch.MRP,
+            //LineAmount:item.LineAmount,
+            BalanceQty: selectedBatch.BalanceQty,
+            EXPDate: selectedBatch.EXPDate
+              ? dayjs(selectedBatch.EXPDate)
+              : null,
+            EXPDateString: selectedBatch.EXPDateString,
+            MRP: selectedBatch.MRP,
+            // qty:item.qty,
+            amount: selectedBatch.amount,
+          }
           : item
       );
       // setDataModel(updatedDataModel);
@@ -414,7 +416,7 @@ const UpdateIndentIssue = () => {
           IssueQty: values[i].IssueQty,
           IndentLineId: values[i].IndentLineId,
           IndentIssueLineId:
-            values[i].IndentIssueLineId 
+            values[i].IndentIssueLineId
               ? values[i].IndentIssueLineId
               : 0,
           StockId: values[i].StockId,
@@ -426,7 +428,7 @@ const UpdateIndentIssue = () => {
         products.push(product);
       }
     }
-    const filteredProducts = products.filter(product => 
+    const filteredProducts = products.filter(product =>
       !(product.IssueQty === 0 && product.PendingQty === 0)
     );
 
@@ -515,7 +517,7 @@ const UpdateIndentIssue = () => {
     });
 
     form2.resetFields();
-     setDataModel(newData);
+    setDataModel(newData);
     setIsModalOpen(false);
   };
   const checkActiveBatches = (products, batches) => {
@@ -749,12 +751,12 @@ const UpdateIndentIssue = () => {
       prevDataModel.map((item) =>
         item.key === key
           ? {
-              ...item,
-              amount: amount.toFixed(4),
-              qty: qty,
-              IssueQty: qty,
-              LineAmount: amount,
-            }
+            ...item,
+            amount: amount.toFixed(4),
+            qty: qty,
+            IssueQty: qty,
+            LineAmount: amount,
+          }
           : item
       )
     );
@@ -870,7 +872,9 @@ const UpdateIndentIssue = () => {
       width: 100,
       key: "Uom",
       render: (text, record) => (
-        <Form.Item name={[record.key, "Uom"]}>{record.Uom}</Form.Item>
+        <Form.Item name={[record.key, "Uom"]}>
+          <Tag color="#7C00FE">{record.Uom}</Tag>
+        </Form.Item>
       ),
     },
     {
@@ -879,24 +883,52 @@ const UpdateIndentIssue = () => {
       key: "EXPDate",
       width: 150,
       render: (text, record) => (
-        <Form.Item name={[record.key, "EXPDate"]}>
-          {batchRecord.Expiry === "Not applicable" ? (
-            <span>Is Not Applicable</span>
-          ) : (
-            <DatePicker
-              format={
-                batchRecord.Expiry === "Month wise"
-                  ? "MMMM YYYY"
-                  : batchRecord.Expiry === "Date wise"
-                  ? "DD-MM-YYYY"
-                  : null
-              }
-              defaultValue={dayjs(record.EXPDate)}
-              disabled
-              style={{ width: "100%" }}
-            />
-          )}
-        </Form.Item>
+        <Form.Item name={[record.key, "EXPDate"]}
+          rules={[
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                if (batchRecord.Expiry === "Not applicable") {
+                  return Promise.resolve();
+                }
+                if (!record.EXPDateString) {
+                  return Promise.reject(new Error("Please select a date"));
+                }
+
+                const selectedDate = dayjs(record.EXPDateString, 'MMMM YYYY');
+                const currentDate = dayjs();
+
+                if (
+                  selectedDate.year() < currentDate.year() ||
+                  (selectedDate.year() === currentDate.year() && selectedDate.month() < currentDate.month())
+                ) {
+                  return Promise.reject(
+                    new Error("Date is Expired"));
+                } else {
+                  return Promise.resolve();
+                }
+              },
+            }),
+          ]}
+        >
+          {
+            batchRecord.Expiry === "Not applicable" ? (
+              <span>Is Not Applicable</span>
+            ) : (
+              <DatePicker
+                format={
+                  batchRecord.Expiry === "Month wise"
+                    ? "MMMM YYYY"
+                    : batchRecord.Expiry === "Date wise"
+                      ? "DD-MM-YYYY"
+                      : null
+                }
+                defaultValue={dayjs(record.EXPDate)}
+                disabled
+                style={{ width: "100%" }}
+              />
+            )
+          }
+        </Form.Item >
       ),
     },
     {
@@ -989,7 +1021,7 @@ const UpdateIndentIssue = () => {
               borderRadius: "10px",
             }}
           >
-            <Row
+            {/* <Row
               style={{
                 padding: "0.5rem 2rem 0.5rem 2rem",
                 backgroundColor: "#40A2E3",
@@ -1018,7 +1050,13 @@ const UpdateIndentIssue = () => {
                   Back
                 </Button>
               </Col>
-            </Row>
+            </Row> */}
+            <PageHeader
+              title={"Indent Issue"}
+              buttonLabel="Back"
+              buttonIcon={<LeftOutlined />}
+              onButtonClick={handleToIndent}
+            />
             <Form
               layout="vertical"
               onFinish={handleOnFinish}
@@ -1234,11 +1272,11 @@ const UpdateIndentIssue = () => {
                       dataSource={
                         batchRecord?.ProductId
                           ? dataModel.filter(
-                              (item) =>
-                                (item.ProductId == batchRecord.ProductId &&
-                                  item.ActiveFlag) ||
-                                (item.ProductId == "" && item.ActiveFlag)
-                            )
+                            (item) =>
+                              (item.ProductId == batchRecord.ProductId &&
+                                item.ActiveFlag) ||
+                              (item.ProductId == "" && item.ActiveFlag)
+                          )
                           : []
                       }
                       size="small"

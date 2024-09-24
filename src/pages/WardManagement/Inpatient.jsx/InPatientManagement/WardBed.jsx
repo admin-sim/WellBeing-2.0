@@ -26,10 +26,11 @@ import OrderEntry from "./OrderEntryModal";
 import AmendDischargeInitiationModal from "./AmendDischargeInitiationModal.jsx";
 import CancelDischargeInitiationModal from "./CancelDischargeInitiationModal.jsx";
 import PatientVitalModal from "./PatientVitalModal";
-import DrNoteModal from "./DrNoteModal";
-import ArrivalModal from "./ArrivalModal";
-import DrugChartModal from "./DrugChartModal";
-import FluidChartModal from "./FluidChartModal";
+import DrNoteModal from './DrNoteModal'
+import NrNoteModal from './NrNoteModal'
+import ArrivalModal from './ArrivalModal'
+import DrugChartModal from './DrugChartModal'
+import FluidChartModal from './FluidChartModal'
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import {
   urlGetPatientHeaderDetails,
@@ -44,7 +45,7 @@ import {
 } from "../../../../../endpoints.js";
 import { values } from "lodash";
 
-function WardBed({ bed }) {
+function WardBed({ bed, ReLoad }) {
   const [blockBedModalOpen, setBlockBedModalOpen] = useState(false);
   const [dischargeBedModalOpen, setDischargeBedModalOpen] = useState(false);
   const [amendDischargeBedModalOpen, setAmendDischargeBedModalOpen] =
@@ -64,10 +65,11 @@ function WardBed({ bed }) {
   const [prescriptionModalOpen, setPrescriptionModalOpen] = useState(false);
   const [orderEntryModalOpen, setOrderEntryModalOpen] = useState(false);
   const [drNoteModalOpen, setDrNoteModalOpen] = useState(false);
-  const [arrivalModalOpen, setArrivalModalOpen] = useState(false);
-  const [patientVitalModalOpen, setPatientVitalModalOpen] = useState();
-  const [patientData, setPatientData] = useState();
-  const [locaton, setLocation] = useState(0);
+  const [nrNoteModalOpen, setNrNoteModalOpen] = useState(false);
+  const [arrivalModalOpen, setArrivalModalOpen] = useState(false)
+  const [patientVitalModalOpen, setPatientVitalModalOpen] = useState()
+  const [patientData, setPatientData] = useState()
+  const [locaton, setLocation] = useState(0)
   const [dropDown, setDropDown] = useState({
     FacilityDepartment: [],
     FacilityDeptServiceLocation: [],
@@ -80,6 +82,36 @@ function WardBed({ bed }) {
     FacilityDepartmentProvider: [],
     MovementDetails: {},
   });
+
+  useEffect(() => {
+    const fetchDataHeader = async () => {
+      try {
+        const response = await customAxios.get(
+          `${urlGetPatientHeaderDetails}?PatientId=${PatientId}&EncounterId=${EncounterId}`
+        );
+        if (response.status === 200 && response.data != null) {
+          const detailsheader = response.data.data.EncounterModel;
+          setPatientData(detailsheader);
+        } else {
+        }
+      } catch (error) { }
+    };
+    fetchDataHeader();
+  }, []);
+
+
+  const Close = () => {
+    setDirectTransferModalOpen(false)
+    setBlockBedModalOpen(false)
+    setDischargeInitiationModalOpen(false)
+    setRecordExpectedDischargeModalOpen(false)
+    setMovementModalOpen(false)
+    setArrivalModalOpen(false)
+    setDischargeBedModalOpen(false)
+    setCancelDischargeBedModalOpen(false)
+    setAmendDischargeBedModalOpen(false)
+    ReLoad(bed.ServiceLocationId)
+  }
 
   const [dropDown1, setDropDown1] = useState({
     StoreModel: [],
@@ -209,13 +241,7 @@ function WardBed({ bed }) {
         }&FromDate=${null}&ToDate=${null}&flag=${1}`
       );
       if (response.status === 200 && response.data.data != null) {
-        if (
-          record.key !== "14" &&
-          record.key !== "20" &&
-          record.key !== "18" &&
-          record.key !== "15" &&
-          record.key !== "17"
-        ) {
+        if (record.key !== '14' && record.key !== '20' && record.key !== '18' && record.key !== '19' && record.key !== '15' && record.key !== '17') {
           setDropDown(response.data.data);
         } else {
           setDropDown1(response.data.data);
@@ -238,20 +264,22 @@ function WardBed({ bed }) {
       setPatientVitalModalOpen(true);
     } else if (record.key == "20") {
       setPrescriptionModalOpen(true);
-    } else if (record.key == "10") {
-      setDischargeBedModalOpen(true);
-    } else if (record.key == "11") {
-      setCancelDischargeBedModalOpen(true);
-    } else if (record.key == "12") {
-      setAmendDischargeBedModalOpen(true);
-    } else if (record.key == "18") {
-      setDrNoteModalOpen(true);
-    } else if (record.key == "9") {
-      setArrivalModalOpen(true);
-    } else if (record.key === "15") {
-      setDrugChartModalOpen(true);
-    } else if (record.key === "17") {
-      setFluidChartModalOpen(true);
+    } else if (record.key == '10') {
+      setDischargeBedModalOpen(true)
+    } else if (record.key == '11') {
+      setCancelDischargeBedModalOpen(true)
+    } else if (record.key == '12') {
+      setAmendDischargeBedModalOpen(true)
+    } else if (record.key == '18') {
+      setDrNoteModalOpen(true)
+    } else if (record.key == '9') {
+      setArrivalModalOpen(true)
+    } else if (record.key === '15') {
+      setDrugChartModalOpen(true)
+    } else if (record.key === '17') {
+      setFluidChartModalOpen(true)
+    } else if (record.key == '19') {
+      setNrNoteModalOpen(true)
     }
   };
 
@@ -342,7 +370,7 @@ function WardBed({ bed }) {
     },
     {
       label: "Nurse Notes",
-      key: "18",
+      key: "19",
       onClick: (record) => {
         OpenModel(record);
       },
@@ -437,6 +465,7 @@ function WardBed({ bed }) {
   };
 
   const getStatusInfo = (status) => {
+    debugger
     switch (status) {
       case "Vacant":
         return {
@@ -467,12 +496,7 @@ function WardBed({ bed }) {
           menu: vacantBedMenu,
         };
       default:
-        return {
-          text: "Discharge Init",
-          color: "#86AB89",
-          backgroundColor: "#CADABF",
-          menu: DischargeBedMenu,
-        };
+        return { text: "Discharge Init", color: "#55679C", backgroundColor: '#7C93C3', menu: DischargeBedMenu };
     }
   };
 
@@ -666,7 +690,8 @@ function WardBed({ bed }) {
         bed={bed}
         Dropdown={dropDown1}
         open={blockBedModalOpen}
-        handleClose={() => setBlockBedModalOpen(false)}
+        // handleClose={() => setBlockBedModalOpen(false)}
+        handleClose={Close}
       />
       <DirectTransferModal
         bed={bed}
@@ -674,14 +699,16 @@ function WardBed({ bed }) {
         handleDropdown={handleDropdown}
         patient={patientData}
         open={directTransferModalOpen}
-        handleClose={() => setDirectTransferModalOpen(false)}
+        // handleClose={() => setDirectTransferModalOpen(false)}
+        handleClose={Close}
       />
       <DischargeInitiationModal
         bed={bed}
         Dropdown={dropDown}
         patient={patientData}
         open={dischargeInitiationModalOpen}
-        handleClose={() => setDischargeInitiationModalOpen(false)}
+        // handleClose={() => setDischargeInitiationModalOpen(false)}
+        handleClose={Close}
       />
       <RecordExpectedDischarge
         bed={bed}
@@ -689,7 +716,8 @@ function WardBed({ bed }) {
         patient={patientData}
         handleFinish={handleFinish}
         open={recordExpectedDischargeModalOpen}
-        handleClose={() => setRecordExpectedDischargeModalOpen(false)}
+        // handleClose={() => setRecordExpectedDischargeModalOpen(false)}
+        handleClose={Close}
       />
       <Movement
         bed={bed}
@@ -698,7 +726,8 @@ function WardBed({ bed }) {
         handleDropdown={handleDropdown}
         handleSubmit={handleSubmit}
         open={movementModalOpen}
-        handleClose={() => setMovementModalOpen(false)}
+        // handleClose={() => setMovementModalOpen(false)}
+        handleClose={Close}
       />
       <ArrivalModal
         bed={bed}
@@ -706,7 +735,8 @@ function WardBed({ bed }) {
         patient={patientData}
         handleSubmit={handleSubmit}
         open={arrivalModalOpen}
-        handleClose={() => setArrivalModalOpen(false)}
+        // handleClose={() => setArrivalModalOpen(false)}
+        handleClose={Close}
       />
       <Prescription
         bed={bed}
@@ -734,28 +764,38 @@ function WardBed({ bed }) {
         Dropdown={dropDown}
         patient={patientData}
         open={dischargeBedModalOpen}
-        handleClose={() => setDischargeBedModalOpen(false)}
+        // handleClose={() => setDischargeBedModalOpen(false)}
+        handleClose={Close}
       />
       <CancelDischargeInitiationModal
         bed={bed}
         Dropdown={dropDown}
         patient={patientData}
         open={cancelDischargeBedModalOpen}
-        handleClose={() => setCancelDischargeBedModalOpen(false)}
+        // handleClose={() => setCancelDischargeBedModalOpen(false)}
+        handleClose={Close}
       />
       <AmendDischargeInitiationModal
         bed={bed}
         Dropdown={dropDown}
         patient={patientData}
         open={amendDischargeBedModalOpen}
-        handleClose={() => setAmendDischargeBedModalOpen(false)}
+        // handleClose={() => setAmendDischargeBedModalOpen(false)}
+        handleClose={Close}
       />
       <DrNoteModal
         bed={bed}
-        Dropdown={dropDown}
+        Dropdown={dropDown1}
         patient={patientData}
         open={drNoteModalOpen}
         handleClose={() => setDrNoteModalOpen(false)}
+      />
+      <NrNoteModal
+        bed={bed}
+        Dropdown={dropDown1}
+        patient={patientData}
+        open={nrNoteModalOpen}
+        handleClose={() => setNrNoteModalOpen(false)}
       />
       <DrugChartModal
         bed={bed}

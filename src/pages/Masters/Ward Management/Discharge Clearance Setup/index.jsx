@@ -1,18 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PageHeader from "../../../../components/PageHeader/index.jsx";
 import CustomTable from "../../../../components/customTable/index.jsx";
 import { useNavigate } from "react-router-dom";
 import { PlusCircleOutlined } from "@ant-design/icons";
+import customAxios from '../../../../components/customAxios/customAxios.jsx'
+import { urlDischargeClearanceSetupIndex, urlPostDeleteDischargeClearanceSetup } from "../../../../../endpoints.js";
+import { message } from "antd";
+import { render } from "react-dom";
 
 function DischargeClearance() {
   const [currentRecord, setCurrentRecord] = useState(null);
+  const [tableData, setTableData] = useState();
+  const [loading, setLoading] = useState()
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setLoading(true)
+    try {
+      customAxios.get(urlDischargeClearanceSetupIndex, {}).then((response) => {
+        const apiData = response.data.data;
+        if (response.status === 200 && apiData != null) {
+          const newData = apiData.DischargeClearanceSetupDetails.map((item, index) => {
+            return {
+              ...item,
+              key: index + 1,
+            }
+          })
+          setTableData(newData)
+          setLoading(false)
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching purchase order details:", error);
+    }
+  }, [refreshKey])
 
   const columns = [
     {
       title: "Sl No",
-      dataIndex: "SlNo",
+      dataIndex: "key",
       key: "1",
       width: 80,
     },
@@ -48,40 +76,13 @@ function DischargeClearance() {
     },
     {
       title: "Status",
-      dataIndex: "Status",
+      dataIndex: "ActiveFlag",
       key: "7",
       width: 80,
-    },
-  ];
-
-  const tableData = [
-    {
-      SlNo: 1,
-      ShortName: "BL",
-      LongName: "Billing",
-      PatientType: "Day Care",
-      ClearanceType: "Billing",
-      ClearanceSequence: "1",
-      Status: "Active",
-    },
-    {
-      SlNo: 2,
-      ShortName: "NUR",
-      LongName: "	Nursing Clearence",
-      PatientType: "InPatient",
-      ClearanceType: "Nursing",
-      ClearanceSequence: "2",
-      Status: "Active",
-    },
-    {
-      SlNo: 3,
-      ShortName: "NC",
-      LongName: "Nursing Clearence",
-      PatientType: "Emergency",
-      ClearanceType: "Nursing",
-      ClearanceSequence: "2",
-      Status: "Active",
-    },
+      render: (text, record) => {
+        return text === true ? 'Active' : 'Hidden'
+      },
+    }
   ];
 
   const handleEdit = (record) => {
@@ -95,7 +96,18 @@ function DischargeClearance() {
   };
 
   const handleDelete = (record) => {
-    console.log(record);
+    debugger
+    try {
+      customAxios.get(`${urlPostDeleteDischargeClearanceSetup}?DischargeClearanceSetupId=${record.DischargeClearanceSetupId}`).then((response) => {
+        const apiData = response.data.data;
+        if (response.status === 200 && apiData != null) {
+          message.success('Deleted')
+          setRefreshKey((prevKey) => prevKey + 1);
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching purchase order details:", error);
+    }
   };
 
   return (
@@ -115,6 +127,7 @@ function DischargeClearance() {
           onButtonClick={handleAddNewBed}
         />
         <CustomTable
+          loading={loading}
           isFilter={true}
           columns={columns}
           dataSource={tableData}

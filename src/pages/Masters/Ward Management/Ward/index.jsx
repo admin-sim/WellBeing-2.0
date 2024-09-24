@@ -4,13 +4,14 @@ import CustomTable from "../../../../components/customTable/index.jsx";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import CreateWardModal from "./CreateWardModal.jsx";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
-import { urlWardIndex, urlCreateWard, urlSaveNewWard } from "../../../../../endpoints.js";
+import { urlWardIndex, urlCreateWard, urlSaveNewWard, urlUpdateWard, urlEditWard, urlDeleteWardParameter } from "../../../../../endpoints.js";
 import { message } from "antd";
 
 function Ward() {
   const [createWardModal, setCreateWardModal] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
   const [tableData, setTableData] = useState()
+  const [loading, setLoading] = useState()
   const [dropDown, setDropDown] = useState({
     Gender: [],
     WardCategory: [],
@@ -18,6 +19,7 @@ function Ward() {
   });
 
   useEffect(() => {
+    setLoading(true)
     try {
       customAxios.get(urlWardIndex, {}).then((response) => {
         const apiData = response.data.data;
@@ -25,16 +27,18 @@ function Ward() {
           const newdata = apiData.WardModel.map((item, index) => {
             return {
               ...item,
-              key: index + 1
+              key: index + 1,
+              Status: item.ActiveFlag === true ? 'Active' : 'Hidden'
             }
           })
           setTableData(newdata);
+          setLoading(false)
         }
-      });      
+      });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
-    }    
-  }, [])
+    }
+  }, [createWardModal])
 
   const columns = [
     {
@@ -72,12 +76,27 @@ function Ward() {
       dataIndex: "Status",
       key: "Status",
     },
-  ];  
+  ];
 
-  const handleEdit = (record) => {
+  const handleEdit = async (record) => {
     debugger
-    setCurrentRecord(record);
-    setCreateWardModal(true);
+    try {
+      const response = await customAxios.get(`${urlEditWard}?Id=${record.WardID}`);
+      if (response.status === 200 && response.data.data != null) {
+        const apiData = response.data.data.NewWardModel
+        setDropDown(response.data.data);
+        apiData.Gender = apiData.GenderID
+        apiData.WardCategory = apiData.WardCategoryID
+        apiData.ServiceLocation = apiData.ServiceLocationID
+        apiData.Status = apiData.ActiveFlag
+        setCurrentRecord(apiData);
+        setCreateWardModal(true);
+      } else {
+        console.error("Failed to fetch patient details");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   const handleAddNewDepartment = async () => {
@@ -96,18 +115,51 @@ function Ward() {
     setCreateWardModal(true);
   };
 
-  const handleDelete = (record) => {
-    console.log(record);
+  const handleDelete = async (record) => {
+    debugger
+    try {
+      const response = await customAxios.get(`${urlDeleteWardParameter}?Id=${record.WardID}`);
+      if (response.status === 200 && response.data.data != null) {
+        const newdata = response.data.data.map((item, index) => {
+          return {
+            ...item,
+            key: index + 1,
+            Status: item.ActiveFlag === true ? 'Active' : 'Hidden'
+          }
+        })
+        setTableData(newdata);
+      } else {
+        console.error("Failed to fetch Ward details");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   const handleSubmit = async (record) => {
     debugger
-    const response = await customAxios.get(
-      `${urlSaveNewWard}?WardCode=${record.WardCode}&WardName=${record.WardName}&WardCategoryID=${record.WardCategory}&GenderID=${record.Gender}&ServiceLocationID=${record.ServiceLocation}&Status=${record.Status}`
-    );
-    if (response.status === 200 && response.data === "Success") {
-      message.success('Ward Created Success')
+    const Ward = {
+      WardID: record.WardID ? record.WardID : 0,
+      WardCode: record.WardCode,
+      WardName: record.WardName,
+      GenderID: record.Gender,
+      WardCategoryID: record.WardCategory,
+      ServiceLocationID: record.ServiceLocation,
+      FacilityID: 1,
+      ActiveFlag: record.Status
+    }
+    const url = record.WardID ? urlUpdateWard : urlSaveNewWard
+    const msg = record.WardID ? 'Ward Updated Success' : 'Ward Created Success'
+    const response = await customAxios.post(url, Ward, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (response.status === 200 && response.data.data === "Success") {
+      message.success(msg)
       setCreateWardModal(false);
+    } else if (response.status === 200 && response.data.data === 'Already Exists') {
+      message.warning('Already Exists!')
     } else {
       console.error("Failed to Create");
     }
@@ -135,6 +187,7 @@ function Ward() {
           dataSource={tableData}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          loading={loading}
         />
         <CreateWardModal
           open={createWardModal}

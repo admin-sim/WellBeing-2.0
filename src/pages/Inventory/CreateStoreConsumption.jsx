@@ -16,6 +16,7 @@ import { PlusOutlined, DeleteOutlined, CloseSquareFilled } from '@ant-design/ico
 import dayjs from 'dayjs';
 import { useLocation } from "react-router-dom";
 import CustomTable from "../../components/customTable/index.jsx";
+import PageHeader from "../../components/PageHeader/index.jsx";
 //import { Calculate } from '@mui/icons-material';
 
 const CreateStoreConsumption = () => {
@@ -56,7 +57,7 @@ const CreateStoreConsumption = () => {
     StoreConsupmtionId === 0
       ? [
         {
-          key: 1,
+          key: 0,
           ProductName: "",
           PoLineId: 0,
           UomId: "",
@@ -440,13 +441,13 @@ const CreateStoreConsumption = () => {
         <Button type='link' onClick={() => OpenBatch(record)}>Batch</Button>
       )
     },
-    {
-      title: <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}></Button>,
-      dataIndex: 'add',
-      key: 'add',
-      width: 50,
-      render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}><DeleteOutlined /></Popconfirm>
-    }
+    // {
+    //   title: <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}></Button>,
+    //   dataIndex: 'add',
+    //   key: 'add',
+    //   width: 50,
+    //   render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}><DeleteOutlined /></Popconfirm>
+    // }
   ];
 
   const handleCloseModal = () => {
@@ -749,7 +750,7 @@ const CreateStoreConsumption = () => {
   return (
     <Layout style={{ zIndex: '999999999' }}>
       <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-        <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
+        {/* <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
           <Col span={16}>
             <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
               Create Store Consumption
@@ -760,7 +761,13 @@ const CreateStoreConsumption = () => {
               Back
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Create Store Consumption"}
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleToStoreConsumption}
+        />
         <Card>
           <Form
             layout="vertical"
@@ -870,8 +877,14 @@ const CreateStoreConsumption = () => {
                 dataSource={data.filter((item) => item.ActiveFlag !== false)}
                 columns={columns}
                 isFilter={false}
-                actionColumn={false}
+                // actionColumn={false}
                 bordered
+                actionColumnName={<Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleAdd}
+                ></Button>}
+                onDelete={handleDelete}
               />
               //  <Table
               //   bordered

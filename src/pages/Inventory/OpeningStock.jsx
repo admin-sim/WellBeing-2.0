@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Layout from 'antd/es/layout/layout';
 import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
+import PageHeader from "../../components/PageHeader/index.jsx";
 import CustomTable from "../../components/customTable/index.jsx";
 import {
   Spin,
@@ -188,7 +189,7 @@ const OpeningStock = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -217,7 +218,13 @@ const OpeningStock = () => {
               Add Opening Stock
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Opening Stock"}
+          buttonLabel="Add Opening Stock"
+          buttonIcon={<PlusCircleOutlined />}
+          onButtonClick={() => handleAddTemplate(0)}
+        />
         <Card>
           <Form
             form={form}

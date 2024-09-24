@@ -13,6 +13,7 @@ import { LeftOutlined } from '@ant-design/icons';
 import { useNavigate } from "react-router";
 import { Table, InputNumber } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import dayjs from "dayjs";
 import { render } from "react-dom";
 import { useLocation } from "react-router-dom";
@@ -427,19 +428,19 @@ const CreateVendorReturn = () => {
         </>
       ),
     },
-    {
-      // title: "GRN Bonus Qty",
-      // dataIndex: "GRNBonusQty",
-      // key: "GRNBonusQty",
-      render: (text, record) => (
-        <Popconfirm
-          title="Sure to delete?"
-          onConfirm={() => handleDelete(record)}
-        >
-          <DeleteOutlined />
-        </Popconfirm>
-      ),
-    },
+    // {
+    //   // title: "GRN Bonus Qty",
+    //   // dataIndex: "GRNBonusQty",
+    //   // key: "GRNBonusQty",
+    //   render: (text, record) => (
+    //     <Popconfirm
+    //       title="Sure to delete?"
+    //       onConfirm={() => handleDelete(record)}
+    //     >
+    //       <DeleteOutlined />
+    //     </Popconfirm>
+    //   ),
+    // },
   ];
 
   const handleDelete = (record) => {
@@ -553,7 +554,7 @@ const CreateVendorReturn = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -582,7 +583,13 @@ const CreateVendorReturn = () => {
               Back
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Create Vendor Return"}
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleToBack}
+        />
         <Card>
           <Form
             form={form1}
@@ -707,7 +714,8 @@ const CreateVendorReturn = () => {
               dataSource={data.filter((item) => item.ActiveFlag !== false)}
               columns={columns}
               isFilter={false}
-              actionColumn={false}
+              // actionColumn={false}
+              onDelete={handleDelete}
               bordered
             />
             {/* <Table
