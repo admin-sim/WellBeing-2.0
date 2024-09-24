@@ -1,18 +1,41 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader";
 import { PlusCircleOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Input, Modal, Row, Select, Table } from "antd";
+import { Button, Col, Form, Input, Modal, Row, Select, message, Table } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useNavigate } from "react-router-dom";
 import { ColWithEightSpan } from "../../../../components/customGridColumns";
+import customAxios from '../../../../components/customAxios/customAxios.jsx'
+import { urlCreateBed, urlGetWard, urlSaveNewBed } from "../../../../../endpoints.js";
 
 function CreateBed() {
   const [form] = useForm();
   const [form1] = useForm();
   const [generateBedsModal, setGenerateBedsModal] = useState(false);
   const [tableData, setTableData] = useState([]);
+  const [showTable, setShowTable] = useState(false);
+  const [dropDownLoading, setDropDownLoading] = useState(true)
+  const [dropDown, setDropDown] = useState({
+    FacilityDeptServiceLocation: [],
+    Wards: [],
+    ExistWards: []
+  })
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    try {
+      customAxios.get(urlCreateBed, {}).then((response) => {
+        const apiData = response.data.data;
+        if (response.status === 200 && apiData != null) {
+          setDropDown(apiData)
+          setDropDownLoading(false)
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching details:", error);
+    }
+  }, [])
 
   const columns = [
     {
@@ -26,28 +49,50 @@ function CreateBed() {
       dataIndex: "BedNumber",
       key: "2",
       width: 150,
+      render: (text, record) => (
+        <>
+          <Form.Item name={[record.key, 'BedNumber']}>
+            <Input disabled defaultValue={text} />
+          </Form.Item>
+        </>
+      ),
     },
     {
       title: "Status",
       dataIndex: "Status",
       key: "3",
       width: 300,
-      render: (_, row) => (
-        <Select
-          style={{ width: "50%" }}
-          defaultValue="Active"
-          //   onChange={handleChange}
-          options={[
-            {
-              value: "Active",
-              label: "Active",
-            },
-            {
-              value: "Hidden",
-              label: "Hidden",
-            },
-          ]}
-        />
+      render: (text, record) => (
+        <>
+          <Form.Item name={[record.key, 'Status']}>
+            <Select
+              style={{ width: "50%" }}
+              defaultValue={text}
+              onChange={(value) => {
+                const new1 = tableData.map((item) => {
+                  if (item.key === record.key) {
+                    return {
+                      ...item,
+                      Status: value
+                    }
+                  }
+                  return item
+                })
+                setTableData(new1)
+              }}
+              options={[
+                {
+                  value: true,
+                  label: "Active",
+                },
+                {
+                  value: false,
+                  label: "Hidden",
+                },
+              ]}
+            />
+          </Form.Item>
+        </>
       ),
     },
     {
@@ -57,7 +102,8 @@ function CreateBed() {
           icon={
             <PlusCircleOutlined
               style={{ fontSize: "1.5rem" }}
-              onClick={() => {
+              onClick={async () => {
+                await form.validateFields()
                 setGenerateBedsModal(true);
               }}
             />
@@ -81,13 +127,36 @@ function CreateBed() {
       tableData.push({
         SlNo: i,
         BedNumber: `${values.PrefixWith}${values.StartingBedNo++}`,
-        Status: "active",
+        Status: true,
+        key: i - 1
       });
       console.log(tableData);
     }
     setTableData(tableData);
     form1.resetFields();
     setGenerateBedsModal(false);
+  }
+
+  const handleLocation = (value) => {
+    try {
+      customAxios.get(`${urlGetWard}?ServiceLocationId=${value}`).then((response) => {
+        const apiData = response.data.data;
+        if (response.status === 200 && apiData != null) {
+          setDropDown(prevState => ({
+            ...prevState,
+            Wards: response.data.data.Wards
+          }));
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching details:", error);
+    }
+  }
+
+  const handleWard = (value) => {
+    setTableData([])
+    form1.resetFields()
+    setShowTable(true)
   }
 
   return (
@@ -105,7 +174,29 @@ function CreateBed() {
           style={{ margin: "1rem" }}
           layout="vertical"
           form={form}
-          //   onFinish={handleSubmit}
+          onFinish={async (values) => {
+            const bed = tableData.map((item) => {
+              return {
+                BedNo: item.BedNumber,
+                WardId: values.Ward,
+                FacilityId: 1,
+                ActiveFlag: item.Status
+              }
+            })
+            const response = await customAxios.post(urlSaveNewBed, bed, {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+            if (response.status === 200 && response.data.data != null) {
+              if (response.data.data === 'Success') {
+                message.success("Success");
+                navigate("/Bed")
+              } else {
+                message.warning(`${response.data.data} Bed is Already Exists`)
+              }
+            }
+          }}
         >
           <Row gutter={16}>
             <ColWithEightSpan>
@@ -114,7 +205,17 @@ function CreateBed() {
                 label="Service Location"
                 rules={[{ required: true, message: "Please enter Ward Code " }]}
               >
-                <Select />
+                <Select onChange={handleLocation} loading={dropDownLoading}
+                  onSelect={() => { form.setFieldsValue({ 'Ward': '' }), setTableData([]), form1.resetFields() }}>
+                  {dropDown.FacilityDeptServiceLocation.map((option) => (
+                    <Select.Option
+                      key={option.FacilityDepartmentServiceLocationId}
+                      value={option.FacilityDepartmentServiceLocationId}
+                    >
+                      {option.ServiceLocationName}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </ColWithEightSpan>
             <ColWithEightSpan>
@@ -123,11 +224,22 @@ function CreateBed() {
                 label="Ward"
                 rules={[{ required: true, message: "Please enter Ward Name" }]}
               >
-                <Select />
+                <Select loading={dropDownLoading} onSelect={handleWard}>
+                  {(dropDown.Wards || [])
+                    .filter(option => !dropDown.ExistWards?.some(existing => option.WardID === existing.WardId))
+                    .map(option => (
+                      <Select.Option
+                        key={option.WardID}
+                        value={option.WardID}
+                      >
+                        {option.WardName}
+                      </Select.Option>
+                    ))}
+                </Select>
               </Form.Item>
             </ColWithEightSpan>
           </Row>
-          <Table columns={columns} dataSource={tableData} bordered />
+          {showTable && <Table columns={columns} dataSource={tableData} bordered />}
           <Row gutter={16} justify="end" style={{ marginTop: "1.5rem" }}>
             <Col>
               <Form.Item>
@@ -230,7 +342,7 @@ function CreateBed() {
             </Row>
           </Form>
         </Modal>
-      </div>
+      </div >
     </>
   );
 }

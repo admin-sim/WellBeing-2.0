@@ -1,6 +1,7 @@
 import customAxios from "../../components/customAxios/customAxios.jsx";
 import React, { useEffect, useState } from "react";
 import Button from "antd/es/button";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import {
   urlCreatePurchaseOrder,
   urlAutocompleteProduct,
@@ -464,27 +465,26 @@ const CreateIndent = () => {
         </Form.Item>
       ),
     },
-    {
-      title: (
-
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={AddProduct}
-        ></Button>
-      ),
-      dataIndex: "add",
-      key: "add",
-      width: 50,
-      render: (text, record) => (
-        <Popconfirm
-          title="Sure to delete?"
-          onConfirm={() => handleDelete(record)}
-        >
-          <DeleteOutlined />
-        </Popconfirm>
-      ),
-    },
+    // {
+    //   title: (
+    //     <Button
+    //       type="primary"
+    //       icon={<PlusOutlined />}
+    //       onClick={AddProduct}
+    //     ></Button>
+    //   ),
+    //   dataIndex: "add",
+    //   key: "add",
+    //   width: 50,
+    //   render: (text, record) => (
+    //     <Popconfirm
+    //       title="Sure to delete?"
+    //       onConfirm={() => handleDelete(record)}
+    //     >
+    //       <DeleteOutlined />
+    //     </Popconfirm>
+    //   ),
+    // },
   ];
 
   const handleCancel = () => {
@@ -631,7 +631,7 @@ const CreateIndent = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -660,7 +660,13 @@ const CreateIndent = () => {
               Back
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Create Indent"}
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleToIndent}
+        />
         <Card>
           <Form
             layout="vertical"
@@ -858,7 +864,13 @@ const CreateIndent = () => {
                   dataSource={data.filter((item) => item.ActiveFlag !== false)}
                   columns={columns}
                   isFilter={false}
-                  actionColumn={false}
+                  // actionColumn={false}
+                  actionColumnName={<Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={AddProduct}
+                  ></Button>}
+                  onDelete={handleDelete}
                   bordered
                 />
                 // </Spin>

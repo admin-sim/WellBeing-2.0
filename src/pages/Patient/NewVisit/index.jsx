@@ -286,7 +286,7 @@ const NewVisit = () => {
     );
 
     if (response.data !== null && response1.data !== null) {
-      setPatientHeaderDetails(response1.data.EncounterModel);
+      setPatientHeaderDetails(response1.data.data.EncounterModel);
       setModalLoader(false);
       setVisitDropdown(response.data.data);
       setEncounterTypeId(response.data.data.EncounterTypeId);

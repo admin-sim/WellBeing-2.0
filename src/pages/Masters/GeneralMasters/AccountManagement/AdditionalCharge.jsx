@@ -84,40 +84,41 @@ function AdditionalCharge() {
             key: "IsActive",
             render: (text, record) => (record.IsActive ? "Active" : "Hidden"),
         },
-        {
-            title: '',
-            dataIndex: 'actions',
-            key: 'actions',
-            render: (_, record) => (
-                <span style={{ display: 'flex' }}>
-                    <Tooltip title="Edit">
-                        <EditOutlined style={{ fontSize: '0.8rem', cursor: 'pointer', marginRight: '10px' }} onClick={() => handleAddEditAdditionalCharge(record.AdditionalChargeId)} />
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                        <Popconfirm
-                            title="Are you sure you want to delete this record?"
-                            onConfirm={() => handledelete(record.AdditionalChargeId)}
-                        >
-                            <Button
-                                size="small"
-                                danger
-                                icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
-                            ></Button>
-                        </Popconfirm>
-                        {/* <DeleteOutlined style={{ fontSize: '0.8rem', cursor: 'pointer' }} onClick={() => handledelete(record.AdditionalChargeId)} /> */}
-                    </Tooltip>
-                </span>
-            ),
-        },
+        // {
+        //     title: '',
+        //     dataIndex: 'actions',
+        //     key: 'actions',
+        //     render: (_, record) => (
+        //         <span style={{ display: 'flex' }}>
+        //             <Tooltip title="Edit">
+        //                 <EditOutlined style={{ fontSize: '0.8rem', cursor: 'pointer', marginRight: '10px' }} onClick={() => handleAddEditAdditionalCharge(record.AdditionalChargeId)} />
+        //             </Tooltip>
+        //             <Tooltip title="Delete">
+        //                 <Popconfirm
+        //                     title="Are you sure you want to delete this record?"
+        //                     onConfirm={() => handledelete(record.AdditionalChargeId)}
+        //                 >
+        //                     <Button
+        //                         size="small"
+        //                         danger
+        //                         icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
+        //                     ></Button>
+        //                 </Popconfirm>
+        //                 {/* <DeleteOutlined style={{ fontSize: '0.8rem', cursor: 'pointer' }} onClick={() => handledelete(record.AdditionalChargeId)} /> */}
+        //             </Tooltip>
+        //         </span>
+        //     ),
+        // },
     ];
 
-    const handleAddEditAdditionalCharge = (Id) => {
-        navigate("/CreateAdditionalCharge", { state: { AdditionalChargeId: Id } });
+    const handleEdit = (record) => {
+        debugger
+        navigate("/CreateAdditionalCharge", { state: { AdditionalChargeId: record ? record.AdditionalChargeId : 0 } });
     };
 
-    const handledelete = async (AdditionalChargeId) => {
+    const handleDelete = async (record) => {
         debugger;
-        const response = await customAxios.get(`${urlDeleteSelectedAdditionalCharge}?AdditionalChargeId=${AdditionalChargeId}`);
+        const response = await customAxios.get(`${urlDeleteSelectedAdditionalCharge}?AdditionalChargeId=${record.AdditionalChargeId}`);
         if (response.status === 200) {
             message.success('Deleted')
             const newColumnData = response.data.data.map(
@@ -140,14 +141,15 @@ function AdditionalCharge() {
                         borderRadius: "10px",
                     }}
                 >
-                    <PageHeader title='Additional Charge Setup Manager' buttonIcon={<PlusCircleOutlined />} onButtonClick={() => handleAddEditAdditionalCharge(0)} />
-                    <Spin spinning={loading}>
-                        <CustomTable
-                            columns={columns}
-                            dataSource={columnData}
-                            isFilter={true}
-                        />
-                    </Spin>
+                    <PageHeader title='Additional Charge Setup Manager' buttonIcon={<PlusCircleOutlined />} onButtonClick={() => handleEdit(0)} />
+                    <CustomTable
+                        loading={loading}
+                        isFilter={true}
+                        columns={columns}
+                        dataSource={columnData}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                    />
                 </div>
             </Layout>
         </>

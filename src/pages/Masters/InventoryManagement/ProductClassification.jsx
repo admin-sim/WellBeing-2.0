@@ -176,31 +176,31 @@ const ProductClassification = () => {
         }
       },
     },
-    {
-      title: (
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={ModelAdd}
-        ></Button>
-      ),
-      // dataIndex: 'add',
-      // key: 'add',
-      width: 50,
-      render: (text, record) => {
-        return (
-          <>
-            <EditOutlined onClick={() => ModelUpdate(record.ProductClassificationId)} />
-            <Popconfirm
-              title="Sure to delete?"
-              onConfirm={() => ModelDelete(record.ProductClassificationId)}
-            >
-              <DeleteOutlined />
-            </Popconfirm>
-          </>
-        );
-      },
-    },
+    // {
+    //   title: (
+    //     <Button
+    //       type="primary"
+    //       icon={<PlusOutlined />}
+    //       onClick={ModelAdd}
+    //     ></Button>
+    //   ),
+    //   // dataIndex: 'add',
+    //   // key: 'add',
+    //   width: 50,
+    //   render: (text, record) => {
+    //     return (
+    //       <>
+    //         <EditOutlined onClick={() => ModelUpdate(record.ProductClassificationId)} />
+    //         <Popconfirm
+    //           title="Sure to delete?"
+    //           onConfirm={() => ModelDelete(record.ProductClassificationId)}
+    //         >
+    //           <DeleteOutlined />
+    //         </Popconfirm>
+    //       </>
+    //     );
+    //   },
+    // },
   ];
 
   const onReset = () => {
@@ -369,6 +369,11 @@ const ProductClassification = () => {
               <CustomTable
                 dataSource={dPPData}
                 columns={columns}
+                actionColumnName={<Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={ModelAdd}
+                ></Button>}
                 onEdit={(record) => ModelUpdate(record.ProductClassificationId)}
                 onDelete={(record) =>
                   ModelDelete(record.ProductClassificationId)

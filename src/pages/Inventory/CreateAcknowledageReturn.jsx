@@ -1,6 +1,7 @@
 import customAxios from "../../components/customAxios/customAxios.jsx";
 import React, { useEffect, useState } from "react";
 import Button from "antd/es/button";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import {
   urlCreateStoreReturn,
   urlSearchReceipt,
@@ -73,12 +74,10 @@ const CreateAcknowledageReturn = () => {
       if (record) {
         try {
           const response = await customAxios.get(
-            `${urlAcknowledgeReturnCreate}?ReturnHeaderId=${
-              record.ReturnHeaderId
-            }&AcknowledgeReturnHeaderId=${
-              record.AcknowledgeReturnHeaderId
-                ? record.AcknowledgeReturnHeaderId
-                : 0
+            `${urlAcknowledgeReturnCreate}?ReturnHeaderId=${record.ReturnHeaderId
+            }&AcknowledgeReturnHeaderId=${record.AcknowledgeReturnHeaderId
+              ? record.AcknowledgeReturnHeaderId
+              : 0
             }`
           );
           if (response.status === 200 && response.data.data !== null) {
@@ -100,7 +99,7 @@ const CreateAcknowledageReturn = () => {
                 AcceptQty: item.ReturnQty,
                 Remarks: acknowledgeDetails ? acknowledgeDetails.Remarks : "",
                 ReturnLineId: acknowledgeDetails ? acknowledgeDetails.ReturnLineId : 0,
-                UomId: item.UomId, 
+                UomId: item.UomId,
                 ProductId: item.ProductId,
                 LineId: acknowledgeDetails
                   ? acknowledgeDetails.ReturnLineId
@@ -143,7 +142,7 @@ const CreateAcknowledageReturn = () => {
           BatchNo: data[i].BatchNo,
           ReturnQty: data[i].ReturnQty,
           EXPDateString: dayjs(data[i].EXPDate).format("DD-MM-YYYY"),
-          ReturnLineId:  data[i].ReturnLineId ,
+          ReturnLineId: data[i].ReturnLineId,
         };
         products.push(product);
       }
@@ -157,7 +156,7 @@ const CreateAcknowledageReturn = () => {
         : null,
       ReturnStatus: !issueStatus ? "Created" : values.Status,
       ReturnHeaderId: record.ReturnHeaderId,
-      AcknowledgeReturnHeaderId:record.AcknowledgeReturnHeaderId ? record.AcknowledgeReturnHeaderId : 0 ,    
+      AcknowledgeReturnHeaderId: record.AcknowledgeReturnHeaderId ? record.AcknowledgeReturnHeaderId : 0,
     };
     const postData = {
       newReturnModel: storeReturn,
@@ -245,7 +244,7 @@ const CreateAcknowledageReturn = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -274,7 +273,13 @@ const CreateAcknowledageReturn = () => {
               Back
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Create Acknowledge Return"}
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleToBack}
+        />
         <Form
           layout="vertical"
           onFinish={handleOnFinish}

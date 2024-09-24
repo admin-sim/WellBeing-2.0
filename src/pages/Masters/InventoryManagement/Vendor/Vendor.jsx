@@ -12,7 +12,7 @@ import {
   Row,
   Col,
   DatePicker,
-  Card,
+  Spin,
   Checkbox,
   message,
   Tooltip,
@@ -51,7 +51,7 @@ const Vendor = () => {
   const [buttonTitle, setButtonTitle] = useState("Submit");
   const [buttonTitle1, setButtonTitle1] = useState("Reset");
   const [form] = Form.useForm();
-  const { Title } = Typography;
+  const [pageLoading, setPageLoading] = useState(true)
 
   useEffect(() => {
     customAxios.get(urlVendorIndex).then((response) => {
@@ -107,7 +107,7 @@ const Vendor = () => {
               ),
             });
             form.setFieldsValue({
-              Status: apiData.NewVendorModel.ActiveFlag ? "true" : "false",
+              Status: apiData.NewVendorModel.ActiveFlag,
             });
             form.setFieldsValue({
               isSupplier: apiData.NewVendorModel.IsSupplier,
@@ -133,6 +133,10 @@ const Vendor = () => {
             form.setFieldsValue({ Zip: apiData.NewVendorModel.PinCode });
           }
         });
+      setPageLoading(false)
+    }
+    else {
+      setPageLoading(false)
     }
     setVendorId(0);
   }, []);
@@ -150,29 +154,28 @@ const Vendor = () => {
   };
 
   const onFinish = async (values) => {
+    debugger
     const VenderModel = {
       VendorId: values.VendorId === undefined ? 0 : values.VendorId,
-      ShortName: values.ShortName === undefined ? "" : values.ShortName,
-      LongName: values.LongName === undefined ? "" : values.LongName,
-      VendorGroup: values.VendorGroup === undefined ? "" : values.VendorGroup,
-      ContactPerson:
-        values.ContactPerson === undefined ? null : values.ContactPerson,
-      EffectiveFrom: values.EffectiveFrom,
-      EffectiveTo: values.EffectiveTo,
+      ShortName: values.ShortName,
+      LongName: values.LongName,
+      VendorGroup: values.VendorGroup,
+      ContactPerson: values.ContactPerson === undefined ? null : values.ContactPerson,
+      EffectiveFromString: values.EffectiveFrom ? values.EffectiveFrom.format('DD-MM-YYYY') : '',
+      EffectiveToString: values.EffectiveTo ? values.EffectiveTo.format('DD-MM-YYYY') : '',
       IsSupplier: values.isSupplier === undefined ? false : values.isSupplier,
-      IsManufacturer:
-        values.isManufacturer === undefined ? false : values.isManufacturer,
-      Address1: values.Address === undefined ? "" : values.Address,
-      CountryId: values.Country === undefined ? 0 : values.Country,
-      StateId: values.State === undefined ? 0 : values.State,
-      Place: values.Place === undefined ? 0 : values.Place,
-      Area: values.Area === undefined ? 0 : values.Area,
-      PinCode: values.Zip === undefined ? 0 : values.Zip,
-      MobileNumber: values.Mobile === undefined ? "" : values.Mobile,
+      IsManufacturer: values.isManufacturer === undefined ? false : values.isManufacturer,
+      Address1: values.Address,
+      CountryId: values.Country,
+      StateId: values.State,
+      Place: values.Place,
+      Area: values.Area,
+      PinCode: values.Zip,
+      MobileNumber: values.Mobile,
       EmailId: values.Email === undefined ? null : values.Email,
       LandlineNumber: values.Landline === undefined ? null : values.Landline,
       CreditDays: values.CreditDays === undefined ? 0 : values.CreditDays,
-      ActiveFlag: values.Status === "true" ? true : false,
+      ActiveFlag: values.Status,
     };
     const postData = {
       NewVendorModel: VenderModel,
@@ -287,6 +290,19 @@ const Vendor = () => {
     return current && current < effectiveFrom.startOf("day");
   };
 
+  if (pageLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+      }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <Layout
       style={{
@@ -308,7 +324,7 @@ const Vendor = () => {
         initialValues={{
           EffectiveTo: dayjs(),
           EffectiveFrom: dayjs().subtract(1, "day"),
-          Status: "true",
+          Status: true,
           VendorGroup: "Local Suppliers",
         }}
         layout="vertical"
@@ -423,10 +439,10 @@ const Vendor = () => {
               ]}
             >
               <Select>
-                <Select.Option key="true" value="true">
+                <Select.Option key={true} value={true}>
                   Active
                 </Select.Option>
-                <Select.Option key="false" value="false">
+                <Select.Option key={false} value={false}>
                   Hidden
                 </Select.Option>
               </Select>

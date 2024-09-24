@@ -84,20 +84,24 @@ const CreateBilling = () => {
 
   useEffect(() => {
     debugger;
-    const fetchDataHeader = async () => {
-      try {
-        const response = await customAxios.get(
-          `${urlGetPatientHeaderDetails}?PatientId=${PatientId}&EncounterId=${EncounterId}`
-        );
-        if (response.status === 200 && response.data != null) {
-          const detailsheader = response.data.data.EncounterModel;
-          setPatientData(detailsheader);
-        } else {
-        }
-      } catch (error) {}
-    };
+    
     fetchDataHeader();
   }, []);
+
+  const fetchDataHeader = async () => {
+    try {
+      const response = await customAxios.get(
+        `${urlGetPatientHeaderDetails}?PatientId=${PatientId}&EncounterId=${EncounterId}`
+      );
+      if (response.status === 200 && response.data != null) {
+        const detailsheader = response.data.data.EncounterModel;
+        console.log('header',detailsheader);
+        
+        setPatientData(detailsheader);
+      } else {
+      }
+    } catch (error) {}
+  };
 
   useEffect(() => {
     fetchData();
@@ -112,10 +116,10 @@ const CreateBilling = () => {
       );
       if (response.status === 200 && response.data != null) {
         setTableLoading(false);
-        const details = response.data.data;
-        setBanks(details.Bank);
-        setPaymentTypes(details.PaymentType);
-        setCharges(details.PatientAccountCharges);
+        const details = response.data;
+        setBanks(details?.Bank);
+        setPaymentTypes(details?.PaymentType);
+        setCharges(details?.PatientAccountCharges);
       } else {
         setTableLoading(false);
       }
@@ -125,14 +129,24 @@ const CreateBilling = () => {
   };
 
   const totalAmount =
-    charges?.reduce((total, row) => total + row.PatientChargeAmount, 0) ?? 0;
+    charges?.reduce((total, row) => {
+      // Ensure both PatientNetAmount.Value and AdjustedAmount exist or default to 0
+      const netAmount = row?.PatientNetAmount || 0;
+      const adjustedAmount = row?.AdjustedAmount || 0;
 
+      // Calculate the difference between PatientNetAmount.Value and AdjustedAmount
+      const difference = netAmount - adjustedAmount;
+
+      // Add the difference to the running total
+      return total + difference;
+    }, 0) ?? 0;
+
+  // useEffect to set the calculated totalAmount in form
   useEffect(() => {
     form1.setFieldsValue({
-      ReceiptDate: dayjs(),
-      ReceiptAmount: totalAmount,
+      ReceiptAmount: totalAmount, // Set the calculated totalAmount
     });
-  }, [form, totalAmount]);
+  }, [charges]); // Trigger whenever charges changes
 
   const initialDataSource = [
     {
@@ -317,10 +331,10 @@ const CreateBilling = () => {
     debugger;
     const amt = 0;
     const response = await customAxios.delete(
-      `${urlDeleteBillCharge}?chargeId=${record.ChargeID}&patientId=${record.PatientId}&encounterId=${record.EncounterId}&amt=${amt}`
+      `${urlDeleteBillCharge}?chargeId=${record.ChargeID}&patientId=${record.PatientId}&encounterId=${record.EncounterId}&amt=${record.AdjustedAmount}`
     );
     if (response.status === 200 && response.data != null) {
-      setCharges(response.data.data.PatientAccountCharges);
+      setCharges(response.data.PatientAccountCharges);
       message.success("Charge Deleted Successfully...");
     } else {
       message.warning("Something Went Wrong...");
@@ -737,7 +751,7 @@ const CreateBilling = () => {
       if (response.status == 200 && response.data != null) {
         message.success("Charge Added Successfully");
         setTableLoading(false);
-        setCharges(response.data.data.PatientAccountCharges);
+        setCharges(response.data.PatientAccountCharges);
         setServices(null);
         form.resetFields();
       } else {
@@ -806,10 +820,12 @@ const CreateBilling = () => {
           message.error("Failed to generate bill");
         } else {
           message.success("Bill generated successfully!");
-          fetchData();
+          //fetchData();
           form1.resetFields();
+          setReceiptInsAmtData([])
           setReceiptInsAmtData(initialDataSource);
-
+          setCharges([]);
+          fetchDataHeader();
           // Reset the data source
         }
       }
@@ -1010,7 +1026,6 @@ const CreateBilling = () => {
         >
           <Spin spinning={tableloading}>
             <Table
-              // style={{ padding: '0rem 2rem' }}
               dataSource={charges}
               columns={columns}
               rowKey={(row) => row.ChargeID} // Specify the custom id property here
@@ -1023,7 +1038,7 @@ const CreateBilling = () => {
                   `Showing ${range[0]} to ${range[1]} of ${total} entries`,
               }}
               scroll={{ x: 1000 }}
-              summary={(pageData) => {
+              summary={() => {
                 let netamt = 0;
                 let insamt = 0;
                 let taxamt = 0;
@@ -1032,7 +1047,9 @@ const CreateBilling = () => {
                 let taxrate = 0;
                 let patientnetamt = 0;
                 let adjamt = 0;
-                pageData.forEach(
+
+                // Summing over the entire dataset (charges) instead of just pageData
+                charges?.forEach(
                   ({
                     NetAmount,
                     InsuranceCoveredAmount,
@@ -1053,50 +1070,49 @@ const CreateBilling = () => {
                     adjamt += AdjustedAmount;
                   }
                 );
+
                 return (
-                  <>
-                    <Table.Summary.Row>
-                      {/* Adjust the cell spans based on your column structure */}
-                      <Table.Summary.Cell
-                        index={0}
-                        colSpan={4}
-                      ></Table.Summary.Cell>
-                      <Table.Summary.Cell index={3}>
-                        <Text type="danger">Total</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell index={2}>
-                        <Text type="danger">{netamt}</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell index={2}>
-                        <Text type="danger">{insamt}</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell index={2}>
-                        <Text type="danger">{taxamt}</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell index={2}>
-                        <Text type="danger">{netinsamt}</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell index={2}>
-                        <Text type="danger">Total</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell index={2}>
-                        <Text type="danger">{discamt.toFixed(2)}</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell index={2}>
-                        <Text type="danger">{taxrate}</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell index={2}>
-                        <Text type="danger">{patientnetamt}</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell index={2}>
-                        <Text type="danger">{adjamt}</Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={2}
-                        colSpan={9}
-                      ></Table.Summary.Cell>
-                    </Table.Summary.Row>
-                  </>
+                  <Table.Summary.Row>
+                    {/* Adjust the cell spans based on your column structure */}
+                    <Table.Summary.Cell
+                      index={0}
+                      colSpan={4}
+                    ></Table.Summary.Cell>
+                    <Table.Summary.Cell index={3}>
+                      <Text style={{fontWeight:600}}>Total</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2}>
+                      <Text  style={{fontWeight:600}}>{netamt}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2}>
+                      <Text  style={{fontWeight:600}}>{insamt}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2}>
+                      <Text style={{fontWeight:600}}>{taxamt}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2}>
+                      <Text  style={{fontWeight:600}}>{netinsamt}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2}>
+                      <Text  style={{fontWeight:600}}>Total</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2}>
+                      <Text  style={{fontWeight:600}}>{discamt.toFixed(2)}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2}>
+                      <Text  style={{fontWeight:600}}>{taxrate}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2}>
+                      <Text  style={{fontWeight:600}}>{patientnetamt}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2}>
+                      <Text  style={{fontWeight:600}}>{adjamt}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell
+                      index={2}
+                      colSpan={9}
+                    ></Table.Summary.Cell>
+                  </Table.Summary.Row>
                 );
               }}
             />
@@ -1123,6 +1139,7 @@ const CreateBilling = () => {
           variant="outlined"
           //style={{ padding: '0rem 2rem' }}
           form={form1}
+          initialValues={{ ReceiptDate: dayjs() }}
         >
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col className="gutter-row" span={6}>

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Button from "antd/es/button";
 import Select from "antd/es/select";
 import CustomTable from "../../components/customTable/index.jsx";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import {
   ConfigProvider,
   Typography,
@@ -812,27 +813,27 @@ const PatientConsumption = () => {
         </Form.Item>
       ),
     },
-    {
-      title: (
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd} />
-      ),
-      dataIndex: "add",
-      key: "add",
-      width: 50,
-      render: (text, record) => {
-        if (record.PatientIssueLineId > 0) {
-          return null; // Hide the delete button if the condition is true
-        }
-        return (
-          <Popconfirm
-            title="Sure to delete?"
-            onConfirm={() => handleDelete(record)}
-          >
-            <DeleteOutlined />
-          </Popconfirm>
-        );
-      },
-    },
+    // {
+    //   title: (
+    //     <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd} />
+    //   ),
+    //   dataIndex: "add",
+    //   key: "add",
+    //   width: 50,
+    //   render: (text, record) => {
+    //     if (record.PatientIssueLineId > 0) {
+    //       return null; // Hide the delete button if the condition is true
+    //     }
+    //     return (
+    //       <Popconfirm
+    //         title="Sure to delete?"
+    //         onConfirm={() => handleDelete(record)}
+    //       >
+    //         <DeleteOutlined />
+    //       </Popconfirm>
+    //     );
+    //   },
+    // },
   ];
 
   const ModelAdd = async () => {
@@ -1127,7 +1128,7 @@ const PatientConsumption = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -1156,7 +1157,13 @@ const PatientConsumption = () => {
               Back
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Create Patient Consumption"}
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleToPurchaseOrder}
+        />
         <Card>
           <Form
             layout="vertical"
@@ -1339,7 +1346,13 @@ const PatientConsumption = () => {
               dataSource={data?.filter((item) => item.ActiveFlag != false)}
               columns={columns}
               isFilter={false}
-              actionColumn={false}
+              // actionColumn={false}
+              actionColumnName={<Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleAdd}
+              ></Button>}
+              onDelete={handleDelete}
               bordered
             />
           </Form>

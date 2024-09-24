@@ -2,6 +2,7 @@ import customAxios from "../../components/customAxios/customAxios.jsx";
 import React, { useEffect, useState } from "react";
 import Button from "antd/es/button";
 import CustomTable from "../../components/customTable/index.jsx";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import {
   urlCreatePurchaseOrder,
   urlShowBatchDetails,
@@ -814,7 +815,7 @@ const UpdateItemReceipt = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -843,174 +844,182 @@ const UpdateItemReceipt = () => {
               Back
             </Button>
           </Col>
-        </Row>
-        <Form
-          layout="vertical"
-          onFinish={handleOnFinish}
-          variant="outlined"
-          style={{
-            maxWidth: 1500,
-          }}
-          name="trigger"
-          form={form1}
-          initialValues={{
-            IssueDate: dayjs(),
-            SubmitCheck: false,
-          }}
-        >
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-            style={{ padding: "1rem 0.5rem", marginBottom: "0" }}
-            align="Bottom"
+        </Row> */}
+        <PageHeader
+          title={"Item Receipt"}
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleToIndent}
+        />
+        <Card>
+          <Form
+            layout="vertical"
+            onFinish={handleOnFinish}
+            variant="outlined"
+            style={{
+              maxWidth: 1500,
+            }}
+            name="trigger"
+            form={form1}
+            initialValues={{
+              IssueDate: dayjs(),
+              SubmitCheck: false,
+            }}
           >
-            <Col className="gutter-row" span={6}>
-              <Form.Item
-                label="Indent Number"
-                name="IndentNumber"
-                rules={[
-                  {
-                    required: indentid !== null,
-                    message: "input!",
-                  },
-                ]}
-              >
-                <Input style={{ width: "100%" }} disabled></Input>
-              </Form.Item>
-              <Form.Item name="IndentId" hidden>
-                <Input></Input>
-              </Form.Item>
-              <Form.Item name="IssueId" hidden>
-                <Input></Input>
-              </Form.Item>
-              <Form.Item name="IndentReceiptId" hidden>
-                <Input></Input>
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <Form.Item
-                label="Indent Type"
-                name="IndentType"
-                rules={[
-                  {
-                    required: indentid !== null,
-                    message: "input!",
-                  },
-                ]}
-              >
-                <Input style={{ width: "100%" }} disabled></Input>
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <Form.Item
-                label="Issuing Store"
-                name="IssueingStoreId"
-                rules={[
-                  {
-                    required: true,
-                    message: "input!",
-                  },
-                ]}
-              >
-                <Select disabled>
-                  {DropDown.StoreDetails.map((option) => (
-                    <Select.Option key={option.StoreId} value={option.StoreId}>
-                      {option.LongName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <Form.Item
-                label="Requesting Location"
-                name="RequestingStoreId"
-                rules={[
-                  {
-                    required: true,
-                    message: "input!",
-                  },
-                ]}
-              >
-                <Select disabled>
-                  {DropDown.StoreDetails.map((option) => (
-                    <Select.Option key={option.StoreId} value={option.StoreId}>
-                      {option.LongName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <Form.Item label="Receipt Date" name="IssueDate">
-                <DatePicker
-                  style={{ width: "100%" }}
-                  format="DD-MM-YYYY"
-                  disabled
+            <Row
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+              style={{ padding: "1rem 0.5rem", marginBottom: "0" }}
+              align="Bottom"
+            >
+              <Col className="gutter-row" span={6}>
+                <Form.Item
+                  label="Indent Number"
+                  name="IndentNumber"
+                  rules={[
+                    {
+                      required: indentid !== null,
+                      message: "input!",
+                    },
+                  ]}
+                >
+                  <Input style={{ width: "100%" }} disabled></Input>
+                </Form.Item>
+                <Form.Item name="IndentId" hidden>
+                  <Input></Input>
+                </Form.Item>
+                <Form.Item name="IssueId" hidden>
+                  <Input></Input>
+                </Form.Item>
+                <Form.Item name="IndentReceiptId" hidden>
+                  <Input></Input>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item
+                  label="Indent Type"
+                  name="IndentType"
+                  rules={[
+                    {
+                      required: indentid !== null,
+                      message: "input!",
+                    },
+                  ]}
+                >
+                  <Input style={{ width: "100%" }} disabled></Input>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item
+                  label="Issuing Store"
+                  name="IssueingStoreId"
+                  rules={[
+                    {
+                      required: true,
+                      message: "input!",
+                    },
+                  ]}
+                >
+                  <Select disabled>
+                    {DropDown.StoreDetails.map((option) => (
+                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                        {option.LongName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item
+                  label="Requesting Location"
+                  name="RequestingStoreId"
+                  rules={[
+                    {
+                      required: true,
+                      message: "input!",
+                    },
+                  ]}
+                >
+                  <Select disabled>
+                    {DropDown.StoreDetails.map((option) => (
+                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                        {option.LongName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item label="Receipt Date" name="IssueDate">
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                    disabled
+                  />
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item
+                  label="Receipt Status"
+                  name="ReceiptStatus"
+                  rules={[
+                    {
+                      required: indentStatus,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Select allowClear placeholder="Select Value">
+                    <Option value="Draft">Draft</Option>
+                    <Option value="Finalize">Finalize</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item
+                  name="SubmitCheck"
+                  style={{ paddingTop: 30 }}
+                  valuePropName="checked"
+                >
+                  <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={12}>
+                <Form.Item label="Remarks" name="Remarks">
+                  <TextArea></TextArea>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row justify="end" style={{ padding: "0rem 1rem" }}>
+              <Col style={{ marginRight: "10px" }}>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit">
+                    Save
+                  </Button>
+                </Form.Item>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button type="primary" onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Divider style={{ marginTop: "0" }}></Divider>
+            {istablevisible ? (
+              <div>
+                {/* <Table columns={columns} dataSource={data} scroll={{ x: 0 }} /> */}
+                <CustomTable
+                  dataSource={data}
+                  columns={columns}
+                  isFilter={false}
+                  actionColumn={false}
+                  bordered
                 />
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <Form.Item
-                label="Receipt Status"
-                name="ReceiptStatus"
-                rules={[
-                  {
-                    required: indentStatus,
-                    message: "Please input!",
-                  },
-                ]}
-              >
-                <Select allowClear placeholder="Select Value">
-                  <Option value="Draft">Draft</Option>
-                  <Option value="Finalize">Finalize</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={6}>
-              <Form.Item
-                name="SubmitCheck"
-                style={{ paddingTop: 30 }}
-                valuePropName="checked"
-              >
-                <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
-              </Form.Item>
-            </Col>
-            <Col className="gutter-row" span={12}>
-              <Form.Item label="Remarks" name="Remarks">
-                <TextArea></TextArea>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row justify="end" style={{ padding: "0rem 1rem" }}>
-            <Col style={{ marginRight: "10px" }}>
-              <Form.Item>
-                <Button type="primary" htmlType="submit">
-                  Save
-                </Button>
-              </Form.Item>
-            </Col>
-            <Col>
-              <Form.Item>
-                <Button type="primary" onClick={handleCancel}>
-                  Cancel
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Divider style={{ marginTop: "0" }}></Divider>
-          {istablevisible ? (
-            <div>
-              {/* <Table columns={columns} dataSource={data} scroll={{ x: 0 }} /> */}
-              <CustomTable
-                dataSource={data}
-                columns={columns}
-                isFilter={false}
-                actionColumn={false}
-                bordered
-              />
-            </div>
-          ) : null}
-        </Form>
+              </div>
+            ) : null}
+          </Form>
+        </Card>
         <ConfigProvider
           theme={{
             token: {
