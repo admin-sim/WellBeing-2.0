@@ -152,9 +152,9 @@ function InPatientManagement() {
   const groupedBeds = groupBedsByWard();
   const firstWardKey = Object.keys(groupedBeds)[0];
 
-  const IncomingTransfer = () => {};
+  const IncomingTransfer = () => { };
 
-  const OutgoingTransfer = () => {};
+  const OutgoingTransfer = () => { };
 
   return (
     <>
@@ -326,8 +326,8 @@ function InPatientManagement() {
                 Movement
               </Col>
             </Row>
-          </div>
-        </Row>
+          </Row>
+        </div>
         {view === "" || view === "Tabular" ? (
           <Spin spinning={tableLoading}>
             <CustomTable
