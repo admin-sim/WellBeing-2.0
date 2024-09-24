@@ -5,6 +5,7 @@ import { urlCreatePurchaseOrder, urlSearchUHID, urlGetLastEncounter, urlAutocomp
 import Select from 'antd/es/select';
 import { ConfigProvider, Card, Typography, Checkbox, Tooltip, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete, message } from 'antd';
 import Input from 'antd/es/input';
+import PageHeader from "../../components/PageHeader/index.jsx";
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
 import Layout from 'antd/es/layout/layout';
@@ -69,6 +70,7 @@ const CreatePatientIndent = () => {
     const [uhId, setUhId] = useState();
     const [indentStatus, setIndentStatus] = useState(false);
     const [isProductAvailable, setIsProductAvailable] = useState(false)
+    const [uhid, setUhid] = useState()
 
     useEffect(() => {
         customAxios.get(urlCreatePurchaseOrder).then((response) => {
@@ -77,17 +79,19 @@ const CreatePatientIndent = () => {
         });
         setDropDownLoading(false);
     }, []);
+
     useEffect(() => {
         debugger;
-
         fetchData();
     }, []);
+
     const fetchData = async () => {
         if (indentId > 0) {
             setLoading(true);
             setButtonTitle('Update');
             customAxios.get(`${urlEditPatientIndent}?IndentId=${indentId}`).then((response) => {
                 const apiData = response.data.data;
+                setEncounter(response.data.data.EncounterList.filter((item) => item.EncounterId === apiData.newIndentModel.EncounterId))
                 const products = apiData.IndentDetails.map((item, index) => ({
                     ...item,
                     key: index,
@@ -100,6 +104,7 @@ const CreatePatientIndent = () => {
                 setCounter(products.length)
                 setIsTableVisible(true)
                 const formdata = apiData.newIndentModel
+                setUhId(formdata.UhId)
                 form1.setFieldsValue({
                     IssuingStore: formdata.IssueingStoreId,
                     IndentType: formdata.IndentType,
@@ -108,7 +113,7 @@ const CreatePatientIndent = () => {
                     IndentStatus: formdata.IndentStatus == 'Created' ? undefined : formdata.IndentStatus,
                     UHID: formdata.UhId,
                     Name: formdata.PatientName,
-                    Encounter: formdata.Encounter,
+                    Encounter: formdata.EncounterId,
                     EncounterId: formdata.EncounterId,
                     PatientId: formdata.PatientId,
                     IndentId: formdata.IndentId
@@ -438,7 +443,6 @@ const CreatePatientIndent = () => {
             }
         }
 
-
         const Indent = {
             IndentId: values.IndentId ? values.IndentId : 0,
             IndentDatestring: values.IndentDate ? values.IndentDate.format('DD-MM-YYYY') : '',
@@ -505,28 +509,30 @@ const CreatePatientIndent = () => {
             const apiData = response.data.data;
             if (apiData.length > 0) {
                 setEncounter(apiData);
+                form1.setFieldsValue({ Encounter: apiData[0].EncounterId });
                 form1.setFieldsValue({ EncounterId: apiData[0].EncounterId });
                 form1.setFieldsValue({ PatientId: option.PatientId });
             } else {
                 setEncounter([]);
                 form1.setFieldsValue({ EncounterId: '' });
+                form1.setFieldsValue({ Encounter: '' });
                 form1.setFieldsValue({ PatientId: '' });
             }
         });
     }
 
     const handleStoreChange = (value) => {
-        setData([]);
+        debugger
+        setData(initialDataSource);
         setAutoCompleteProduct([]);
         form2.resetFields();
         setIsTableVisible(true);
-
     }
 
     return (
         <Layout style={{ zIndex: '999999999' }}>
             <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-                <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
+                {/* <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
                     <Col span={16}>
                         <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
                             Create Patient Indent
@@ -537,7 +543,13 @@ const CreatePatientIndent = () => {
                             Back
                         </Button>
                     </Col>
-                </Row>
+                </Row> */}
+                <PageHeader
+                    title={"Create Patient Indent"}
+                    buttonLabel="Back"
+                    buttonIcon={<LeftOutlined />}
+                    onButtonClick={handleCancel}
+                />
                 <Card>
                     <Form
                         layout="vertical"
@@ -641,7 +653,7 @@ const CreatePatientIndent = () => {
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
-                                <Form.Item label="UHID" name="UHID"
+                                <Form.Item label="UHID" name="UHID" initialValue={uhid}
                                     rules={[
                                         {
                                             required: true,
@@ -668,14 +680,18 @@ const CreatePatientIndent = () => {
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
-                                <Form.Item label="Encounter" name="Encounter">
+                                <Form.Item label="Encounter" name="Encounter"
+                                // initialValue={encounter.length > 0 ? encounter[0].EncounterId : undefined}
+                                >
                                     <Select disabled={encounter.length > 1 ? false : true}>
                                         {encounter.map((option) => (
                                             <Select.Option key={option.EncounterId} value={option.EncounterId}>{option.GeneratedEncounterId}</Select.Option>
                                         ))}
                                     </Select>
                                 </Form.Item>
-                                <Form.Item name="EncounterId" hidden>
+                                <Form.Item name="EncounterId" hidden
+                                // initialValue={encounter.length > 0 ? encounter[0].EncounterId : undefined}
+                                >
                                     <Input></Input>
                                 </Form.Item>
                             </Col>
@@ -709,15 +725,21 @@ const CreatePatientIndent = () => {
                         <Spin spinning={loading}>
                             {isTableVisible ? (
                                 <div>
-                                    {/* <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} scroll={{ x: 0 }} /> */}
-                                    {/* <Spin spinning={loading}> */}
-                                    <CustomTable
+                                    <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} scroll={{ x: 0 }} />
+                                    {/* <Spin spinning={loading}>
+                                    {/* <CustomTable
                                         dataSource={data.filter((item) => item.ActiveFlag !== false)}
                                         columns={columns}
                                         isFilter={false}
-                                        actionColumn={false}
+                                        // actionColumn={false}
+                                        actionColumnName={<Button
+                                            type="primary"
+                                            icon={<PlusOutlined />}
+                                            onClick={AddProduct}
+                                        ></Button>}
+                                        onDelete={handleDelete}
                                         bordered
-                                    />
+                                    /> */}
                                     {/* </Spin> */}
                                 </div>
                             ) : null}

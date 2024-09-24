@@ -5,6 +5,7 @@ import {
   DeleteOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import dayjs from "dayjs";
 import {
   Spin,
@@ -250,7 +251,7 @@ const DirectGRN = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -279,7 +280,13 @@ const DirectGRN = () => {
               Add Direct GRN
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Direct GRN"}
+          buttonLabel="Add Direct GRN"
+          buttonIcon={<PlusCircleOutlined />}
+          onButtonClick={() => handleAddTemplate(0)}
+        />
         <Card>
           <Form
             form={form}

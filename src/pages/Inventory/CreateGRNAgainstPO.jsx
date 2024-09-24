@@ -10,6 +10,7 @@ import {
   urlUpdateGRNAgainstPO,
 } from "../../../endpoints.js";
 import Select from "antd/es/select";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import {
   ConfigProvider,
   Tooltip,
@@ -1535,7 +1536,7 @@ const CreateGRNAgainstPO = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -1564,7 +1565,13 @@ const CreateGRNAgainstPO = () => {
               Back
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Create GRN Against PO"}
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleCancel}
+        />
         <Card>
           <Form
             layout="vertical"

@@ -23,10 +23,9 @@ import CkEditor from "../../../../components/CKEditor/index";
 import dayjs from "dayjs";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import customAxios from '../../../../components/customAxios/customAxios.jsx'
-import { urlAddNewDrNote, urlViewOrEditDrNote, urlDeleteDrNote } from "../../../../../endpoints.js";
-import { set } from "lodash";
+import { urlAddNewNrNote, urlViewOrEditNrNote, urlDeleteNrNote } from "../../../../../endpoints.js";
 
-function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
+function NrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
   const [form] = Form.useForm();
   const [templateEditorData, setTemplateEditorData] = useState("");
   const [openCKModel, setOpenCKModel] = useState(false)
@@ -39,7 +38,7 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
   };
 
   const handleCancel1 = () => {
-    setTemplateEditorData('')
+    setOpenCKModel(false)
     form.resetFields()
     setOpenCKModel(false)
     setButtonTitle('Save')
@@ -47,8 +46,8 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
   }
 
   useEffect(() => {
-    setFilteredData(Dropdown.DrNotesList);
-  }, [Dropdown.DrNotesList]);
+    setFilteredData(Dropdown.NrNotesList);
+  }, [Dropdown.NrNotesList]);
 
   const columns = [
     {
@@ -68,15 +67,14 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
   ]
 
   const handleView = async (value, flag) => {
-    debugger
     setTemplateEditorData('')
     const response = await customAxios.get(
-      `${urlViewOrEditDrNote}?NoteId=${value.DrNoteId}&EncounterId=${bed.EncounterId}&PatientId=${bed.PatientId}`
+      `${urlViewOrEditNrNote}?NoteId=${value.NrNoteId}&EncounterId=${bed.EncounterId}&PatientId=${bed.PatientId}`
     );
     if (response.status === 200 && response.data.data != null) {
       setButtonTitle('Update')
-      setTemplateEditorData(response.data.data.DrNote);
-      form.setFieldsValue({ 'DrNoteId': response.data.data.DrNoteId })
+      setTemplateEditorData(response.data.data.NrNote);
+      form.setFieldsValue({ 'NrNoteId': response.data.data.NrNoteId })
       setOpenCKModel(true)
       if (flag == 1) {
         setReadOnly(true)
@@ -85,12 +83,11 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
   }
 
   const handleDelete = async (value) => {
-    debugger
     const response = await customAxios.get(
-      `${urlDeleteDrNote}?NoteId=${value.DrNoteId}&EncounterId=${bed.EncounterId}&PatientId=${bed.PatientId}`
+      `${urlDeleteNrNote}?NoteId=${value.NrNoteId}&EncounterId=${bed.EncounterId}&PatientId=${bed.PatientId}`
     );
     if (response.status === 200 && response.data.data != null) {
-      setFilteredData(response.data.data.DrNotesList)
+      setFilteredData(response.data.data.NrNotesList)
       form.resetFields()
       setTemplateEditorData('')
     }
@@ -99,12 +96,12 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
   return (
     <div>
       <Modal
-        width={"auto"}
+        width={"60%"}
         height={"auto"}
         centered
         title={
           <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>
-            Doctor Notes
+            Nurse Notes
           </span>
         }
         open={open}
@@ -137,8 +134,8 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
         height={"auto"}
         centered
         title={
-          <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>
-            {buttonTitle == 'Save' ? 'Add New Doctor Note' : 'Update Doctor Note'}
+          <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>            
+            {buttonTitle == 'Save' ? 'Add New Nurse Note' : 'Update Nurse Note'}
           </span>
         }
         open={openCKModel}
@@ -165,21 +162,21 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
                 return false
               }
               const note = {
-                DrNoteId: values.DrNoteId ? values.DrNoteId : 0,
+                NrNoteId: values.NrNoteId ? values.NrNoteId : 0,
                 PatientId: bed.PatientId,
                 EncounterId: bed.EncounterId,
                 datestring: values.Date ? values.Date.format('DD-MM-YYYY') : '',
                 timestring: values.Date ? values.Date.format('HH:mm:ss') : '',
-                DrNote: templateEditorData
+                NrNote: templateEditorData
               }
-              const response = await customAxios.post(urlAddNewDrNote, note, {
+              const response = await customAxios.post(urlAddNewNrNote, note, {
                 headers: {
                   "Content-Type": "application/json",
                 },
               });
               if (response.status === 200 && response.data.data != null) {
                 message.success('Success')
-                setFilteredData(response.data.data.DrNotesList)
+                setFilteredData(response.data.data.NrNotesList)
                 form.resetFields()
                 setTemplateEditorData('')
                 setButtonTitle('Save')
@@ -197,7 +194,7 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
                     format="dddd , DD-MM-YYYY , hh:mm A"
                   />
                 </Form.Item>
-                <Form.Item name='DrNoteId'>
+                <Form.Item name='NrNoteId'>
                   <Input hidden />
                 </Form.Item>
               </Col>
@@ -237,15 +234,15 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
                 </Form.Item>
               </Col>
             </Row>
-            <Col>
-              <Form.Item label='DrNote' disabled={readOnly}>
-                <CkEditor
-                  initialData={templateEditorData}
-                  printButton={true}
-                  setData={setTemplateEditorData}
-                />
-              </Form.Item>
-            </Col>
+              <Col>
+                <Form.Item label='Nr Notes' disabled={readOnly}>
+                  <CkEditor
+                    initialData={templateEditorData}
+                    printButton={true}
+                    setData={setTemplateEditorData}
+                  />
+                </Form.Item>
+              </Col>
             <Row justify="end">
               <Col>
                 <Form.Item hidden={readOnly}>
@@ -267,4 +264,4 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
   );
 }
 
-export default DrNoteModal;
+export default NrNoteModal;

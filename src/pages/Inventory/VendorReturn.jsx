@@ -3,6 +3,7 @@ import Layout from 'antd/es/layout/layout';
 import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import CustomTable from "../../components/customTable/index.jsx";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import {
   Spin,
   Skeleton,
@@ -188,7 +189,7 @@ const VendorReturn = () => {
   return (
     <Layout style={{ zIndex: '999999999' }}>
       <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-        <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
+        {/* <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
           <Col span={16}>
             <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
               Vendor Return
@@ -199,7 +200,13 @@ const VendorReturn = () => {
               Add Vendor Return
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Vendor Return"}
+          buttonLabel="Add Vendor Return"
+          buttonIcon={<PlusCircleOutlined />}
+          onButtonClick={() => GetModelDetails(0)}
+        />
         <Card>
           <Form
             form={form}

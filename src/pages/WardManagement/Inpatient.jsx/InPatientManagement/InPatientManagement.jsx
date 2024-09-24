@@ -104,6 +104,10 @@ function InPatientManagement() {
     </Row>
   );
 
+  const ReLoad = (value) => {
+    handleMenuClick(value)
+  }
+
   const renderAwaitingPatients = () => (
     <div>
       {beds.map((bed) => (
@@ -320,7 +324,7 @@ function InPatientManagement() {
               <Col span={3} style={{ backgroundColor: '#D1E9F6' }}>
                 Request Confirmed
               </Col>
-              <Col span={3} style={{ backgroundColor: '#CADABF' }}>
+              <Col span={3} style={{ backgroundColor: '#7C93C3' }}>
                 Discharge Initiated
               </Col>
               <Col span={3} style={{ backgroundColor: '#C8A1E0' }}>
@@ -353,7 +357,7 @@ function InPatientManagement() {
                         <Col xs={24}>
                           <Row gutter={[32, 32]} justify="start">
                             {groupedBeds[wardName].map((bed) => (
-                              <WardBed key={bed.BedID} bed={bed} />
+                              <WardBed key={bed.BedID} bed={bed} ReLoad={ReLoad} />
                             ))}
                           </Row>
                         </Col>

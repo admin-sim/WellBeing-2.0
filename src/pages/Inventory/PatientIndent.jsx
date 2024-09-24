@@ -6,6 +6,7 @@ import {
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import {
   Spin,
   Skeleton,
@@ -55,6 +56,7 @@ const PatientIndent = () => {
   const [dropDownLoad, setDropDownLoading] = useState(true);
 
   useEffect(() => {
+    debugger
     try {
       customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
         const apiData = response.data.data;
@@ -257,7 +259,7 @@ const PatientIndent = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -286,7 +288,13 @@ const PatientIndent = () => {
               Add Patient Indent
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Patient Indent"}
+          buttonLabel="Add Patient Indent"
+          buttonIcon={<PlusCircleOutlined />}
+          onButtonClick={() => GetIndentById(0)}
+        />
         <Card>
           <Form
             form={form}

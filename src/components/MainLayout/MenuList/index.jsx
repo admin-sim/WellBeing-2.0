@@ -495,10 +495,10 @@ const menuData = [
     title: "Clinical Documents",
     children: [
       {
-        key: "clinicalChart",
+        key: "clinicalChartFlow",
         icon: "GoDotFill",
         title: "Clinical Chart",
-        link: "/ClinicalChart",
+        link: "/ClinicalChartFlow",
       },
       {
         key: "patientTrackingBoard",

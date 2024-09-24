@@ -3,10 +3,11 @@ import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
 import { urlCreatePurchaseOrder, urlEditOpeningStock, urlUpdateOpeningStock, urlAutocompleteProduct, urlAddNewStock } from '../../../endpoints';
 import Select from 'antd/es/select';
-import { ConfigProvider, Typography, Checkbox, Tag, Modal, Popconfirm, message, Col, Divider, Row, AutoComplete, Card } from 'antd';
+import { ConfigProvider, Typography, Checkbox, Tag, Modal, Popconfirm, message, Col, Divider, Row, Spin, AutoComplete, Card } from 'antd';
 import Input from 'antd/es/input';
 import Form from 'antd/es/form';
 import { DatePicker } from 'antd';
+import PageHeader from "../../components/PageHeader/index.jsx";
 import Layout from 'antd/es/layout/layout';
 import { LeftOutlined } from '@ant-design/icons';
 //import Typography from 'antd/es/typography';
@@ -32,6 +33,7 @@ const CreateOpeningStock = () => {
   const location = useLocation();
   let [counter, setCounter] = useState(1);
   let [counterModal, setCounterModal] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const GRNHeaderId = location.state.GRNHeaderId;
 
@@ -113,6 +115,7 @@ const CreateOpeningStock = () => {
     debugger;
     const fetchData = async () => {
       if (GRNHeaderId > 0) {
+        setLoading(true)
         setButtonTitle("Update");
         try {
           const response = await customAxios.get(
@@ -143,6 +146,7 @@ const CreateOpeningStock = () => {
             }));
             setCounterModal(editeddata.BatchDetails.length + 1);
             setDataModal(delivery);
+            setLoading(false)
           }
         } catch (error) {
           console.error("Error fetching data:", error);
@@ -810,7 +814,7 @@ const CreateOpeningStock = () => {
   return (
     <Layout style={{ zIndex: '999999999' }}>
       <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-        <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
+        {/* <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
           <Col span={16}>
             <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
               Create Opening Stock
@@ -821,7 +825,13 @@ const CreateOpeningStock = () => {
               Back
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Create Opening Stock"}
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleOpeningStock}
+        />
         <Card>
           <Form
             layout="vertical"
@@ -927,7 +937,24 @@ const CreateOpeningStock = () => {
             }}
             form={form2}
           >
-            <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} scroll={{ x: 0 }} />
+            {/* <Table columns={columns} dataSource={data.filter((item) => item.ActiveFlag !== false)} scroll={{ x: 0 }} /> */}
+            <Spin spinning={loading}>
+              <CustomTable
+                dataSource={data.filter((item) => item.ActiveFlag !== false)}
+                columns={columns}
+                isFilter={false}
+                bordered
+                scroll={{
+                  x: 2000,
+                }}
+                onDelete={handleDelete}
+                actionColumnName={<Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleAdd}
+                ></Button>}
+              />
+            </Spin>
           </Form>
         </Card>
         <ConfigProvider

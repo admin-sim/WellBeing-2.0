@@ -14,15 +14,15 @@ import { DollarTwoTone, FolderOpenTwoTone } from "@ant-design/icons";
 import male from "../../assets/m.png";
 import { isMobile } from "react-device-detect";
 
-function PatientHeader({ encounterId }) {
-  const patient = {
-    PatientName: "Nitish Arali",
-    UhId: "COH-001",
-    PatientGender: "Male",
-    GeneratedEncounterId: "EID-501",
-    Age: "28Y",
-    DateOfBirthstring: "01-01-1995",
-  };
+function PatientHeader({ patient, encounterId, style }) {
+  // const patient = {
+  //   PatientName: "Nitish Arali",
+  //   UhId: "COH-001",
+  //   PatientGender: "Male",
+  //   GeneratedEncounterId: "EID-501",
+  //   Age: "28Y",
+  //   DateOfBirthstring: "01-01-1995",
+  // };
   const displayEncounterId = patient?.GeneratedEncounterId || encounterId;
   return isMobile ? (
     <>
@@ -30,7 +30,7 @@ function PatientHeader({ encounterId }) {
         style={{
           padding: "0.2rem 0.5rem",
           borderRadius: "0.5rem",
-          margin: "1.5rem 0 0rem 0",
+          marginTop: "1.5rem 0 0rem 0",
           boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
         }}
       >
@@ -76,7 +76,7 @@ function PatientHeader({ encounterId }) {
                 </span>
                 <span>{patient?.GeneratedEncounterId}</span> */}
 
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
+                  <span style={{ fontWeight: "bold" }}>
                     {/* {displayEncounterId ? "Encounter" : ""}&nbsp;: */}
                     Encounter&nbsp;:
                   </span>
@@ -87,7 +87,7 @@ function PatientHeader({ encounterId }) {
                           encounterId && !patient?.GeneratedEncounterId
                             ? "green"
                             : "inherit",
-                        padding: "0 4px",
+                        // padding: "0 1px",
                         color:
                           encounterId && !patient?.GeneratedEncounterId
                             ? "White"
@@ -183,6 +183,7 @@ function PatientHeader({ encounterId }) {
         borderRadius: "0.5rem",
         margin: "1.5rem 0 0rem 0",
         boxShadow: "0px 0px 2px 2px rgba(86,144,199,1)",
+        ...style,
       }}
     >
       <Col span={18}>
@@ -222,9 +223,9 @@ function PatientHeader({ encounterId }) {
                 </span>
                 <span>{patient?.GeneratedEncounterId}</span> */}
 
-                <span style={{ fontWeight: "bold", marginRight: "8px" }}>
+                <span style={{ fontWeight: "bold" }}>
                   {/* {displayEncounterId ? "Encounter" : ""}&nbsp;: */}
-                  Encounter&nbsp;:{" "}
+                  Encounter&nbsp;:
                 </span>
                 {displayEncounterId && (
                   <span

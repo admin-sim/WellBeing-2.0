@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Layout from 'antd/es/layout/layout';
 import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import CustomTable from "../../components/customTable/index.jsx";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import dayjs from 'dayjs';
 import {
   Spin,
@@ -36,7 +37,7 @@ const StoreReturn = () => {
   });
 
   const [filteredData, setFilteredData] = useState([]);
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const { Title } = Typography;
 
@@ -140,13 +141,13 @@ const StoreReturn = () => {
   ];
   const onFinish = async (values) => {
     debugger;
-    setIsSearchLoading(true);
-    
+    setLoading(true);
+
     try {
       const postData1 = {
         Store: values.ReturningStore ? values.ReturningStore : 0,
         ReturnedToStore: values.ReturnedToLocation ? values.ReturnedToLocation : 0,
-        Status: values.Status ?  values.Status : "",
+        Status: values.Status ? values.Status : "",
         FromDateString: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : null,
         ToDateString: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : null
       };
@@ -164,7 +165,7 @@ const StoreReturn = () => {
         .then((response) => {
           debugger;
           setFilteredData(response.data.data.ReturnDetails);
-          setIsSearchLoading(false);
+          setLoading(false);
         })
     } catch (error) {
       // Handle any errors here      
@@ -172,8 +173,8 @@ const StoreReturn = () => {
   };
 
 
-  
-  
+
+
 
   const onReset = () => {
     form.resetFields();
@@ -182,7 +183,7 @@ const StoreReturn = () => {
   return (
     <Layout style={{ zIndex: '999999999' }}>
       <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-        <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
+        {/* <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
           <Col span={16}>
             <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
               Store Return
@@ -193,7 +194,13 @@ const StoreReturn = () => {
               Add Store Return
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Store Return"}
+          buttonLabel="Add Store Return"
+          buttonIcon={<PlusCircleOutlined />}
+          onButtonClick={() => GetModelDetails(0)}
+        />
         <Card>
           <Form
             form={form}
@@ -260,7 +267,7 @@ const StoreReturn = () => {
                 <Form.Item>
                   <Button
                     type="primary"
-                    loading={isSearchLoading}
+                    loading={loading}
                     htmlType="submit"
                   >
                     Search

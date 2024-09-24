@@ -10,7 +10,7 @@ import {
   urlUpdateGRNDirect,
 } from "../../../endpoints";
 import CustomTable from "../../components/customTable/index.jsx";
-
+import PageHeader from "../../components/PageHeader/index.jsx";
 import Select from "antd/es/select";
 import {
   ConfigProvider,
@@ -85,28 +85,28 @@ const CreateDirectGRN = () => {
   const initialModelDataSource =
     grnHeaderId === 0
       ? [
-          {
-            key: 1,
-            BarCode: "",
-            BatchNo: "",
-            BatchQty: 0,
-            UomId: null,
-            BatchBonusQty: 0,
-            MFGDateString: "",
-            EXPDateString: "",
-            rate: 0,
-            BatchMrp: 0,
-            DiscountRate: 0,
-            BatchTaxType1: "",
-      
-            BatchTaxType2: "",
-            BatchTaxAmount1: 0,
-            BatchStockLocator: "",
-            ProductId: "",
-            GrnBatchId: 0,
-            ActiveFlag: true,
-          },
-        ]
+        {
+          key: 1,
+          BarCode: "",
+          BatchNo: "",
+          BatchQty: 0,
+          UomId: null,
+          BatchBonusQty: 0,
+          MFGDateString: "",
+          EXPDateString: "",
+          rate: 0,
+          BatchMrp: 0,
+          DiscountRate: 0,
+          BatchTaxType1: "",
+
+          BatchTaxType2: "",
+          BatchTaxAmount1: 0,
+          BatchStockLocator: "",
+          ProductId: "",
+          GrnBatchId: 0,
+          ActiveFlag: true,
+        },
+      ]
       : [];
 
   const [form1] = Form.useForm();
@@ -382,7 +382,7 @@ const CreateDirectGRN = () => {
 
   const handleOpenModal = async (value, record) => {
     debugger;
-    
+
     record.BonusQuantity = form1.getFieldValue([record.key, "BonusQuantity"]);
     await form1.validateFields([
       "StoreId",
@@ -464,7 +464,7 @@ const CreateDirectGRN = () => {
       message.warning("Please add Batch details");
       return false;
     }
-setLoading(true);
+    setLoading(true);
     const newdata = data.filter((item) => item.ProductId);
 
     const products = newdata
@@ -971,30 +971,30 @@ setLoading(true);
         </Form.Item>
       ),
     },
-    {
-      title: (
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={handleAdd}
-        ></Button>
-      ),
-      dataIndex: "add",
-      key: "add",
-      width: 50,
-      render: (text, record, index) => (
-        <Popconfirm
-          title="Are you sure you want to delete this record?"
-          onConfirm={() => handleDelete(record)}
-        >
-          <Button
-            size="small"
-            danger
-            icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
-          ></Button>
-        </Popconfirm>
-      ),
-    },
+    // {
+    //   title: (
+    //     <Button
+    //       type="primary"
+    //       icon={<PlusOutlined />}
+    //       onClick={handleAdd}
+    //     ></Button>
+    //   ),
+    //   dataIndex: "add",
+    //   key: "add",
+    //   width: 50,
+    //   render: (text, record, index) => (
+    //     <Popconfirm
+    //       title="Are you sure you want to delete this record?"
+    //       onConfirm={() => handleDelete(record)}
+    //     >
+    //       <Button
+    //         size="small"
+    //         danger
+    //         icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
+    //       ></Button>
+    //     </Popconfirm>
+    //   ),
+    // },
   ];
 
   const ModelAdd = async () => {
@@ -1014,7 +1014,7 @@ setLoading(true);
         BatchMrp: 0,
         DiscountRate: 0,
         BatchTaxType1: "",
-  
+
         BatchTaxType2: "",
         BatchTaxAmount1: 0,
         BatchStockLocator: "",
@@ -1416,7 +1416,7 @@ setLoading(true);
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -1445,7 +1445,13 @@ setLoading(true);
               Back
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Create Direct GRN"}
+          buttonLabel="Back to Direct GRN"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleToDirectGRN}
+        />
         <Card>
           <Form
             layout="vertical"
@@ -1733,8 +1739,14 @@ setLoading(true);
                 dataSource={data.filter((item) => item.ActiveFlag !== false)}
                 columns={columns}
                 isFilter={false}
-                actionColumn={false}
+                // actionColumn={false}
+                actionColumnName={<Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleAdd}
+                ></Button>}
                 bordered
+                onDelete={handleDelete}
               />
             </Spin>
             {/* <Spin spinning={loading}>

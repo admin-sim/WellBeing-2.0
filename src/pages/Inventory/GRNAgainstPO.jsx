@@ -4,6 +4,7 @@ import {
   DeleteOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import {
   Spin,
   Skeleton,
@@ -244,7 +245,7 @@ const GRNAgainstPO = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -273,7 +274,13 @@ const GRNAgainstPO = () => {
               Add GRN Against PO
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"GRN Against PO"}
+          buttonLabel="Add GRN Against PO"
+          buttonIcon={<PlusCircleOutlined />}
+          onButtonClick={() => handleGRN(0)}
+        />
         <Card>
           <Form
             form={form}

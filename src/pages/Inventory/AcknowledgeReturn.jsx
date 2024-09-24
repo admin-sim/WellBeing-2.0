@@ -369,7 +369,7 @@ const AcknowledageReturn = () => {
               </Col>
             </Row>
           </Form>
-          <Spin spinning={loading}>
+          <Spin spinning={isSearchLoading}>
             <CustomTable
               dataSource={filteredData}
               columns={columns}

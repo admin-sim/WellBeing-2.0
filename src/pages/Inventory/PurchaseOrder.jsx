@@ -6,6 +6,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import Layout from "antd/es/layout/layout";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import {
   Spin,
   Skeleton,
@@ -64,10 +65,7 @@ const PurchaseOrder = () => {
     form.submit();
   }, []);
 
-
   const navigate = useNavigate();
-
-
 
   const colorMapping = {
     Created: "#4E31AA",
@@ -81,6 +79,7 @@ const PurchaseOrder = () => {
   const GetPobyId = (PoHeaderId) => {
     navigate("/CreatePurchaseOrder", { state: { PoHeaderId } });
   };
+
   const columns = [
     {
       title: "Sl. No.",
@@ -166,9 +165,8 @@ const PurchaseOrder = () => {
     },
   ];
 
- 
+
   const onFinish = async (values) => {
-    debugger;
     setLoading(true);
     try {
       const postData1 = {
@@ -227,7 +225,7 @@ const PurchaseOrder = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -256,7 +254,13 @@ const PurchaseOrder = () => {
               Add Purchase Order
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Purchase Order"}
+          buttonLabel="Add Purchase Order"
+          buttonIcon={<PlusCircleOutlined />}
+          onButtonClick={() => GetPobyId(0)}
+        />
         <Card>
           <Form
             form={form}

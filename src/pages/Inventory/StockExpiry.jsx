@@ -90,9 +90,9 @@ const StockExpiry = () => {
     },
     {
       title: "Expiry Date",
-      dataIndex: "EXPDate",
-      key: "EXPDate",
-      sorter: (a, b) => new Date(a.EXPDate) - new Date(b.EXPDate),
+      dataIndex: "EXPDateString",
+      key: "EXPDateString",
+      sorter: (a, b) => new Date(a.EXPDateString) - new Date(b.EXPDateString),
       sortDirections: ["descend", "ascend"],
       render: (text) => {
         return text;

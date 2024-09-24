@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from 'antd/es/layout/layout';
 import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import dayjs from 'dayjs';
 import {
   Spin,
@@ -94,7 +95,7 @@ const PatientConsumption = () => {
     Finalize: "#52c41a",
     Completed: "#FF9100",
   };
-  
+
   const handleIssueNumber = (IssueId) => {
     navigate("/CreatePatientConsumption", { state: { IssueId } });
   }
@@ -102,7 +103,7 @@ const PatientConsumption = () => {
   //   debugger;
   //   console.log("welcome");
   // };
-  
+
   const columns = [
     {
       title: "Sl No",
@@ -261,7 +262,7 @@ const PatientConsumption = () => {
   return (
     <Layout style={{ zIndex: '999999999' }}>
       <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-        <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
+        {/* <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
           <Col span={16}>
             <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
               Patient Consumption
@@ -272,7 +273,13 @@ const PatientConsumption = () => {
               Add Patient Consumption
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Patient Consumption"}
+          buttonLabel="Add Patient Consumption"
+          buttonIcon={<PlusCircleOutlined />}
+          onButtonClick={() => handleIssueNumber(0)}
+        />
         <Card>
           <Form
             form={form}

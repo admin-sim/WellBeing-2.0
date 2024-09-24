@@ -1,4 +1,5 @@
 import customAxios from "../../components/customAxios/customAxios.jsx";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import React, { useEffect, useState } from "react";
 import Button from "antd/es/button";
 import {
@@ -20,7 +21,7 @@ import {
   Col,
   Divider,
   Row,
-  AutoComplete,
+  Card,
   message,
 } from "antd";
 import Input from "antd/es/input";
@@ -56,7 +57,7 @@ const CreateStoreReturn = () => {
   const [data, setData] = useState([]);
   const [issueStatus, setIssueStatus] = useState();
   const [productOptions, setProductOptions] = useState();
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]); 
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const location = useLocation();
   const ReturnHeaderId = location.state.ReturnHeaderId;
   const navigate = useNavigate();
@@ -92,10 +93,10 @@ const CreateStoreReturn = () => {
 
             const formdata = editeddata.newReturnModel;
             form1.setFieldsValue({
-            
+
               ReturningStore: formdata.StoreId,
               ReturnedLocation: formdata.SupplierId,
-             // ReturnHeaderId: formdata.ReturnHeaderId
+              // ReturnHeaderId: formdata.ReturnHeaderId
             });
           }
         } catch (error) {
@@ -129,7 +130,7 @@ const CreateStoreReturn = () => {
     form2.setFieldsValue({ ProductId: option.key });
   };
 
-  const onFinishModel = async(values) => {
+  const onFinishModel = async (values) => {
     debugger;
     const newData = data.filter((item) => item.key !== (record.key === undefined ? record.toString() : record.key));
     Object.keys(fields).forEach(fieldName => {
@@ -153,10 +154,17 @@ const CreateStoreReturn = () => {
     setInputValues((prevState) => ({ ...prevState, [key]: value }));
   };
 
+  const onOkModal = () => {
+
+  }
+
+  const onCancelModel = () => {
+
+  }
 
   const handleOnFinish = async (values) => {
     debugger;
-   
+
     if (data.length == 0) {
       message.warning('Please Add Product/Batch')
       return false;
@@ -170,19 +178,19 @@ const CreateStoreReturn = () => {
           UomId: data[i].UomId,
           BatchNo: data[i].BatchNo,
           ReturnQty: values[i].ReturnQty,
-          EXPDateString:dayjs(data[i].EXPDate).format('DD-MM-YYYY'),
-      
+          EXPDateString: dayjs(data[i].EXPDate).format('DD-MM-YYYY'),
+
         }
         products.push(product);
       }
     }
     const storeReturn = {
-      FacilityId : 1,
+      FacilityId: 1,
       StoreId: values.ReturningStore,
       SupplierId: values.ReturnedLocation,
       ReturnDatestring: values.ReturnDate ? values.ReturnDate.format("DD-MM-YYYY") : null,
       ReturnStatus: !issueStatus ? 'Created' : values.ReturnStatus,
-      ReturnHeaderId:ReturnHeaderId
+      ReturnHeaderId: ReturnHeaderId
     }
     const postData = {
       newReturnModel: storeReturn,
@@ -199,10 +207,10 @@ const CreateStoreReturn = () => {
       // Handle error      
     }
   };
-  const addtolist  = () => {
+  const addtolist = () => {
     // Filter selected items
     const selectedItems = dataModal.filter(item => selectedRowKeys.includes(item.key));
-  
+
     if (selectedItems.length > 0) {
       // Map selected items to a new array with updated keys and indices
       const newItems = selectedItems.map((item, index) => ({
@@ -210,7 +218,7 @@ const CreateStoreReturn = () => {
         key: index,      // Ensure a unique key for each item
         index: index + 1 // Adjust index if needed
       }));
-  
+
       // Update the state with the new items
       setData(newItems);
       setIsModalOpen(false);
@@ -219,6 +227,11 @@ const CreateStoreReturn = () => {
       return false;
     }
   };
+
+  const onFinishFailed = () => {
+
+  }
+
   const OpenModel = async () => {
     await form1.validateFields(["ReturningStore"]);
     form2.resetFields();
@@ -226,13 +239,16 @@ const CreateStoreReturn = () => {
     setSelectedRowKeys([]);
     setIsModalOpen(true);
   };
+
   const handleToBack = () => {
     const url = "/StoreReturn";
     navigate(url);
   };
+
   const handleReset = () => {
     form2.resetFields();
   };
+
   const SubmitChanged = (event) => {
     setIssueStatus(event.target.checked);
   };
@@ -305,7 +321,7 @@ const CreateStoreReturn = () => {
       title: "Return Quantity",
       dataIndex: "ReturnQty",
       key: "ReturnQty",
-      width:300,
+      width: 300,
       render: (text, record) => (
         <>
           <Form.Item
@@ -390,7 +406,7 @@ const CreateStoreReturn = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -419,7 +435,13 @@ const CreateStoreReturn = () => {
               Back
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Create Store Return"}
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleToBack}
+        />
         <Card>
           <Form
             layout="vertical"
@@ -561,14 +583,14 @@ const CreateStoreReturn = () => {
             <Row justify="end" style={{ padding: '0rem 1rem' }}>
               <Col style={{ marginRight: '10px' }}>
                 <Form.Item>
-                  <Button type="primary" loading={isSearchLoading} htmlType="submit">
+                  <Button type="primary" htmlType="submit">
                     Submit
                   </Button>
                 </Form.Item>
               </Col>
               <Col>
                 <Form.Item>
-                  <Button type="primary" onClick={handleCancel}>
+                  <Button type="primary" onClick={handleToBack}>
                     Cancel
                   </Button>
                 </Form.Item>
@@ -576,40 +598,39 @@ const CreateStoreReturn = () => {
             </Row>
           </Form>
         </Card>
-    
-          <Modal
-            title="Basic Modal"
-            onOk={onOkModal}
-            onCancel={onCancelModel}
-            width={1000}
-            open={isModalOpen}
+        <Modal
+          title="Basic Modal"
+          onOk={onOkModal}
+          onCancel={onCancelModel}
+          width={1000}
+          open={isModalOpen}
+        >
+          <Form
+            name="basic"
+            labelCol={{
+              span: 8,
+            }}
+            wrapperCol={{
+              span: 16,
+            }}
+            style={{
+              width: '100%',
+            }}
+            initialValues={{
+              remember: true,
+            }}
+            onFinish={onFinishModel}
+            onFinishFailed={onFinishFailed}
+            autoComplete="off"
+            form={form2}
           >
-            <Form
-              name="basic"
-              labelCol={{
-                span: 8,
-              }}
-              wrapperCol={{
-                span: 16,
-              }}
-              style={{
-                width: '100%',
-              }}
-              initialValues={{
-                remember: true,
-              }}
-              onFinish={onFinishModel}
-              onFinishFailed={onFinishFailed}
-              autoComplete="off"
-              form={form2}
-            >
-              <Row>
+            <Row>
               <Col className="gutter-row" span={6}>
                 <div>
                   <Form.Item
                     label="Product"
                     name="Product"
-                    initialValue={selectedProductId[recordKeys]}
+                    // initialValue={selectedProductId[recordKeys]}
                     style={{ marginLeft: '10px' }}
                     rules={[
                       {
@@ -617,14 +638,14 @@ const CreateStoreReturn = () => {
                       }
                     ]}
                   >
-                    <Tag color="blue">{form1.getFieldValue([recordKeys, 'product'])}</Tag>
+                    {/* <Tag color="blue">{form1.getFieldValue([recordKeys, 'product'])}</Tag> */}
                   </Form.Item>
                 </div>
               </Col>
             </Row>
           </Form>
           <Form
-            name="basic"
+            name="Search for Product"
             style={{
               width: "100%",
             }}
@@ -634,8 +655,8 @@ const CreateStoreReturn = () => {
             <Table columns={Modalcolumns} dataSource={dataModal} />
           </Form>
           <Row justify={"end"} style={{ margin: "1rem 1.5rem 0" }}>
-          <Form.Item>
-            <Button onClick={addtolist}   type="primary">Add To List</Button>
+            <Form.Item>
+              <Button onClick={addtolist} type="primary">Add To List</Button>
             </Form.Item>
           </Row>
         </Modal>

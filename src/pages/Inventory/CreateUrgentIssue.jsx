@@ -2,6 +2,7 @@ import customAxios from "../../components/customAxios/customAxios.jsx";
 import React, { useCallback, useEffect, useState } from "react";
 import Button from "antd/es/button";
 import CustomTable from "../../components/customTable/index.jsx";
+import PageHeader from "../../components/PageHeader/index.jsx";
 import {
   urlCreatePurchaseOrder,
   urlAutocompleteProduct,
@@ -759,33 +760,31 @@ const CreateUrgentIssue = () => {
         </>
       ),
     },
-    {
-      title: (
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={AddProduct}
-        />
-      ),
-      dataIndex: "add",
-      key: "add",
-      width: 50,
-      render: (text, record) => {
-        if (record.IndentIssueLineId > 0) {
-          return null; // Don't render the delete button if the condition is true
-        }
-        return (
-          <Popconfirm
-            title="Sure to delete?"
-            onConfirm={() => handleDelete(record)}
-          >
-            <DeleteOutlined />
-          </Popconfirm>
-        );
-      },
-    }
-
-
+    // {
+    //   title: (
+    //     <Button
+    //       type="primary"
+    //       icon={<PlusOutlined />}
+    //       onClick={AddProduct}
+    //     />
+    //   ),
+    //   dataIndex: "add",
+    //   key: "add",
+    //   width: 50,
+    //   render: (text, record) => {
+    //     if (record.IndentIssueLineId > 0) {
+    //       return null; // Don't render the delete button if the condition is true
+    //     }
+    //     return (
+    //       <Popconfirm
+    //         title="Sure to delete?"
+    //         onConfirm={() => handleDelete(record)}
+    //       >
+    //         <DeleteOutlined />
+    //       </Popconfirm>
+    //     );
+    //   },
+    // }
   ];
 
   const handleDelete = (record) => {
@@ -1130,12 +1129,14 @@ const CreateUrgentIssue = () => {
     const Va = form1.getFieldsValue();
     if (Va.RequestingStoreId == Va.IssueingStoreId) {
       message.warning("Please Select Different Store");
+      form2.resetFields();
       form1.resetFields();
-      setData([]);
+      setData(initialDataSource);
       return false;
     }
     if (value != undefined) {
       setIstablevisible(true);
+      setData(initialDataSource)
     }
   };
 
@@ -1149,7 +1150,7 @@ const CreateUrgentIssue = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -1178,7 +1179,13 @@ const CreateUrgentIssue = () => {
               Back
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Create Urgent Issue"}
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleCancel}
+        />
         <Card>
           <Form
             layout="vertical"
@@ -1319,8 +1326,14 @@ const CreateUrgentIssue = () => {
                 dataSource={data?.filter((item) => item.ActiveFlag !== false)}
                 columns={columns}
                 isFilter={false}
-                actionColumn={false}
+                // actionColumn={false}
                 bordered
+                actionColumnName={<Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={AddProduct}
+                ></Button>}
+                onDelete={handleDelete}
               />
               // <div>
               //   <Table

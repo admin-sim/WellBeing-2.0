@@ -1,8 +1,8 @@
-import { Avatar, Button, Col, Row, Tabs } from "antd";
-import React from "react";
+import { Avatar, Badge, Button, Col, Row, Tabs } from "antd";
+import React, { useEffect, useState } from "react";
 import male from "../../../assets/m.png";
 import { RxExit } from "react-icons/rx";
-
+import { useLocation } from "react-router-dom";
 import ChiefComplaint from "../Components/ChiefComplaint.jsx";
 import MedicalHistory from "../Components/MedicalHistory.jsx";
 import SurgicalHistory from "../Components/SurgicalHistory.jsx";
@@ -15,8 +15,66 @@ import PhysicalExamination from "../Components/PhysicalExamination.jsx";
 import ProvisionalDiagnosis from "../Components/ProvisionalDiagnosis.jsx";
 import Prescription from "../Components/Prescription.jsx";
 import Investigation from "../Components/Investigation.jsx";
+import { urlGetPatientHeaderDetails, urlGetAllPatientComplaints } from "../../../../endpoints";
+import customAxios from "../../../components/customAxios/customAxios";
+import dayjs from "dayjs";
+import { asyncThunkCreator } from "@reduxjs/toolkit";
 
 function ClinicalChart() {
+  const location = useLocation();
+  const Patient = location.state.va;
+  const [patientData, setPatientData] = useState()
+  const [initialData, setInitialData] = useState({
+    ChiefList: [],
+    MedicalHistoryList: [],
+    SurgicalHistoryList: [],
+    FamilyHistoryList: [],
+    SocialHistoryList: [],
+    NewAllergyList: []
+  })
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const response = await customAxios.get(
+          `${urlGetAllPatientComplaints}?PatientId=${Patient.PatientId}&EncounterId=${Patient.EncounterId}`
+        );
+        if (response.status === 200 && response.data.data != null) {
+          const detailsheader = response.data.data
+          setInitialData(detailsheader);
+        }
+      } catch (error) { }
+    }
+    fetch()
+  }, [])
+
+  useEffect(() => {
+    const fetchDataHeader = async () => {
+      try {
+        const response = await customAxios.get(
+          `${urlGetPatientHeaderDetails}?PatientId=${Patient.PatientId}&EncounterId=${Patient.EncounterId}`
+        );
+        if (response.status === 200 && response.data.data != null) {
+          const detailsheader = response.data.data.EncounterModel
+          setPatientData(detailsheader);
+        }
+      } catch (error) { }
+    };
+    fetchDataHeader();
+  }, []);
+
+  const handleUpdate = (value) => {
+    debugger
+    setInitialData(value)
+    // setInitialData((prevInitialData) => {
+    //   const updatedDropdown = {
+    //     ...prevInitialData,
+    //     prevInitialData: value,
+    //   };
+    //   return updatedDropdown;
+    // });
+  }
+
   const clinicalHeaders = [
     {
       label: `Patient Complaint`,
@@ -26,35 +84,35 @@ function ClinicalChart() {
           tabPosition="left"
           items={[
             {
-              label: `Chief Complaint`,
+              label: <Badge dot={initialData.ChiefList.length > 0}>Chief Complaint&nbsp;&nbsp;</Badge>,
               key: 1,
-              children: <ChiefComplaint />,
+              children: <ChiefComplaint Patient={Patient} initialData={initialData} handleUpdate={handleUpdate} />,
             },
             {
-              label: `Medical History`,
+              label: <Badge dot={initialData.MedicalHistoryList.length > 0}>Medical History&nbsp;&nbsp;</Badge>,
               key: 2,
-              children: <MedicalHistory />,
+              children: <MedicalHistory Patient={Patient} initialData={initialData} handleUpdate={handleUpdate} />,
             },
             {
-              label: `Surgical History`,
+              label: <Badge dot={initialData.SurgicalHistoryList.length > 0}>Surgical History&nbsp;&nbsp;</Badge>,
               key: 3,
-              children: <SurgicalHistory />,
+              children: <SurgicalHistory Patient={Patient} initialData={initialData} handleUpdate={handleUpdate} />,
             },
             {
-              label: `Family History`,
+              label: <Badge dot={initialData.FamilyHistoryList.length > 0}>Family History&nbsp;&nbsp;</Badge>,
               key: 4,
-              children: <FamilyHistory />,
+              children: <FamilyHistory Patient={Patient} initialData={initialData} handleUpdate={handleUpdate} />,
             },
             {
-              label: `Social History`,
+              label: <Badge dot={initialData.SocialHistoryList.length > 0}>Social History&nbsp;&nbsp;</Badge>,
               key: 5,
-              children: <SocialHistory />,
+              children: <SocialHistory Patient={Patient} initialData={initialData} handleUpdate={handleUpdate} />,
             },
 
             {
-              label: `Allergy`,
+              label: <Badge dot={initialData.NewAllergyList.length > 0}>Allergy&nbsp;&nbsp;</Badge>,
               key: 6,
-              children: <Allergy />,
+              children: <Allergy Patient={Patient} initialData={initialData} />,
             },
           ]}
         />
@@ -158,7 +216,7 @@ function ClinicalChart() {
         }}
       >
         <Col span={20}>
-          <PatientHeader />
+          <PatientHeader patient={patientData} />
         </Col>
         <Col
           span={4}
