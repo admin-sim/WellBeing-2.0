@@ -411,8 +411,7 @@ function PatientTrackRecords() {
                   </Form>
                 </div>
                 {patientTrackRecordTable && (
-                  <div
-                  >
+                  <div>
                     <PatientHeader />
                     <div style={{ marginTop: "1rem" }}>
                       <CustomTable
@@ -444,7 +443,6 @@ function PatientTrackRecords() {
                       <Form.Item label="UHID" name="Uhid">
                         <AutoComplete
                           options={options}
-                          //loading={AutoCompleteLoader}
                           onSearch={handleAutoCompleteChange}
                           onSelect={handleSelect}
                           value={selectedUhId}

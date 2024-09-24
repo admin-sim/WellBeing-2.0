@@ -181,7 +181,7 @@ const menuData = [
         ],
       },
       {
-        key: "WardManagement",
+        key: "WardManagement1",
         icon: "GiBed",
         title: "Ward Management",
         children: [
@@ -192,7 +192,7 @@ const menuData = [
             link: "/Ward",
           },
           {
-            key: "Bed",
+            key: "Bed1",
             icon: "GoDotFill",
             title: "Bed",
             link: "/Bed",
@@ -428,6 +428,30 @@ const menuData = [
         icons: "FaUserFriends",
         title: "Assigned Plan",
         link: "AssignedPlan",
+      },
+      {
+        key: "Receipt",
+        icons: "FaUserFriends",
+        title: "Receipt",
+        link: "Receipt",
+      },
+      {
+        key: "CancelBill",
+        icons: "FaUserFriends",
+        title: "Cancel Bill",
+        link: "CancelBill",
+      },
+      {
+        key: "Refund",
+        icons: "FaUserFriends",
+        title: "Refund",
+        link: "Refund",
+      },
+      {
+        key: "Reprint",
+        icons: "FaUserFriends",
+        title: "Reprint",
+        link: "Reprint",
       },
     ],
   },

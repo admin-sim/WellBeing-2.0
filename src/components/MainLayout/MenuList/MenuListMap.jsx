@@ -104,7 +104,7 @@ export default function MenuList({ menuData, onClose }) {
               style={{ paddingLeft: "0px" }}
               key={item.key}
               icon={getAntIcon(item.icon)}
-              title={item.title}
+              title={item?.title}
             >
               {renderMenuItems(item.children)}
             </SubMenu>

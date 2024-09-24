@@ -261,7 +261,7 @@ export const urlStoreIndex = `${baseURL}/api/Store/Index`;
 export const urlCreateStore = `${baseURL}/api/Store/CreateStore`;
 export const urlEditStore = `${baseURL}/api/Store/EditStore`;
 export const urlStockExpiryBasedOnExpiryCondition = `${baseURL}/api/Indent/StockExpiryBasedOnExpiryCondition`;
-export const urlGetLastEncounter = `${baseURL}/api/ReFund/GetLastEncounter`;
+export const urlGetLastEncounter = `${baseURL}/api/Patient/GetLastEncounter`;
 export const urlLoadContInfoGrid = `${baseURL}/api/LabTestMaster/LoadContInfoGrid`;
 export const urlTestMethodIndex = `${baseURL}/api/LabTestMaster/TestMethodIndex`;
 export const urlAddNewGRNAgainstPO = `${baseURL}/api/GRNAgainstPO/AddNewGRNAgainstPO`;
@@ -324,9 +324,7 @@ export const urlSearchReceipt = `${baseURL}/api/StoreReturn/SearchReceipt`;
 export const urlAddNewStoreReturn = `${baseURL}/api/StoreReturn/AddNewStoreReturn`;
 export const urlSearchStoreReturn = `${baseURL}/api/StoreReturn/SearchStoreReturn`;
 export const urlStoreReturnEdit = `${baseURL}/api/StoreReturn/StoreReturnEdit`;
-
 export const urlAcknowledgeReturnCreate = `${baseURL}/api/AcknowledgeReturn/AcknowledgeReturnCreate`;
-
 export const urlCancelDischargeInitiation = `${baseURL}/api/WardManagement/CancelDischargeInitiation`;
 export const urlCreateWard = `${baseURL}/api/Ward/CreateWard`;
 export const urlSaveNewWard = `${baseURL}/api/Ward/SaveNewWard`;
@@ -429,4 +427,7 @@ export const urlDeleteFamily = `${baseURL}/api/ClinicalSetup/DeleteFamily`;
 export const urlDeleteSocial = `${baseURL}/api/ClinicalSetup/DeleteSocial`;
 export const urlDeleteMedical = `${baseURL}/api/ClinicalSetup/DeleteMedical`;
 export const urlDeleteSurgical = `${baseURL}/api/ClinicalSetup/DeleteSurgical`;
+export const urlReceiptCreate = `${baseURL}/api/Receipt/Create`;
+export const urlShowOutStandingAmount = `${baseURL}/api/Receipt/ShowOutStandingAmount`;
+export const urlSaveNewReceipt = `${baseURL}/api/Receipt/SaveNewReceipt`;
 

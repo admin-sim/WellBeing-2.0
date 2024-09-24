@@ -37,11 +37,11 @@ import Service from "./pages/Masters/GeneralMasters/AccountManagement/Service";
 import CreateService from "./pages/Masters/GeneralMasters/AccountManagement/CreateService";
 import FacilityPriceDefinition from "./pages/Masters/GeneralMasters/AccountManagement/FacilityPriceDefinition";
 import EditPriceDefinition from "./pages/Masters/GeneralMasters/AccountManagement/EditPriceDefinition";
-import CreatePurchaseOrder from "./pages/Inventory/CreatePurchaseOrder";
-import DirectGRN from "./pages/Inventory/DirectGRN";
-import CreateDirectGRN from "./pages/Inventory/CreateDirectGRN";
-import GRNAgainstPO from "./pages/Inventory/GRNAgainstPO";
-import CreateGRNAgainstPO from "./pages/Inventory/CreateGRNAgainstPO";
+import CreatePurchaseOrder from "./pages/Inventory/PurchaseOrder/CreatePurchaseOrder";
+import DirectGRN from "./pages/Inventory/DirectGRN/index.jsx";
+import CreateDirectGRN from "./pages/Inventory/DirectGRN/CreateDirectGRN.jsx";
+import GRNAgainstPO from "./pages/Inventory/GRNAgainstPO/index.jsx";
+import CreateGRNAgainstPO from "./pages/Inventory/GRNAgainstPO/CreateGRNAgainstPO.jsx";
 import InventoryIndent from "./pages/Inventory/Indent";
 import CreateIndent from "./pages/Inventory/CreateIndent";
 import PatientIndent from "./pages/Inventory/PatientIndent";
@@ -84,7 +84,7 @@ import PublishCalender from "./pages/Masters/ResourceScheduling/PublishCalender/
 import ProviderAbsence from "./pages/Masters/ResourceScheduling/ProviderAbsence/providerAbsence";
 import SpecialEvent from "./pages/Masters/ResourceScheduling/SpecialEvent/specialEvent";
 import Holiday from "./pages/Masters/ResourceScheduling/Holiday/holiday";
-import Billing from "./pages/AccountManagement/Billling/SearchPage.jsx";
+import Billing from "./pages/AccountManagement/Billling/index.jsx";
 import CreateBilling from "./pages/AccountManagement/Billling/CreateBilling.jsx";
 import Vendor from "./pages/Masters/InventoryManagement/Vendor/Vendor.jsx";
 import VendorSearch from "./pages/Masters/InventoryManagement/Vendor/VendorSearch";
@@ -106,7 +106,7 @@ import UpdateItemReceipt from "./pages/Inventory/UpdateItemReceipt";
 import UpdatePatientIssue from "./pages/Inventory/UpdatePatientIssue";
 import ShowCreateEditDefinition from "./pages/Masters/InventoryManagement/ProductDefinition/ShowCreateEditDefinition";
 import Templates from "./pages/Masters/GeneralMasters/TemplateMaster";
-import ShowAddNewTemplate from "./pages/Masters/GeneralMasters/TemplateMaster/ShowAddNewTemplate.jsx";
+import ShowAddNewTemplate from "./pages/Masters/GeneralMasters/TemplateMaster/ShowAddNewTemplate";
 import Enterprise from "./pages/Masters/Identity Management/Enterprise/index.jsx";
 import Department from "./pages/Masters/Identity Management/Department/index.jsx";
 import ServiceLocation from "./pages/Masters/Identity Management/ServiceLocation/index.jsx";
@@ -128,8 +128,14 @@ import Frequency from "./pages/Masters/SystemParameterSetup/Frequency/index.jsx"
 import PatientTrackingBoard from "./pages/ClinicalDocuments/PatientTrackingBoard/index.jsx";
 import AdditionalCharge from "./pages/Masters/GeneralMasters/AccountManagement/AdditionalCharge";
 import CreateAdditionalCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAdditionalCharge";
-import AssignedPlanSearchPage from "./pages/AccountManagement/AssignedPlan/AssignedPlanSearchPage.jsx";
+import AssignedPlanSearchPage from "./pages/AccountManagement/AssignedPlan/index.jsx";
 import CreateAssignedPlan from "./pages/AccountManagement/AssignedPlan/CreateAssignedPlan.jsx";
+import CancelBill from "./pages/AccountManagement/CancelBill/index.jsx";
+import Refund from "./pages/AccountManagement/Refund/index.jsx";
+import Receipt from "./pages/AccountManagement/Receipt/index.jsx";
+import CreateReceipt from "./pages/AccountManagement/Receipt/CreateReceipt.jsx";
+import PatientRefund from "./pages/AccountManagement/Refund/PatientRefund.jsx";
+import Reprint from "./pages/AccountManagement/Reprint/index.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -998,6 +1004,54 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CreateBillAgrement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="CancelBill"
+              element={
+                <ProtectedRoute>
+                  <CancelBill />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Refund"
+              element={
+                <ProtectedRoute>
+                  <Refund />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="PatientRefund"
+              element={
+                <ProtectedRoute>
+                  <PatientRefund />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Receipt"
+              element={
+                <ProtectedRoute>
+                  <Receipt />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="CreateReceipt"
+              element={
+                <ProtectedRoute>
+                  <CreateReceipt />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Reprint"
+              element={
+                <ProtectedRoute>
+                  <Reprint />
                 </ProtectedRoute>
               }
             />

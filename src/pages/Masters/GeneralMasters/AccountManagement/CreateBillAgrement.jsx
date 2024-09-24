@@ -21,13 +21,6 @@ import Input from "antd/es/input/Input";
 import customAxios from "../../../../components/customAxios/customAxios";
 import React, { useEffect, useState } from "react";
 import {
-  urlCreatePriceTariff,
-  urlSaveNewPriceTariff,
-  urlEditPriceTariffChargeParameter,
-  urlGetDropDownsForPricetariif,
-  urlSaveNewPriceTariffChargeParameter,
-  urlEditPriceTariff,
-  urlUpdatePriceTariff,
   urlBillAgreementCreate,
   urlSaveNewBillAgreement,
   urlGetDropDownsForBillAggrement,
@@ -36,18 +29,14 @@ import {
   urlUpdateBillAgreement,
   urlDeleteBillAgreementChargeParameter,
 } from "../../../../../endpoints";
-import PriceChargeModal from "./PriceChargeModal";
-import EditPriceChargeModal from "./EditPriceChargeModal";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import { Transfer } from "antd";
 import CustomTable from "../../../../components/customTable";
 import dayjs from "dayjs";
-import FormItem from "antd/es/form/FormItem";
 import BillAggrementModal from "./BillAggrementModal";
 import EditBillAgrementModal from "./EditBillAgrementModal";
 
-const { TextArea } = Input;
 
 function CreateBillAgrement() {
   const [form] = Form.useForm();
@@ -298,12 +287,12 @@ function CreateBillAgrement() {
       AgreementDescription: values.AgreementDescription,
       FacilityId: 1,
       Remarks: values.Remarks,
-      RestrictedDays: values.RestrictedDays,
+      RestrictedDays: values.RestrictedDays ? values.RestrictedDays : null ,
       IsDaysRestricted: values.IsDaysRestricted,
-      RestrictedDeductible: values.RestrictedDeductible,
+      RestrictedDeductible: values.RestrictedDeductible  ? values.RestrictedDeductible  : null ,
       RestrictedDeductibleType: values.RestrictedDeductibleType,
       IsDeductibleRestricted: values.IsDeductibleRestricted,
-      RestrictedAuthLimit: values.RestrictedAuthLimit,
+      RestrictedAuthLimit: values.RestrictedAuthLimit ? values.RestrictedAuthLimit : null ,
       IsAuthLimitRestricted: values.IsAuthLimitRestricted,
       RestrictedAuthLimitType: values.RestrictedAuthLimitType,
       PayerId: values.PayerId,
@@ -412,7 +401,9 @@ function CreateBillAgrement() {
       dataIndex: "ListOfChargeParameters",
       key: "chargeParameters",
       render: (text, record) => {
+        debugger;
         const chargeParameters = [];
+
         if (record.NationalityName)
           chargeParameters.push(record.NationalityName);
         if (record.PatientTypeName)

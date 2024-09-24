@@ -1,16 +1,14 @@
-import customAxios from "../../components/customAxios/customAxios.jsx";
+import customAxios from "../../../components/customAxios/customAxios.jsx";
 import React, { useEffect, useState } from "react";
 import Button from "antd/es/button";
 import {
   urlCreatePurchaseOrder,
   urlAutocompleteProduct,
-  urlGetProductDetailsById,
   urlEditGRNDirect,
   urlAddNewGRNDirect,
   urlUpdateGRNDirect,
-} from "../../../endpoints";
-import CustomTable from "../../components/customTable/index.jsx";
-import PageHeader from "../../components/PageHeader/index.jsx";
+} from "../../../../endpoints";
+import CustomTable from "../../../components/customTable/index.jsx";
 import Select from "antd/es/select";
 import {
   ConfigProvider,
@@ -37,12 +35,20 @@ import {
   DeleteOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-//import Typography from 'antd/es/typography';
 import { useNavigate } from "react-router";
 import { Table, InputNumber } from "antd";
 import dayjs from "dayjs";
 import { useLocation } from "react-router-dom";
 import moment from "moment";
+import PageHeader from "../../../components/PageHeader/index.jsx";
+import { FaAnglesLeft } from "react-icons/fa6";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+  ColWithSixteenSpan,
+} from "../../../components/customGridColumns/index.jsx";
+import { isMobile } from "react-device-detect";
+
 const CreateDirectGRN = () => {
   const [DropDown, setDropDown] = useState({
     DocumentType: [],
@@ -52,61 +58,59 @@ const CreateDirectGRN = () => {
     TaxType: [],
     DateFormat: [],
   });
-
   let [idCounter, setCounter] = useState(2);
   let [idCounterModel, setCounterModel] = useState(2);
   const location = useLocation();
   const grnHeaderId = location.state.GRNHeaderId;
   const [batchRecord, setBatchRecord] = useState([]);
-
   const initialDataSource =
     grnHeaderId === 0
       ? [
-        {
-          key: 1,
-          ProductName: "",
-          UomId: "",
-          GrnLineId: 0,
-          ReceivedQty: 0,
-          BonusQuantity: 0,
-          PoRate: 0,
-          DiscountRate: 0,
-          DiscountAmount: 0,
-          Batch: "",
-          LineAmount: 0,
-          TaxAmount: 0,
-          TotalAmount: 0,
-          Replaceable: true,
-          ActiveFlag: true,
-        },
-      ]
+          {
+            key: 1,
+            ProductName: "",
+            UomId: "",
+            GrnLineId: 0,
+            ReceivedQty: 0,
+            BonusQuantity: 0,
+            PoRate: 0,
+            DiscountRate: 0,
+            DiscountAmount: 0,
+            Batch: "",
+            LineAmount: 0,
+            TaxAmount: 0,
+            TotalAmount: 0,
+            Replaceable: true,
+            ActiveFlag: true,
+          },
+        ]
       : [];
 
   const initialModelDataSource =
     grnHeaderId === 0
       ? [
-        {
-          key: 1,
-          BarCode: "",
-          BatchNo: "",
-          BatchQty: 0,
-          UomId: null,
-          BatchBonusQty: 0,
-          MFGDateString: "",
-          EXPDateString: "",
-          rate: 0,
-          BatchMrp: 0,
-          DiscountRate: 0,
-          BatchTaxType1: "",
+          {
+            key: 1,
+            BarCode: "",
+            BatchNo: "",
+            BatchQty: 0,
+            UomId: null,
+            BatchBonusQty: 0,
+            MFGDateString: "",
+            EXPDateString: "",
+            rate: 0,
+            BatchMrp: 0,
+            DiscountRate: 0,
+            BatchTaxType1: "",
 
-          BatchTaxType2: "",
-          BatchTaxAmount1: 0,
-          BatchStockLocator: "",
-          ProductId: "",
-          GrnBatchId: 0,
-          ActiveFlag: true,
-        },
-      ]
+            BatchTaxType2: "",
+            BatchTaxAmount1: 0,
+            BatchStockLocator: "",
+            ProductId: "",
+            GrnBatchId: 0,
+            ActiveFlag: true,
+          },
+        ]
       : [];
 
   const [form1] = Form.useForm();
@@ -117,7 +121,6 @@ const CreateDirectGRN = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(initialDataSource);
   const [modalVisible, setModalVisible] = useState(false);
-  //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');
   const [productOptions, setProductOptions] = useState([]);
   const [dataModel, setDataModel] = useState(initialModelDataSource);
   const [buttonTitle, setButtonTitle] = useState("Save");
@@ -134,8 +137,6 @@ const CreateDirectGRN = () => {
   }, []);
 
   useEffect(() => {
-    debugger;
-
     fetchData();
   }, []);
 
@@ -271,7 +272,6 @@ const CreateDirectGRN = () => {
   };
 
   const onOkModal = async () => {
-    debugger;
     await form2.validateFields();
     const values = form2.getFieldsValue();
     const valuesArray = Object.values(values);
@@ -318,17 +318,17 @@ const CreateDirectGRN = () => {
               BatchNo: values[key].BatchNo,
               EXPDateString: values[key].GrnBatchId
                 ? values[key].EXPDateString &&
-                values[key].EXPDateString.format("DD-MM-YYYY")
+                  values[key].EXPDateString.format("DD-MM-YYYY")
                 : batchRecord.Expiry === "Month wise"
-                  ? values[key].EXPDateString &&
+                ? values[key].EXPDateString &&
                   `01-${String(values[key].EXPDateString.$M + 1).padStart(
                     2,
                     "0"
                   )}-${values[key].EXPDateString.$y}`
-                  : batchRecord.Expiry === "Date wise"
-                    ? values[key].EXPDateString &&
-                    values[key].EXPDateString.format("DD-MM-YYYY")
-                    : null,
+                : batchRecord.Expiry === "Date wise"
+                ? values[key].EXPDateString &&
+                  values[key].EXPDateString.format("DD-MM-YYYY")
+                : null,
               rate: values[key].rate,
               MRP: values[key].MRP,
               DiscountRate:
@@ -353,7 +353,6 @@ const CreateDirectGRN = () => {
   };
 
   const onCancelModel = () => {
-    debugger;
     const newData = dataModel.map((item) => {
       if (item.ProductId === "") {
         return { ...item, ActiveFlag: false };
@@ -381,8 +380,6 @@ const CreateDirectGRN = () => {
   };
 
   const handleOpenModal = async (value, record) => {
-    debugger;
-
     record.BonusQuantity = form1.getFieldValue([record.key, "BonusQuantity"]);
     await form1.validateFields([
       "StoreId",
@@ -407,7 +404,6 @@ const CreateDirectGRN = () => {
   };
 
   const handleDelete = (record) => {
-    debugger;
     const newData = data.map((item) => {
       if (item.key === record.key) {
         return { ...item, ActiveFlag: false };
@@ -431,7 +427,6 @@ const CreateDirectGRN = () => {
   };
 
   const ModelDelete = (record) => {
-    debugger;
     const newData = dataModel.map((item) => {
       if (item.key === record.key) {
         return { ...item, ActiveFlag: false };
@@ -453,9 +448,7 @@ const CreateDirectGRN = () => {
     };
   };
 
-
   const handleOnFinish = async (values) => {
-    debugger;
     const isAnyIdNotNull = dataModel.some(
       (item) => item.ProductId !== "" && item.ActiveFlag
     );
@@ -551,10 +544,10 @@ const CreateDirectGRN = () => {
         grnHeaderId === 0
           ? activeProducts
           : products.filter(
-            (product) =>
-              product.GrnLineId > 0 ||
-              (product.GrnLineId === 0 && product.ActiveFlag === true)
-          ),
+              (product) =>
+                product.GrnLineId > 0 ||
+                (product.GrnLineId === 0 && product.ActiveFlag === true)
+            ),
       BatchDetails: grnHeaderId === 0 ? filteredBatchwithactive : filteredBatch,
     };
 
@@ -589,7 +582,7 @@ const CreateDirectGRN = () => {
           UomId: option.UomId,
           ProductId: option.key,
           Expiry: option.Expiry,
-          Uom: option.Uom
+          Uom: option.Uom,
         };
         return updatedItem;
       }
@@ -651,7 +644,7 @@ const CreateDirectGRN = () => {
         key: item.ProductId,
         UomId: item.UOMPrimaryUOM,
         Expiry: item.Expiry,
-        Uom: item.UOMPrimaryUOMname
+        Uom: item.UOMPrimaryUOMname,
       }));
       setProductOptions(newOptions);
     }
@@ -673,7 +666,6 @@ const CreateDirectGRN = () => {
   };
 
   const ReplaceableChanged = (record, checked) => {
-    debugger;
     const newData = data.map((item) => {
       if (item.key === record.key) {
         const updatedItem = { ...item, Replaceable: checked };
@@ -690,7 +682,7 @@ const CreateDirectGRN = () => {
       dataIndex: "ProductName",
       fixed: "left",
       key: "ProductName",
-      width: 350,
+      width: isMobile ? 200 : 300,
       render: (text, record, index) => (
         <>
           <Form.Item
@@ -896,7 +888,11 @@ const CreateDirectGRN = () => {
       width: 100,
       key: "Batch",
       render: (value, record) => (
-        <Button type="link" onClick={() => handleOpenModal(value, record)}>
+        <Button
+          style={{ marginBottom: "24px" }}
+          type="link"
+          onClick={() => handleOpenModal(value, record)}
+        >
           Batch
         </Button>
       ),
@@ -971,30 +967,6 @@ const CreateDirectGRN = () => {
         </Form.Item>
       ),
     },
-    // {
-    //   title: (
-    //     <Button
-    //       type="primary"
-    //       icon={<PlusOutlined />}
-    //       onClick={handleAdd}
-    //     ></Button>
-    //   ),
-    //   dataIndex: "add",
-    //   key: "add",
-    //   width: 50,
-    //   render: (text, record, index) => (
-    //     <Popconfirm
-    //       title="Are you sure you want to delete this record?"
-    //       onConfirm={() => handleDelete(record)}
-    //     >
-    //       <Button
-    //         size="small"
-    //         danger
-    //         icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
-    //       ></Button>
-    //     </Popconfirm>
-    //   ),
-    // },
   ];
 
   const ModelAdd = async () => {
@@ -1031,15 +1003,13 @@ const CreateDirectGRN = () => {
       title: "Bar Code",
       dataIndex: "BarCode",
       key: "BarCode",
-      // width: 100,
       render: (_, record) => (
         <>
           <Form.Item
             name={[record.key, "BarCode"]}
-            // style={{ width: "100%" }}
             initialValue={record.BarCode}
           >
-            <Input style={{ width: 100 }}
+            <Input
               min={0}
               defaultValue={record.BarCode}
               disabled={!!grnHeaderId && record.GrnBatchId}
@@ -1065,12 +1035,10 @@ const CreateDirectGRN = () => {
     {
       title: "Batch Number",
       dataIndex: "BatchNo",
-      // width: 100,
       key: "BatchNo",
       render: (text, record) => {
         return (
           <Form.Item
-            // style={{ width: "100%" }}
             initialValue={record.BatchNo}
             name={[record.key, "BatchNo"]}
             rules={[
@@ -1082,7 +1050,6 @@ const CreateDirectGRN = () => {
           >
             <Input
               allowClear
-              style={{ width: 100 }}
               defaultValue={record.BatchNo}
               disabled={!!grnHeaderId && record.GrnBatchId}
             />
@@ -1093,13 +1060,11 @@ const CreateDirectGRN = () => {
     {
       title: "Quantity",
       dataIndex: "Quantity",
-      // width: 100,
       key: "Quantity",
       render: (text, record) => (
         <Form.Item
           initialValue={record.Quantity}
           name={[record.key, "Quantity"]}
-          // style={{ width: "100%" }}
           rules={[
             {
               required: true,
@@ -1114,19 +1079,16 @@ const CreateDirectGRN = () => {
     {
       title: "Bonus Qty",
       dataIndex: "BatchBonusQty",
-      // width: 100,
       key: "BatchBonusQty",
       render: (text, record) => (
         <Form.Item
           name={[record.key, "BatchBonusQty"]}
           initialValue={record.BatchBonusQty}
-        // style={{ width: 100 }}
         >
           <InputNumber
             min={0}
-            style={{ width: 100 }}
-          //  defaultValue={batchRecord.BonusQty}
-          // disabled
+            //  defaultValue={batchRecord.BonusQty}
+            // disabled
           />
         </Form.Item>
       ),
@@ -1136,9 +1098,8 @@ const CreateDirectGRN = () => {
       title: "UOM",
       dataIndex: "UomId",
       key: "UomId",
-      // width: 200,
       render: (text, record) => (
-        <Form.Item name={[record.key, "UomId"]} style={{ width: 70 }} >
+        <Form.Item name={[record.key, "UomId"]}>
           <Tag color="#7C00FE">{batchRecord.Uom}</Tag>
         </Form.Item>
       ),
@@ -1147,7 +1108,6 @@ const CreateDirectGRN = () => {
     {
       title: "MFG Date",
       dataIndex: "MFGDateString",
-      // width: 100,
       key: "MFGDateString",
       render: (text, record) => (
         <Form.Item
@@ -1161,7 +1121,6 @@ const CreateDirectGRN = () => {
           <DatePicker
             format="DD-MM-YYYY"
             disabled={!!grnHeaderId && record.GrnBatchId}
-            style={{ width: 100 }}
             disabledDate={(current) => {
               // Disable future dates
               return current && current > dayjs().endOf("day");
@@ -1174,7 +1133,6 @@ const CreateDirectGRN = () => {
       title: "Exp Date",
       dataIndex: "EXPDateString",
       key: "EXPDateString",
-      // width: 150,
       render: (text, record) => (
         <Form.Item
           initialValue={
@@ -1191,15 +1149,14 @@ const CreateDirectGRN = () => {
               message: "input!",
             },
           ]}
-        // width={150}
         >
           <DatePicker
             format={
               batchRecord.Expiry === "Month wise"
                 ? "MMMM YYYY"
                 : batchRecord.Expiry === "Date wise"
-                  ? "DD-MM-YYYY"
-                  : null
+                ? "DD-MM-YYYY"
+                : null
             }
             disabled={
               (!!grnHeaderId && record.GrnBatchId) ||
@@ -1207,7 +1164,6 @@ const CreateDirectGRN = () => {
                 batchRecord.Expiry !== "Date wise")
             }
             // disabled={record.Expiry!== "Month wise" && record.Expiry!== "Date wise"}
-            style={{ width: 100 }}
             disabledDate={(current) => {
               // Disable past dates
               return current && current < moment().startOf("day");
@@ -1220,18 +1176,12 @@ const CreateDirectGRN = () => {
       title: "Rate",
       dataIndex: "rate",
       key: "rate",
-      // width: 100,
       render: (text, record) => (
         <Form.Item
           name={[record.key, "rate"]}
           initialValue={batchRecord.PoRate}
         >
-          <InputNumber
-            min={0}
-            style={{ width: 100 }}
-            disabled
-            defaultValue={batchRecord.PoRate}
-          />
+          <InputNumber min={0} disabled defaultValue={batchRecord.PoRate} />
         </Form.Item>
       ),
     },
@@ -1239,7 +1189,6 @@ const CreateDirectGRN = () => {
       title: "MRP",
       dataIndex: "MRP",
       key: "MRP",
-      // width: 100,
       render: (text, record) => (
         <Form.Item
           name={[record.key, "MRP"]}
@@ -1268,7 +1217,6 @@ const CreateDirectGRN = () => {
         >
           <InputNumber
             min={0}
-            style={{ width: 100 }}
             allowClear
             defaultValue={record.MRP}
             disabled={!!grnHeaderId && record.GrnBatchId}
@@ -1280,7 +1228,6 @@ const CreateDirectGRN = () => {
       title: "Discount",
       dataIndex: "DiscountRate",
       key: "DiscountRate",
-      // width: 100,
       render: (text, record) => (
         <Form.Item
           name={[record.key, "DiscountRate"]}
@@ -1288,7 +1235,6 @@ const CreateDirectGRN = () => {
         >
           <InputNumber
             min={0}
-            style={{ width: 100 }}
             disabled
             defaultValue={batchRecord.DiscountRate}
           />
@@ -1299,7 +1245,6 @@ const CreateDirectGRN = () => {
       title: "Discount Amt",
       dataIndex: "DiscountAmount",
       key: "DiscountAmount",
-      // width: 100,
       render: (text, record) => (
         <Form.Item
           name={[record.key, "DiscountAmount"]}
@@ -1307,7 +1252,6 @@ const CreateDirectGRN = () => {
         >
           <InputNumber
             min={0}
-            style={{ width: 100 }}
             disabled
             defaultValue={batchRecord.DiscountAmount}
           />
@@ -1318,10 +1262,9 @@ const CreateDirectGRN = () => {
       title: "CGST",
       dataIndex: "TaxType1",
       key: "TaxType1",
-      // width: 100,
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxType1"]}>
-          <Select disabled style={{ width: 100 }}></Select>
+          <Select disabled></Select>
         </Form.Item>
       ),
     },
@@ -1329,10 +1272,9 @@ const CreateDirectGRN = () => {
       title: "CGST Amount",
       dataIndex: "TaxAmount1",
       key: "TaxAmount1",
-      // width: 100,
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxAmount1"]}>
-          <InputNumber min={0} style={{ width: 100 }} disabled />
+          <InputNumber min={0} disabled />
         </Form.Item>
       ),
     },
@@ -1340,10 +1282,9 @@ const CreateDirectGRN = () => {
       title: "SGST",
       dataIndex: "TaxType2",
       key: "TaxType2",
-      // width: 100,
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxType2"]}>
-          <Select disabled style={{ width: 100 }}></Select>
+          <Select disabled></Select>
         </Form.Item>
       ),
     },
@@ -1351,10 +1292,9 @@ const CreateDirectGRN = () => {
       title: "SGST Amount",
       dataIndex: "TaxAmount2",
       key: "TaxAmount2",
-      // width: 100,
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxAmount2"]}>
-          <InputNumber min={0} style={{ width: 100 }} disabled />
+          <InputNumber min={0} disabled />
         </Form.Item>
       ),
     },
@@ -1362,34 +1302,10 @@ const CreateDirectGRN = () => {
       title: "Stock Locator",
       dataIndex: "StockLocator",
       key: "StockLocator",
-      // width: 100,
       render: (text, record) => (
         <Form.Item name={[record.key, "StockLocator"]} initialValue="Manual">
-          <Input
-            disabled={!!grnHeaderId && record.GrnBatchId}
-            style={{ width: 100 }}
-          />
+          <Input disabled={!!grnHeaderId && record.GrnBatchId} />
         </Form.Item>
-      ),
-    },
-    {
-      title: (
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={ModelAdd}
-        ></Button>
-      ),
-      dataIndex: "add",
-      key: "add",
-      // width: 50,
-      render: (text, record) => (
-        <Popconfirm
-          title="Sure to delete?"
-          onConfirm={() => ModelDelete(record)}
-        >
-          <DeleteOutlined />
-        </Popconfirm>
       ),
     },
   ];
@@ -1407,500 +1323,429 @@ const CreateDirectGRN = () => {
   };
 
   return (
-    <Layout style={{ zIndex: "999999999" }}>
-      <div
-        style={{
-          width: "100%",
-          backgroundColor: "white",
-          minHeight: "max-content",
-          borderRadius: "10px",
+    <Layout
+      style={{
+        width: "100%",
+        backgroundColor: "white",
+        minHeight: "max-content",
+        borderRadius: "10px",
+      }}
+    >
+      <PageHeader
+        title={"Create Direct GRN"}
+        buttonIcon={<FaAnglesLeft style={{ fontSize: "1rem" }} />}
+        buttonLabel={"Back"}
+        onButtonClick={handleToDirectGRN}
+      />
+
+      <Form
+        style={{ margin: "1rem" }}
+        layout="vertical"
+        onFinish={handleOnFinish}
+        form={form1}
+        initialValues={{
+          GRNDatestring: dayjs(),
+          DCChallanDateString: dayjs(),
+          ReceivingDateString: dayjs(),
+          InvoiceDateString: dayjs(),
+          Replaceable: true,
+          RoundOff: 0,
+          gstTax: 0,
+          TotalPoAmount: 0,
+          Amount: 0,
         }}
       >
-        {/* <Row
-          style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
-          }}
-        >
-          <Col span={16}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              Create Direct GRN
-            </Title>
-          </Col>
-          <Col offset={6} span={2}>
-            <Button
-              icon={<LeftOutlined />}
-              style={{ marginBottom: 0 }}
-              onClick={handleToDirectGRN}
-            >
-              Back
-            </Button>
-          </Col>
-        </Row> */}
-        <PageHeader
-          title={"Create Direct GRN"}
-          buttonLabel="Back to Direct GRN"
-          buttonIcon={<LeftOutlined />}
-          onButtonClick={handleToDirectGRN}
-        />
-        <Card>
-          <Form
-            layout="vertical"
-            onFinish={handleOnFinish}
-            variant="outlined"
-            form={form1}
-            initialValues={{
-              GRNDatestring: dayjs(),
-              DCChallanDateString: dayjs(),
-              ReceivingDateString: dayjs(),
-              InvoiceDateString: dayjs(),
-              Replaceable: true,
-              RoundOff: 0,
-              gstTax: 0,
-              TotalPoAmount: 0,
-              Amount: 0,
-            }}
-          >
-            <Row
-              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              style={{ padding: "1rem 0.5rem", marginBottom: "0" }}
-              align="Bottom"
-            >
-              <Col className="gutter-row" span={6}>
-                <div>
-                  <Form.Item
-                    label="Supplier"
-                    name="SupplierId"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input!",
-                      },
-                    ]}
+        <Row gutter={16}>
+          <ColWithSixteenSpan>
+            <Row gutter={16}>
+              <ColWithEightSpan>
+                <Form.Item
+                  label="Supplier"
+                  name="SupplierId"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Select
+                    loading={dropDownLoad}
+                    allowClear
+                    placeholder="Select Value"
+                    disabled={!!grnHeaderId}
                   >
-                    <Select
-                      loading={dropDownLoad}
-                      allowClear
-                      placeholder="Select Value"
-                      disabled={!!grnHeaderId}
-                    >
-                      {DropDown.SupplierList.map((option) => (
-                        <Select.Option
-                          key={option.VendorId}
-                          value={option.VendorId}
-                        >
-                          {option.LongName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                  <Form.Item name="GRNHeaderId" hidden>
-                    <Input></Input>
-                  </Form.Item>
-                  <Form.Item name="PoHeaderId" hidden>
-                    <Input></Input>
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={5}>
-                <div>
-                  <Form.Item
-                    label="Recieving Store"
-                    name="StoreId"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input!",
-                      },
-                    ]}
-                  >
-                    <Select
-                      loading={dropDownLoad}
-                      allowClear
-                      placeholder="Select Value"
-                      disabled={!!grnHeaderId}
-                    >
-                      {DropDown.StoreDetails.map((option) => (
-                        <Select.Option
-                          key={option.StoreId}
-                          value={option.StoreId}
-                        >
-                          {option.LongName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={5}>
-                <div>
-                  <Form.Item
-                    label="Document Type"
-                    name="DocumentType"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input!",
-                      },
-                    ]}
-                  >
-                    <Select
-                      loading={dropDownLoad}
-                      allowClear
-                      placeholder="Select Value"
-                      disabled={!!grnHeaderId}
-                    >
-                      {DropDown.DocumentType.map((option) => (
-                        <Select.Option
-                          key={option.LookupID}
-                          value={option.LookupID}
-                        >
-                          {option.LookupDescription}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={3}>
-                <div>
-                  <Form.Item
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input!",
-                      },
-                    ]}
-                    label="GRN Date"
-                    name="GRNDatestring"
-                  >
-                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={3}>
-                <div>
-                  <Form.Item
-                    label="GRN Status"
-                    name="GRNStatus"
-                    rules={[
-                      {
-                        required: grnStatus,
-                        message: "Please input!",
-                      },
-                    ]}
-                  >
-                    <Select allowClear placeholder="Select Value">
-                      <Select.Option key="Draft" value="Draft"></Select.Option>
+                    {DropDown.SupplierList.map((option) => (
                       <Select.Option
-                        key="Finalize"
-                        value="Finalize"
-                      ></Select.Option>
-                    </Select>
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={2}>
-                <div>
-                  <Form.Item
-                    name="Submit"
-                    style={{ marginTop: "30px" }}
-                    valuePropName="checked"
+                        key={option.VendorId}
+                        value={option.VendorId}
+                      >
+                        {option.LongName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+                <Form.Item name="GRNHeaderId" hidden>
+                  <Input></Input>
+                </Form.Item>
+                <Form.Item name="PoHeaderId" hidden>
+                  <Input></Input>
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item
+                  label="Recieving Store"
+                  name="StoreId"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Select
+                    loading={dropDownLoad}
+                    allowClear
+                    placeholder="Select Value"
+                    disabled={!!grnHeaderId}
                   >
-                    <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <div>
-                  <Form.Item
-                    label="Invoice Number"
-                    name="InvoiceNumber"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input!",
-                      },
-                    ]}
+                    {DropDown.StoreDetails.map((option) => (
+                      <Select.Option
+                        key={option.StoreId}
+                        value={option.StoreId}
+                      >
+                        {option.LongName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item
+                  label="Document Type"
+                  name="DocumentType"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Select
+                    loading={dropDownLoad}
+                    allowClear
+                    placeholder="Select Value"
+                    disabled={!!grnHeaderId}
                   >
-                    <Input style={{ width: "100%" }} type="text"></Input>
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={5}>
-                <div>
-                  <Form.Item
-                    label="Invoice Date"
-                    name="InvoiceDateString"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input!",
-                      },
-                    ]}
-                  >
-                    <DatePicker
-                      style={{ width: "100%" }}
-                      format="DD-MM-YYYY"
-                      allowClear
-                    />
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={5}>
-                <div>
-                  <Form.Item
-                    label="Invoice Amount"
-                    name="InvoiceAmount"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input!",
-                      },
-                      {
-                        validator: validateEqualValue,
-                      },
-                    ]}
-                  >
-                    <InputNumber min={0} allowClear style={{ width: "100%" }} />
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={8}>
-                <div>
-                  <Form.Item label="Remarks" name="Remarks">
-                    <TextArea autoSize allowClear />
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <div>
-                  <Form.Item label="DC Challan Number" name="DCChallanNumber">
-                    <Input type="text"></Input>
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={5}>
-                <div>
-                  <Form.Item label="DC Challan Date" name="DCChallanDateString">
-                    <DatePicker
-                      style={{ width: "100%" }}
-                      format="DD-MM-YYYY"
-                      allowClear
-                    />
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={5}>
-                <div>
-                  <Form.Item
-                    label="Recieving Date"
-                    name="ReceivingDateString"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input!",
-                      },
-                    ]}
-                  >
-                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
-                  </Form.Item>
-                </div>
-              </Col>
+                    {DropDown.DocumentType.map((option) => (
+                      <Select.Option
+                        key={option.LookupID}
+                        value={option.LookupID}
+                      >
+                        {option.LookupDescription}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item
+                  label="Invoice Number"
+                  name="InvoiceNumber"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Input style={{ width: "100%" }} type="text"></Input>
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item
+                  label="Invoice Date"
+                  name="InvoiceDateString"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                    allowClear
+                  />
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item
+                  label="Invoice Amount"
+                  name="InvoiceAmount"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                    {
+                      validator: validateEqualValue,
+                    },
+                  ]}
+                >
+                  <InputNumber min={0} allowClear style={{ width: "100%" }} />
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item label="DC Challan Number" name="DCChallanNumber">
+                  <Input type="text"></Input>
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item label="DC Challan Date" name="DCChallanDateString">
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                    allowClear
+                  />
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item
+                  label="Recieving Date"
+                  name="ReceivingDateString"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                </Form.Item>
+              </ColWithEightSpan>
             </Row>
-            <Row justify="end" style={{ padding: "0rem 1rem" }}>
-              <Col style={{ marginRight: "10px" }}>
-                <Form.Item>
-                  <Button type="primary" htmlType="submit">
-                    {buttonTitle}
-                  </Button>
+          </ColWithSixteenSpan>
+
+          <ColWithEightSpan>
+            <Row gutter={16}>
+              <ColWithEightSpan>
+                <Form.Item
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                  label="GRN Date"
+                  name="GRNDatestring"
+                >
+                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item
+                  label="GRN Status"
+                  name="GRNStatus"
+                  rules={[
+                    {
+                      required: grnStatus,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Select allowClear placeholder="Select Value">
+                    <Select.Option key="Draft" value="Draft"></Select.Option>
+                    <Select.Option
+                      key="Finalize"
+                      value="Finalize"
+                    ></Select.Option>
+                  </Select>
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item
+                  name="Submit"
+                  label={isMobile ? "" : " "}
+                  valuePropName="checked"
+                >
+                  <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
+                </Form.Item>
+              </ColWithEightSpan>
+              <Col span={24}>
+                <Form.Item label="Remarks" name="Remarks">
+                  <TextArea
+                    allowClear
+                    autoSize={{
+                      minRows: 5,
+                      maxRows: 5,
+                    }}
+                  />
                 </Form.Item>
               </Col>
-              <Col>
-                <Form.Item>
-                  <Button type="primary" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                </Form.Item>
-              </Col>
             </Row>
-            <Divider style={{ marginTop: "0" }}></Divider>
-            <Spin spinning={loading}>
-              <CustomTable
-                dataSource={data.filter((item) => item.ActiveFlag !== false)}
-                columns={columns}
-                isFilter={false}
-                // actionColumn={false}
-                actionColumnName={<Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={handleAdd}
-                ></Button>}
-                bordered
-                onDelete={handleDelete}
+          </ColWithEightSpan>
+        </Row>
+        <Row justify="end" gutter={16}>
+          <Col>
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                {buttonTitle}
+              </Button>
+            </Form.Item>
+          </Col>
+          <Col>
+            <Form.Item>
+              <Button danger onClick={handleCancel}>
+                Cancel
+              </Button>
+            </Form.Item>
+          </Col>
+        </Row>
+        <Divider style={{ margin: "0" }}></Divider>
+        <Spin spinning={loading}>
+          <CustomTable
+            dataSource={data.filter((item) => item.ActiveFlag !== false)}
+            columns={columns}
+            isFilter={false}
+            actionColumnName={
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleAdd}
               />
-            </Spin>
-            {/* <Spin spinning={loading}>
-              <Table
-                columns={columns}
-                pagination={false}
-                dataSource={data.filter((item) => item.ActiveFlag !== false)}
-                scroll={{ x: 2000 }}
-              />
-            </Spin> */}
-            <Col style={{ float: 'right' }}>
-              <Form.Item
-                label="Amount"
-                name="TotalAmount"
-                style={{ marginRight: "16px", width: 100 }}
-              >
-                <InputNumber min={0} disabled />
-              </Form.Item>
-              <Form.Item
-                label="GST Tax"
-                name="TaxAmount1"
-                style={{ marginRight: "16px", width: 100 }}
-              >
-                <InputNumber min={0} disabled />
-              </Form.Item>
-              <Form.Item
-                label="Round Off"
-                name="RoundOff"
-                style={{ marginRight: "16px", width: 100 }}
-              >
-                <InputNumber min={0} disabled />
-              </Form.Item>
-              <Form.Item
-                label="Total PO Amount"
-                name="TotalPoAmount"
-                style={{ width: 150 }}
-              >
-                <InputNumber min={0} disabled />
-              </Form.Item>
-            </Col>
-            {/* <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                marginBottom: "16px",
-                float: "right",
-              }}
+            }
+            scroll={{
+              x: 1000,
+            }}
+            onDelete={() => handleDelete(record)}
+          />
+        </Spin>
+
+        <Row justify={"end"}>
+          <ColWithEightSpan>
+            <Form.Item
+              label=""
+              name="TotalAmount"
+              style={{ marginRight: "16px" }}
             >
-              <Form.Item
-                label="Amount"
-                name="TotalAmount"
-                style={{ marginRight: "16px", width: 100 }}
-              >
-                <InputNumber min={0} disabled />
-              </Form.Item>
-              <Form.Item
-                label="GST Tax"
-                name="TaxAmount1"
-                style={{ marginRight: "16px", width: 100 }}
-              >
-                <InputNumber min={0} disabled />
-              </Form.Item>
-              <Form.Item
-                label="Round Off"
-                name="RoundOff"
-                style={{ marginRight: "16px", width: 100 }}
-              >
-                <InputNumber min={0} disabled />
-              </Form.Item>
-              <Form.Item
-                label="Total PO Amount"
-                name="TotalPoAmount"
-                style={{ width: 150 }}
-              >
-                <InputNumber min={0} disabled />
-              </Form.Item>
-            </div> */}
-          </Form>
-        </Card>
-        <ConfigProvider
-          theme={{
-            token: {
-              zIndexPopupBase: 3000,
-            },
-          }}
-        >
-          <Modal
-            title="Product Batch Details"
-            onOk={onOkModal}
-            onCancel={onCancelModel}
-            width={1500}
-            open={modalVisible}
-          >
-            <Form
-              name="basic"
-              labelCol={{
-                span: 8,
-              }}
-              wrapperCol={{
-                span: 16,
-              }}
-              style={{
-                width: "100%",
-              }}
-              //onFinish={onFinishModel}
-              onFinishFailed={onFinishFailed}
-              autoComplete="off"
-              form={form2}
-            >
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col className="gutter-row" span={6}>
-                  {/* <Form.Item label="Product" name="Product"> */}
-                  <Tag color="#1890ff"> Product:
-                    {batchRecord.LongName == undefined
-                      ? batchRecord.ProductName
-                      : batchRecord.LongName}
-                  </Tag>
-                  {/* </Form.Item> */}
+              <Row gutter={16}>
+                <Col span={12}>
+                  <span>Amount : </span>
                 </Col>
-                <Col className="gutter-row" span={6}>
-                  {/* <Form.Item label="Recieved Quantity" name="RecievedQty"> */}
-                  <Tag color="#52c41a">RecievedQty: {batchRecord.ReceivedQty}</Tag>
-                  {/* </Form.Item> */}
-                </Col>
-                <Col className="gutter-row" span={6}>
-                  {/* <Form.Item label="Bonus Quantity" name="BonusQuantity"> */}
-                  <Tag color="#7FA1C3">BonusQuantity:
-                    {batchRecord.BonusQuantity
-                      ? batchRecord.BonusQuantity
-                      : 0}
-                  </Tag>
-                  {/* </Form.Item> */}
+                <Col span={12}>
+                  <InputNumber style={{ width: "100%" }} min={0} disabled />
                 </Col>
               </Row>
-              <Spin spinning={loading}>
-                <Table
-                  columns={columnsModel}
-                  dataSource={
-                    batchRecord.ProductId
-                      ? dataModel.filter(
-                        (item) =>
-                          (item.ProductId == batchRecord.ProductId &&
-                            item.ActiveFlag) ||
-                          (item.ProductId == "" && item.ActiveFlag)
-                      )
-                      : initialModelDataSource
-                  }
-                  scroll={{ x: 1700 }}
+            </Form.Item>
+            <Form.Item
+              label=""
+              name="TaxAmount1"
+              style={{ marginRight: "16px" }}
+            >
+              <Row gutter={16}>
+                <Col span={12}>
+                  <span>GST Tax : </span>
+                </Col>
+                <Col span={12}>
+                  <InputNumber style={{ width: "100%" }} min={0} disabled />
+                </Col>
+              </Row>
+            </Form.Item>
+            <Form.Item label="" name="RoundOff" style={{ marginRight: "16px" }}>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <span>Round Off : </span>
+                </Col>
+                <Col span={12}>
+                  <InputNumber style={{ width: "100%" }} min={0} disabled />
+                </Col>
+              </Row>
+            </Form.Item>
+            <Form.Item label="" name="TotalPoAmount">
+              <Row>
+                <Col span={12}>
+                  <span>Total PO Amount :</span>
+                </Col>
+                <Col span={12}>
+                  <InputNumber style={{ width: "93%" }} min={0} disabled />
+                </Col>
+              </Row>
+            </Form.Item>
+          </ColWithEightSpan>
+        </Row>
+      </Form>
+
+      <Modal
+        title="Product Batch Details"
+        onOk={onOkModal}
+        onCancel={onCancelModel}
+        width={"100rem"}
+        open={modalVisible}
+        maskClosable={false}
+        cancelButtonProps={{ danger: "true" }}
+      >
+        <Form
+          //onFinish={onFinishModel}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
+          form={form2}
+        >
+          <Row gutter={32}>
+            <ColWithSixSpan>
+              <Tag color="#1890ff">
+                Product : {"  "}
+                <strong style={{ fontSize: "0.9rem" }}>
+                  {batchRecord.LongName == undefined
+                    ? batchRecord.ProductName
+                    : batchRecord.LongName}
+                </strong>
+              </Tag>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
+              <Tag color="#52c41a">
+                Recieved Qty :{" "}
+                <strong style={{ fontSize: "0.9rem" }}>
+                  {batchRecord.ReceivedQty}
+                </strong>
+              </Tag>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
+              <Tag color="#7FA1C3">
+                Bonus Quantity :{" "}
+                <strong style={{ fontSize: "0.9rem" }}>
+                  {batchRecord.BonusQuantity ? batchRecord.BonusQuantity : 0}
+                </strong>
+              </Tag>
+            </ColWithSixSpan>
+          </Row>
+          <Spin spinning={loading}>
+            <CustomTable
+              columns={columnsModel}
+              dataSource={
+                batchRecord.ProductId
+                  ? dataModel.filter(
+                      (item) =>
+                        (item.ProductId == batchRecord.ProductId &&
+                          item.ActiveFlag) ||
+                        (item.ProductId == "" && item.ActiveFlag)
+                    )
+                  : initialModelDataSource
+              }
+              actionColumnName={
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={ModelAdd}
                 />
-              </Spin>
-            </Form>
-          </Modal>
-        </ConfigProvider>
-      </div>
+              }
+              onDelete={() => ModelDelete(record)}
+              scroll={{ x: 1700 }}
+            />
+          </Spin>
+        </Form>
+      </Modal>
     </Layout>
   );
 };

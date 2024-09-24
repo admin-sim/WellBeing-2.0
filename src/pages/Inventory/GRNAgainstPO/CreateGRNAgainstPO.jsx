@@ -1,4 +1,4 @@
-import customAxios from "../../components/customAxios/customAxios.jsx";
+import customAxios from "../../../components/customAxios/customAxios.jsx";
 import React, { useEffect, useState } from "react";
 import Button from "antd/es/button";
 import {
@@ -8,9 +8,8 @@ import {
   urlSearchPendingPO,
   urlEditGRNAgainstPO,
   urlUpdateGRNAgainstPO,
-} from "../../../endpoints.js";
+} from "../../../../endpoints.js";
 import Select from "antd/es/select";
-import PageHeader from "../../components/PageHeader/index.jsx";
 import {
   ConfigProvider,
   Tooltip,
@@ -24,7 +23,6 @@ import {
   Col,
   Divider,
   Row,
-  AutoComplete,
   message,
 } from "antd";
 import Input from "antd/es/input";
@@ -32,16 +30,21 @@ import Form from "antd/es/form";
 import { DatePicker } from "antd";
 import Layout from "antd/es/layout/layout";
 import { LeftOutlined } from "@ant-design/icons";
-//import Typography from 'antd/es/typography';
 import { useNavigate } from "react-router";
 import { Table, InputNumber } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useLocation } from "react-router-dom";
-import { MdOutlineWifiTetheringError } from "react-icons/md";
-import CustomTable from "../../components/customTable/index.jsx";
-//import { useParams } from 'react-router-dom';
-import moment from 'moment';
+import CustomTable from "../../../components/customTable/index.jsx";
+import moment from "moment";
+import PageHeader from "../../../components/PageHeader/index.jsx";
+import { FaAnglesLeft } from "react-icons/fa6";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+  ColWithSixteenSpan,
+  ColWithTwelveSpan,
+} from "../../../components/customGridColumns/index.jsx";
 const CreateGRNAgainstPO = () => {
   const [DropDown, setDropDown] = useState({
     DocumentType: [],
@@ -55,29 +58,8 @@ const CreateGRNAgainstPO = () => {
   let [counter, setCounter] = useState(2);
   let [productCount, setProductcount] = useState(1);
   const [grnStatus, setGrnStatus] = useState(false);
-  // const initialProductDataSource = [
-  //   {
-  //     key: 1,
-  //     ProductName: "",
-  //     UomId: null,
-  //     PoBalanceQty: 0,
-  //     ReceivedQty: 0,
-  //     BonusQuantity: 0,
-  //     PoRate: 0,
-  //     DiscountRate:0,
-  //     DiscountAmount: 0,
-  //     LineAmount: 0,
-  //     TaxAmount1: 0,
-  //     TotalAmount: 0,
-  //     Replaceable: "",
-  //     ActiveFlag: true,
-  //     PoQuantity:0,
-
-  //   },
-  // ];
 
   const location = useLocation();
-  //const { PoHeaderId, SupplierId, StoreId } = useParams();
   const [form1] = Form.useForm();
   const [form2] = Form.useForm();
   const [form3] = Form.useForm();
@@ -87,7 +69,6 @@ const CreateGRNAgainstPO = () => {
   const GrnHeaderId = location.state.GrnHeaderId;
   console.log("headerid", GrnHeaderId);
   const navigate = useNavigate();
-  //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [data, setData] = useState([]);
@@ -119,40 +100,36 @@ const CreateGRNAgainstPO = () => {
   const initialModelDataSource =
     GrnHeaderId === 0
       ? [
-        {
-          key: 1,
-          BarCode: "",
-          BatchNo: "",
-          Quantity: 0,
-          ProductId: "",
-          UomId: null,
-          BatchBonusQty: 0,
-          MFGDateString: "",
-          EXPDateString: "",
-          Rate: 0,
-          MRP: 0,
-          TaxType1: "",
-          TaxAmount1: 0,
-          TaxType2: "",
-          TaxAmount2: 0,
-          Stocklocator: "",
-          ActiveFlag: true,
-          PoLineId: 0,
-          DiscountRate: 0,
-          DiscountAmount: 0,
-          GrnBatchId: 0,
-        },
-      ]
+          {
+            key: 1,
+            BarCode: "",
+            BatchNo: "",
+            Quantity: 0,
+            ProductId: "",
+            UomId: null,
+            BatchBonusQty: 0,
+            MFGDateString: "",
+            EXPDateString: "",
+            Rate: 0,
+            MRP: 0,
+            TaxType1: "",
+            TaxAmount1: 0,
+            TaxType2: "",
+            TaxAmount2: 0,
+            Stocklocator: "",
+            ActiveFlag: true,
+            PoLineId: 0,
+            DiscountRate: 0,
+            DiscountAmount: 0,
+            GrnBatchId: 0,
+          },
+        ]
       : [];
 
   const [dataBatchModal, setdataBatchModal] = useState(initialModelDataSource);
 
   useEffect(() => {
-    debugger;
-
-
     fetchData();
-    // setLoading(false);
   }, []);
 
   const fetchData = async () => {
@@ -198,9 +175,7 @@ const CreateGRNAgainstPO = () => {
               : null,
             DCChallanNumber: formdata.DCChallanNumber,
             GRNStatus:
-              formdata.GRNStatus == "Created"
-                ? undefined
-                : formdata.GRNStatus,
+              formdata.GRNStatus == "Created" ? undefined : formdata.GRNStatus,
             Remarks: formdata.Remarks,
           });
           setProductcount(products.length + 1);
@@ -220,7 +195,6 @@ const CreateGRNAgainstPO = () => {
   };
 
   const onOkModal = () => {
-    debugger;
     form2
       .validateFields()
       .then(() => {
@@ -232,7 +206,6 @@ const CreateGRNAgainstPO = () => {
   };
 
   function calculateTotalAmount(data) {
-    debugger;
     let totalAmount = 0;
     data.forEach((item) => {
       if (
@@ -248,7 +221,6 @@ const CreateGRNAgainstPO = () => {
   }
 
   const handleInputChange = (e, column, index, record) => {
-    debugger;
     let newData;
     if (["ReceivedQty", "PoRate", "DiscountRate"].includes(column)) {
       newData = data.map((item) => {
@@ -303,7 +275,6 @@ const CreateGRNAgainstPO = () => {
   };
 
   const onFinishmodal = (values) => {
-    debugger;
     const va = form1.getFieldsValue();
     setPoloading(true);
     setIsPoSearchTable(true);
@@ -320,7 +291,6 @@ const CreateGRNAgainstPO = () => {
           `${urlSearchPendingPO}?Supplier=${postData.Supplier}&Store=${postData.ReceivingStore}&POStatus=${postData.POStatus}&FromDate=${postData.FromDate}&ToDate=${postData.ToDate}`
         )
         .then((response) => {
-          debugger;
           const apiData = response.data.data;
           setDataModal(apiData.PurchaseOrderDetails);
         });
@@ -331,8 +301,6 @@ const CreateGRNAgainstPO = () => {
   };
 
   const BatchmodalOpen = async (record) => {
-    debugger;
-
     const fieldsToValidate = [[record.key, "ReceivedQty"]];
     const va = form1.getFieldsValue();
     await form1.validateFields(fieldsToValidate);
@@ -347,13 +315,12 @@ const CreateGRNAgainstPO = () => {
     } else {
       setLoading(false);
       message.warning("Recieved Qty should not greater than Pending Qty.");
-
     }
   };
 
   const handlePoNumber = (record) => {
     setLoading(true);
-    debugger;
+
     form1.resetFields();
     form3.resetFields();
     setBatchRecord([]);
@@ -372,7 +339,6 @@ const CreateGRNAgainstPO = () => {
           `${urlCreateGRNAgainstPO}?PoHeaderId=${postData.PoHeaderId}&Supplier=${postData.Supplier}&Store=${postData.Store}`
         )
         .then((response) => {
-          debugger;
           const apiData = response.data.data;
           const products = apiData.ProductDetails.map((item, index) => ({
             ...item,
@@ -608,7 +574,7 @@ const CreateGRNAgainstPO = () => {
       render: (text, record) => (
         <Form.Item
           name={[record.key, "Batch"]}
-        //initialValue={record.PoBalanceQty}
+          //initialValue={record.PoBalanceQty}
         >
           <Button type="link" onClick={() => BatchmodalOpen(record)}>
             Batch
@@ -716,7 +682,6 @@ const CreateGRNAgainstPO = () => {
   ];
 
   const onCancelmodal = () => {
-    debugger;
     form2.resetFields();
     setIsModalOpen(false);
     setDataModal([]);
@@ -732,7 +697,6 @@ const CreateGRNAgainstPO = () => {
   };
 
   const Searchmodal = (value, record) => {
-    debugger;
     setData([]);
     setdataBatchModal([]);
     //setdataBatchModal(initialModelDataSource);
@@ -767,7 +731,6 @@ const CreateGRNAgainstPO = () => {
   };
 
   const onOkBatchModal = async () => {
-    debugger;
     await form3.validateFields();
     const values = form3.getFieldsValue();
     const valuesArray = Object.values(values);
@@ -791,7 +754,11 @@ const CreateGRNAgainstPO = () => {
       const updatedBatch = dataBatchModal.map((item) => {
         const key = item.key;
         if (values[key] != undefined) {
-          if (values[key].Quantity || values[key].EXPDateString || values[key].mrp) {
+          if (
+            values[key].Quantity ||
+            values[key].EXPDateString ||
+            values[key].mrp
+          ) {
             return {
               ...item,
               ProductId: batchRecord.ProductId,
@@ -810,18 +777,19 @@ const CreateGRNAgainstPO = () => {
               // : values[key].EXPDateString
               // ? values[key].EXPDateString.format("DD-MM-YYYY")
               // : null,
-              EXPDateString: (values[key].GrnBatchId)
-                ? (values[key].EXPDateString && values[key].EXPDateString.format("DD-MM-YYYY"))
+              EXPDateString: values[key].GrnBatchId
+                ? values[key].EXPDateString &&
+                  values[key].EXPDateString.format("DD-MM-YYYY")
                 : batchRecord.Expiry === "Month wise"
-                  ? values[key].EXPDateString &&
+                ? values[key].EXPDateString &&
                   `01-${String(values[key].EXPDateString.$M + 1).padStart(
                     2,
                     "0"
                   )}-${values[key].EXPDateString.$y}`
-                  : batchRecord.Expiry === "Date wise"
-                    ? values[key].EXPDateString &&
-                    values[key].EXPDateString.format("DD-MM-YYYY")
-                    : null,
+                : batchRecord.Expiry === "Date wise"
+                ? values[key].EXPDateString &&
+                  values[key].EXPDateString.format("DD-MM-YYYY")
+                : null,
               Rate: values[key].Rate,
               MRP: values[key].MRP,
               StockLocator: 0,
@@ -876,13 +844,11 @@ const CreateGRNAgainstPO = () => {
     };
   };
 
-  const onFinishBatchmodal = () => {
-    debugger;
-  };
+  const onFinishBatchmodal = () => {};
 
-  const onFinishBatchFailed = () => { };
+  const onFinishBatchFailed = () => {};
   // const handleOnFinish = async (values) => {
-  //   debugger;
+  //
   //   const products = [];
   //   for (let i = 0; i <= data.length; i++) {
   //     if (values.TotalPoAmount == values.InvoiceAmount) {
@@ -1009,8 +975,6 @@ const CreateGRNAgainstPO = () => {
   // const onFinishBatchFailed = () => {};
 
   const handleOnFinish = async (values) => {
-    debugger;
-
     const isAnyIdNotNull = dataBatchModal.some(
       (item) => item.ProductId !== "" && item.ActiveFlag
     );
@@ -1047,7 +1011,11 @@ const CreateGRNAgainstPO = () => {
               TaxAmount1: values[i].TaxAmount1 ?? 0,
               TotalAmount: values[i].LineAmount,
               Replaceable: values[i].Replaceable === true ? "Y" : "N",
-              PoStatus: values[i].ReceivedQty + values[i].BonusQuantity == values[i].PoBalanceQty ? "Completed" : "Pending",
+              PoStatus:
+                values[i].ReceivedQty + values[i].BonusQuantity ==
+                values[i].PoBalanceQty
+                  ? "Completed"
+                  : "Pending",
               ActiveFlag: true,
             };
             products.push(product);
@@ -1125,9 +1093,8 @@ const CreateGRNAgainstPO = () => {
     const postData = {
       newGRNAgainstPOModel: GRNAgainstPO,
       GRNAgainstPODetails: products,
-      BatchDetails: GrnHeaderId === 0 ? filteredBatchwithactive : filteredBatch
+      BatchDetails: GrnHeaderId === 0 ? filteredBatchwithactive : filteredBatch,
     };
-
 
     console.log("input", postData);
     //alert("successss call goes to api");
@@ -1140,7 +1107,9 @@ const CreateGRNAgainstPO = () => {
     });
 
     if (response && response.status === 200) {
-      message.success(GrnHeaderId > 0 ? "Updated Successfully" : "Created Successfully");
+      message.success(
+        GrnHeaderId > 0 ? "Updated Successfully" : "Created Successfully"
+      );
     } else {
       message.error(GrnHeaderId > 0 ? "Update Failed" : "Creation Failed");
     }
@@ -1149,7 +1118,6 @@ const CreateGRNAgainstPO = () => {
   };
 
   const BatchAdd = async () => {
-    debugger;
     await form3.validateFields();
     setdataBatchModal([
       ...dataBatchModal,
@@ -1230,7 +1198,10 @@ const CreateGRNAgainstPO = () => {
               },
             ]}
           >
-            <Input style={{ width: 100 }} disabled={!!GrnHeaderId && record.GrnBatchId} />
+            <Input
+              style={{ width: 100 }}
+              disabled={!!GrnHeaderId && record.GrnBatchId}
+            />
           </Form.Item>
         );
       },
@@ -1263,7 +1234,7 @@ const CreateGRNAgainstPO = () => {
           <InputNumber
             min={0}
             style={{ width: 70 }}
-          // disabled={!!GrnHeaderId && record.GrnBatchId}
+            // disabled={!!GrnHeaderId && record.GrnBatchId}
           />
         </Form.Item>
       ),
@@ -1331,27 +1302,39 @@ const CreateGRNAgainstPO = () => {
       render: (text, record) => (
         <Form.Item
           initialValue={
-            record.EXPDateString ?
-              moment(record.EXPDateString, 'DD-MM-YYYY') :
-              null
+            record.EXPDateString
+              ? moment(record.EXPDateString, "DD-MM-YYYY")
+              : null
           }
           name={[record.key, "EXPDateString"]}
           rules={[
             {
-              required: batchRecord.Expiry === "Month wise" || batchRecord.Expiry === "Date wise",
+              required:
+                batchRecord.Expiry === "Month wise" ||
+                batchRecord.Expiry === "Date wise",
               message: "input!",
             },
           ]}
           width={150}
         >
           <DatePicker
-            format={batchRecord.Expiry === "Month wise" ? "MMMM YYYY" : batchRecord.Expiry === "Date wise" ? "DD-MM-YYYY" : null}
-            disabled={!!GrnHeaderId && record.GrnBatchId || batchRecord.Expiry !== "Month wise" && batchRecord.Expiry !== "Date wise"}
+            format={
+              batchRecord.Expiry === "Month wise"
+                ? "MMMM YYYY"
+                : batchRecord.Expiry === "Date wise"
+                ? "DD-MM-YYYY"
+                : null
+            }
+            disabled={
+              (!!GrnHeaderId && record.GrnBatchId) ||
+              (batchRecord.Expiry !== "Month wise" &&
+                batchRecord.Expiry !== "Date wise")
+            }
             // disabled={record.Expiry!== "Month wise" && record.Expiry!== "Date wise"}
             style={{ width: 120 }}
             disabledDate={(current) => {
               // Disable past dates
-              return current && current < moment().startOf('day');
+              return current && current < moment().startOf("day");
             }}
           />
         </Form.Item>
@@ -1513,7 +1496,6 @@ const CreateGRNAgainstPO = () => {
   ];
 
   const BatchDelete = (record) => {
-    debugger;
     const newData = dataBatchModal.map((item) => {
       if (item.key === record.key) {
         return { ...item, ActiveFlag: false };
@@ -1527,110 +1509,73 @@ const CreateGRNAgainstPO = () => {
   };
 
   return (
-    <Layout style={{ zIndex: "999999999" }}>
-      <div
+    <Layout
+      style={{
+        width: "100%",
+        backgroundColor: "white",
+        minHeight: "max-content",
+        borderRadius: "10px",
+      }}
+    >
+      <PageHeader
+        title={"Create GRN Against PO"}
+        buttonIcon={<FaAnglesLeft style={{ fontSize: "1rem" }} />}
+        buttonLabel={"Back"}
+        onButtonClick={handleCancel}
+      />
+
+      <Form
+        layout="vertical"
+        onFinish={handleOnFinish}
         style={{
-          width: "100%",
-          backgroundColor: "white",
-          minHeight: "max-content",
-          borderRadius: "10px",
+          margin: "1rem",
+        }}
+        form={form1}
+        initialValues={{
+          GRNDatestring: dayjs(),
+          ReceivingDateString: dayjs(),
+          InvoiceDateString: dayjs(),
+          DCChallanDateString: dayjs(),
         }}
       >
-        {/* <Row
-          style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
-          }}
-        >
-          <Col span={16}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              Create GRN Against PO
-            </Title>
-          </Col>
-          <Col offset={6} span={2}>
-            <Button
-              icon={<LeftOutlined />}
-              style={{ marginBottom: 0 }}
-              onClick={handleCancel}
-            >
-              Back
-            </Button>
-          </Col>
-        </Row> */}
-        <PageHeader
-          title={"Create GRN Against PO"}
-          buttonLabel="Back"
-          buttonIcon={<LeftOutlined />}
-          onButtonClick={handleCancel}
-        />
-        <Card>
-          <Form
-            layout="vertical"
-            onFinish={handleOnFinish}
-            variant="outlined"
-            style={{
-              maxWidth: 1500,
-            }}
-            name="trigger"
-            form={form1}
-            initialValues={{
-              GRNDatestring: dayjs(),
-              ReceivingDateString: dayjs(),
-              InvoiceDateString: dayjs(),
-              DCChallanDateString: dayjs(),
-            }}
-          >
-            <Row
-              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              style={{ padding: "1rem 0.5rem", marginBottom: "0" }}
-              align="Bottom"
-            >
-              <Col className="gutter-row" span={6}>
-                <>
-                  <Form.Item
-                    label="Supplier"
-                    name="SupplierId"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input!",
-                      },
-                    ]}
+        <Row gutter={16}>
+          <ColWithSixteenSpan>
+            <Row gutter={16}>
+              <ColWithEightSpan>
+                <Form.Item
+                  label="Supplier"
+                  name="SupplierId"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Select
+                    loading={dropDownLoad}
+                    allowClear
+                    placeholder="Select Value"
+                    disabled={!!GrnHeaderId}
                   >
-                    <Select
-                      loading={dropDownLoad}
-                      allowClear
-                      placeholder="Select Value"
-                      disabled={!!GrnHeaderId}
-                    >
-                      {DropDown.SupplierList.map((option) => (
-                        <Select.Option
-                          key={option.VendorId}
-                          value={option.VendorId}
-                        >
-                          {option.LongName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                  <Form.Item name="PoHeaderId" hidden>
-                    <Input></Input>
-                  </Form.Item>
-                  <Form.Item name="GRNHeaderId" hidden>
-                    <Input></Input>
-                  </Form.Item>
-                </>
-              </Col>
-              <Col className="gutter-row" span={6}>
+                    {DropDown.SupplierList.map((option) => (
+                      <Select.Option
+                        key={option.VendorId}
+                        value={option.VendorId}
+                      >
+                        {option.LongName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+                <Form.Item name="PoHeaderId" hidden>
+                  <Input></Input>
+                </Form.Item>
+                <Form.Item name="GRNHeaderId" hidden>
+                  <Input></Input>
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
                 <Form.Item
                   label="Receiving Store"
                   name="StoreId"
@@ -1648,26 +1593,32 @@ const CreateGRNAgainstPO = () => {
                     disabled={!!GrnHeaderId}
                   >
                     {DropDown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                      <Select.Option
+                        key={option.StoreId}
+                        value={option.StoreId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
                   </Select>
                 </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={2} style={{ paddingTop: 35 }}>
-                {GrnHeaderId <= 0 && (
-                  <Tooltip title="Search Pending PO">
-                    <Typography.Link
-                      onClick={Searchmodal}
-                      style={{ fontWeight: "bold" }}
-                    >
-                      Pending Po
-                    </Typography.Link>
-                  </Tooltip>
-                )}
-              </Col>
-              <Col className="gutter-row" span={3}>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item label=" ">
+                  {GrnHeaderId <= 0 && (
+                    <Tooltip title="Search Pending PO">
+                      <Typography.Link
+                        onClick={Searchmodal}
+                        style={{ fontWeight: "bold" }}
+                      >
+                        Pending Po
+                      </Typography.Link>
+                    </Tooltip>
+                  )}
+                </Form.Item>
+              </ColWithEightSpan>
+
+              <ColWithEightSpan>
                 <Form.Item
                   label="Document Type"
                   name="DocumentType"
@@ -1693,13 +1644,76 @@ const CreateGRNAgainstPO = () => {
                     ))}
                   </Select>
                 </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={3}>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item
+                  label="Invoice Number"
+                  name="InvoiceNumber"
+                  hasFeedback
+                  validateDebounce={2000}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Input style={{ width: "100%" }} allowClear />
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item label="Invoice Date" name="InvoiceDateString">
+                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item
+                  label="Invoice Amount"
+                  name="InvoiceAmount"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <InputNumber min={0} allowClear style={{ width: "100%" }} />
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item label="DC Challan Number" name="DCChallanNumber">
+                  <Input style={{ width: "100%" }} allowClear />
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item label="DC Challan Date" name="DCChallanDateString">
+                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                </Form.Item>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item
+                  label="Receiving Date"
+                  name="ReceivingDateString"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                </Form.Item>
+              </ColWithEightSpan>
+            </Row>
+          </ColWithSixteenSpan>
+          <ColWithEightSpan>
+            <Row gutter={16}>
+              <ColWithEightSpan>
                 <Form.Item label="GRN Date" name="GRNDatestring">
                   <DatePicker format="DD-MM-YYYY" />
                 </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={2}>
+              </ColWithEightSpan>
+              <ColWithEightSpan>
                 <Form.Item
                   label="GRNStatus"
                   name="GRNStatus"
@@ -1715,106 +1729,55 @@ const CreateGRNAgainstPO = () => {
                     <Option value="Finalize">Finalize</Option>
                   </Select>
                 </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={2} style={{ paddingTop: 35 }}>
-                <Form.Item name="SubmitCheck">
+              </ColWithEightSpan>
+              <ColWithEightSpan>
+                <Form.Item label=" " name="SubmitCheck">
                   <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
                 </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <Form.Item
-                  label="Invoice Number"
-                  name="InvoiceNumber"
-                  hasFeedback
-                  validateDebounce={2000}
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input!",
-                    },
-                  ]}
-                >
-                  <Input style={{ width: "100%" }} allowClear />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <Form.Item label="Invoice Date" name="InvoiceDateString">
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={5}>
-                <Form.Item
-                  label="Invoice Amount"
-                  name="InvoiceAmount"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input!",
-                    },
-                  ]}
-                >
-                  <InputNumber min={0} allowClear style={{ width: "100%" }} />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={7}>
+              </ColWithEightSpan>
+              <Col span={24}>
                 <Form.Item label="Remarks" name="Remarks">
-                  <TextArea allowClear autoSize />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <Form.Item label="DC Challan Number" name="DCChallanNumber">
-                  <Input style={{ width: "100%" }} allowClear />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <Form.Item label="DC Challan Date" name="DCChallanDateString">
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={5}>
-                <Form.Item
-                  label="Receiving Date"
-                  name="ReceivingDateString"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input!",
-                    },
-                  ]}
-                >
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <TextArea
+                    allowClear
+                    autoSize={{
+                      minRows: 5,
+                      maxRows: 5,
+                    }}
+                  />
                 </Form.Item>
               </Col>
             </Row>
-            <Row justify="end" style={{ padding: "0rem 1rem" }}>
-              <Col style={{ marginRight: "10px" }}>
-                <Form.Item>
-                  <Button type="primary" htmlType="submit">
-                    {buttonTitle}
-                  </Button>
-                </Form.Item>
-              </Col>
-              <Col>
-                <Form.Item>
-                  <Button type="primary" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                </Form.Item>
-              </Col>
-            </Row>
-            <Divider style={{ marginTop: "0" }}></Divider>
-            <div>
-            <Spin spinning={loading}>
-              <CustomTable
-                dataSource={data}
-                columns={columns}
-                isFilter={false}
-                actionColumn={false}
-                // scroll={{ x: 2000 }}
-                bordered
-              />
-            </Spin>
-              {/* <Spin spinning={loading}>
+          </ColWithEightSpan>
+        </Row>
+        <Row justify="end" gutter={16}>
+          <Col>
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                {buttonTitle}
+              </Button>
+            </Form.Item>
+          </Col>
+          <Col>
+            <Form.Item>
+              <Button danger onClick={handleCancel}>
+                Cancel
+              </Button>
+            </Form.Item>
+          </Col>
+        </Row>
+        <Divider style={{ margin: "0" }} />
+        <div>
+          <Spin spinning={loading}>
+            <CustomTable
+              dataSource={data}
+              columns={columns}
+              isFilter={false}
+              actionColumn={false}
+              // scroll={{ x: 2000 }}
+              bordered
+            />
+          </Spin>
+          {/* <Spin spinning={loading}>
                 <Table
                   //loading={loading}
                   columns={columns}
@@ -1822,37 +1785,37 @@ const CreateGRNAgainstPO = () => {
                   scroll={{ x: 0 }}
                 />
               </Spin> */}
-              <Col style={{ float: 'right' }}>
-                <Form.Item
-                  label="Amount"
-                  name="TotalAmount"
-                  style={{ marginRight: "16px", width: 100 }}
-                >
-                  <InputNumber min={0} disabled />
-                </Form.Item>
-                <Form.Item
-                  label="Tax"
-                  name="TaxAmount"
-                  style={{ marginRight: "16px", width: 100 }}
-                >
-                  <InputNumber min={0} disabled />
-                </Form.Item>
-                <Form.Item
-                  label="Round Off"
-                  name="RoundOff"
-                  style={{ marginRight: "16px", width: 100 }}
-                >
-                  <InputNumber min={0} disabled />
-                </Form.Item>
-                <Form.Item
-                  label="Total PO Amount"
-                  name="TotalPoAmount"
-                  style={{ width: 150 }}
-                >
-                  <InputNumber min={0} disabled />
-                </Form.Item>
-              </Col>
-              {/* <div
+          <Col style={{ float: "right" }}>
+            <Form.Item
+              label="Amount"
+              name="TotalAmount"
+              style={{ marginRight: "16px", width: 100 }}
+            >
+              <InputNumber min={0} disabled />
+            </Form.Item>
+            <Form.Item
+              label="Tax"
+              name="TaxAmount"
+              style={{ marginRight: "16px", width: 100 }}
+            >
+              <InputNumber min={0} disabled />
+            </Form.Item>
+            <Form.Item
+              label="Round Off"
+              name="RoundOff"
+              style={{ marginRight: "16px", width: 100 }}
+            >
+              <InputNumber min={0} disabled />
+            </Form.Item>
+            <Form.Item
+              label="Total PO Amount"
+              name="TotalPoAmount"
+              style={{ width: 150 }}
+            >
+              <InputNumber min={0} disabled />
+            </Form.Item>
+          </Col>
+          {/* <div
                 style={{
                   display: "flex",
                   flexDirection: "row",
@@ -1889,197 +1852,180 @@ const CreateGRNAgainstPO = () => {
                   <InputNumber min={0} disabled />
                 </Form.Item>
               </div> */}
-            </div>
-          </Form>
-        </Card>
-        <ConfigProvider
-          theme={{
-            token: {
-              zIndexPopupBase: 3000,
-            },
+        </div>
+      </Form>
+
+      <Modal
+        title="Search for PO"
+        onOk={onOkModal}
+        okButtonProps={{ hidden: true }}
+        onCancel={onCancelmodal}
+        cancelText="Close"
+        width={"60rem"}
+        open={isModalOpen}
+        maskClosable={false}
+        cancelButtonProps={{ danger: "true" }}
+      >
+        <Form
+          style={{ width: "100%" }}
+          onFinish={onFinishmodal}
+          onFinishFailed={onFinishFailed}
+          layout="vertical"
+          form={form2}
+          initialValues={{
+            POStatus: "ALL",
+            PODateFrom: dayjs().subtract(1, "day"),
+            PODateTo: dayjs(),
           }}
         >
-          <Modal
-            title="Search for PO"
-            onOk={onOkModal}
-            onCancel={onCancelmodal}
-            width={1000}
-            open={isModalOpen}
-          >
-            <Form
-              name="basic"
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 16 }}
-              style={{ width: "100%" }}
-              onFinish={onFinishmodal}
-              onFinishFailed={onFinishFailed}
-              form={form2}
-              initialValues={{
-                POStatus: "ALL",
-                PODateFrom: dayjs().subtract(1, "day"),
-                PODateTo: dayjs(),
-              }}
-            >
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col span={12}>
-                  {/* <Form.Item label="Supplier" name="Supplier"> */}
-                  <Tag color="#1890ff">Supplier: {selectedStore}</Tag>
-                  {/* </Form.Item> */}
-                </Col>
-                <Col span={12}>
-                  {/* <Form.Item label="Receiving Store" name="ReceivingStore"> */}
-                  <Tag color="#52c41a">Receiving Store: {selectedSupplier}</Tag>
-                  {/* </Form.Item> */}
-                </Col>
-              </Row>
-              <Row
-                gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-                style={{ padding: "1rem 2rem", marginBottom: "0" }}
-                align="Bottom"
+          <Row gutter={16}>
+            <ColWithTwelveSpan style={{ marginBottom: "0.5rem" }}>
+              <Tag color="#1890ff">
+                Supplier :{" "}
+                <strong style={{ fontSize: "0.9rem" }}>{selectedStore}</strong>
+              </Tag>
+            </ColWithTwelveSpan>
+            <ColWithTwelveSpan>
+              <Tag color="#52c41a">
+                Receiving Store :{" "}
+                <strong style={{ fontSize: "0.9rem" }}>
+                  {selectedSupplier}
+                </strong>
+              </Tag>
+            </ColWithTwelveSpan>
+          </Row>
+          <Row gutter={16} style={{ marginTop: "1rem" }}>
+            <ColWithEightSpan>
+              <Form.Item label="PO Status" name="POStatus">
+                <Select>
+                  <Option key="ALL" value="ALL">
+                    ALL
+                  </Option>
+                  <Option value="Pending">Pending</Option>
+                  <Option value="PartiallyPending">Partially Pending</Option>
+                </Select>
+              </Form.Item>
+            </ColWithEightSpan>
+            <ColWithEightSpan>
+              <>
+                <Form.Item
+                  label="PO Date From"
+                  name="PODateFrom"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Input!",
+                    },
+                  ]}
+                >
+                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                </Form.Item>
+              </>
+            </ColWithEightSpan>
+            <ColWithEightSpan>
+              <Form.Item
+                label="PO Date To"
+                name="PODateTo"
+                rules={[
+                  {
+                    required: true,
+                    message: "Input!",
+                  },
+                ]}
               >
-                <Col span={6}>
-                  <Form.Item label="PO Status" name="POStatus">
-                    <Select>
-                      <Option key="ALL" value="ALL">
-                        ALL
-                      </Option>
-                      <Option value="Pending">Pending</Option>
-                      <Option value="PartiallyPending">
-                        Partially Pending
-                      </Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col className="gutter-row" span={9}>
-                  <>
-                    <Form.Item
-                      label="PO Date From"
-                      name="PODateFrom"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Input!",
-                        },
-                      ]}
-                    >
-                      <DatePicker
-                        style={{ width: "100%" }}
-                        format="DD-MM-YYYY"
-                      />
-                    </Form.Item>
-                  </>
-                </Col>
-                <Col className="gutter-row" span={9}>
-                  <Form.Item
-                    label="PO Date To"
-                    name="PODateTo"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Input!",
-                      },
-                    ]}
-                  >
-                    <DatePicker format="DD-MM-YYYY" />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row justify="end" style={{ padding: "0rem 1rem" }}>
-                <Col style={{ marginRight: "10px" }}>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                      Search
-                    </Button>
-                  </Form.Item>
-                </Col>
-                <Col>
-                  <Form.Item>
-                    <Button type="primary" onClick={handleReset}>
-                      Reset
-                    </Button>
-                  </Form.Item>
-                </Col>
-              </Row>
+                <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+              </Form.Item>
+            </ColWithEightSpan>
+          </Row>
+          <Row justify="end" gutter={16}>
+            <Col>
+              <Form.Item>
+                <Button type="primary" htmlType="submit">
+                  Search
+                </Button>
+              </Form.Item>
+            </Col>
+            <Col>
+              <Form.Item>
+                <Button danger onClick={handleReset}>
+                  Reset
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
 
-              <CustomTable
-                loading={poloading}
-                isFilter={true}
-                columns={columnsmodal}
-                dataSource={dataModal}
-              />
+          <CustomTable
+            loading={poloading}
+            isFilter={true}
+            columns={columnsmodal}
+            dataSource={dataModal}
+            scroll={{ x: 800 }}
+            actionColumn={false}
+          />
 
-              {/* {isPoSearchTable && poloading ? (
+          {/* {isPoSearchTable && poloading ? (
                                 <Skeleton active />
                             ) : (
                                 <Table columns={columnsmodal} dataSource={dataModal} />
                             )} */}
-            </Form>
-          </Modal>
-        </ConfigProvider>
-        <ConfigProvider
-          theme={{
-            token: {
-              zIndexPopupBase: 3000,
-            },
-          }}
+        </Form>
+      </Modal>
+
+      <Modal
+        title="Product Batch Details"
+        onOk={onOkBatchModal}
+        onCancel={onCancelBatchmodal}
+        width={"100rem"}
+        open={isBatchModalOpen}
+      >
+        <Form
+          name="basic"
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 16 }}
+          style={{ width: "100%" }}
+          onFinish={onFinishBatchmodal}
+          onFinishFailed={onFinishBatchFailed}
+          autoComplete="off"
+          form={form3}
         >
-          <Modal
-            title="Product Batch Details"
-            onOk={onOkBatchModal}
-            onCancel={onCancelBatchmodal}
-            width={1700}
-            open={isBatchModalOpen}
-          >
-            <Form
-              name="basic"
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 16 }}
-              style={{ width: "100%" }}
-              onFinish={onFinishBatchmodal}
-              onFinishFailed={onFinishBatchFailed}
-              autoComplete="off"
-              form={form3}
-            >
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                <Col span={8}>
-                  {/* <Form.Item label="Product" name="Product"> */}
-                  <Tag color="#1890ff">Product: {batchRecord.LongName}</Tag>
-                  {/* </Form.Item> */}
-                </Col>
-                <Col span={8}>
-                  {/* <Form.Item
+          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+            <Col span={8}>
+              {/* <Form.Item label="Product" name="Product"> */}
+              <Tag color="#1890ff">Product: {batchRecord.LongName}</Tag>
+              {/* </Form.Item> */}
+            </Col>
+            <Col span={8}>
+              {/* <Form.Item
                     label="Received Qty"
                     name="ReceivedQty"
                     handleCancel
                   > */}
-                  <Tag color="#52c41a">Received Qty: {batchRecord.ReceivedQty}</Tag>
-                  {/* </Form.Item> */}
-                </Col>
-                <Col className="gutter-row" span={8}>
-                  {/* <Form.Item label="Bonus qty" name="Bonusqty"> */}
-                  <Tag color="#7FA1C3">Bonus qty: {batchRecord.BonusQuantity}</Tag>
-                  {/* </Form.Item> */}
-                </Col>
-              </Row>
-              <Spin spinning={loading}>
-                <Table
-                  columns={Batchmodal}
-                  dataSource={
-                    batchRecord.ProductId
-                      ? dataBatchModal.filter(
-                        (item) =>
-                          (item.ProductId === batchRecord.ProductId &&
-                            item.ActiveFlag) ||
-                          (item.ProductId === "" && item.ActiveFlag)
-                      )
-                      : initialModelDataSource
-                  }
-                />
-              </Spin>
-            </Form>
-          </Modal>
-        </ConfigProvider>
-      </div>
+              <Tag color="#52c41a">Received Qty: {batchRecord.ReceivedQty}</Tag>
+              {/* </Form.Item> */}
+            </Col>
+            <Col className="gutter-row" span={8}>
+              {/* <Form.Item label="Bonus qty" name="Bonusqty"> */}
+              <Tag color="#7FA1C3">Bonus qty: {batchRecord.BonusQuantity}</Tag>
+              {/* </Form.Item> */}
+            </Col>
+          </Row>
+          <Spin spinning={loading}>
+            <Table
+              columns={Batchmodal}
+              dataSource={
+                batchRecord.ProductId
+                  ? dataBatchModal.filter(
+                      (item) =>
+                        (item.ProductId === batchRecord.ProductId &&
+                          item.ActiveFlag) ||
+                        (item.ProductId === "" && item.ActiveFlag)
+                    )
+                  : initialModelDataSource
+              }
+            />
+          </Spin>
+        </Form>
+      </Modal>
     </Layout>
   );
 };

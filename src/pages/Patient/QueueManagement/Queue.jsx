@@ -919,78 +919,76 @@ const Queue = () => {
 
   return (
     <>
-      <Layout>
-        <div
+      <Layout
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <Row
           style={{
-            padding: "0.5rem",
-            width: "100%",
-            backgroundColor: "white",
-            minHeight: "max-content",
-            borderRadius: "10px",
+            padding: "0.5rem 1.5rem 0.5rem 1.5rem",
+            backgroundColor: "#40A2E3",
+            borderRadius: "10px 10px 0px 0px",
           }}
         >
-          <Row
+          <Col
+            span={24}
             style={{
-              padding: "0.5rem 1.5rem 0.5rem 1.5rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            <Col
-              span={24}
+            <Title
+              level={4}
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
+                color: "white",
+                fontWeight: 500,
+                margin: 0,
+                paddingTop: 0,
               }}
             >
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Queue
-              </Title>
-              <Col>
-                <Tooltip title="Number of Patients in Queue" placement="bottom">
-                  <span style={{ display: "flex", alignItems: "center" }}>
-                    <FaUsers style={{ fontSize: "30px", color: "#fff" }} />
-                    <div
-                      style={{
-                        height: "1rem",
-                        color: "#fff",
-                        padding: "0.5rem",
-                        fontSize: "1.5rem",
-                        display: "flex",
-                        alignItems: "center",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {patientQueueDetails?.length}
-                    </div>
-                  </span>
-                </Tooltip>
-              </Col>
-              <Tooltip title="Search" placement="bottom">
-                <Button
-                  type="link"
-                  style={{ color: "#fff", fontSize: "2rem" }}
-                  size="middle"
-                  className="dfja"
-                  icon={<MdManageSearch />}
-                  onClick={handleShowSearchModal}
-                />
+              Queue
+            </Title>
+            <Col>
+              <Tooltip title="Number of Patients in Queue" placement="bottom">
+                <span style={{ display: "flex", alignItems: "center" }}>
+                  <FaUsers style={{ fontSize: "30px", color: "#fff" }} />
+                  <div
+                    style={{
+                      height: "1rem",
+                      color: "#fff",
+                      padding: "0.5rem",
+                      fontSize: "1.5rem",
+                      display: "flex",
+                      alignItems: "center",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {patientQueueDetails?.length}
+                  </div>
+                </span>
               </Tooltip>
             </Col>
-          </Row>
-
+            <Tooltip title="Search" placement="bottom">
+              <Button
+                type="link"
+                style={{ color: "#fff", fontSize: "2rem" }}
+                size="middle"
+                className="dfja"
+                icon={<MdManageSearch />}
+                onClick={handleShowSearchModal}
+              />
+            </Tooltip>
+          </Col>
+        </Row>
+        <div style={{ width: "100%" }}>
           <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-            style={{ margin: "1rem 0" }}
+            gutter={16}
+            style={{ margin: "1rem 0 0 0.5rem", width: "inherit" }}
           >
             <Col span={24}>
               {/* <Title level={4}> List of Patients in queue</Title> */}
@@ -1000,37 +998,41 @@ const Queue = () => {
               </Title>
             </Col>
           </Row>
-          <Spin spinning={isLoading}>
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col span={24}>
-                <Form key={selectedPatientRecord.QId} form={form3}>
-                  <Table
-                    dataSource={patientQueueDetails}
-                    columns={columns}
-                    rowKey={(row) => row.QId}
-                    size="small"
-                    className="custom-table"
-                    scroll={{ x: 1000 }}
-                    // onChange={(pagination) => {
-                    //   setCurrentPage(pagination.current);
-                    //   setItemsPerPage(pagination.pageSize);
-                    // }}
-                    pagination={{
-                      current: currentPage,
-                      pageSize: itemsPerPage,
-                      total: totalPatients,
-                      onChange: (page, pageSize) => {
-                        setCurrentPage(page);
-                        setItemsPerPage(pageSize);
-                      },
-                    }}
-                    bordered
-                  />
-                </Form>
-              </Col>
-            </Row>
-          </Spin>
         </div>
+        <Spin spinning={isLoading}>
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form
+                key={selectedPatientRecord.QId}
+                form={form3}
+                style={{ margin: "0 0.5rem" }}
+              >
+                <Table
+                  dataSource={patientQueueDetails}
+                  columns={columns}
+                  rowKey={(row) => row.QId}
+                  size="small"
+                  className="custom-table"
+                  scroll={{ x: 1000 }}
+                  // onChange={(pagination) => {
+                  //   setCurrentPage(pagination.current);
+                  //   setItemsPerPage(pagination.pageSize);
+                  // }}
+                  pagination={{
+                    current: currentPage,
+                    pageSize: itemsPerPage,
+                    total: totalPatients,
+                    onChange: (page, pageSize) => {
+                      setCurrentPage(page);
+                      setItemsPerPage(pageSize);
+                    },
+                  }}
+                  bordered
+                />
+              </Form>
+            </Col>
+          </Row>
+        </Spin>
       </Layout>
 
       <Modal

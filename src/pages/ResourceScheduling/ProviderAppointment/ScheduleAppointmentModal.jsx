@@ -412,8 +412,11 @@ function ScheduleAppointmentModal({
                   remarks: "",
                 }}
                 onFinish={(values) => {
-                  if (!selecetedPatient) {
-                    message.warn("Please select a patient to book");
+                  console.log("Selected Patient ", selecetedPatient);
+
+                  if (!Object.keys(selecetedPatient).length) {
+                    message.warning("Please select a patient to book");
+                    return;
                   }
                   setSaveLoading(true);
 
@@ -465,9 +468,8 @@ function ScheduleAppointmentModal({
                         setSelecetedPatient({});
                       });
                   } catch (error) {
-                   
                     if (!selecetedPatient) {
-                      message.warn("Select Patient to Book");
+                      message.warning("Select Patient to Book");
                     }
                     console.error("Error:", error);
                     setSaveLoading(false);

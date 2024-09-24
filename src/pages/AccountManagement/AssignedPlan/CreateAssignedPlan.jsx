@@ -149,7 +149,7 @@ const CreateAssignedPlan = () => {
         const response = await customAxios.get(
           `${urlGetPatientHeaderDetails}?PatientId=${PatientId}&EncounterId=${EncounterId}`
         );
-        if (response.status === 200 && response.data.data != null) {
+        if (response.status === 200 && response.data != null) {
           const detailsheader = response.data.data.EncounterModel;
           setPatientData(detailsheader);
           console.log("headerdata", detailsheader.PatientDetail);
@@ -220,7 +220,7 @@ const CreateAssignedPlan = () => {
                       "DD-MM-YYYY"
                     )
                   : null,
-              EmployeeNumber: AddNewAssignedPlanData.EmployeeNo,
+                  EmployeeNo: AddNewAssignedPlanData.EmployeeNo,
               ParentPriceApplicable:
                 AddNewAssignedPlanData.IsParentPriceApplicable,
               DocumentReference: AddNewAssignedPlanData.DocumentReference,
@@ -404,7 +404,7 @@ const CreateAssignedPlan = () => {
           MembershipValidToDate: AddNewAssignedPlanData.MembershipValidToDate
             ? dayjs(AddNewAssignedPlanData.MembershipValidToDate, "DD-MM-YYYY")
             : null,
-          EmployeeNumber: AddNewAssignedPlanData.EmployeeNo,
+            EmployeeNo: AddNewAssignedPlanData.EmployeeNo,
           ParentPriceApplicable: AddNewAssignedPlanData.IsParentPriceApplicable,
           DocumentReference: AddNewAssignedPlanData.DocumentReference,
           EligibleWardTypeId: AddNewAssignedPlanData.EligibleWardTypeId
@@ -445,7 +445,7 @@ const CreateAssignedPlan = () => {
       `${urlDeleteAuthorisationLineChargeParameter}?authorisationLineId=${record.AuthLineId}&PlanAuthId=${record.PlanAuthId}`
     );
     if (response.status===200 &&  response.data.data != null) {
-      setColumnData(response.data.data.AssignedPlan);
+      setColumnData(response.data.data);
       message.success("AuthorisationLineChargeParameter Deleted Successfully");
     }
   };
@@ -908,7 +908,7 @@ const CreateAssignedPlan = () => {
                         label="Payer"
                       >
                         {/* <Select onChange={(value) => handlePayerChange(value)} > */}
-                        <Select>
+                        <Select >
                           {billagreementDropdown.Payer?.map((option) => (
                             <Select.Option
                               key={option.PayerId}
@@ -1031,7 +1031,7 @@ const CreateAssignedPlan = () => {
                       </Form.Item>
                     </Col>
                     <Col className="gutter-row" span={6}>
-                      <Form.Item name="EmployeeNumber" label="EmployeeNumber">
+                      <Form.Item name="EmployeeNo" label="EmployeeNumber">
                         <Input style={{ width: "100%" }} />
                       </Form.Item>
                     </Col>

@@ -27,11 +27,12 @@ function DiscountModal({
   const [form] = Form.useForm();
 
   useEffect(() => {
+    debugger;
     if (discountDetails) {
       form.setFieldsValue({
         ServiceCatalogue: discountDetails.ServiceName,
         PatientChargeAmount:
-          discountDetails.ServiceChargeAmountIncludingPriceTariff,
+          discountDetails.PatientChargeAmount,
       });
     }
   }, [discountDetails]);
@@ -57,8 +58,10 @@ function DiscountModal({
         },
       });
 
-      if (response.status === 200 && response.data.data != null) {
-        setCharges(response.data.data.PatientAccountCharges);
+      if (response.status === 200 ) {
+        console.log("actionresu",response.data);
+        
+        setCharges(response.data.PatientAccountCharges);
         message.success("Discount Applied");
         handleCancel();
       } else {
