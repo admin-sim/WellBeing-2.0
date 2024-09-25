@@ -345,7 +345,14 @@ function PatientRefund() {
     if (totalInstrumentAmount > values.RefundAmount) {
       // Show error message or handle the validation
       message.warning(
-        `Total Instrument Amount (${totalInstrumentAmount}) cannot be greater than Refund Amount (${values.RefundAmount})`
+        `Total Instrument Amount  should be equal Refund Amount`
+      );
+      return; // Stop further execution if the condition is not met
+    }
+    if (totalInstrumentAmount < values.RefundAmount) {
+      // Show error message or handle the validation
+      message.warning(
+        `Total Instrument Amount should be equal than Refund Amount`
       );
       return; // Stop further execution if the condition is not met
     }

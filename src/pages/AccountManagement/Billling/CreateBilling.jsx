@@ -353,13 +353,13 @@ const CreateBilling = () => {
         {
           title: "ServiceName",
           dataIndex: "ServiceName",
-          key: "ServiceName",
+        //  key: "ServiceName",
           width: 200,
         },
         {
           title: "Date",
           dataIndex: "StrServiceDate",
-          key: "StrServiceDate",
+         // key: "StrServiceDate",
           width: 110,
         },
         {
@@ -370,23 +370,23 @@ const CreateBilling = () => {
         {
           title: "ChargeAmt",
           dataIndex: "ChargeAmount",
-          key: "ChargeAmount",
+        //  key: "ChargeAmount",
         },
         {
           title: "Qty",
           dataIndex: "Quantity",
-          key: "Quantity",
+         // key: "Quantity",
           width: 80,
         },
         {
           title: "NetAmt",
           dataIndex: "NetAmount",
-          key: "NetAmount",
+         // key: "NetAmount",
         },
         {
           title: "InsAmt",
           dataIndex: "InsuranceCoveredAmount",
-          key: "InsuranceCoveredAmount",
+         /// key: "InsuranceCoveredAmount",
         },
         {
           title: "TaxAmt",
@@ -396,7 +396,7 @@ const CreateBilling = () => {
         {
           title: "NetInsAmt",
           dataIndex: "NetInsurenceAmount",
-          key: "NetInsurenceAmount",
+        //  key: "NetInsurenceAmount",
         },
       ],
     },
@@ -410,32 +410,32 @@ const CreateBilling = () => {
         {
           title: "Charge",
           dataIndex: "PatientChargeAmount",
-          key: "PatientChargeAmount",
+        //  key: "PatientChargeAmount",
         },
         {
           title: "Discount",
           dataIndex: "PatientDiscountAmount",
-          key: "PatientDiscountAmount",
+        //  key: "PatientDiscountAmount",
         },
         {
           title: "Tax",
           dataIndex: "PatientTaxRate",
-          key: "PatientTaxRate",
+        //  key: "PatientTaxRate",
         },
         {
           title: "NetAmt",
           dataIndex: "PatientNetAmount",
-          key: "PatientNetAmount",
+        //  key: "PatientNetAmount",
         },
         {
           title: "AdjAmt",
           dataIndex: "AdjustedAmount",
-          key: "AdjustedAmount",
+       //   key: "AdjustedAmount",
         },
         {
           title: "LL Disc",
           dataIndex: "Discount",
-          key: "Discount",
+          //key: "Discount",
           render: (_, row) => {
             if (row.ServiceType.trim() === "P") {
               return null; // Hide the discount button if ServiceType is "P"
@@ -452,7 +452,7 @@ const CreateBilling = () => {
         {
           title: "",
           dataIndex: "actions",
-          key: "actions",
+         // key: "actions",
           render: (_, row) => {
             if (row.ServiceType.trim() === "P") {
               return null; // Hide the delete button if ServiceType is "P"
