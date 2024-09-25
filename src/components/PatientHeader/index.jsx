@@ -56,8 +56,8 @@ function PatientHeader({ patient, encounterId, style }) {
     },
     {
       title: "Encounter",
-      dataIndex: "GeneratedEncounterId",
-      key: "GeneratedEncounterId",
+      dataIndex: "Encounter",
+      key: "Encounter",
     },
     {
       title: "PatientName",
