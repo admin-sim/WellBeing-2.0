@@ -21,6 +21,7 @@ import {
   urlPackageDescriptionServiceClassification,
 } from "../../../../../endpoints";
 import { debounce } from "lodash";
+import dayjs from "dayjs";
 
 function PriceChargeModal({
   options,
@@ -52,8 +53,8 @@ function PriceChargeModal({
     console.log("Selected option:", option);
     form.setFieldsValue({ IndicatorDescriptionId: undefined });
     setData([]);
-  
-    form.resetFields(['IndicatorDescriptionId']); // Corrected to use an array
+
+    form.resetFields(["IndicatorDescriptionId"]); // Corrected to use an array
     // Update the URL based on the selected option
     if (option.children !== "All") {
       setDescriptionDisabled(false);
@@ -68,11 +69,9 @@ function PriceChargeModal({
           setUrl(urlPackageDescriptionServiceForInsurance);
           break;
       }
-    }
-    else{
+    } else {
       setDescriptionDisabled(true);
     }
-    
   };
 
   const onFinishForAddChargeParameters = async (values) => {
@@ -86,6 +85,7 @@ function PriceChargeModal({
       ? values.EffectiveTo.format("DD-MM-YYYY")
       : "";
     values.PriceTariffId = priceTariffId;
+    values.TariffLineValue=values.TariffLineValue ? values.TariffLineValue :0;
     try {
       const response = await customAxios.post(
         urlSaveNewPriceTariffChargeParameter,
@@ -113,7 +113,6 @@ function PriceChargeModal({
     setLoading(false);
   };
 
-
   const fetchOptions = async (value) => {
     debugger;
     if (!url || !value) {
@@ -122,15 +121,14 @@ function PriceChargeModal({
       return;
     }
     setFetching(true);
-    if(value){
+    if (value) {
       try {
         const response = await customAxios.get(`${url}?Description=${value}`);
         setData(response.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-    }
-    else{
+    } else {
       setData([]);
     }
     setFetching(false);
@@ -142,7 +140,7 @@ function PriceChargeModal({
     <div>
       <Spin spinning={loading}>
         <Modal
-          title="Add New General Lookup"
+          title="Add New Price Tariff"
           open={open}
           maskClosable={false}
           footer={null}
@@ -155,6 +153,15 @@ function PriceChargeModal({
             form={form}
             onFinish={onFinishForAddChargeParameters}
             onCancel={handleCancel}
+            initialValues={{
+           
+              TariffLineIndicator: "Mark Up",
+              FactorAmount: "Amount",
+              EffectiveFrom:dayjs(),
+              EffectiveTo:dayjs(),
+              Indicator: options.Indicators?.[0]?.LookupID, 
+              Status:"Active"
+            }}
           >
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               {options.NationalityFlag && (
@@ -195,6 +202,29 @@ function PriceChargeModal({
                           value={option.LookupID}
                         >
                           {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+              )}
+              {options.PayerFlag && (
+                <Col className="gutter-row" span={8}>
+                  <Form.Item
+                    name="Payer"
+                    label="Payer"
+                    
+                    rules={[
+                      { required: true, message: "Please select Payer " },
+                    ]}
+                  >
+                    <Select >
+                      {options.Payers?.map((option) => (
+                        <Select.Option
+                          key={option.PayerId}
+                          value={option.PayerId}
+                        >
+                          {option.PayerName}
                         </Select.Option>
                       ))}
                     </Select>
@@ -394,17 +424,21 @@ function PriceChargeModal({
               </Col>
             </Row>
             <Row gutter={16} justify="end">
-            <Col>
-              <Form.Item>
-              <Button type="primary" htmlType="submit" style={{ marginRight: '8px' }}>
-                  Submit
-                </Button>
-                <Button type="default" onClick={handleCancel} >
-                  Cancel
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
+              <Col>
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    style={{ marginRight: "8px" }}
+                  >
+                    Submit
+                  </Button>
+                  <Button type="default" onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
           </Form>
         </Modal>
       </Spin>

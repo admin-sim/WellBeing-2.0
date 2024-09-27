@@ -6,16 +6,14 @@ import { useNavigate } from 'react-router';
 import { urlGetAllServiceGroups,urlGetServiceClassificationsForServiceGroup, urlGetServicesForSelectedServiceClassification } from '../../../../../endpoints';
 import customAxios from '../../../../components/customAxios/customAxios';
 import Title from 'antd/es/typography/Title';
-
+import { v4 as uuidv4 } from "uuid";
+import CustomTable from '../../../../components/customTable';
 const Service = () => {
   const [serviceGroups, setServiceGroups] = useState([]);
   const [serviceClassifications, setServiceClassifications] = useState([]);
   const [services, setServices] = useState([]);
   const [serviceclassificationid, setServiceClassificationId] = useState(null);
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10, // Change this value according to your pagination settings
-  });
+
 
 
   useEffect(() => {
@@ -68,8 +66,14 @@ const Service = () => {
         const response = await customAxios.get(`${urlGetServicesForSelectedServiceClassification}?ServiceClassificationId=${value}`);
         // const data = await response.json();
         if (response.status === 200) {
-          const services = response.data.data.Services;
-        
+
+          const services = response.data.data.Services.map(
+            (item,index) => ({
+              ...item,
+              key: uuidv4(),
+              slNo:index+1,
+            })
+          );
           setServices(services);
         }
       } catch (error) {
@@ -95,66 +99,38 @@ const Service = () => {
       console.log('Validation failed:', error);
     }
   };
+  const handleEdit= ()=>{
+
+  }
 
   const columns = [
     {
       title: "Sl No",
-      key: "index",
+      dataIndex: "slNo",
       width: 70,
-      render: (text, record, index) =>
-        index + 1 + (pagination.current - 1) * pagination.pageSize, // Calculate the correct serial number
+
     },
     {
       title: 'ShortName',
       dataIndex: 'ShortName',
-      key: 'ShortName',
-      sorter: (a, b) => a.ShortName - b.ShortName,
-      sortDirections: ['descend', 'ascend'],
+
+
     },
     {
       title: 'LongName',
       dataIndex: 'LongName',
-      key: 'LongName',
-      sorter: (a, b) => a.LongName.localeCompare(b.LongName),
-      sortDirections: ['descend', 'ascend'],
+
+
     },
     {
       title: 'UomName',
       dataIndex: 'UomName',
-      key: 'UomName',
-      sorter: (a, b) => a.UomName.localeCompare(b.UomName),
-      sortDirections: ['descend', 'ascend'],
-    },
 
-    {
-      title: 'Actions',
-      dataIndex: 'actions',
-      key: 'actions',
-      render: (_, row) => (
-        <>
-          <Tooltip title="Edit">
-            <Button icon={<EditOutlined />} onClick={() => handleEdit(row)} />
-          </Tooltip>
-        </>
-      ),
-    },
+    }
   ];
  
 
-  // const handleSearch = (value) => {
-  //   debugger;
-  //   if (!value) {
-  //     // Reset services to the original list when the search value is null, undefined, or empty
-  //     setServices(orginalservices);
-  //   } else {
-  //     const filtered = orginalservices.filter(entry =>
-  //       Object.values(entry).some(val => 
-  //         val && val.toString().toLowerCase().includes(value.toLowerCase())
-  //       )
-  //     );
-  //     setServices(filtered);
-  //   }
-  // };
+
   
 
   return (
@@ -231,16 +207,12 @@ const Service = () => {
           </Row>
         </Form>
         <Divider orientation="left"></Divider>
-        <Table
+        <CustomTable
         style={{ padding: '0rem 2rem' }}
         dataSource={services}
         columns={columns}
-       
-        rowKey={(row) => row.ServiceId} // Specify the custom id property here
-        size="small"
-        bordered
-        pagination={pagination}
-        onChange={(pagination) => setPagination(pagination)}
+        onEdit={handleEdit}
+        isFilter={true}
       />
 
       </div>

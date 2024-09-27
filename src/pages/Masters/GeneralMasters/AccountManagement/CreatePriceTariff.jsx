@@ -70,6 +70,7 @@ function CreatePriceTariff() {
     WardTypeFlag: false,
     FamilyIncomeFlag: false,
     ProviderFlag: false,
+    PayerFlag:false
   });
   const [editpricetariffDropdown, setEditPriceariffDropdown] = useState({
     PatientType: [],
@@ -84,6 +85,7 @@ function CreatePriceTariff() {
     WardTypeFlag: false,
     FamilyIncomeFlag: false,
     ProviderFlag: false,
+    PayerFlag:false
   });
 
   const handleCancel = () => {
@@ -306,10 +308,31 @@ function CreatePriceTariff() {
   };
 
   const columns = [
+    // {
+    //   title: "ChargeParameter",
+    //   dataIndex: "PatientTypeName",
+    //   key: "PatientTypeName",
+    // },
     {
-      title: "ChargeParameter",
-      dataIndex: "PatientTypeName",
-      key: "PatientTypeName",
+      title: "Charge Parameters",
+      dataIndex: "ListOfChargeParameters",
+      key: "chargeParameters",
+      render: (text, record) => {
+        debugger;
+        const chargeParameters = [];
+
+        if (record.NationalityName)
+          chargeParameters.push(record.NationalityName);
+        if (record.PatientTypeName)
+          chargeParameters.push(record.PatientTypeName);
+        if (record.ProviderName) chargeParameters.push(record.ProviderName);
+        if (record.WardTypeName) chargeParameters.push(record.WardTypeName);
+        if (record.GenderName) chargeParameters.push(record.GenderName);
+        if (record.PayerName) chargeParameters.push(record.PayerName);
+        if (record.IncomeLimit)
+          chargeParameters.push(record.IncomeLimit.toString());
+        return chargeParameters.join(", ");
+      },
     },
     {
       title: "Indicator",

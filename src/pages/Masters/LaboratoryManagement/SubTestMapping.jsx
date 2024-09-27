@@ -28,8 +28,8 @@ import { useNavigate } from "react-router";
 
 import { urlLoadTestForMapping, urlLoadSubTestMapGridData, urlDeleteSubTest, urlSaveNewSubTestmap } from "../../../../endpoints";
 import customAxios from "../../../components/customAxios/customAxios";
-import { render } from "react-dom";
-import FormItem from "antd/es/form/FormItem/index.js";
+import CustomTable from "../../../components/customTable";
+import { v4 as uuidv4 } from "uuid";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -41,15 +41,12 @@ const SubTestMapping = () => {
         SubTests: [],
         AllFacility: []
     });
-    const [paginationSize, setPaginationSize] = useState(10);
+   
     const [filteredData, setFilteredData] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSearchLoading, setIsSearchLoading] = useState(false);
-    const [page, setPage] = useState(1);
+ 
+
     const [form] = Form.useForm();
-    const [loading, setLoading] = useState(false);
-    const [mainTestOptions, setMainTestOptions] = useState([]);
-    const [subTestOptions, setSubTestOptions] = useState([]);
+
     const { Title } = Typography;
     const hasEffectRun = useRef(false);
 
@@ -75,31 +72,9 @@ const SubTestMapping = () => {
         }
     }, []);
 
-    const navigate = useNavigate();
+  
 
-    const colorMapping = {
-        Created: "blue",
-        Draft: "geekblue",
-        Pending: "volcano",
-        "Partially Pending": "orange",
-        Finalize: "green",
-    };
-
-    const GetPobyId = (PoHeaderId) => {
-        debugger;
-        navigate("/CreatePurchaseOrder", { state: { PoHeaderId } });
-    };
-
-    const [formatedFromDate, setFormatedFromDate] = useState();
-    const [formatedToDate, setFormatedToDate] = useState();
-    function formatDate(inputDate) {
-        const dateParts = inputDate.split("/");
-        if (dateParts.length === 3) {
-            const [year, month, day] = dateParts;
-            return `${day}-${month}-${year}`;
-        }
-        return inputDate; // Return as is if not in the expected format
-    }
+   
 
     const onFinish = async (values) => {
         debugger;
@@ -127,22 +102,7 @@ const SubTestMapping = () => {
         form.setFieldsValue({ TestOrder: undefined })
     };
 
-    const onReset = () => {
-        setIsTableHasValues(false);
-        form.resetFields();
-    };
 
-    const handleSelect = (value, option, key) => {
-        debugger;
-        try {
-            customAxios.get(`${urlGetProductDetailsById}?ProductId=${option.key}`).then((response) => {
-                debugger;
-                const apiData = response.data.data;
-            });
-        } catch (error) {
-            //console.error("Error fetching purchase order details:", error);        
-        }
-    };
 
     const filterOption = (input, option) =>
         (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
@@ -157,8 +117,13 @@ const SubTestMapping = () => {
         try {
             customAxios.get(`${urlLoadSubTestMapGridData}?MainTestId=${value}`).then((response) => {
                 debugger;
-                const apiData = response.data.data.SubTestMappingList;
-                setFilteredData(apiData)
+                const apiData = response.data.data.SubTestMappingList.map(
+                    (item,index) => ({
+                      ...item,
+                      key: uuidv4(),
+                    })
+                  );
+                  setFilteredData(apiData)
             });
         } catch (error) {
             //console.error("Error fetching purchase order details:", error);        
@@ -187,29 +152,14 @@ const SubTestMapping = () => {
         {
             title: "SubTest Name",
             dataIndex: "SubTestName",
-            key: "SubTestName",
-            sorter: (a, b) => a.SubTestName - b.SubTestName,
-            sortDirections: ["descend", "ascend"],
+  
         },
         {
             title: "TestOrder",
             dataIndex: "TestOrder",
-            key: "TestOrder",
-        },
-        {
-            title: "Actions",
-            dataIndex: "actions",
-            key: "actions",
-            render: (_, row) => <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(row)}><DeleteOutlined /></Popconfirm>
-            //     (
-            //     <Tooltip title="Delete">
-            //         <Button
-            //             icon={<DeleteOutlined />}
-            //             onClick={() => handleDelete(row)}
-            //         />
-            //     </Tooltip>
-            // ),
-        },
+ 
+        }
+      
     ];
 
     return (
@@ -228,10 +178,6 @@ const SubTestMapping = () => {
                         name="control-hooks"
                         layout="vertical"
                         variant="outlined"
-                        size="Default"
-                        style={{
-                            maxWidth: 1500,
-                        }}
                         onFinish={onFinish}
                     >
                         <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
@@ -297,23 +243,11 @@ const SubTestMapping = () => {
                         </Row>
                     </Form>
                 </Card>
-                <Table
+                <CustomTable
                     dataSource={filteredData}
                     columns={columns}
-                    pagination={{
-                        onChange: (current, pageSize) => {
-                            setPage(current);
-                            setPaginationSize(pageSize);
-                        },
-                        defaultPageSize: 10,
-                        hideOnSinglePage: true,
-                        showSizeChanger: true,
-                        showTotal: (total, range) =>
-                            `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                    }}
-                    rowKey={(row) => row.AppUserId}
-                    size="small"
-                    bordered
+                    isFilter={true}
+                    onDelete={handleDelete}
                 />
             </div>
         </Layout>

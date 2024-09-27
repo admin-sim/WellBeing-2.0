@@ -811,6 +811,7 @@ const CreateBilling = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        withCredentials: true,  // This ensures the session cookie is sent
       });
       if (response.status === 200 && response.data) {
         if (
