@@ -71,6 +71,7 @@ import ManageAppointment from "./pages/ResourceScheduling/ManageAppointment/inde
 import ProviderAppointment from "./pages/ResourceScheduling/ProviderAppointment";
 import BedManager from "./pages/WardManagement/Inpatient.jsx/BedManager";
 import DischargeClearance from "./pages/WardManagement/Inpatient.jsx/DischargeClearance";
+import EditDischargeClearance from "./pages/WardManagement/Inpatient.jsx/EditDischargeClearance";
 import InPatientManagement from "./pages/WardManagement/Inpatient.jsx/InPatientManagement/InPatientManagement";
 import Queue from "./pages/Patient/QueueManagement/Queue";
 import PatientVitalSigns from "./pages/Patient/QueueManagement/PatientVitalSigns";
@@ -956,6 +957,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <DischargeClearance />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="EditDischargeClearance"
+              element={
+                <ProtectedRoute>
+                  <EditDischargeClearance />
                 </ProtectedRoute>
               }
             />

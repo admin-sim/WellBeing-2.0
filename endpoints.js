@@ -440,5 +440,12 @@ export const urlRefundAction = `${baseURL}/api/Refund/Create`;
 export const urlCreateReFund = `${baseURL}/api/Refund/CreateReFund`;
 export const urlUpdateReFundDetails = `${baseURL}/api/Refund/UpdateReFundDetails`;
 export const urlShowAllPendingBills = `${baseURL}/api/Receipt/ShowAllPendingBills`;
+export const urlPackageDescriptionServiceforclincal = `${baseURL}/api/Service/PackageDescriptionServiceforclincal`;
+export const urlLoadSampleCollectionGrid = `${baseURL}/api/Laboratory/LoadSampleCollectionGrid`;
+export const urlPackageDescriptionServicewithoutDiagServc = `${baseURL}/api/Service/PackageDescriptionServicewithoutDiagServc`;
+export const urlGetDischargeDetails = `${baseURL}/api/DischargeClearance/GetDischargeDetails`;
+export const urlShowSearchDischargeClearance = `${baseURL}/api/DischargeClearance/ShowSearchDischargeClearance`;
+export const urlShowDischargeClearance = `${baseURL}/api/DischargeClearance/ShowDischargeClearance`;
+export const urlSaveDischargeClearanceForPatient = `${baseURL}/api/DischargeClearance/SaveDischargeClearanceForPatient`;
 
 
