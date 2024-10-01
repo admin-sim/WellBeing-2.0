@@ -22,29 +22,39 @@ import PatientHeader from "../../../../components/PatientHeader";
 import CkEditor from "../../../../components/CKEditor/index";
 import dayjs from "dayjs";
 import { PlusCircleOutlined } from "@ant-design/icons";
-import customAxios from '../../../../components/customAxios/customAxios.jsx'
-import { urlAddNewDrNote, urlViewOrEditDrNote, urlDeleteDrNote } from "../../../../../endpoints.js";
+import customAxios from "../../../../components/customAxios/customAxios.jsx";
+import {
+  urlAddNewDrNote,
+  urlViewOrEditDrNote,
+  urlDeleteDrNote,
+} from "../../../../../endpoints.js";
 import { set } from "lodash";
+import {
+  ColWithEightSpan,
+  ColWithSixSpan,
+} from "../../../../components/customGridColumns/index.jsx";
 
 function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
   const [form] = Form.useForm();
   const [templateEditorData, setTemplateEditorData] = useState("");
-  const [openCKModel, setOpenCKModel] = useState(false)
-  const [filteredData, setFilteredData] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [readOnly, setReadOnly] = useState(false)
-  const [buttonTitle, setButtonTitle] = useState('Save')
+  const [openCKModel, setOpenCKModel] = useState(false);
+  const [filteredData, setFilteredData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [readOnly, setReadOnly] = useState(false);
+  const [buttonTitle, setButtonTitle] = useState("Save");
+  const [key, setKey] = useState(null);
+
   const handleCancel = () => {
     handleClose();
   };
 
   const handleCancel1 = () => {
-    setTemplateEditorData('')
-    form.resetFields()
-    setOpenCKModel(false)
-    setButtonTitle('Save')
-    setReadOnly(false)
-  }
+    setTemplateEditorData("");
+    form.resetFields();
+    setOpenCKModel(false);
+    setButtonTitle("Save");
+    setReadOnly(false);
+  };
 
   useEffect(() => {
     setFilteredData(Dropdown.DrNotesList);
@@ -55,46 +65,45 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
       title: "Date",
       dataIndex: "datestring",
       key: "datestring",
-      sorter: (a, b) => a.datestring - b.datestring,
-      sortDirections: ["descend", "ascend"],
+      width: 250,
     },
     {
       title: "Time",
       dataIndex: "Time",
       key: "Time",
-      sorter: (a, b) => a.Time - b.Time,
-      sortDirections: ["descend", "ascend"],
+      width: 250,
     },
-  ]
+  ];
 
   const handleView = async (value, flag) => {
-    debugger
-    setTemplateEditorData('')
+    setTemplateEditorData("");
     const response = await customAxios.get(
       `${urlViewOrEditDrNote}?NoteId=${value.DrNoteId}&EncounterId=${bed.EncounterId}&PatientId=${bed.PatientId}`
     );
     if (response.status === 200 && response.data.data != null) {
-      setButtonTitle('Update')
+      setButtonTitle("Update");
       setTemplateEditorData(response.data.data.DrNote);
-      form.setFieldsValue({ 'DrNoteId': response.data.data.DrNoteId })
-      setOpenCKModel(true)
+      setKey(response.data.data.DrNoteId);
+      form.setFieldsValue({ DrNoteId: response.data.data.DrNoteId });
+      setOpenCKModel(true);
       if (flag == 1) {
-        setReadOnly(true)
+        setReadOnly(true);
       }
     }
-  }
+  };
 
   const handleDelete = async (value) => {
-    debugger
     const response = await customAxios.get(
       `${urlDeleteDrNote}?NoteId=${value.DrNoteId}&EncounterId=${bed.EncounterId}&PatientId=${bed.PatientId}`
     );
     if (response.status === 200 && response.data.data != null) {
-      setFilteredData(response.data.data.DrNotesList)
-      form.resetFields()
-      setTemplateEditorData('')
+      setFilteredData(response.data.data.DrNotesList);
+      form.resetFields();
+      setTemplateEditorData("");
     }
-  }
+  };
+
+  console.log("LL", filteredData?.length + 1000);
 
   return (
     <div>
@@ -113,9 +122,17 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
         onCancel={handleCancel}
       >
         <PatientHeader patient={patient} />
-        <Row justify="end" style={{ marginTop: '10px' }}>
+        <Row justify="end" style={{ marginTop: "1rem" }}>
           <Col>
-            <Button type="primary" icon={<PlusCircleOutlined />} onClick={() => setOpenCKModel(true)}>
+            <Button
+              type="primary"
+              icon={<PlusCircleOutlined />}
+              onClick={() => {
+                setKey(null);
+                setTemplateEditorData("");
+                setOpenCKModel(true);
+              }}
+            >
               Add Notes
             </Button>
           </Col>
@@ -138,7 +155,9 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
         centered
         title={
           <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>
-            {buttonTitle == 'Save' ? 'Add New Doctor Note' : 'Update Doctor Note'}
+            {buttonTitle == "Save"
+              ? "Add New Doctor Note"
+              : "Update Doctor Note"}
           </span>
         }
         open={openCKModel}
@@ -146,122 +165,80 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
         footer={null}
         onCancel={handleCancel1}
       >
-        <Card>
-          <Form
-            form={form}
-            name="control-hooks"
-            layout="vertical"
-            variant="outlined"
-            style={{
-              maxWidth: 1500,
-            }}
-            initialValues={{
-              Date: dayjs()
-            }}
-            onFinish={async (values) => {
-              debugger
-              if (templateEditorData == '') {
-                message.warning('No data to Save')
-                return false
-              }
-              const note = {
-                DrNoteId: values.DrNoteId ? values.DrNoteId : 0,
-                PatientId: bed.PatientId,
-                EncounterId: bed.EncounterId,
-                datestring: values.Date ? values.Date.format('DD-MM-YYYY') : '',
-                timestring: values.Date ? values.Date.format('HH:mm:ss') : '',
-                DrNote: templateEditorData
-              }
-              const response = await customAxios.post(urlAddNewDrNote, note, {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              });
-              if (response.status === 200 && response.data.data != null) {
-                message.success('Success')
-                setFilteredData(response.data.data.DrNotesList)
-                form.resetFields()
-                setTemplateEditorData('')
-                setButtonTitle('Save')
-                setReadOnly(false)
-              }
-              handleCancel1();
-            }}
-          >
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col className="gutter-row" span={12}>
-                <Form.Item name="Date" label="Date" rules={[{ required: true, message: "Please input!" }]}>
-                  <DatePicker
-                    style={{ width: "100%" }}
-                    showTime={{ format: "hh:mm A" }}
-                    format="dddd , DD-MM-YYYY , hh:mm A"
-                  />
-                </Form.Item>
-                <Form.Item name='DrNoteId'>
-                  <Input hidden />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <Form.Item name='BP' label='BP'>
-                  <Input disabled />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <Form.Item name='HeartRate' label='Heart Rate'>
-                  <Input disabled />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={4}>
-                <Form.Item name='Temperature' label='Temperature'>
-                  <Input disabled />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={4}>
-                <Form.Item name='RR' label='RR (in C/M)'>
-                  <Input disabled />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={4}>
-                <Form.Item name='Spo2' label='Spo2'>
-                  <Input disabled />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <Form.Item name='Height' label='Height'>
-                  <Input disabled />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <Form.Item name='Weight' label='Weight'>
-                  <Input disabled />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Col>
-              <Form.Item label='DrNote' disabled={readOnly}>
-                <CkEditor
-                  initialData={templateEditorData}
-                  printButton={true}
-                  setData={setTemplateEditorData}
+        <Form
+          form={form}
+          // layout="vertical"
+          variant="outlined"
+          initialValues={{
+            Date: dayjs(),
+          }}
+          onFinish={async (values) => {
+            if (templateEditorData == "") {
+              message.warning("No data to Save");
+              return false;
+            }
+            const note = {
+              DrNoteId: values.DrNoteId ? values.DrNoteId : 0,
+              PatientId: bed.PatientId,
+              EncounterId: bed.EncounterId,
+              datestring: values.Date ? values.Date.format("DD-MM-YYYY") : "",
+              timestring: values.Date ? values.Date.format("HH:mm:ss") : "",
+              DrNote: templateEditorData,
+            };
+            const response = await customAxios.post(urlAddNewDrNote, note, {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+            if (response.status === 200 && response.data.data != null) {
+              message.success("Success");
+              setFilteredData(response.data.data.DrNotesList);
+              form.resetFields();
+              setTemplateEditorData("");
+              setButtonTitle("Save");
+              setReadOnly(false);
+            }
+            handleCancel1();
+          }}
+        >
+          <Row gutter={16} style={{ margin: "1.5rem 0 -1rem 0" }}>
+            <ColWithEightSpan>
+              <Form.Item
+                name="Date"
+                label="Date"
+                rules={[{ required: true, message: "Please input!" }]}
+              >
+                <DatePicker
+                  style={{ width: "100%" }}
+                  showTime={{ format: "hh:mm A" }}
+                  format="dddd , DD-MM-YYYY , hh:mm A"
                 />
               </Form.Item>
+            </ColWithEightSpan>
+          </Row>
+          <CkEditor
+            key={key ? key : Dropdown.DrNotesList?.length + 1000} //added default key to 123456 so that it is unique for adding new notes
+            initialData={templateEditorData}
+            printButton={true}
+            setData={setTemplateEditorData}
+          />
+          <Row justify="end" gutter={16} style={{ margin: "1rem 0.5rem 0 0" }}>
+            <Col>
+              <Form.Item hidden={readOnly}>
+                <Button type="primary" htmlType="submit">
+                  {buttonTitle}
+                </Button>
+              </Form.Item>
             </Col>
-            <Row justify="end">
-              <Col>
-                <Form.Item hidden={readOnly}>
-                  <Button type="primary" htmlType="submit">{buttonTitle}</Button>
-                </Form.Item>
-              </Col>
-              <Col>
-                <Form.Item>
-                  <Button type="default" onClick={handleCancel1}>
-                    Cancel
-                  </Button>
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
-        </Card>
+            <Col>
+              <Form.Item>
+                <Button danger onClick={handleCancel1}>
+                  Cancel
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
       </Modal>
     </div>
   );

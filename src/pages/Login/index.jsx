@@ -52,11 +52,9 @@ const Login = () => {
       if (response.status === 200) {
         if (response) {
           let decodedJwt = jwtDecode(response.data.data);
-          console.log("decodedJwt", decodedJwt);
           let expirationDate = new Date(decodedJwt.exp * 1000);
-          console.log("expiration", expirationDate);
           Cookies.set("authToken", response.data.data, {
-            expires: 60 / (24 * 60),
+            expires: expirationDate,
           });
           navigate("/");
         } else {

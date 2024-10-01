@@ -67,8 +67,9 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import "ckeditor5/ckeditor5.css";
 import { Button, Col, Row, message } from "antd";
 import { PrinterOutlined } from "@ant-design/icons";
+import { v4 as uuidv4 } from "uuid";
 
-function CkEditor({ initialData, printButton, setData }) {
+function CkEditor({ initialData, printButton, setData, isReadOnly = false }) {
   const [editorData, setEditorData] = useState(initialData);
   const [isLayoutReady, setIsLayoutReady] = useState(false);
 
@@ -415,6 +416,8 @@ function CkEditor({ initialData, printButton, setData }) {
             <div ref={editorRef}>
               {isLayoutReady && (
                 <CKEditor
+                  isReadOnly={isReadOnly}
+                  // key={uuidv4()}
                   editor={ClassicEditor}
                   config={editorConfig}
                   onChange={handleEditorChange}
