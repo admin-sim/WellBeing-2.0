@@ -237,7 +237,7 @@ const VisitModal = (
       {/* {contextHolder} */}
       <Modal
         width={"75%"}
-        title="Create Visit"
+        title={details.isCancelOrEditVisit ? 'Edit Visit' : "Create Visit"}
         open={details.open}
         onOk={details.handleOk}
         // okButtonProps={{ disabled: IsVisitCreated }}
@@ -643,7 +643,7 @@ const VisitModal = (
                   title="Next of Kin Details"
                   bordered={true}
                   style={{ marginBottom: "24px" }}
-                  //   className="capture"
+                //   className="capture"
                 >
                   <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                     <Col span={12}>

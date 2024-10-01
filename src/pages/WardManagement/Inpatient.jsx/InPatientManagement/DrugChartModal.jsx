@@ -79,7 +79,9 @@ function DrugChartModal({ bed, patient, Dropdown, open, handleClose }) {
             },
         });
         if (response.status === 200 && response.data.data != null) {
+            setButtonTitle('Save')
             message.success('Success')
+            form.resetFields();
             setTableData(response.data.data.DrugListModel)
         }
     }

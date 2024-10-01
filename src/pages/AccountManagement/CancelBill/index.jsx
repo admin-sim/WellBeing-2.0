@@ -125,6 +125,8 @@ function CancelBill() {
       });
       setEncounterId(null);
       setPatientId(null);
+      setDataSource([]);
+      setSelectedRows([]);
     } else
       form.setFieldsValue({
         PatientName: option.data.PatientFirstName,
@@ -166,7 +168,7 @@ function CancelBill() {
     }
   };
 
-  const handleSource = async () => {
+  const handleChangeSource = async () => {
     setIsLoading(true);
     setDataSource([]);
     setSelectedRows([]);
@@ -260,19 +262,19 @@ function CancelBill() {
     const lookupDescription = selectedOption
       ? selectedOption.LookupDescription
       : null;
-  
+
     if (selectedRows.length <= 0) {
       message.warning("Please Select Records ");
       return;
     }
-  
+
     try {
       if (lookupDescription === "Invoice") {
         const Bills = selectedRows.map((row) => {
           const key = row.key;
           const cancelReasonKey = `CancelReason_${key}`;
           const cancelReason = values[cancelReasonKey] || null; // Get the CancelReason using the key
-  
+
           return {
             BillID: row.BillID,
             BillNumber: row.BillNumber,
@@ -280,154 +282,169 @@ function CancelBill() {
             IsSampleCollected: row.IsSampleCollected,
           };
         });
-  
+
         // Check if any CancelReason is null
         const invalidBills = Bills.filter((bill) => bill.CancelReason === null);
         if (invalidBills.length > 0) {
           message.warning("Please select Cancel Reason For Selected Records");
           return;
         }
-  
-        const response = await customAxios.post(urlSaveBillCancelAction, Bills, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-  
+
+        const response = await customAxios.post(
+          urlSaveBillCancelAction,
+          Bills,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
         if (response.status === 200 && response.data.data === 1) {
-          const remainingData = dataSource.filter(
-            (item) => !selectedRows.some((row) => row.key === item.key)
-          );
-          setDataSource(remainingData);
+          // const remainingData = dataSource.filter(
+          //   (item) => !selectedRows.some((row) => row.key === item.key)
+          // );
+         // setDataSource(remainingData);
           setSelectedRows([]); // Clear selected rows
+          handleChangeSource();
           message.success("Invoice Cancel Action Success.");
         }
-      } 
-      else if (lookupDescription === "Receipts") {
+      } else if (lookupDescription === "Receipts") {
         const Receipts = selectedRows.map((row) => {
           const key = row.key;
           const cancelReasonKey = `CancelReason_${key}`;
           const cancelReason = values[cancelReasonKey] || null; // Get the CancelReason using the key
-  
+
           const cancelAction = `CancelAction_${key}`;
           const cancelReasonAction = values[cancelAction] || null;
-  
+
           return {
             ReceiptId: row.ReceiptId,
             CancelType: cancelReasonAction, // Use CancelAction
             CancelReason: cancelReason,
           };
         });
-  
+
         // Check if any CancelReason or CancelType is null
         const invalidReceipts = Receipts.filter(
-          (Receipt) => Receipt.CancelReason === null || Receipt.CancelType === null
+          (Receipt) =>
+            Receipt.CancelReason === null || Receipt.CancelType === null
         );
-  
+
         if (invalidReceipts.length > 0) {
-          message.warning("Please select Cancel Reason and Action For Selected Records");
+          message.warning(
+            "Please select Cancel Reason and Action For Selected Records"
+          );
           return;
         }
-  
-        const response = await customAxios.post(urlSaveReceiptCancelAction, Receipts, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-  
+
+        const response = await customAxios.post(
+          urlSaveReceiptCancelAction,
+          Receipts,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
         if (response.status === 200 && response.data.data === 1) {
-          const remainingData = dataSource.filter(
-            (item) => !selectedRows.some((row) => row.key === item.key)
-          );
-          setDataSource(remainingData);
+        
           setSelectedRows([]); // Clear selected rows
+          handleChangeSource();
           message.success("Receipt Cancel Action Success");
-        }else{
-          message.warning('Cannot cancel Zero Bill.')
+        } else {
+          message.warning("Cannot cancel Zero Bill.");
         }
-      }
-      else if (lookupDescription === "Deposits") {
+      } else if (lookupDescription === "Deposits") {
         const Receipts = selectedRows.map((row) => {
           const key = row.key;
           const cancelReasonKey = `CancelReason_${key}`;
           const cancelReason = values[cancelReasonKey] || null; // Get the CancelReason using the key
-  
+
           const cancelAction = `CancelAction_${key}`;
           const cancelReasonAction = values[cancelAction] || null;
-  
+
           return {
             ReceiptId: row.ReceiptId,
             CancelType: cancelReasonAction, // Use CancelAction
             CancelReason: cancelReason,
-            ReciptNumber:row.RecieptNumber
+            ReciptNumber: row.RecieptNumber,
           };
         });
-  
+
         // Check if any CancelReason or CancelType is null
         const invalidReceipts = Receipts.filter(
-          (Receipt) => Receipt.CancelReason === null || Receipt.CancelType === null
+          (Receipt) =>
+            Receipt.CancelReason === null || Receipt.CancelType === null
         );
-  
+
         if (invalidReceipts.length > 0) {
-          message.warning("Please select Cancel Reason and Action For Selected Records");
+          message.warning(
+            "Please select Cancel Reason and Action For Selected Records"
+          );
           return;
         }
-  
-        const response = await customAxios.post(urlSaveDepositCancelAction, Receipts, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-  
+
+        const response = await customAxios.post(
+          urlSaveDepositCancelAction,
+          Receipts,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
         if (response.status === 200 && response.data.data === 1) {
-          const remainingData = dataSource.filter(
-            (item) => !selectedRows.some((row) => row.key === item.key)
-          );
-          setDataSource(remainingData);
           setSelectedRows([]); // Clear selected rows
+          handleChangeSource();
           message.success("Deposit cancel action success.");
         }
-      }
-      else if (lookupDescription === "Refunds") {
+      } else if (lookupDescription === "Refunds") {
         const Receipts = selectedRows.map((row) => {
           const key = row.key;
           const cancelReasonKey = `CancelReason_${key}`;
           const cancelReason = values[cancelReasonKey] || null; // Get the CancelReason using the key
-  
+
           const cancelAction = `CancelAction_${key}`;
           const cancelReasonAction = values[cancelAction] || null;
-  
+
           return {
             ReFundId: row.ReFundId,
             CancelType: cancelReasonAction, // Use CancelAction
             CancelReason: cancelReason,
-            ReFundAmount:row.ReFundAmount,
-            ReciptNumber:ReciptNumber
+            ReFundAmount: row.ReFundAmount,
+            ReciptNumber: ReciptNumber,
           };
         });
-  
+
         // Check if any CancelReason or CancelType is null
         const invalidReceipts = Receipts.filter(
-          (Receipt) => Receipt.CancelReason === null || Receipt.CancelType === null
+          (Receipt) =>
+            Receipt.CancelReason === null || Receipt.CancelType === null
         );
-  
+
         if (invalidReceipts.length > 0) {
-          message.warning("Please select Cancel Reason and Action For Selected Records");
+          message.warning(
+            "Please select Cancel Reason and Action For Selected Records"
+          );
           return;
         }
-  
-        const response = await customAxios.post(urlSaveRefundCancelAction, Receipts, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-  
+
+        const response = await customAxios.post(
+          urlSaveRefundCancelAction,
+          Receipts,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
         if (response.status === 200 && response.data.data === 1) {
-          const remainingData = dataSource.filter(
-            (item) => !selectedRows.some((row) => row.key === item.key)
-          );
-          setDataSource(remainingData);
           setSelectedRows([]); // Clear selected rows
+          handleChangeSource();
           message.success("Refund cancel action success.");
         }
       }
@@ -436,7 +453,6 @@ function CancelBill() {
       console.error("Error during save:", error);
     }
   };
-  
 
   // Function to get table columns based on `docType`
   const getColumnsBasedOnDocType = (data) => {
@@ -540,11 +556,13 @@ function CancelBill() {
               <Form.Item name={`CancelAction_${record.key}`}>
                 <Select>
                   {/* Display "Cancel" in the dropdown but submit value as 1 */}
-                  <Select.Option key="Cancel" value="1">Cancel</Select.Option>
+                  <Select.Option key="Cancel" value="1">
+                    Cancel
+                  </Select.Option>
                 </Select>
               </Form.Item>
             ),
-          }          
+          },
         ];
       case "Deposits":
         return [
@@ -582,11 +600,13 @@ function CancelBill() {
               <Form.Item name={`CancelAction_${record.key}`}>
                 <Select>
                   {/* Display "Cancel" in the dropdown but submit value as 1 */}
-                  <Select.Option key="Cancel" value="1">Cancel</Select.Option>
+                  <Select.Option key="Cancel" value="1">
+                    Cancel
+                  </Select.Option>
                 </Select>
               </Form.Item>
             ),
-          }   
+          },
           //{ title: 'Cancellation Reason', dataIndex: '' },
         ];
       case "Refunds":
@@ -603,10 +623,10 @@ function CancelBill() {
     }
   };
 
-  const handleChangeSource = () => {
-    setSelectedRows([]);
+  // const handleChangeSource = () => {
+  //   setSelectedRows([]);
 
-  };
+  // };
 
   return (
     <Layout
@@ -657,11 +677,11 @@ function CancelBill() {
                   </Button>
                 </Form.Item>
               </Col>
-              <Col>
+              {/* <Col>
                 <Form.Item label=" ">
                   <Button onClick={handleSource}>Select</Button>
                 </Form.Item>
-              </Col>
+              </Col> */}
               <Col>
                 <Form.Item label=" ">
                   <Button onClick={handleReset} danger>
