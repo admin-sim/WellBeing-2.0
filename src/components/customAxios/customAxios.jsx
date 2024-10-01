@@ -12,6 +12,7 @@ const customAxios = axios.create({
   headers: {
     "Content-Type": "application/json", // Add other default headers as needed
   },
+  withCredentials: true 
 });
 
 // Add an interceptor to set the Authorization header if a token is available

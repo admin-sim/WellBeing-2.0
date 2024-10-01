@@ -5,6 +5,11 @@ const ColWithThreeSpan = ({ children, ...props }) => (
     {children}
   </AntdCol>
 );
+const ColWithFourSpan = ({ children, ...props }) => (
+  <AntdCol xl={4} lg={4} md={12} xs={12} span={24} {...props}>
+    {children}
+  </AntdCol>
+);
 const ColWithSixSpan = ({ children, ...props }) => (
   <AntdCol xl={6} lg={6} md={12} xs={12} span={24} {...props}>
     {children}
@@ -37,6 +42,7 @@ const ColWithSixteenSpan = ({ children, ...props }) => (
 );
 
 export {
+  ColWithFourSpan,
   ColWithSixSpan,
   ColWithSevenSpan,
   ColWithThreeSpan,

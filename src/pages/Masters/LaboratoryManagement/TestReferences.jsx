@@ -20,15 +20,16 @@ import {
     Tooltip,
     Table,
     AutoComplete,
+    message,
 } from "antd";
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
 
-import { urlTestReferencesIndex, urlLoadSubTestMapGridData } from "../../../../endpoints";
+import { urlTestReferencesIndex, urlLoadSubTestMapGridData, urlSaveTestReference, urlLoadTestReferenceGrid } from "../../../../endpoints";
 import customAxios from "../../../components/customAxios/customAxios";
-import { render } from "react-dom";
-import FormItem from "antd/es/form/FormItem/index.js";
+
 import TextArea from "antd/es/input/TextArea";
+import CustomTable from "../../../components/customTable";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -39,17 +40,11 @@ const TestMethods = () => {
         Durations: [],
         ListTestMethodModel: []
     });
-    const [paginationSize, setPaginationSize] = useState(5);
-    const [filteredData, setFilteredData] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSearchLoading, setIsSearchLoading] = useState(false);
-    const [page, setPage] = useState(1);
     const [form] = Form.useForm();
-    const [loading, setLoading] = useState(false);
     const [subTestOptions, setSubTestOptions] = useState([]);
     const { Title } = Typography;
     const hasEffectRun = useRef(false);
-
+    const [filteredData, setFilteredData] = useState([]);
     useEffect(() => {
         if (!hasEffectRun.current) {
             try {
@@ -75,62 +70,47 @@ const TestMethods = () => {
         }
     }, []);
 
-    const navigate = useNavigate();
-
-    const GetPobyId = (PoHeaderId) => {
-        debugger;
-        navigate("/CreatePurchaseOrder", { state: { PoHeaderId } });
-    };
-
-    const [formatedFromDate, setFormatedFromDate] = useState();
-    const [formatedToDate, setFormatedToDate] = useState();
-    function formatDate(inputDate) {
-        const dateParts = inputDate.split("/");
-        if (dateParts.length === 3) {
-            const [year, month, day] = dateParts;
-            return `${day}-${month}-${year}`;
+    const LoadTestReferenceGrid =async()=>{
+        const values=form.getFieldsValue();
+        const response = await customAxios.get(`${urlLoadTestReferenceGrid}?TestId=${value}&TestId=${value}&TestId=${value}&TestId=${value}`);
+        if(response.status===200 && response.data!=null){
+            setFilteredData(response.data.data.ListTestReferenceModel);
         }
-        return inputDate; // Return as is if not in the expected format
     }
+
+    
     const onFinish = async (values) => {
         debugger;
         const postData = {
-            TestMethodModel: values
+            TestId: values.TestId,
+            TestMethodId: values.TestMethodId,
+            PeriodsID: values.PeriodsId,
+            FromAge: values.FromAge,
+            ToAge: values.ToAge,
+            Low: values.Low,
+            High: values.High,
+            Description: values.Description,
+            Gender: values.Gender,
+            OperatorType: values.OperatorType,
+
         }
-        const response = await customAxios.post(urlSaveTestMethod, postData, {
+        const response = await customAxios.post(urlSaveTestReference, postData, {
             headers: {
                 'Content-Type': 'application/json'
             }
         });
-        message.success(response.data.data.Status)
-        // onChange(values.Tests)
-        // form.resetFields(MethodsName, Unit)
-    };
-
-    const onReset = () => {
-        setIsTableHasValues(false);
-        form.resetFields();
-    };
-
-    const handleSelect = (value, option, key) => {
-        debugger;
-        try {
-            customAxios.get(`${urlGetProductDetailsById}?ProductId=${option.key}`).then((response) => {
-                debugger;
-                const apiData = response.data.data;
-            });
-        } catch (error) {
-            //console.error("Error fetching purchase order details:", error);        
+        if(response.status===200 && response.data!=null){
+            message.success(Response.data.data.Status);
         }
+
     };
+
+   
 
     const filterOption = (input, option) =>
         (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
-    const onSearch = (value) => {
-        debugger;
 
-    };
 
     const onChange = (value) => {
         debugger
@@ -158,48 +138,34 @@ const TestMethods = () => {
         {
             title: "Duration",
             dataIndex: "SubTestName",
-            key: "SubTestName",
-            sorter: (a, b) => a.SubTestName - b.SubTestName,
-            sortDirections: ["descend", "ascend"],
+   
         },
         {
             title: "From Age",
             dataIndex: "TestOrder",
-            key: "TestOrder",
+        
         },
         {
             title: "To Age",
             dataIndex: "TestOrder",
-            key: "TestOrder",
+         
         },
         {
             title: "Low",
             dataIndex: "TestOrder",
-            key: "TestOrder",
+    
         },
         {
             title: "High",
             dataIndex: "TestOrder",
-            key: "TestOrder",
+   
         },
         {
             title: "Description",
             dataIndex: "TestOrder",
-            key: "TestOrder",
+           
         },
-        {
-            title: "Action",
-            dataIndex: "actions",
-            key: "actions",
-            render: (_, row) => (
-                <Tooltip title="Delete">
-                    <Button
-                        icon={<DeleteOutlined />}
-                        onClick={() => handleDelete(row)}
-                    />
-                </Tooltip>
-            ),
-        },
+    
     ];
 
     return (
@@ -208,7 +174,7 @@ const TestMethods = () => {
                 <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
                     <Col span={16}>
                         <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
-                            Test Method Management
+                        Test Reference Management
                         </Title>
                     </Col>
                 </Row>
@@ -217,14 +183,9 @@ const TestMethods = () => {
                         form={form}
                         name="control-hooks"
                         layout="vertical"
-                        variant="outlined"
-                        size="Default"
-                        style={{
-                            maxWidth: 1500,
-                        }}
                         onFinish={onFinish}
                         initialValues={{
-                            Gender: 8,
+                           // Gender: 8,
                             OperatorType: 'between (<>)',
                             PeriodsId: 12202
                         }}
@@ -244,7 +205,7 @@ const TestMethods = () => {
                                         allowClear
                                         optionFilterProp="children"
                                         onChange={onChange}
-                                        onSearch={onSearch}
+                                        //onSearch={onSearch}
                                         filterOption={filterOption}
                                         options={subTestMappingIndex.SingleTests}
                                     />
@@ -273,7 +234,8 @@ const TestMethods = () => {
                                 </Form.Item>
                             </Col>
                         </Row>
-                        <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                        
+                        <Row gutter={16} style={{backgroundColor:"#EAEAEC",boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px"}}>
                             <Col className="gutter-row" span={6}>
                                 <Form.Item label="Durations" name="PeriodsId">
                                     <Select>
@@ -352,23 +314,10 @@ const TestMethods = () => {
                         </Row>
                     </Form>
                 </Card>
-                <Table
+                <CustomTable
                     dataSource={filteredData}
                     columns={columns}
-                    pagination={{
-                        onChange: (current, pageSize) => {
-                            setPage(current);
-                            setPaginationSize(pageSize);
-                        },
-                        defaultPageSize: 5,
-                        hideOnSinglePage: true,
-                        showSizeChanger: true,
-                        showTotal: (total, range) =>
-                            `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                    }}
-                    rowKey={(row) => row.AppUserId}
-                    size="small"
-                    bordered
+                    onDelete={handleDelete}
                 />
             </div>
         </Layout>

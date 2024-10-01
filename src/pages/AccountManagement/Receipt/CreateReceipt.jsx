@@ -40,6 +40,7 @@ import {
   urlGetPatientHeaderDetails,
   urlReceiptCreate,
   urlSaveNewReceipt,
+  urlShowAllPendingBills,
   urlShowOutStandingAmount,
 } from "../../../../endpoints";
 import customAxios from "../../../components/customAxios/customAxios";
@@ -64,26 +65,27 @@ function CreateReceipt() {
   const [receiptAmount, setReceiptAmount] = useState(0);
   const [activeTab, setActiveTab] = useState("1");
   const [activeTabDisable, setActiveTabDisable] = useState(true);
-
+  const [totalInstrumentAmount, setTotalInstrumentAmount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
     debugger;
-    const fetchDataHeader = async () => {
-      try {
-        const response = await customAxios.get(
-          `${urlGetPatientHeaderDetails}?PatientId=${PatientId}&EncounterId=${EncounterId}`
-        );
-        if (response.status === 200 && response.data != null) {
-          const detailsheader = response.data.data.EncounterModel;
-          setPatientData(detailsheader);
-        } else {
-        }
-      } catch (error) {}
-    };
+
     fetchDataHeader();
   }, []);
 
+  const fetchDataHeader = async () => {
+    try {
+      const response = await customAxios.get(
+        `${urlGetPatientHeaderDetails}?PatientId=${PatientId}&EncounterId=${EncounterId}`
+      );
+      if (response.status === 200 && response.data != null) {
+        const detailsheader = response.data.data.EncounterModel;
+        setPatientData(detailsheader);
+      } else {
+      }
+    } catch (error) {}
+  };
   useEffect(() => {
     debugger;
 
@@ -102,15 +104,14 @@ function CreateReceipt() {
         setBanks(response.data.Bank);
         setPaymentTypes(response.data.PaymentType);
 
-      
-          const assosiateBills = response.data?.ReceiptAllocations?.map((item) => ({
+        const assosiateBills = response.data?.ReceiptAllocations?.map(
+          (item) => ({
             ...item,
             key: uuidv4(),
-          }));
-          setAssosiateBills(assosiateBills);
-        
-  
-        
+          })
+        );
+        setAssosiateBills(assosiateBills);
+
         setOptions(response.data);
       } else {
       }
@@ -228,13 +229,13 @@ function CreateReceipt() {
   const handleReceiptAmount = (e) => {
     debugger;
 
-    if(e.target.value===""){
+    if (e.target.value === "") {
       setActiveTabDisable(true);
-      return; 
+      return;
     }
     const outstand = form.getFieldValue("Outstanding");
     setReceiptAmount(Number(e.target.value));
-    if (Number(e.target.value)&& isDepositChecked) {
+    if (Number(e.target.value) && isDepositChecked) {
       setActiveTabDisable(false);
     }
     if (!isDepositChecked && outstand > 0) {
@@ -296,10 +297,7 @@ function CreateReceipt() {
         <Form.Item
           name={["InstrumentAmount", record.key - 1]}
           style={{ width: "100%" }}
-          rules={[
-            { required: true, message: "Required" },
-          ]}
-          //  initialValue={record.InstrumentAmount}
+          rules={[{ required: true, message: "Required" }]}
         >
           <InputNumber
             style={{ width: "100%" }}
@@ -442,18 +440,20 @@ function CreateReceipt() {
     console.log("object", values);
     console.log("assosiatebills", assosiateBills);
 
-    const updatedBills = assosiateBills.map((bill) => {
-      const receiptAmountKey = `ReceiptAmt_${bill.key}`;
-      return {
-        // ...bill,
-        AssocitedReceiptAmount:
-          Number(values[receiptAmountKey]) || bill.ReceiptAmount, // Convert to number
-        AssocitedBillNumber: bill.BillNumber,
-        AssociatedBillID: bill.AssociateBillID,
-        AssocitedOutStandingAmount: bill.OutStandingAmount,
-        IsPharmacyBill: bill.IsPharmacyBill,
-      };
-    });
+    const updatedBills = assosiateBills
+      .filter((bill) => selectedRowKeys.includes(bill.key)) // Filter only the selected bills
+      .map((bill) => {
+        const receiptAmountKey = `ReceiptAmt_${bill.key}`;
+        return {
+          AssocitedReceiptAmount:
+            Number(values[receiptAmountKey]) || bill.ReceiptAmount, // Convert to number
+          AssocitedBillNumber: bill.BillNumber,
+          AssociatedBillID: bill.AssociateBillID,
+          AssocitedOutStandingAmount: bill.OutStandingAmount,
+          IsPharmacyBill: bill.IsPharmacyBill,
+        };
+      });
+
     // Calculate the total sum of ReceiptAmount for all records
     const totalReceiptAmount = updatedBills.reduce((sum, bill) => {
       return sum + (Number(bill.AssocitedReceiptAmount) || 0);
@@ -486,27 +486,58 @@ function CreateReceipt() {
       EncounterId: EncounterId,
       IsDeposit: isDepositChecked,
       PatientId: PatientId,
-      ReceiptAmount: values.ReceiptAmount,
+      ReceiptAmount: Number(values.ReceiptAmount),
       ReceivedFrom: values.ReceivedFrom,
     };
 
     // Perform conditional validation based on isDepositChecked
-  if (isDepositChecked && updatedAllocations?.length === 0) {
-    message.warning("Please Fill Allocation Details when isDepositChecked is Checked.");
-    return; // Exit early if validation fails
-  } else if (!isDepositChecked && updatedBillsWithTotal?.length === 0) {
-    message.warning("Please Pay  Assosiate bills To Proceed.");
-    return; // Exit early if validation fails
-  }
+    if (isDepositChecked && updatedAllocations?.length === 0) {
+      message.warning(
+        "Please Fill Allocation Details when isDepositChecked is Checked."
+      );
+      return; // Exit early if validation fails
+    } else if (!isDepositChecked && updatedBillsWithTotal?.length === 0) {
+      message.warning("Please Pay  Assosiate bills To Proceed.");
+      return; // Exit early if validation fails
+    }
+
+    // Validation: Check if total of InstrumentAmount and ReceiptAmount matches Receipt.ReceiptAmount
+    const totalInstrumentAmount = updatedReceiptInsAmtData.reduce(
+      (sum, item) => {
+        return sum + (Number(item.InstrumentAmount) || 0);
+      },
+      0
+    );
+    const totalAllocationAmount = updatedAllocations.reduce((sum, item) => {
+      return sum + (Number(item.AllocationAmount) || 0);
+    }, 0);
+
+    if (totalInstrumentAmount !== Receipt.ReceiptAmount) {
+      message.warning(
+        `The total InstrumentAmount must be  equal ReceiptAmount`
+      );
+      return; // Exit early if validation fails
+    }
+
+    if (!isDepositChecked && totalReceiptAmount !== Receipt.ReceiptAmount) {
+      message.warning(
+        `The total AssosiatedBill Receipt Amount  must be equal to  ReceiptAmount`
+      );
+      return; // Exit early if validation fails
+    }
+    if (isDepositChecked && totalAllocationAmount !== Receipt.ReceiptAmount) {
+      message.warning(
+        `The total AllocationAmount   must be equal to  ReceiptAmount`
+      );
+      return; // Exit early if validation fails
+    }
 
     const ReceiptDetails = {
       NewReceipt: Receipt, // This maps to 'NewReceipt' in the backend
-      ReceiptAllocations:  isDepositChecked ? updatedAllocations : [], // Maps to 'ReceiptAllocations'
+      ReceiptAllocations: isDepositChecked ? updatedAllocations : [], // Maps to 'ReceiptAllocations'
       ReceiptInstruments: updatedReceiptInsAmtData, // Maps to 'ReceiptInstruments'
-      PatientAccountBills: isDepositChecked ? updatedBillsWithTotal :[] , // Maps to 'Receipts'
+      PatientAccountBills: isDepositChecked ? [] : updatedBillsWithTotal, // Maps to 'Receipts'
     };
-
-
 
     const response = await customAxios.post(urlSaveNewReceipt, ReceiptDetails, {
       headers: {
@@ -514,24 +545,28 @@ function CreateReceipt() {
       },
     });
     if (response.status === 200) {
-     
-        const assosiateBills = response.data?.bills?.map((item) => ({
-          ...item,
-          key: uuidv4(),
-        }));
-        setAssosiateBills(assosiateBills);
-      
+      const assosiateBills = response.data?.bills?.map((item) => ({
+        ...item,
+        key: uuidv4(),
+      }));
+      setAssosiateBills(assosiateBills);
+
       form.resetFields();
       setAllocations([]);
       setActiveTab("1");
+      fetchDataHeader();
+      setActiveTabDisable(true);
+      setIsDepositChecked(true);
       message.success("Saved Successfully....");
     }
   };
   const validateReceiptAmount = (_, value) => {
     if (!isDepositChecked) {
-      const outstanding = form.getFieldValue('Outstanding');
+      const outstanding = form.getFieldValue("Outstanding");
       if (value > outstanding) {
-        return Promise.reject(new Error('Receipt Amount cannot be greater than Outstanding amount.'));
+        return Promise.reject(
+          new Error("Receipt Amount cannot be greater than Outstanding amount.")
+        );
       }
     }
     return Promise.resolve();
@@ -552,42 +587,34 @@ function CreateReceipt() {
     {
       title: "Indicator",
       dataIndex: "IndicatorDescriptionName",
-
     },
     {
       title: "Description",
       dataIndex: "SelectedDescriptionName",
-  
     },
     {
       title: "Patient Type",
       dataIndex: "PatientTypeDescription",
-
     },
     {
       title: "Encounter Id",
       dataIndex: "Encounter",
-
     },
     {
       title: "Percentage",
       dataIndex: "AllocationPercentage",
-
     },
     {
       title: "Amount",
       dataIndex: "AllocationAmount",
- 
     },
     {
       title: "Utilized",
       dataIndex: "Utilized",
-
     },
     {
       title: "Balance",
       dataIndex: "Balance",
-
     },
   ];
 
@@ -595,12 +622,10 @@ function CreateReceipt() {
     {
       title: "Bill Number",
       dataIndex: "BillNumber",
-
     },
     {
       title: "Bill Date",
       dataIndex: "BillDatestring",
-
     },
     {
       title: "Document Type",
@@ -622,23 +647,34 @@ function CreateReceipt() {
     {
       title: "Encounter Id",
       dataIndex: "EncounterId",
-
     },
     {
       title: "Bill Amount",
       dataIndex: "BillAmount",
-
     },
     {
       title: "OutStanding Amount",
       dataIndex: "OutStandingAmount",
-
     },
     {
       title: "Receipt Amount",
 
       render: (text, record) => (
-        <Form.Item name={`ReceiptAmt_${record.key}`}>
+        <Form.Item
+          name={`ReceiptAmt_${record.key}`}
+          rules={[
+            {
+              validator: (_, value) => {
+                if (value > record.OutStandingAmount) {
+                  return Promise.reject(
+                    `Receipt Amount cannot be greater than Outstanding Amount (${record.OutStandingAmount})`
+                  );
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
           <Input
             type="number"
             disabled={!selectedRowKeys.includes(record.key)}
@@ -729,7 +765,11 @@ function CreateReceipt() {
                   </Form.Item>
                 </ColWithEightSpan>
                 <ColWithEightSpan>
-                  <Form.Item name="ReceiptAmount"  label="Receipt Amount" rules={[{ validator: validateReceiptAmount }]}>
+                  <Form.Item
+                    name="ReceiptAmount"
+                    label="Receipt Amount"
+                    rules={[{ validator: validateReceiptAmount }]}
+                  >
                     <Input
                       value={receiptAmount}
                       onChange={handleReceiptAmount} // Handle input change
@@ -806,8 +846,23 @@ function CreateReceipt() {
     ? [items[0], items[1]]
     : [items[0], items[2]];
 
-  const handleTabChange = (key) => {
+  const handleTabChange = async (key) => {
+    debugger;
     setActiveTab(key);
+    if (key === "3") {
+      const response = await customAxios.get(
+        `${urlShowAllPendingBills}?PatientId=${PatientId}`
+      );
+      if (response.status === 200 && response.data != null) {
+        const assosiateBills = response.data?.ReceiptAllocations.map(
+          (item) => ({
+            ...item,
+            key: uuidv4(),
+          })
+        );
+        setAssosiateBills(assosiateBills);
+      }
+    }
   };
   return (
     <Layout
@@ -853,7 +908,7 @@ function CreateReceipt() {
           <Row justify={"end"} gutter={16}>
             <Col>
               <Form.Item>
-                <Button  htmlType="submit" type="primary">
+                <Button htmlType="submit" type="primary">
                   Save
                 </Button>
               </Form.Item>

@@ -51,6 +51,7 @@ function EditPriceChargeModal({
         Status: linedata.Status,
         Nationality: linedata.Nationality,
         Gender: linedata.Gender,
+        Payer: linedata.Payer,
         WardType: linedata.WardType,
         Provider: linedata.Provider,
         IncomeLimit: linedata.IncomeLimit,
@@ -90,6 +91,7 @@ function EditPriceChargeModal({
     values.PriceTariffLineId = editedpriceTarifflineId;
     values.RevisionNo = 0;
     values.IndicatorDescriptionId=value;
+    values.TariffLineValue=values.TariffLineValue ? values.TariffLineValue :0;
     console.log(linedata, "linedata");
     try {
       const response = await customAxios.post(
@@ -187,7 +189,7 @@ function EditPriceChargeModal({
     <div>
       <Spin spinning={loading}>
         <Modal
-          title="Update New General Lookup"
+          title="Update Price Tariff"
           open={open}
           maskClosable={false}
           footer={null}
@@ -240,6 +242,29 @@ function EditPriceChargeModal({
                           value={option.LookupID}
                         >
                           {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+              )}
+              {options.PayerFlag && (
+                <Col className="gutter-row" span={8}>
+                  <Form.Item
+                    name="Payer"
+                    label="Payer"
+                    ///initialValue={options.Payer[0]?.PayerId}
+                    rules={[
+                      { required: true, message: "Please select Payer " },
+                    ]}
+                  >
+                    <Select disabled>
+                      {options.Payers?.map((option) => (
+                        <Select.Option
+                          key={option.PayerId}
+                          value={option.PayerId}
+                        >
+                          {option.PayerName}
                         </Select.Option>
                       ))}
                     </Select>

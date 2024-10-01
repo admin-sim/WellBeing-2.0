@@ -8,7 +8,7 @@ function UhidSelectComponent({ selectedUhId, handleSelectUHID }) {
   // const [selectedUhId, setSelectedUhId] = useState(null);
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const myInput = useRef();
+  // const myInput = useRef();
 
   const fetchOptionsCallback = debounce(async (inputValue) => {
     try {
@@ -43,14 +43,14 @@ function UhidSelectComponent({ selectedUhId, handleSelectUHID }) {
   //     }
   //   };
 
-  useEffect(() => {
-    myInput.current.focus();
-  }, []);
+  // useEffect(() => {
+  //   myInput.current.focus();
+  // }, []);
 
   return (
     <Select
       style={{ width: "100%" }}
-      ref={myInput}
+      // ref={myInput}
       showSearch
       value={selectedUhId}
       placeholder="Search UHID"
