@@ -130,7 +130,6 @@ function CreateService() {
             UomId: data.UomId,
             CategoryId: data.CategoryId,
             Status: data.Status,
-            Status: data.Status,
             Remarks: data.Remarks,
             IsSubTest: data.IsSubTest,
             IsRadiology: data.IsRadiology,
