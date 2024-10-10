@@ -17,6 +17,7 @@ import {
   Typography,
   Empty,
   Spin,
+  Modal
 } from "antd";
 import {
   DeleteOutlined,
@@ -41,6 +42,8 @@ import {
   urlInvoiceDiscount,
   urlGetPatientHeaderDetails,
   urlDeleteBillCharge,
+  urlGetLastBillNumber,
+  urlSaveChargesForTempTable,
 } from "../../../../endpoints";
 import Title from "antd/es/typography/Title";
 import { useLocation } from "react-router-dom";
@@ -79,12 +82,16 @@ const CreateBilling = () => {
   const [form1] = Form.useForm();
   const navigate = useNavigate();
   const [counter, setCounter] = useState(2);
-
+  const [reportUrl, setReportUrl] = useState(null);
+  const [error, setError] = useState(null);
+  const [blobData, setBlobData] = useState(null);
+  const [billNumber, setBillNumber] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   console.log("l", location.state);
 
   useEffect(() => {
     debugger;
-    
+
     fetchDataHeader();
   }, []);
 
@@ -95,8 +102,8 @@ const CreateBilling = () => {
       );
       if (response.status === 200 && response.data != null) {
         const detailsheader = response.data.data.EncounterModel;
-        console.log('header',detailsheader);
-        
+        console.log("header", detailsheader);
+
         setPatientData(detailsheader);
       } else {
       }
@@ -353,13 +360,13 @@ const CreateBilling = () => {
         {
           title: "ServiceName",
           dataIndex: "ServiceName",
-        //  key: "ServiceName",
+          //  key: "ServiceName",
           width: 200,
         },
         {
           title: "Date",
           dataIndex: "StrServiceDate",
-         // key: "StrServiceDate",
+          // key: "StrServiceDate",
           width: 110,
         },
         {
@@ -370,23 +377,23 @@ const CreateBilling = () => {
         {
           title: "ChargeAmt",
           dataIndex: "ChargeAmount",
-        //  key: "ChargeAmount",
+          //  key: "ChargeAmount",
         },
         {
           title: "Qty",
           dataIndex: "Quantity",
-         // key: "Quantity",
+          // key: "Quantity",
           width: 80,
         },
         {
           title: "NetAmt",
           dataIndex: "NetAmount",
-         // key: "NetAmount",
+          // key: "NetAmount",
         },
         {
           title: "InsAmt",
           dataIndex: "InsuranceCoveredAmount",
-         /// key: "InsuranceCoveredAmount",
+          /// key: "InsuranceCoveredAmount",
         },
         {
           title: "TaxAmt",
@@ -396,7 +403,7 @@ const CreateBilling = () => {
         {
           title: "NetInsAmt",
           dataIndex: "NetInsurenceAmount",
-        //  key: "NetInsurenceAmount",
+          //  key: "NetInsurenceAmount",
         },
       ],
     },
@@ -410,27 +417,27 @@ const CreateBilling = () => {
         {
           title: "Charge",
           dataIndex: "PatientChargeAmount",
-        //  key: "PatientChargeAmount",
+          //  key: "PatientChargeAmount",
         },
         {
           title: "Discount",
           dataIndex: "PatientDiscountAmount",
-        //  key: "PatientDiscountAmount",
+          //  key: "PatientDiscountAmount",
         },
         {
           title: "Tax",
           dataIndex: "PatientTaxRate",
-        //  key: "PatientTaxRate",
+          //  key: "PatientTaxRate",
         },
         {
           title: "NetAmt",
           dataIndex: "PatientNetAmount",
-        //  key: "PatientNetAmount",
+          //  key: "PatientNetAmount",
         },
         {
           title: "AdjAmt",
           dataIndex: "AdjustedAmount",
-       //   key: "AdjustedAmount",
+          //   key: "AdjustedAmount",
         },
         {
           title: "LL Disc",
@@ -452,7 +459,7 @@ const CreateBilling = () => {
         {
           title: "",
           dataIndex: "actions",
-         // key: "actions",
+          // key: "actions",
           render: (_, row) => {
             if (row.ServiceType.trim() === "P") {
               return null; // Hide the delete button if ServiceType is "P"
@@ -510,9 +517,66 @@ const CreateBilling = () => {
   };
 
   const handleProvisional = () => {
-    form1.resetFields();
-    setReceiptInsAmtData(initialDataSource); // Reset the data source
+    // form1.resetFields();
+    // setReceiptInsAmtData(initialDataSource); // Reset the data source
   };
+ 
+
+  const handlePrintBill = async () => {
+   debugger;
+
+    try {
+      const flag=0;
+      const response = await customAxios.get(
+        `${urlGetLastBillNumber}?PatientId=${PatientId}&EncounterId=${EncounterId}&Flag=${flag}`
+      );
+      if(response.status===200){
+        if(response.data.data===":"){
+          message.warning("Bill Not Yet Generated");
+          return;
+        }
+        else{
+          var res = response.data.data.split(":");
+         // showReceipt(res[0],res[1]);
+          const request = {
+          //  EncounterId: 1,
+            BillingId: res[1],
+            FileType: "pdf", // or 'excel'
+          };
+          const { url, blob } = await fetchReport(request);
+          setReportUrl(url);
+          setBlobData(blob);
+          setIsModalVisible(true);
+        }
+      }
+
+
+    
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+  async function fetchReport(request) {
+    const response = await fetch(
+      "http://localhost:901/api/ReportsApi/BillReport",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+    console.log("respo", response);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch report");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    return { url, blob };
+  }
 
   const receiptInscolumns = [
     {
@@ -699,7 +763,7 @@ const CreateBilling = () => {
           type="primary"
           size="small"
           icon={<PlusOutlined style={{ fontSize: "12px" }} />}
-          onClick={handleAddRow}
+          onClick={() => handleAddRow()}
         ></Button>
       ),
       dataIndex: "add",
@@ -811,7 +875,7 @@ const CreateBilling = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials: true,  // This ensures the session cookie is sent
+        withCredentials: true, // This ensures the session cookie is sent
       });
       if (response.status === 200 && response.data) {
         if (
@@ -821,9 +885,12 @@ const CreateBilling = () => {
           message.error("Failed to generate bill");
         } else {
           message.success("Bill generated successfully!");
+          
+          
+         await GetBillReceipt(response.data);
           //fetchData();
           form1.resetFields();
-          setReceiptInsAmtData([])
+          setReceiptInsAmtData([]);
           setReceiptInsAmtData(initialDataSource);
           setCharges([]);
           fetchDataHeader();
@@ -836,6 +903,18 @@ const CreateBilling = () => {
       message.error("Something Went Wrong");
     }
   };
+
+  async function GetBillReceipt(BillNumber) {
+    const fg=1;
+    const response = await customAxios.get(
+      `${urlSaveChargesForTempTable}?billId=${BillNumber}&Flag=${fg}`
+    );
+    if(response.status===200){
+
+    }else{
+      message.warning('Something Went Wrong While Saving Data to TempTable');
+    }
+  }
 
   return (
     <Layout style={{ zIndex: "999999999" }}>
@@ -860,7 +939,7 @@ const CreateBilling = () => {
             </Title>
           </Col>
           <Col offset={5} span={3}>
-            <Button icon={<LeftOutlined />} onClick={handleCreateService}>
+            <Button icon={<LeftOutlined />}   onClick={() => handleCreateService()}>
               Back
             </Button>
           </Col>
@@ -1080,34 +1159,36 @@ const CreateBilling = () => {
                       colSpan={4}
                     ></Table.Summary.Cell>
                     <Table.Summary.Cell index={3}>
-                      <Text style={{fontWeight:600}}>Total</Text>
+                      <Text style={{ fontWeight: 600 }}>Total</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text  style={{fontWeight:600}}>{netamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>{netamt}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text  style={{fontWeight:600}}>{insamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>{insamt}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{fontWeight:600}}>{taxamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>{taxamt}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text  style={{fontWeight:600}}>{netinsamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>{netinsamt}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text  style={{fontWeight:600}}>Total</Text>
+                      <Text style={{ fontWeight: 600 }}>Total</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text  style={{fontWeight:600}}>{discamt.toFixed(2)}</Text>
+                      <Text style={{ fontWeight: 600 }}>
+                        {discamt.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text  style={{fontWeight:600}}>{taxrate}</Text>
+                      <Text style={{ fontWeight: 600 }}>{taxrate}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text  style={{fontWeight:600}}>{patientnetamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>{patientnetamt}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text  style={{fontWeight:600}}>{adjamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>{adjamt}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell
                       index={2}
@@ -1207,12 +1288,43 @@ const CreateBilling = () => {
             </Col>
             <Col style={{ marginRight: "20px", marginTop: "1rem" }}>
               <Form.Item>
-                <Button type="primary" onClick={handleProvisional}>
+                <Button type="primary"   onClick={() => handleProvisional()}>
                   Provisional
                 </Button>
               </Form.Item>
             </Col>
+            <Col style={{ marginRight: "20px", marginTop: "1rem" }}>
+              <Form.Item>
+                <Button type="primary"  onClick={() => handlePrintBill()}>
+                  PrintBill
+                </Button>
+              </Form.Item>
+            </Col>
           </Row>
+          <div>
+            {error && <div>Error: {error}</div>}
+
+
+            <Modal
+              title="Report"
+              visible={isModalVisible}
+              onCancel={() => setIsModalVisible(false)}
+              footer={[
+                <Button key="close" onClick={() => setIsModalVisible(false)}>
+                  Close
+                </Button>,
+              ]}
+              width={800} // You can adjust the width as needed
+            >
+              {reportUrl && (
+                <iframe
+                  src={reportUrl}
+                  style={{ width: "100%", height: "500px", border: "none" }}
+                  title="Report"
+                />
+              )}
+            </Modal>
+          </div>
         </Form>
       </div>
     </Layout>

@@ -132,7 +132,6 @@ export const urlGetSlotTransferDetails = `${baseURL}/api/ScheduleProviderAppoint
 export const urlGetFutureAppointmentDateSessions = `${baseURL}/api/ScheduleProviderAppointment/GetFutureAppointmentDateSessions`;
 export const urlTransferSelectedAppointment = `${baseURL}/api/ScheduleProviderAppointment/TransferSelectedAppointment`;
 export const urlCancelVisit = `${baseURL}/api/Encounter/CancelEncounter`;
-export const urlLogin = `${baseURL}/api/User/Login`;
 export const urlGetAllPatients = `${baseURL}/api/Patient`;
 export const urlGetAllGeneralLookUp = `${baseURL}/api/Master/GetAllGeneralLookups`;
 export const urlGetPatientDetail = `${baseURL}/api/Patient/GetPatientViewModel`;
@@ -151,6 +150,7 @@ export const urlGetServiceLocationBasedonId = `${baseURL}/api/Encounter/GetServi
 export const urlGetProviderBasedOnDepartment = `${baseURL}/api/Encounter/GetProviderBasedOnDepartment`;
 export const urlAddNewVisit = `${baseURL}/api/Encounter/SaveNewEncounter`;
 export const urlAddNewService = `${baseURL}/api/Service/AddNewService`;
+export const urlUpdateService = `${baseURL}/api/Service/UpdateService`;
 export const urlCreateNewService = `${baseURL}/api/Service/CreateService`;
 export const urlGetAllServiceGroups = `${baseURL}/api/ServiceClassification/ServiceGroups`;
 export const urlGetServiceClassificationsForServiceGroup = `${baseURL}/api/Service/GetServiceClassificationsForServiceGroup`;
@@ -176,6 +176,7 @@ export const urlDeleteTestRef = `${baseURL}/api/LabTestMaster/DeleteTestRef`;
 export const urlSearchPatientsForLab = `${baseURL}/api/Laboratory/SearchPatientsForLab`;
 export const urlGetLabNumbers = `${baseURL}/api/Laboratory/GetLabNumbers`;
 export const urlSampleCollectionIndex = `${baseURL}/api/Laboratory/SampleCollectionIndex`;
+export const urlLoadSampleCollectionGrid = `${baseURL}/api/Laboratory/LoadSampleCollectionGrid`;
 export const urlSaveSampleColResult = `${baseURL}/api/Laboratory/SaveSampleColResult`;
 export const urlLoadTestReferenceForResEntry = `${baseURL}/api/LabTestMaster/LoadTestReferenceForResEntry`;
 export const urlResultEntryIndex = `${baseURL}/api/Laboratory/ResultEntryIndex`;
@@ -188,17 +189,14 @@ export const urlSaveNewTemplate = `${baseURL}/api/Template/SaveNewMasterTemplate
 export const urlDeleteTemplateByTempId = `${baseURL}/api/Template/DeleteTemplateByTempId`;
 export const urlGetAllTemplates = `${baseURL}/api/Template/GetAllTemplates`;
 export const urlEditTemplate = `${baseURL}/api/Template/EditTemplate`;
-export const urlGetAllUsers = `${baseURL}/api/User/GetAllUsers`;
 export const urlGetTemplateDataByTemplateId = `${baseURL}/api/Laboratory/GetTemplateDataByTemplateId`;
 export const urlGetRoles = `${baseURL}/api/User/Create`;
-export const urlAddUser = `${baseURL}/api/User/AddUser`;
-export const urlDeleteAppUser = `${baseURL}/api/User/DeleteAppUser`;
 export const urlGetGetAppUserbyId = `${baseURL}/api/User/GetAppUserbyId`;
 export const urlGetAutocompleteProviders = `${baseURL}/api/User/AutoCompleteProviderNames`;
-export const urlGetAllMenusBasedOnRoleId = `${baseURL}/api/User/GetAllMenusBasedOnRoleId`;
 export const urlPriceDefinitionIndex = `${baseURL}/api/PriceDefinition/PriceDefinitionIndex`;
 export const urlSaveNewServiceClassification = `${baseURL}/api/ServiceClassification/SaveNewServiceClassification`;
 export const urlGetServicesForSelectedServiceClassification = `${baseURL}/api/Service/GetServicesForSelectedServiceClassification`;
+export const urlEditService = `${baseURL}/api/Service/EditService`;
 export const urlFacilityPriceDefinitionIndex = `${baseURL}/api/PriceDefinition/FacilityPriceDefinitionIndex`;
 export const urlGetPriceDefinitionsForFacility = `${baseURL}/api/PriceDefinition/GetPriceDefinitionsForFacility`;
 export const urlGetAllServicePricesForSelectedServiceClassification = `${baseURL}/api/PriceDefinition/GetAllServicePricesForSelectedServiceClassification`;
@@ -440,5 +438,35 @@ export const urlRefundAction = `${baseURL}/api/Refund/Create`;
 export const urlCreateReFund = `${baseURL}/api/Refund/CreateReFund`;
 export const urlUpdateReFundDetails = `${baseURL}/api/Refund/UpdateReFundDetails`;
 export const urlShowAllPendingBills = `${baseURL}/api/Receipt/ShowAllPendingBills`;
+export const urlGetLastBillNumber = `${baseURL}/api/Billing/GetLastBillNumber`;
+export const urlSaveChargesForTempTable = `${baseURL}/api/Billing/SaveChargesForTempTable`;
+
+//export const urlGetAllUsers = `${baseURL}/api/Billing/SaveChargesForTempTable`;
+
+
+
+
+
+
+export const urlLogin = `${baseURL}/api/User/Login`;
+export const urlGetAllUsers = `${baseURL}/api/User/GetAllUsers`;
+export const urlGetAllMenusBasedOnRoleId = `${baseURL}/api/User/GetAllMenusAccessOnRoleId`;
+export const urlGetAllRoles = `${baseURL}/api/User/GetAllRoles`;
+export const urlGetAllAppUserRoles = `${baseURL}/api/User/GetAllAppUserRoles`;
+export const urlDeleteAppUserRole = `${baseURL}/api/User/DeleteAppUserRole`;
+export const urlAddNewRole = `${baseURL}/api/User/AddNewRole`;
+export const urlGetRolebyId = `${baseURL}/api/User/GetRolebyId`;
+export const urlDeleteRole = `${baseURL}/api/User/DeleteRole`;
+export const urlMapNewRole = `${baseURL}/api/User/MapNewRole`;
+export const urlDeleteAppUser = `${baseURL}/api/User/DeleteAppUser`;
+export const urlSaveRoleAccess = `${baseURL}/api/User/SaveRoleAccess`;
+export const urlGetAppUserbyId = `${baseURL}/api/User/GetAppUserbyId`;
+export const urlAddUser = `${baseURL}/api/User/AddUser`;
+export const urlChangePassword = `${baseURL}/api/User/ChangePassword`;
+
+
+
+
+
 
 

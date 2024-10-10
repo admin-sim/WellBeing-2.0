@@ -76,6 +76,44 @@ const menuData = [
         ],
       },
       {
+        key: "Settings",
+        icon: "RiSettingsFill",
+        title: "Settings",
+        children: [
+          {
+            key: "Security",
+            icon: "GoDotFill",
+            title: "Security",
+            children:[
+              {
+                key: "UserRegistration",
+                icon: "GoDotFill",
+                title: "UserRegistration",
+                link: "/User",
+              },
+              {
+                key: "Roles",
+                icon: "GoDotFill",
+                title: "Roles",
+                link: "/Roles",
+              },
+              {
+                key: "UserRoleMapping",
+                icon: "GoDotFill",
+                title: "User Role Mapping",
+                link: "/RoleMapping",
+              },
+              {
+                key: "RoleAccess",
+                icon: "GoDotFill",
+                title: "Role Access",
+                link: "/RoleAccess",
+              }
+            ]
+          }
+        ],
+      },
+      {
         key: "IdentityManagement",
         icon: "FaHospitalUser",
         title: "Identity Management",

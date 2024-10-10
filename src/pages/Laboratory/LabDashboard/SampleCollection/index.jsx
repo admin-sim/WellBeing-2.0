@@ -14,59 +14,80 @@ import {
 } from "antd";
 
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
-import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import "./style.css";
 
 import {
   urlSampleCollectionIndex,
-  urlGetPatientHeaderWithPatientIAndEncounterId,
   urlSaveSampleColResult,
+  urlGetPatientHeaderDetails,
+  urlLoadSampleCollectionGrid,
 } from "../../../../../endpoints.js";
-
+import { useLocation } from "react-router-dom";
+import PatientHeader from "../../../../components/PatientHeader/index.jsx";
+import { useNavigate } from "react-router";
 const SampleCollection = () => {
+  const navigate = useNavigate();
   const [form] = Form.useForm(); // Ant Design Form hook
-  const [selectedRecord, setSelectedRecord] = useState([]);
   const [services, setServices] = useState([]);
-  const { patientId, encounterId, labnumber } = useParams();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRow, setSelectedRow] = useState([]);
   const [greenRow, setGreenRow] = useState(null);
   const [tableLoading, setTableLoading] = useState(false);
-  const [patientHeaderLoading, setPatientHeaderLoading] = useState(false);
-
+  const [patientData, setPatientData] = useState(null);
+  const location = useLocation();
+  const record = location.state.record;
   useEffect(() => {
-    const fetchData = async () => {
-      setPatientHeaderLoading(true);
-      try {
-        const response = await customAxios.get(
-          `${urlGetPatientHeaderWithPatientIAndEncounterId}?PatientId=${patientId}&EncounterId=${encounterId}`
-        );
-        if (response.status === 200) {
-          const patientdetail = response.data.data.EncounterModel;
-          setSelectedRecord(patientdetail);
-        } else {
-          console.error("Failed to fetch patient details");
-        }
-        setPatientHeaderLoading(false);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setPatientHeaderLoading(false);
-      }
-    };
+    debugger;
 
-    fetchData();
-  }, [patientId, encounterId]);
+    fetchDataHeader();
+  }, []);
+
+  const fetchDataHeader = async () => {
+    try {
+      const response = await customAxios.get(
+        `${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}&EncounterId=${record.EncounterId}`
+      );
+      if (response.status === 200 && response.data != null) {
+        const detailsheader = response.data.data.EncounterModel;
+        console.log("header", detailsheader);
+
+        setPatientData(detailsheader);
+      } else {
+      }
+    } catch (error) {}
+  };
 
   useEffect(() => {
     fetchChargeDetails();
-  }, [patientId, encounterId, labnumber]);
+  }, []);
+
+  const LoadSampleCollectionGrid=async()=>{
+    debugger;
+    try {
+      const response = await customAxios.get(
+        `${urlLoadSampleCollectionGrid}?PatientId=${record.PatientId}&EncounterId=${record.EncounterId}&SelclabId=${record.PatientLabStatusID}`
+      );
+      if (response.status === 200) {
+        const services = response.data.data;
+        setServices(
+          services.map((item) => ({ ...item, key: item.SmpColHeaderId }))
+        );
+      } else {
+        console.error("Failed to fetch patient details");
+      }
+      setTableLoading(false);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setTableLoading(false);
+    }
+  }
 
   const fetchChargeDetails = async () => {
+    debugger;
     setTableLoading(true);
     try {
       const response = await customAxios.get(
-        `${urlSampleCollectionIndex}?PatientId=${patientId}&EncounterId=${encounterId}&SelclabId=${labnumber}`
+        `${urlSampleCollectionIndex}?PatientId=${record.PatientId}&EncounterId=${record.EncounterId}&SelclabId=${record.PatientLabStatusID}`
       );
       if (response.status === 200) {
         const patientdetail = response.data.data.ListOfSamplColTests;
@@ -115,7 +136,7 @@ const SampleCollection = () => {
           message: "Success",
           description: message1,
         });
-        fetchChargeDetails();
+        LoadSampleCollectionGrid();
         form.resetFields();
       } else {
         notification.error({
@@ -132,15 +153,7 @@ const SampleCollection = () => {
   };
 
   const handleReset = async (values) => {};
-  const formatDatefortable = (dateString) => {
-    if (!dateString) return '""';
-    const date = new Date(dateString);
-    return `${date.getDate().toString().padStart(2, "0")}-${(
-      date.getMonth() + 1
-    )
-      .toString()
-      .padStart(2, "0")}-${date.getFullYear()}`;
-  };
+
 
   const columns = [
     { title: "TestName", dataIndex: "TestName", key: "TestName" },
@@ -177,6 +190,18 @@ const SampleCollection = () => {
     },
   };
 
+
+  const handleResultEntry =()=>{
+    navigate("/ResultEntry", { state: { record } });
+  }
+  const handleVerification = () => {
+    debugger;
+    navigate("/Verification", { state: { record } });
+  };
+  const handleReport =()=>{
+    
+  }
+
   return (
     <Layout style={{ width: "100%" }}>
       <div
@@ -196,62 +221,13 @@ const SampleCollection = () => {
         >
           <Space style={{ marginTop: "16px" }}>
             <Button type="primary">Sample Collection</Button>
-            <Button>Result Entry</Button>
-            <Button>Verification</Button>
-            <Button>Report</Button>
+            <Button onClick={() => handleResultEntry()} >Result Entry</Button>
+            <Button onClick={() => handleVerification()} >Verification</Button>
+            <Button onClick={() => handleReport()} >Report</Button>
           </Space>
-          <Spin spinning={patientHeaderLoading}>
-            <div
-              style={{
-                border: "1px solid #d9d9d9",
-                padding: "16px",
-                borderRadius: "4px",
-                margin: "4px",
-              }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    UHID:
-                  </span>
-                  <span>{selectedRecord && selectedRecord.UhId}</span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Name:
-                  </span>
-                  <span>{selectedRecord && selectedRecord.PatientName}</span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold" }}>PatientGender:</span>
-                  <span>{selectedRecord && selectedRecord.PatientGender}</span>
-                </Col>
-              </Row>
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    VIsitId:
-                  </span>
-                  <span>{selectedRecord && selectedRecord.UhId}</span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Age:
-                  </span>
-                  <span>{selectedRecord && selectedRecord.UhId}</span>
-                </Col>
-                <Col span={8}>
-                  <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                    Dob:
-                  </span>
-                  <span>
-                    {selectedRecord &&
-                      formatDatefortable(selectedRecord.DateOfBirth)}
-                  </span>
-                </Col>
-              </Row>
-            </div>
-          </Spin>
+          <div style={{ margin: "0 2rem 1rem 2rem" }}>
+            <PatientHeader patient={patientData} />
+          </div>
           <Form layout="vertical" onFinish={onFinish} form={form}>
             <ConfigProvider
               theme={{
