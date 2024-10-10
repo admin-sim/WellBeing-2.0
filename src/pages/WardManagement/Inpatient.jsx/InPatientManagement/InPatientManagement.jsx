@@ -62,6 +62,7 @@ function InPatientManagement() {
     });
   }, []);
 
+
   const handleMenuClick = async (e) => {
     setTableLoading(true);
     if (e !== undefined) {
@@ -109,8 +110,8 @@ function InPatientManagement() {
   );
 
   const ReLoad = (value) => {
-    handleMenuClick(value)
-  }
+    handleMenuClick(value);
+  };
 
   const renderAwaitingPatients = () => (
     <div>
@@ -152,9 +153,9 @@ function InPatientManagement() {
   const groupedBeds = groupBedsByWard();
   const firstWardKey = Object.keys(groupedBeds)[0];
 
-  const IncomingTransfer = () => { };
+  const IncomingTransfer = () => {};
 
-  const OutgoingTransfer = () => { };
+  const OutgoingTransfer = () => {};
 
   return (
     <>
@@ -392,7 +393,11 @@ function InPatientManagement() {
                         <Col xs={24}>
                           <Row gutter={[32, 32]} justify="start">
                             {groupedBeds[wardName].map((bed) => (
-                              <WardBed key={bed.BedID} bed={bed} ReLoad={ReLoad} />
+                              <WardBed
+                                key={bed.BedID}
+                                bed={bed}
+                                ReLoad={ReLoad}
+                              />
                             ))}
                           </Row>
                         </Col>
@@ -533,6 +538,58 @@ const columns = [
     title: "Bed Status",
     dataIndex: "PatientStatus",
     key: "PatientStatus",
+    render: (text, record) => {
+      switch (record.PatientStatus) {
+        case "Available":
+          return (
+            <Tag color="#C5EBAA" style={{ color: "black" }}>
+              {record.PatientStatus}
+            </Tag>
+          );
+        case "Occupied":
+          return (
+            <Tag color="#FFBABA" style={{ color: "black" }}>
+              {record.PatientStatus}
+            </Tag>
+          );
+        case "Blocked":
+          return (
+            <Tag color="#FF8356" style={{ color: "black" }}>
+              {record.PatientStatus}
+            </Tag>
+          );
+        case "Transfer Requested":
+          return (
+            <Tag color="#F0A8D0" style={{ color: "black" }}>
+              {record.PatientStatus}
+            </Tag>
+          );
+        case "Request Confirmed":
+          return (
+            <Tag color="#D1E9F6" style={{ color: "black" }}>
+              {record.PatientStatus}
+            </Tag>
+          );
+        case "Discharge Initiated":
+          return (
+            <Tag color="#CADABF" style={{ color: "black" }}>
+              {record.PatientStatus}
+            </Tag>
+          );
+        case "Movement":
+          return (
+            <Tag color="#C8A1E0" style={{ color: "black" }}>
+              {record.PatientStatus}
+            </Tag>
+          );
+        default:
+          return (
+            <Tag color="default" style={{ color: "black" }}>
+              {record.PatientStatus}
+            </Tag>
+          );
+      }
+    },
   },
 ];
 

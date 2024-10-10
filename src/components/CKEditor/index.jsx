@@ -67,6 +67,7 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import "ckeditor5/ckeditor5.css";
 import { Button, Col, Row, message } from "antd";
 import { PrinterOutlined } from "@ant-design/icons";
+import { v4 as uuidv4 } from "uuid";
 
 function CkEditor({ initialData, printButton, setData, isDisable }) {
   const [editorData, setEditorData] = useState(initialData);

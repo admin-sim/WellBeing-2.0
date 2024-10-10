@@ -596,49 +596,32 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                 }
                 const IndentViewModel = {
                   newIndentModel: obj,
-                  IndentDetails: Drugss,
-                };
-                const urlIndent = !!form2data[0]?.PrescriptionLineId
-                  ? urlUpdateIndent
-                  : urlAddNewPatientIndent;
-                const urlPres = !!form2data[0]?.PrescriptionLineId
-                  ? urlUpdateRequest
-                  : urlAddNewNewRequest;
-                const response = await customAxios.post(
-                  urlIndent,
-                  IndentViewModel,
-                  {
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                  }
-                );
-                console.log("prescription ", response.data);
-
+                  IndentDetails: Drugss
+                }
+                const urlIndent = !!form2data[0].PrescriptionLineId ? urlUpdateIndent : urlAddNewPatientIndent
+                const urlPres = !!form2data[0].PrescriptionLineId ? urlUpdateRequest : urlAddNewNewRequest
+                const response = await customAxios.post(urlIndent, IndentViewModel, {
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                });
                 if (response.status === 200 && response.data.data != null) {
                   const Prescription = Drugss.map((item) => {
                     return {
                       ...item,
                       IndentId: response.data.data.IndentId,
                       IndentNumber: response.data.data.IndentNumber,
-                      Stock: item.Stock ? item.Stock : 0,
-                    };
-                  });
-                  const response1 = await customAxios.post(
-                    urlPres,
-                    Prescription,
-                    {
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
+                      Stock: item.Stock ? item.Stock : 0
                     }
-                  );
-                  if (
-                    response1.status === 200 &&
-                    response1.data === "Success"
-                  ) {
-                    message.success("Success");
-                    form3.resetFields();
+                  })
+                  const response1 = await customAxios.post(urlPres, Prescription, {
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                  });
+                  if (response1.status === 200 && response1.data === 'Success') {
+                    message.success('Success')
+                    form3.resetFields()
                     // handleCancel()
                   }
                 }
