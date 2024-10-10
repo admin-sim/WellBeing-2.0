@@ -176,7 +176,6 @@ export const urlDeleteTestRef = `${baseURL}/api/LabTestMaster/DeleteTestRef`;
 export const urlSearchPatientsForLab = `${baseURL}/api/Laboratory/SearchPatientsForLab`;
 export const urlGetLabNumbers = `${baseURL}/api/Laboratory/GetLabNumbers`;
 export const urlSampleCollectionIndex = `${baseURL}/api/Laboratory/SampleCollectionIndex`;
-export const urlLoadSampleCollectionGrid = `${baseURL}/api/Laboratory/LoadSampleCollectionGrid`;
 export const urlSaveSampleColResult = `${baseURL}/api/Laboratory/SaveSampleColResult`;
 export const urlLoadTestReferenceForResEntry = `${baseURL}/api/LabTestMaster/LoadTestReferenceForResEntry`;
 export const urlResultEntryIndex = `${baseURL}/api/Laboratory/ResultEntryIndex`;
