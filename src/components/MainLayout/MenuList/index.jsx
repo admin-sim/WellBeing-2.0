@@ -679,4 +679,17 @@ const menuData = [
       },
     ],
   },
+  {
+    key: "Pharmacy",
+    icon: "ExperimentOutlined",
+    title: "Pharmacy",
+    children: [
+      {
+        key: "OtcDispense",
+        icons: "FaUserFriends",
+        title: "OtcDispense",
+        link: "/PharamcyIndex",
+      },
+    ],
+  },
 ];

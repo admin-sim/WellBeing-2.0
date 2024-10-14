@@ -56,7 +56,10 @@ const Verification = () => {
   const [key, setKey] = useState(null);
   const [customKey, setCustomKey] = useState(resultEntry?.length + 1000);
   const [currentRecord, setCurrentRecord] = useState(null);
-
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [error, setError] = useState(null);
+  const [reportUrl, setReportUrl] = useState(null);
+  const [blobData, setBlobData] = useState(null);
   useEffect(() => {
     if (!ckModalOpen) handleCancel();
   }, [ckModalOpen]);
@@ -707,9 +710,42 @@ const Verification = () => {
     // Navigate to the desired page and pass the record object as a parameter
     navigate("/ResultEntry", { state: { record } });
   };
-  const handleReport = () => {
- 
+  const handleReport = async() => {
+    debugger;
+    const request = {
+      //  EncounterId: 1,
+
+      ChargeId:selectedRow.ChargeId,
+      PatientId: selectedRow.PatientId, // or 'excel'
+      EncounterId:selectedRow.EncounterId
+      };
+      const { url, blob } = await fetchReport(request);
+      setReportUrl(url);
+      setBlobData(blob);
+      setIsModalVisible(true);
   };
+  async function fetchReport(request) {
+    debugger;
+    const response = await fetch(
+      "http://localhost:43705/api/ReportsApi/GetLabReport",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+    console.log("respo", response);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch report");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    return { url, blob };
+  }
 
   return (
     <Layout style={{ width: "100%" }}>
@@ -805,6 +841,16 @@ const Verification = () => {
                   </Button>
                 </Form.Item>
               </Col>
+              <Col style={{ marginRight: "10px" }}>
+                <Form.Item>
+                  <Button
+                    danger
+                    onClick={() => handleReport()}
+                  >
+                    Report
+                  </Button>
+                </Form.Item>
+              </Col>
             </Row>
           </Form>
         </Card>
@@ -844,6 +890,32 @@ const Verification = () => {
             </Col>
           </Row>
         </Modal>
+
+        <div>
+            {error && <div>Error: {error}</div>}
+
+            <Modal
+            centered
+              title="Report"
+              open={isModalVisible}
+              onCancel={() => setIsModalVisible(false)}
+              footer={[
+                <Button key="close" danger onClick={() => setIsModalVisible(false)}>
+                  Close
+                </Button>,
+              ]}
+              width={"60rem"} // You can adjust the width as needed
+              height={"auto"}
+            >
+              {reportUrl && (
+                <iframe
+                  src={reportUrl}
+                  style={{ width: "100%", height: "500px", border: "none" }}
+                  title="Report"
+                />
+              )}
+            </Modal>
+          </div>
       </div>
     </Layout>
   );
