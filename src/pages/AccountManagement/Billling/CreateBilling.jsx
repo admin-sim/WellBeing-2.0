@@ -238,16 +238,16 @@ const CreateBilling = () => {
     if (option.key) {
       try {
         const newData = await fetchDataForSelectedService(option.key);
-        if (newData[0]) {
+        if (newData) {
           form.setFieldsValue({
-            Amount: newData[0].ChargeAmount,
-            PatientAmount: newData[0].PatientNetAmount,
-            Provider: newData[0].ProviderName,
+            Amount: newData.ChargeAmount,
+            PatientAmount: newData.PatientNetAmount,
+            Provider: newData.ProviderName,
           });
         }
-        setAmount2(newData[0].OriginalChargeAmount);
-        setPatientAmount2(newData[0].OriginalPatientChargeAmount);
-        setSelectedProviderId(newData[0].ProviderID);
+        setAmount2(newData.OriginalChargeAmount);
+        setPatientAmount2(newData.OriginalPatientChargeAmount);
+        setSelectedProviderId(newData.ProviderID);
       } catch (error) {
         setLoading(false);
       }
@@ -256,11 +256,12 @@ const CreateBilling = () => {
   };
 
   const fetchDataForSelectedService = async (ServiceId) => {
+    debugger;
     try {
       const response = await customAxios.get(
         `${urlGetServiceCharge}?ServiceId=${ServiceId}&PatientId=${PatientId}&EncounterId=${EncounterId}`
       );
-      return response.data.data;
+      return response.data.data.servicePrice;
     } catch (error) {
       throw error; // You might want to handle or log the error appropriately
     }
