@@ -39,12 +39,14 @@ function NrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
   const [readOnly, setReadOnly] = useState(false);
   const [buttonTitle, setButtonTitle] = useState("Save");
   const [key, setKey] = useState(null);
+  const [customKey, setCustomKey] = useState(filteredData?.length + 1000);
 
   const handleCancel = () => {
     handleClose();
   };
 
   const handleCancel1 = () => {
+    setCustomKey(customKey + 1);
     setTemplateEditorData("");
     setOpenCKModel(false);
     form.resetFields();
@@ -210,7 +212,7 @@ function NrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
             </Row>
 
             <CkEditor
-              key={key ? key : Dropdown.DrNotesList?.length + 1000}
+              key={key ? key : customKey}
               initialData={templateEditorData}
               printButton={true}
               setData={setTemplateEditorData}
