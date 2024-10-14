@@ -8,12 +8,12 @@
   padding: 0;
   box-sizing: border-box;
 }
-body,
+/* body,
 div,
 p,
 span {
-  /* font-family: "poppins", sans-serif !important; */
-}
+   font-family: "poppins", sans-serif !important; 
+} */
 /* @font-face {
   font-family: "poppins-bold";
   src: url(./assets/font/Poppins/Poppins-Bold.ttf);
@@ -190,10 +190,10 @@ li .ant-menu-item {
   word-break: break-word;
 }
 
-.editor-container_classic-editor .editor-container__editor {
-  /* min-width: 795px;
-  max-width: 795px; */
-}
+/* .editor-container_classic-editor .editor-container__editor {
+   min-width: 795px;
+  max-width: 795px; 
+} */
 
 .ck-editor__editable_inline {
   min-height: 20rem;
@@ -330,3 +330,29 @@ li .ant-menu-item {
   box-shadow: 5px 5px 0 #b3b3b3;
 }
 /* C K Editor End */
+
+.ant-table-row-profile-test {
+  background-color: #ffe1ff;
+} 
+
+.ant-table-row-profile-test:hover > td {
+  background-color: #ffe1ff !important;
+} 
+
+.custom-table .ant-table-thead > tr > th {
+  background-color: #e6e6fa;
+  color: black;
+  font-weight: "bold";
+}
+.custom-table .green-row {
+  background-color: #a1f7a1;
+}
+
+.custom-table .green-row:hover {
+  background-color: #a1f7a1 !important; 
+}
+
+
+.invalid-input .ant-select-selector {
+  background-color: #ffccc7 !important;
+}

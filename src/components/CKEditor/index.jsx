@@ -69,7 +69,7 @@ import { Button, Col, Row, message } from "antd";
 import { PrinterOutlined } from "@ant-design/icons";
 import { v4 as uuidv4 } from "uuid";
 
-function CkEditor({ initialData, printButton, setData, isReadOnly = false }) {
+function CkEditor({ initialData, printButton, setData, isDisable }) {
   const [editorData, setEditorData] = useState(initialData);
   const [isLayoutReady, setIsLayoutReady] = useState(false);
 
@@ -416,8 +416,8 @@ function CkEditor({ initialData, printButton, setData, isReadOnly = false }) {
             <div ref={editorRef}>
               {isLayoutReady && (
                 <CKEditor
-                  isReadOnly={isReadOnly}
-                  // key={uuidv4()}
+                //isReadOnly={true}
+                  disabled={isDisable}
                   editor={ClassicEditor}
                   config={editorConfig}
                   onChange={handleEditorChange}

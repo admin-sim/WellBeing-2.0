@@ -21,6 +21,7 @@ import {
   notification,
   Modal,
   Table,
+  Tooltip,
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import Title from "antd/es/typography/Title";
@@ -32,6 +33,8 @@ import React, { useState, useEffect } from "react";
 import {
   urlCreateNewService,
   urlAddNewService,
+  urlEditService,
+  urlUpdateService,
 } from "../../../../../endpoints";
 import customAxios from "../../../../components/customAxios/customAxios";
 import OrderingAttributeModal from "./OrderingAttributeModal";
@@ -42,6 +45,7 @@ function CreateService() {
   const [form] = Form.useForm();
   const location = useLocation();
   const Serviceclassificationid = location.state.serviceclassificationid;
+  const ServiceId = location.state.serviceid;
   const [uom, setUom] = useState([]);
   const [category, setCategory] = useState([]);
   const [servicegroupname, setServiceGroupName] = useState([]);
@@ -51,7 +55,8 @@ function CreateService() {
   const [testresulttypes, setTestResultTypes] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isMedicalModalVisible, setIsMedicalModalVisible] = useState(false);
-  const [isTurnAroundTimeModalVisible, setIsTurnAroundTimeModalVisible] = useState(false);
+  const [isTurnAroundTimeModalVisible, setIsTurnAroundTimeModalVisible] =
+    useState(false);
   const [orderAtributeDropdown, setOrderAtributeDropDown] = useState([]);
   console.log("Serviceclassificationid", Serviceclassificationid);
   const [ageGenderRestriction, setAgeGenderRestriction] = useState([]);
@@ -65,8 +70,16 @@ function CreateService() {
     Uoms: [],
     MedicalCodeTypes: [],
   });
+  const [templateList, setTemplateList] = useState([]);
+  const [templatedisable, setTemplateDisable] = useState(true);
+  const [reultTypeDisable, setResultTypeDisable] = useState(false);
+  const [isTestValuesDisabled, setIsTestValuesDisabled] = useState(true);
 
-  const navigate = useNavigate();
+  const [isRadiologyChecked, setIsRadiologyChecked] = useState(false);
+
+  // State to hold filtered templates
+  const [filteredTemplates, setFilteredTemplates] = useState([]);
+  const [testoptions, setTestOptions] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,6 +96,7 @@ function CreateService() {
           setCategory(data.Category);
           setServiceGroupName(data.ServiceGroupName);
           setServiceClassificationName(data.ServiceClassificationName);
+          setTemplateList(data.templateListmodel);
           setServiceDropDown(data);
         } else {
           console.error("Failed to fetch patient details");
@@ -93,6 +107,144 @@ function CreateService() {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    EditServiceData();
+  }, []);
+
+  const EditServiceData = async () => {
+    debugger;
+    if (ServiceId > 0) {
+      try {
+        const response = await customAxios.get(
+          `${urlEditService}?Id=${ServiceId}`
+        );
+        if (response.status === 200 && response.data.data != null) {
+          const data = response.data.data.AddNewService;
+          form.setFieldsValue({
+            serviceclassificationname:
+              response.data.data.ServiceClassificationName,
+            servicegroupname: response.data.data.ServiceGroupName,
+            ShortName: data.ShortName,
+            LongName: data.LongName,
+            UomId: data.UomId,
+            CategoryId: data.CategoryId,
+            Status: data.Status,
+            Remarks: data.Remarks,
+            IsSubTest: data.IsSubTest,
+            IsRadiology: data.IsRadiology,
+            ResultType: data.ResultType,
+            TemplateID: data.TemplateID,
+            SampleTypeId: data.SampleTypeId,
+            IsFromTestValues: data.IsFromTestValues,
+            TestValues: data.TestValues,
+            NormalValForTestVal: data.NormalValForTestVal,
+            LabUOM: data.LabUOM,
+          });
+
+          if (data.IsFromTestValues) {
+            setIsTestValuesDisabled(false);
+            setResultTypeDisable(true);
+            setTemplateDisable(true);
+          }
+          if (data.IsRadiology) {
+            setIsRadiologyChecked(true);
+            setTemplateDisable(false);
+            setResultTypeDisable(true);
+          }
+        } else {
+          console.error("Failed to fetch patient details");
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    debugger;
+    // Filter the templateList based on checkbox state
+    const filtered = isRadiologyChecked
+      ? templateList.filter((template) => template.IsRadiology)
+      : templateList.filter((template) => template.IsLab);
+
+    setFilteredTemplates(filtered);
+  }, [isRadiologyChecked, templateList]);
+
+  const handleResultTypeChange = (value, option) => {
+    debugger;
+    // Check if the selected value's option children is "Template"
+    if (option.children === "Template") {
+      setTemplateDisable(false);
+    } else {
+      setTemplateDisable(true);
+    }
+  };
+
+  const handleCheckboxChange = (e) => {
+    const checked = e.target.checked;
+    setIsRadiologyChecked(checked);
+    if (checked === true) {
+      setTemplateDisable(false);
+      setResultTypeDisable(true);
+    } else {
+      setTemplateDisable(true);
+      setResultTypeDisable(false);
+      form.setFieldsValue({ TemplateID: undefined });
+    }
+    // If checked, set ResultType to the LookupDescription of the first option
+    if (checked && testresulttypes.length > 0) {
+      form.setFieldsValue({ ResultType: testresulttypes[2].LookupID });
+    } else {
+      // Optionally reset ResultType if unchecked
+      form.setFieldsValue({ ResultType: undefined });
+    }
+    form.setFieldsValue({
+      IsFromTestValues: undefined,
+      TestValues: null,
+      NormalValForTestVal: null,
+    });
+  };
+
+  const handleIsFromTestValues = (e) => {
+    const checked = e.target.checked;
+    if (checked === true) {
+      setIsTestValuesDisabled(false);
+      setResultTypeDisable(true);
+      setTemplateDisable(true);
+      form.setFieldsValue({ IsRadiology: false });
+    } else {
+      setIsTestValuesDisabled(true);
+      setResultTypeDisable(false);
+      setTemplateDisable(false);
+      form.setFieldsValue({
+        TemplateID: undefined,
+        TestValues: null,
+        NormalValForTestVal: null,
+      });
+    }
+    if (checked && testresulttypes.length > 0) {
+      form.setFieldsValue({ ResultType: testresulttypes[0].LookupID });
+      form.setFieldsValue({ TemplateID: undefined });
+    } else {
+      // Optionally reset ResultType if unchecked
+      form.setFieldsValue({ ResultType: undefined });
+    }
+  };
+
+  const navigate = useNavigate();
+
+  const handleTestValuesChange = (e) => {
+    const value = e.target.value;
+    // setTestValues(value);
+
+    // Split the input by '|' and filter out empty values
+    const newOptions = value
+      .split("|")
+      .map((opt) => opt.trim())
+      .filter((opt) => opt);
+    setTestOptions(newOptions);
+  };
 
   const options = [
     {
@@ -108,8 +260,24 @@ function CreateService() {
   const onFinish = async (values) => {
     debugger;
     values.ServiceClassificationId = Serviceclassificationid;
+    values.ServiceId = ServiceId ? ServiceId : 0;
+    values.IsFromTestValues = values.IsFromTestValues
+      ? values.IsFromTestValues
+      : false;
+    values.IsRadiology = values.IsRadiology ? values.IsRadiology : false;
+    values.IsSubTest = values.IsSubTest ? values.IsSubTest : false;
+    const Service = {
+      AddNewService: values,
+      ListServiceOrdering: null,
+      ListServiceTat: null,
+      ListServiceMedicalCode: null,
+      ServiceLabAttribute: null,
+      ServicePackage: null,
+    };
+
+    const url = ServiceId ? urlUpdateService : urlAddNewService;
     try {
-      const response = await customAxios.post(urlAddNewService, values, {
+      const response = await customAxios.post(url, Service, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -147,7 +315,6 @@ function CreateService() {
     setIsTurnAroundTimeModalVisible(true);
   };
 
-
   const handleSubmit = (values) => {
     debugger;
     console.log(values);
@@ -167,12 +334,11 @@ function CreateService() {
     setAgeGenderRestriction((prev) => [...prev, ...valuesWithKeys]);
   };
 
-  
   const handleMedicalCodeSubmit = (values) => {
     debugger;
     console.log(values);
-   
-   // Ensure values is an array
+
+    // Ensure values is an array
     const valuesArray = Array.isArray(values) ? values : [values];
 
     // Map the incoming values and add a key to each
@@ -190,8 +356,6 @@ function CreateService() {
   const handleTurnAroundTimeSubmit = (values) => {
     debugger;
 
-    
-   
     const valuesArray = Array.isArray(values) ? values : [values];
 
     // Map the incoming values and add a key to each
@@ -206,7 +370,6 @@ function CreateService() {
     // Update the state with the new values with keys
     setTurnAroundTime((prev) => [...prev, ...valuesWithKeys]);
   };
-
 
   const columns = [
     {
@@ -251,7 +414,6 @@ function CreateService() {
       dataIndex: "UOM",
       key: "UOM",
     },
-    
   ];
   const columnMedicalCode = [
     {
@@ -471,16 +633,20 @@ function CreateService() {
                           name="IsRadiology"
                           valuePropName="checked"
                         >
-                          <Checkbox> Is Radiology ? </Checkbox>
+                          <Checkbox onChange={handleCheckboxChange}>
+                            Is Radiology?
+                          </Checkbox>
                         </Form.Item>
                       </Col>
 
                       <Col span={4}>
                         <Form.Item name="ResultType" label="Result Type">
                           <Select
+                            onChange={handleResultTypeChange}
                             style={{ width: "100%" }}
                             placeholder="SelectResultType"
                             allowClear
+                            disabled={reultTypeDisable}
                           >
                             {testresulttypes.map((option) => (
                               <Select.Option
@@ -496,7 +662,21 @@ function CreateService() {
 
                       <Col span={6}>
                         <Form.Item label="Templates" name="TemplateID">
-                          <Input />
+                          <Select
+                            style={{ width: "100%" }}
+                            placeholder="Select Result Type"
+                            allowClear
+                            disabled={templatedisable} // Disable if no options
+                          >
+                            {filteredTemplates.map((option) => (
+                              <Select.Option
+                                key={option.TID}
+                                value={option.TID}
+                              >
+                                {option.TempName}
+                              </Select.Option>
+                            ))}
+                          </Select>
                         </Form.Item>
                       </Col>
                       <Col span={6}>
@@ -514,12 +694,28 @@ function CreateService() {
                           name="IsFromTestValues"
                           valuePropName="checked"
                         >
-                          <Checkbox> IsResult From Test Values ? </Checkbox>
+                          <Checkbox onChange={handleIsFromTestValues}>
+                            {" "}
+                            IsResult From Test Values ?{" "}
+                          </Checkbox>
                         </Form.Item>
                       </Col>
                       <Col span={8}>
-                        <Form.Item label="Test Values" name="TestValues">
-                          <Input.TextArea />
+                        <Form.Item
+                          label={
+                            <span>
+                              Test Values&nbsp;
+                              <Tooltip title="Enter values separated by '|' (pipe)">
+                                <span style={{ cursor: "pointer" }}>🛈</span>
+                              </Tooltip>
+                            </span>
+                          }
+                          name="TestValues"
+                        >
+                          <Input.TextArea
+                            onChange={handleTestValuesChange}
+                            disabled={isTestValuesDisabled}
+                          />
                         </Form.Item>
                       </Col>
                       <Col span={6}>
@@ -527,7 +723,13 @@ function CreateService() {
                           label="Select Normal Value"
                           name="NormalValForTestVal"
                         >
-                          <Input />
+                          <Select disabled={isTestValuesDisabled}>
+                            {testoptions.map((option, index) => (
+                              <Select.Option key={index} value={option}>
+                                {option}
+                              </Select.Option>
+                            ))}
+                          </Select>
                         </Form.Item>
                       </Col>
                       <Col span={6}>
@@ -759,7 +961,7 @@ function CreateService() {
                   open={isTurnAroundTimeModalVisible}
                   handleClose={() => setIsTurnAroundTimeModalVisible(false)}
                   handleSubmit={handleTurnAroundTimeSubmit}
-              
+
                   // discountDetails={discountDetails}
                   // setCharges={setCharges}
                 />

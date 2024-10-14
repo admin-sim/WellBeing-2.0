@@ -38,7 +38,7 @@ import {
 } from "../../../../endpoints";
 import customAxios from "../../../components/customAxios/customAxios";
 import CustomTable from "../../../components/customTable";
-
+import { v4 as uuidv4 } from "uuid";
 const TestMethods = () => {
   const [subTestMappingIndex, setSubTestMappingIndex] = useState({
     AllDiagnosticTests: [],
@@ -75,24 +75,29 @@ const TestMethods = () => {
 
   const onFinish = async (values) => {
     debugger;
-
+  
     const TestMethodModel = {
-      TestId: values.Tests,
+      TestID: values.Tests,
       MethodName: values.MethodsName,
       Unit: values.Unit,
     };
-
-    const postData = {
-      TestMethodModel: TestMethodModel,
-    };
-    const response = await customAxios.post(urlSaveTestMethod, postData, {
+    const response = await customAxios.post(urlSaveTestMethod, TestMethodModel, {
       headers: {
         "Content-Type": "application/json",
       },
     });
-    message.success(response.data.data.Status);
-    onChange(values.Tests);
-    form.resetFields(["MethodsName", "Unit"]);
+  
+    if (response.data.data.Status === "TestReference Saved Successfully.") {
+      // Show success message
+      message.success(response.data.data.Status);
+      onChange(values.Tests);
+      form.resetFields(["MethodsName", "Unit"]);
+    } else {
+      // Show warning message: Method Name Is Already Exists.
+      message.warning("Method Name Is Already Exists.");
+    }
+  
+   
   };
 
   const filterOption = (input, option) =>
@@ -106,7 +111,15 @@ const TestMethods = () => {
           .get(`${urlLoadTestMethodGridData}?TestId=${value}`)
           .then((response) => {
             debugger;
-            const apiData = response.data.data.ListTestMethodModel;
+           
+            
+
+            const apiData = response.data.data.ListTestMethodModel.map(
+              (item, index) => ({
+                ...item,
+                key: uuidv4(),
+              })
+            );
             setFilteredData(apiData);
           });
       } catch (error) {

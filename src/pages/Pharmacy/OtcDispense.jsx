@@ -17,7 +17,7 @@ import {
   Typography,
   Empty,
   Spin,
-  Modal
+  Modal,
 } from "antd";
 import {
   DeleteOutlined,
@@ -28,31 +28,25 @@ import {
 import Layout from "antd/es/layout/layout";
 const { Text } = Typography;
 import { useNavigate } from "react-router";
-import customAxios from "../../../components/customAxios/customAxios.jsx";
-import DiscountModal from "./DiscountModal.jsx";
-import InvoiceDiscountModal from "./InvoiceDiscountModal.jsx";
+import customAxios from "../../components/customAxios/customAxios.jsx";
+import DiscountModal from "../AccountManagement/Billling/DiscountModal.jsx";
+import InvoiceDiscountModal from "../AccountManagement/Billling/InvoiceDiscountModal.jsx";
+
 import {
-  urlGetAllAutocompleteServicesAsync,
-  urlAddNewBill,
-  urlGetServiceCharge,
-  urlGetAllProviders,
-  urlAddNewCharge,
-  urlBillingCreate,
-  urlEditDiscount,
-  urlInvoiceDiscount,
   urlGetPatientHeaderDetails,
-  urlDeleteBillCharge,
-  urlGetLastBillNumber,
-  urlSaveChargesForTempTable,
-} from "../../../../endpoints";
+  urlGetPharmacyServiceCharge,
+  urlGetProductBatchDetails,
+  urlGetStoreProductDetails,
+  urlPharmacyCreate,
+} from "../../../endpoints.js";
 import Title from "antd/es/typography/Title";
 import { useLocation } from "react-router-dom";
-import PatientHeader from "../../../components/PatientHeader";
+import PatientHeader from "../../components/PatientHeader/index.jsx";
 import { CiDiscount1 } from "react-icons/ci";
 import dayjs from "dayjs";
 import { debounce } from "lodash";
 
-const CreateBilling = () => {
+const OtcDispense = () => {
   const location = useLocation();
   const PatientId = location.state.patientId;
   const EncounterId = location.state.encounterId;
@@ -87,6 +81,8 @@ const CreateBilling = () => {
   const [blobData, setBlobData] = useState(null);
   const [billNumber, setBillNumber] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [options, setOptions] = useState([]);
+  const [storeId, setStoreId] = useState([]);
   console.log("l", location.state);
 
   useEffect(() => {
@@ -118,12 +114,15 @@ const CreateBilling = () => {
     setTableLoading(true);
     debugger;
     try {
+      const storeId = "";
+      const flag = "";
       const response = await customAxios.get(
-        `${urlBillingCreate}?PatientId=${PatientId}&EncounterId=${EncounterId}`
+        `${urlPharmacyCreate}?PatientId=${PatientId}&EncounterId=${EncounterId}&StoreId=${storeId}&flag=${flag} `
       );
       if (response.status === 200 && response.data != null) {
         setTableLoading(false);
-        const details = response.data;
+        const details = response.data.data;
+        setStoreId(details.StoreId);
         setBanks(details?.Bank);
         setPaymentTypes(details?.PaymentType);
         setCharges(details?.PatientAccountCharges);
@@ -191,78 +190,73 @@ const CreateBilling = () => {
     navigate("/Billing");
   };
 
-  const handleAutoCompleteChange = async (value) => {
-    debugger;
-    setLoading(true); // Start loading
-    try {
-      if (!value.trim()) {
-        setServices(null); // Set options to an empty array
-        setLoading(false); // Stop loading
-        return;
-      }
-      const response = await customAxios.get(
-        `${urlGetAllAutocompleteServicesAsync}?Description=${value}`
-      );
-      const responseData = response.data || [];
-      // Ensure responseData is an array and has the expected structure
-      if (
-        Array.isArray(responseData) &&
-        responseData.length > 0 &&
-        responseData[0].Id !== undefined
-      ) {
-        const newOptions = responseData.map((option) => ({
-          value: option.Name,
-          label: option.Name,
-          key: option.Id,
-        }));
-        setServices(newOptions);
-      } else {
-        setServices(null);
-        form.setFieldValue("Services", "");
-      }
-    } catch (error) {
-      setServices(null); // Set options to an empty array in case of an error
-    }
-    setLoading(false); // Stop loading
-  };
-
-  const debouncedHandleAutoCompleteChangeService = debounce(
-    handleAutoCompleteChange,
-    300
-  );
-
-  const handleSelect = async (value, option) => {
-    debugger;
-    setSelectedServiceId(option.key);
+  const fetchProducts = async (searchText) => {
     setLoading(true);
-    if (option.key) {
-      try {
-        const newData = await fetchDataForSelectedService(option.key);
-        if (newData[0]) {
-          form.setFieldsValue({
-            Amount: newData[0].ChargeAmount,
-            PatientAmount: newData[0].PatientNetAmount,
-            Provider: newData[0].ProviderName,
-          });
-        }
-        setAmount2(newData[0].OriginalChargeAmount);
-        setPatientAmount2(newData[0].OriginalPatientChargeAmount);
-        setSelectedProviderId(newData[0].ProviderID);
-      } catch (error) {
-        setLoading(false);
-      }
-    }
-    setLoading(false);
-  };
-
-  const fetchDataForSelectedService = async (ServiceId) => {
     try {
       const response = await customAxios.get(
-        `${urlGetServiceCharge}?ServiceId=${ServiceId}&PatientId=${PatientId}&EncounterId=${EncounterId}`
+        `${urlGetStoreProductDetails}?product=${searchText}&storeId=${storeId}`
       );
-      return response.data.data;
+
+      const newOptions = response.data.data.map((item) => ({
+        value: item.ProductDefinitionId,
+        label: item.LongName,
+      }));
+
+      setOptions(newOptions);
     } catch (error) {
-      throw error; // You might want to handle or log the error appropriately
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const debouncedFetchProducts = debounce(fetchProducts, 300);
+
+  const handleSearch = (value) => {
+    if (value) {
+      debouncedFetchProducts(value);
+    } else {
+      setOptions([]);
+    }
+  };
+
+  const handleChange = async (value, option) => {
+    debugger;
+    
+    if (value) {
+      try {
+        const batchResponse = await customAxios.get(
+          `${urlGetProductBatchDetails}?Product=${value}&StoreId=${storeId}`
+        );
+
+        // Process batch data
+        const batchData = batchResponse.data.data;
+        // ... (process batch data as needed)
+        const Qty = form.getFieldValue("Qty");
+        // Fetch service price
+
+        if (batchData.length > 0) {
+          const servicePriceResponse = await customAxios.get(
+            `${urlGetPharmacyServiceCharge}?BatchId=${batchData[0].BatchNo}&ExpDate=${batchData[0].EXPDate}&ServiceId=${value}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${Qty}&StockId=${batchData[0].StockId}`
+          );
+
+          // Process service price data
+          const servicePriceData = servicePriceResponse.data;
+        } else {
+          message.warning("There is no batch for selected Product");
+        }
+
+        // ... (process service price data as needed)
+
+        // // Call the parent component's handler with all the data
+        // onProductSelect({
+        //   product: option,
+        //   batchData,
+        //   servicePriceData
+        // });
+      } catch (error) {
+        console.error("Error fetching additional data:", error);
+      }
     }
   };
 
@@ -520,26 +514,24 @@ const CreateBilling = () => {
     // form1.resetFields();
     // setReceiptInsAmtData(initialDataSource); // Reset the data source
   };
- 
 
   const handlePrintBill = async () => {
-   debugger;
+    debugger;
 
     try {
-      const flag=0;
+      const flag = 0;
       const response = await customAxios.get(
         `${urlGetLastBillNumber}?PatientId=${PatientId}&EncounterId=${EncounterId}&Flag=${flag}`
       );
-      if(response.status===200){
-        if(response.data.data===":"){
+      if (response.status === 200) {
+        if (response.data.data === ":") {
           message.warning("Bill Not Yet Generated");
           return;
-        }
-        else{
+        } else {
           var res = response.data.data.split(":");
-         // showReceipt(res[0],res[1]);
+          // showReceipt(res[0],res[1]);
           const request = {
-          //  EncounterId: 1,
+            //  EncounterId: 1,
             BillingId: res[1],
             FileType: "pdf", // or 'excel'
           };
@@ -549,9 +541,6 @@ const CreateBilling = () => {
           setIsModalVisible(true);
         }
       }
-
-
-    
     } catch (error) {
       setError(error.message);
     }
@@ -885,9 +874,8 @@ const CreateBilling = () => {
           message.error("Failed to generate bill");
         } else {
           message.success("Bill generated successfully!");
-          
-          
-         await GetBillReceipt(response.data);
+
+          await GetBillReceipt(response.data);
           //fetchData();
           form1.resetFields();
           setReceiptInsAmtData([]);
@@ -905,14 +893,13 @@ const CreateBilling = () => {
   };
 
   async function GetBillReceipt(BillNumber) {
-    const fg=1;
+    const fg = 1;
     const response = await customAxios.get(
       `${urlSaveChargesForTempTable}?billId=${BillNumber}&Flag=${fg}`
     );
-    if(response.status===200){
-
-    }else{
-      message.warning('Something Went Wrong While Saving Data to TempTable');
+    if (response.status === 200) {
+    } else {
+      message.warning("Something Went Wrong While Saving Data to TempTable");
     }
   }
 
@@ -935,11 +922,14 @@ const CreateBilling = () => {
         >
           <Col span={16}>
             <Title level={4} style={{ color: "white", fontWeight: 500 }}>
-              Biliing
+              OTC Dispense
             </Title>
           </Col>
           <Col offset={5} span={3}>
-            <Button icon={<LeftOutlined />}   onClick={() => handleCreateService()}>
+            <Button
+              icon={<LeftOutlined />}
+              onClick={() => handleCreateService()}
+            >
               Back
             </Button>
           </Col>
@@ -951,58 +941,42 @@ const CreateBilling = () => {
           layout="vertical"
           onFinish={handleOnFinish}
           variant="outlined"
-          style={{ padding: "0rem 2rem" }}
+          style={{ padding: "0rem 1rem" }}
           form={form}
           initialValues={{
-            ServiceDate: dayjs(),
+            Qty: 1, 
           }}
         >
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            <Col className="gutter-row" span={6}>
+          <Row gutter={16}>
+          <Col className="gutter-row" span={2}>
               <div>
                 <Form.Item
-                  label="Services"
-                  name="Services"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Service Required.",
-                    },
-                  ]}
+                  style={{ width: "100%" }}
+                  label="BarCode"
+                  name="BarCode"
                 >
-                  <AutoComplete
-                    options={services}
-                    //onSearch={handleAutoCompleteChange}
-                    onSearch={debouncedHandleAutoCompleteChangeService}
-                    onSelect={handleSelect}
-                    onChange={(value) => {
-                      if (!value) {
-                        form.setFieldsValue({
-                          Amount: "",
-                          PatientAmount: "",
-                          Provider: "",
-                        });
-                        setServices(null);
-                        setSelectedProviderId(null);
-                      }
-                    }}
-                    allowClear={{
-                      clearIcon: <CloseSquareFilled />,
-                    }}
-                    loading={loading}
-                  />
+                  <Input disabled></Input>
                 </Form.Item>
               </div>
             </Col>
-            <Col className="gutter-row" span={4}>
+            <Col className="gutter-row" span={5}>
               <div>
-                <Form.Item label="ServiceDate" name="ServiceDate">
-                  <DatePicker
-                    style={{ width: "100%" }}
-                    disabled
-                    format="DD-MM-YYYY"
-                    onChange={handleServiceDate}
-                  />
+                <Form.Item name="product" label="Product">
+                  <Select
+                    showSearch
+                    placeholder="Select a product"
+                    optionFilterProp="children"
+                    onSearch={handleSearch}
+                    onChange={handleChange}
+                    loading={loading}
+                    filterOption={false}
+                  >
+                    {options.map((option) => (
+                      <Option key={option.value} value={option.value}>
+                        {option.label}
+                      </Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </div>
             </Col>
@@ -1037,8 +1011,43 @@ const CreateBilling = () => {
                 </Form.Item>
               </div>
             </Col>
+            <Col className="gutter-row" span={2}>
+              <div>
+                <Form.Item
+                  style={{ width: "100%" }}
+                  label="Qty"
+                  name="Qty"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Qty Is Required",
+                    },
+                  ]}
+               
+                >
+                  <Input disabled></Input>
+                </Form.Item>
+              </div>
+            </Col>
+            <Col className="gutter-row" span={2}>
+              <div>
+                <Form.Item
+                  style={{ width: "100%" }}
+                  label="Rate"
+                  name="Rate"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Rate Is Required",
+                    },
+                  ]}
+                >
+                  <Input disabled></Input>
+                </Form.Item>
+              </div>
+            </Col>
 
-            <Col className="gutter-row" span={3}>
+            <Col className="gutter-row" span={2}>
               <div>
                 <Form.Item
                   style={{ width: "100%" }}
@@ -1055,11 +1064,12 @@ const CreateBilling = () => {
                 </Form.Item>
               </div>
             </Col>
-            <Col className="gutter-row" span={3}>
+       
+            <Col className="gutter-row" span={2}>
               <div>
                 <Form.Item
                   style={{ width: "100%" }}
-                  label="PatientAmount"
+                  label="PatientAmt"
                   name="PatientAmount"
                   rules={[
                     {
@@ -1288,14 +1298,14 @@ const CreateBilling = () => {
             </Col>
             <Col style={{ marginRight: "20px", marginTop: "1rem" }}>
               <Form.Item>
-                <Button type="primary"   onClick={() => handleProvisional()}>
+                <Button type="primary" onClick={() => handleProvisional()}>
                   Provisional
                 </Button>
               </Form.Item>
             </Col>
             <Col style={{ marginRight: "20px", marginTop: "1rem" }}>
               <Form.Item>
-                <Button type="primary"  onClick={() => handlePrintBill()}>
+                <Button type="primary" onClick={() => handlePrintBill()}>
                   PrintBill
                 </Button>
               </Form.Item>
@@ -1303,7 +1313,6 @@ const CreateBilling = () => {
           </Row>
           <div>
             {error && <div>Error: {error}</div>}
-
 
             <Modal
               title="Report"
@@ -1331,4 +1340,4 @@ const CreateBilling = () => {
   );
 };
 
-export default CreateBilling;
+export default OtcDispense;
