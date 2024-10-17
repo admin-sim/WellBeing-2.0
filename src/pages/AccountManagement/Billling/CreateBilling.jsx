@@ -1315,7 +1315,7 @@ const CreateBilling = () => {
                   Close
                 </Button>,
               ]}
-              width={800} // You can adjust the width as needed
+              width={"60rem"} // You can adjust the width as needed
             >
               {reportUrl && (
                 <iframe

@@ -38,6 +38,7 @@ import {
   urlDeletePharmacyBillCharge,
   urlGetAllAutocompleteProviders,
   urlGetAllProviders,
+  urlGetLastBillNumber,
   urlGetPatientHeaderDetails,
   urlGetPharmacyServiceCharge,
   urlGetProductBatchDetails,
@@ -637,7 +638,7 @@ const OtcDispense = () => {
     debugger;
 
     try {
-      const flag = 0;
+      const flag = 1;
       const response = await customAxios.get(
         `${urlGetLastBillNumber}?PatientId=${PatientId}&EncounterId=${EncounterId}&Flag=${flag}`
       );
@@ -665,7 +666,7 @@ const OtcDispense = () => {
   };
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:901/api/ReportsApi/BillReport",
+      "http://localhost:43705/api/ReportsApi/PharmacyBillReport",
       {
         method: "POST",
         headers: {
@@ -1491,7 +1492,7 @@ const OtcDispense = () => {
                   Close
                 </Button>,
               ]}
-              width={800} // You can adjust the width as needed
+              width={"60rem"} // You can adjust the width as needed
             >
               {reportUrl && (
                 <iframe
