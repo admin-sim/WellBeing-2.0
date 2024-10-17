@@ -27,14 +27,13 @@ import customAxios from "../../../components/customAxios/customAxios.jsx";
 import { useNavigate } from "react-router";
 
 import { useState, useEffect } from "react";
+import dayjs from "dayjs";
 const LabDashboard = () => {
   const navigate = useNavigate();
-
+  const [patientData, setPatientData] = useState(null);
   const [form] = Form.useForm(); // Ant Design Form hook
   const [loaddata, setLoadedData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedRegFrom, setRegFrom] = useState(undefined);
-  const [selectedRegTo, setRegTo] = useState(undefined);
   const [options, setOptions] = useState([]);
   const [selectedUhId, setSelectedUhId] = useState(null);
 
@@ -77,32 +76,27 @@ const LabDashboard = () => {
     setSelectedUhId(option.value);
   };
 
-  function formatDate(inputDate) {
+  const handleSampleCollection = (record) => {
+    console.log(record);
+
     debugger;
-    const dateParts = inputDate.split("-");
-    if (dateParts.length === 3) {
-      const [year, month, day] = dateParts;
-      return `${day}-${month}-${year}`;
-    }
-    return inputDate; // Return as is if not in the expected format
-  }
-
-  const disabledDate = (current) => {
-    // Disable dates that are in the future
-    return current && current > new Date();
+    // Navigate to the desired page and pass the record object as a parameter
+    navigate("/SampleCollection", { state: { record } });
   };
-  const handleSampleCollectionClick = (record) => {
+  const handleResultEntry = (record) => {
+    console.log(record);
+
     debugger;
-
-    const url = `/SampleCollection/${record.PatientId}/${record.EncounterId}/${record.PatientLabStatusID}`;
-
-    // Navigate to the new URL
-    navigate(url);
+    // Navigate to the desired page and pass the record object as a parameter
+    navigate("/ResultEntry", { state: { record } });
   };
-  const handleResultEntryClick = (record) => {
-    // Handle the click event as needed
-    const url = `/ResultEntryIndex/${record.PatientId}/${record.EncounterId}/${record.PatientLabStatusID}`;
-    console.log("Navigating to:", url);
+
+  const handleVerification = (record) => {
+    console.log(record);
+
+    debugger;
+    // Navigate to the desired page and pass the record object as a parameter
+    navigate("/Verification", { state: { record } });
   };
 
   const formatDatefortable = (dateString) => {
@@ -114,20 +108,11 @@ const LabDashboard = () => {
       .toString()
       .padStart(2, "0")}-${date.getFullYear()}`;
   };
-  const handleFromDateChange = (date, dateString) => {
-    debugger;
-    const dateinput1 = formatDate(dateString);
-    setRegFrom(dateinput1);
-  };
-  const handleToDateChange = (date, dateString) => {
-    const dateinput2 = formatDate(dateString);
-    setRegTo(dateinput2);
-  };
+
   const onFinish = async (values) => {
     debugger;
     console.log("Received values of form: ", values);
-    values.fromDate = selectedRegFrom;
-    values.todate = selectedRegTo;
+
     try {
       setLoading(true);
       const data = {
@@ -135,18 +120,20 @@ const LabDashboard = () => {
         PName: values.name === undefined ? '""' : values.name,
         PMobNum: values.mobileNumber === undefined ? '""' : values.mobilenumber,
         LabNumber: values.labNumber === undefined ? '""' : values.labNumber,
-        Fromdate: values.fromDate === undefined ? '""' : values.fromDate,
-        Todate: values.todate === undefined ? '""' : values.todate,
+        Fromdate: values.fromDate ? values.fromDate.format("DD-MM-YYYY") : "",
+        Todate: values.toDate ? values.toDate.format("DD-MM-YYYY") : "",
       };
 
       const response = await customAxios.get(urlSearchPatientsForLab, {
         params: data, // Pass form values as query parameters
       });
-
-      console.log("API Response:", response.data.data.LabPatientsList);
-
+      const newColumnData = response.data.data.LabPatientsList.map(
+        (obj, index) => {
+          return { ...obj, key: index + 1 };
+        }
+      );
       // Update the state with the API response or handle it as needed
-      setLoadedData(response.data.data.LabPatientsList);
+      setLoadedData(newColumnData);
     } catch (error) {
       console.error("API Error:", error);
     } finally {
@@ -168,10 +155,9 @@ const LabDashboard = () => {
 
   const columns = [
     {
-      title: "Sl No",
-      key: "index",
-
-      render: (text, record, index) => index + 1,
+      title: "Sl. No.",
+      dataIndex: "key",
+      key: "key",
     },
     {
       title: "Uhid",
@@ -255,11 +241,13 @@ const LabDashboard = () => {
           {record.IsSmpPartiallyCollected === true &&
             !record.IsAllSampleCollected && (
               <Space align="start">
-                <Link
-                  to={`/SampleCollection/${record.PatientId}/${record.EncounterId}/${record.PatientLabStatusID}`}
+                <Button
+                  type="link"
+                  onClick={() => handleSampleCollection(record)}
                 >
                   Sample Collection
-                </Link>
+                </Button>
+                {/* </Link> */}
                 <Tooltip
                   title="Sample Partially Collected"
                   placement="right"
@@ -283,13 +271,12 @@ const LabDashboard = () => {
           )}
           {!record.IsSmpPartiallyCollected && !record.IsAllSampleCollected && (
             <Space align="start">
-              <Link
-                to={`/SampleCollection/${record.PatientId}/${record.EncounterId}/${record.PatientLabStatusID}`}
+              <Button
+                type="link"
+                onClick={() => handleSampleCollection(record)}
               >
-                <a onClick={() => handleSampleCollectionClick(record)}>
-                  Sample Collection
-                </a>
-              </Link>
+                Sample Collection
+              </Button>
               <Tooltip
                 title="Sample Not Collected"
                 placement="right"
@@ -303,11 +290,9 @@ const LabDashboard = () => {
           {record.IsResEntryPartiallyDone === true &&
             !record.IsAllResEntryDone && (
               <Space align="start">
-                <Link
-                  to={`/ResultEntryIndex/${record.PatientId}/${record.EncounterId}/${record.PatientLabStatusID}`}
-                >
+                <Button type="link" onClick={() => handleResultEntry(record)}>
                   Result Entry
-                </Link>
+                </Button>
                 <Tooltip
                   title="Result Entry Partially Done"
                   placement="right"
@@ -331,15 +316,58 @@ const LabDashboard = () => {
           )}
           {!record.IsResEntryPartiallyDone && !record.IsAllResEntryDone && (
             <Space align="start">
-              <Link
-                to={`/ResultEntryIndex/${record.PatientId}/${record.EncounterId}/${record.PatientLabStatusID}`}
-              >
-                <a onClick={() => handleResultEntryClick(record)}>
-                  Result Entry
-                </a>
-              </Link>
+              <Button type="link" onClick={() => handleResultEntry(record)}>
+                Result Entry
+              </Button>
               <Tooltip
                 title="Result Entry Not Done"
+                placement="right"
+                overlayStyle={{ fontSize: "10px" }}
+              >
+                <MinusCircleOutlined style={{ color: "#b98c54" }} />
+              </Tooltip>
+            </Space>
+          )}
+
+
+
+
+
+
+          {record.IsVerificationPartiallyDone === true &&
+            !record.IsAllVerificationDone && (
+              <Space align="start">
+                <Button type="link" onClick={() => handleVerification(record)}>
+                  Verification
+                </Button>
+                <Tooltip
+                  title="Verification Partially Done"
+                  placement="right"
+                  overlayStyle={{ fontSize: "10px" }}
+                >
+                  <PlusCircleOutlined style={{ color: "#f39c12" }} />
+                </Tooltip>
+              </Space>
+            )}
+          {record.IsAllVerificationDone && (
+            <Space align="start">
+              <label>Verification</label>
+              <Tooltip
+                title="All Verification  Done"
+                placement="right"
+                overlayStyle={{ fontSize: "10px" }}
+              >
+                <CheckCircleOutlined style={{ color: "green" }} />
+              </Tooltip>
+            </Space>
+          )}
+          {!record.IsVerificationPartiallyDone && !record.IsAllVerificationDone && (
+            <Space align="start">
+              <Button type="link" onClick={() => handleVerification(record)}>
+                Verification
+              </Button>
+              <Tooltip
+                title="Verification  Not Done"
                 placement="right"
                 overlayStyle={{ fontSize: "10px" }}
               >
@@ -369,12 +397,17 @@ const LabDashboard = () => {
             boxShadow: "rgba(0, 0, 0, 0.15) 0px 5px 15px 0px",
           }}
         >
-          <Form layout="vertical" onFinish={onFinish} form={form}>
+          <Form
+            initialValues={{
+              toDate: dayjs(),
+              fromDate: dayjs().subtract(1, "day").startOf("day"),
+            }}
+            layout="vertical"
+            onFinish={onFinish}
+            form={form}
+          >
             <Row gutter={24} style={{ marginBottom: "12px" }}>
               <Col span={6}>
-                {/* <Form.Item name="uhid" label="UHID">
-                  <Input placeholder="Enter UHID" />
-                </Form.Item> */}
                 <Form.Item label="UHID" name="Uhid">
                   <AutoComplete
                     options={options}
@@ -410,8 +443,8 @@ const LabDashboard = () => {
                 <Form.Item name="fromDate" label="From Date">
                   <DatePicker
                     style={{ width: "100%" }}
-                    onChange={handleFromDateChange}
-                    disabledDate={disabledDate}
+
+                    // disabledDate={disabledDate}
                   />
                 </Form.Item>
               </Col>
@@ -419,8 +452,8 @@ const LabDashboard = () => {
                 <Form.Item name="toDate" label="To Date">
                   <DatePicker
                     style={{ width: "100%" }}
-                    onChange={handleToDateChange}
-                    disabledDate={disabledDate}
+
+                    //disabledDate={disabledDate}
                   />
                 </Form.Item>
               </Col>

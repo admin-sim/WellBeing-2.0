@@ -43,12 +43,14 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
   const [readOnly, setReadOnly] = useState(false);
   const [buttonTitle, setButtonTitle] = useState("Save");
   const [key, setKey] = useState(null);
+  const [customKey, setCustomKey] = useState(filteredData?.length + 1000);
 
   const handleCancel = () => {
     handleClose();
   };
 
   const handleCancel1 = () => {
+    setCustomKey(customKey + 1);
     setTemplateEditorData("");
     form.resetFields();
     setOpenCKModel(false);
@@ -103,8 +105,6 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
     }
   };
 
-  console.log("LL", filteredData?.length + 1000);
-
   return (
     <div>
       <Modal
@@ -149,6 +149,7 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
           />
         </Spin>
       </Modal>
+
       <Modal
         width={"70%"}
         height={"auto"}
@@ -217,7 +218,7 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
             </ColWithEightSpan>
           </Row>
           <CkEditor
-            key={key ? key : Dropdown.DrNotesList?.length + 1000} //added default key to 123456 so that it is unique for adding new notes
+            key={key ? key : customKey} //added default key to 123456 so that it is unique for adding new notes
             initialData={templateEditorData}
             printButton={true}
             setData={setTemplateEditorData}

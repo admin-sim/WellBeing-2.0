@@ -18,6 +18,8 @@ import NewVisit from "./pages/Patient/NewVisit";
 import PatientEdit from "./pages/Patient/EditPatientReg";
 import LabDashboard from "./pages/Laboratory/LabDashboard";
 import SampleCollection from "./pages/Laboratory/LabDashboard/SampleCollection";
+import ResultEntry from "./pages/Laboratory/LabDashboard/ResultEntry/index.jsx";
+import Verification from "./pages/Laboratory/LabDashboard/Verification/index.jsx";
 import ClinicalChartFlow from "./pages/ClinicalDocuments/ClinicalChart/ClinicalChartFlow.jsx";
 import ClinicalChart from "./pages/ClinicalDocuments/ClinicalChart/index.jsx";
 import PurchaseOrder from "./pages/Inventory/PurchaseOrder";
@@ -137,6 +139,12 @@ import Receipt from "./pages/AccountManagement/Receipt/index.jsx";
 import CreateReceipt from "./pages/AccountManagement/Receipt/CreateReceipt.jsx";
 import PatientRefund from "./pages/AccountManagement/Refund/PatientRefund.jsx";
 import Reprint from "./pages/AccountManagement/Reprint/index.jsx";
+import User from "./pages/Security/User/index.jsx";
+import Roles from "./pages/Security/Roles/index.jsx";
+import RoleAccess from "./pages/Security/RoleAccess/index.jsx";
+import RoleMapping from "./pages/Security/RoleMapping/index.jsx";
+import PharamcyIndex from "./pages/Pharmacy/index.jsx";
+import OtcDispense from "./pages/Pharmacy/OtcDispense.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -529,10 +537,26 @@ function App() {
               }
             />
             <Route
-              path="SampleCollection/:patientId/:encounterId/:labnumber"
+              path="SampleCollection"
               element={
                 <ProtectedRoute>
                   <SampleCollection />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="ResultEntry"
+              element={
+                <ProtectedRoute>
+                  <ResultEntry />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Verification"
+              element={
+                <ProtectedRoute>
+                  <Verification />
                 </ProtectedRoute>
               }
             />
@@ -1181,6 +1205,54 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Frequency />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="User"
+              element={
+                <ProtectedRoute>
+                  <User />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Roles"
+              element={
+                <ProtectedRoute>
+                  <Roles />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="RoleAccess"
+              element={
+                <ProtectedRoute>
+                  <RoleAccess />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="RoleMapping"
+              element={
+                <ProtectedRoute>
+                  <RoleMapping />
+                </ProtectedRoute>
+              }
+            />
+              <Route
+              path="PharamcyIndex"
+              element={
+                <ProtectedRoute>
+                  <PharamcyIndex />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="OtcDispense"
+              element={
+                <ProtectedRoute>
+                  <OtcDispense />
                 </ProtectedRoute>
               }
             />

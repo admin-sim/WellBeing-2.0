@@ -35,9 +35,6 @@ import { Table, InputNumber } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 import dayjs from "dayjs";
-import FormItem from "antd/es/form/FormItem/index.js";
-import { count } from "ckeditor5";
-//import { useParams } from 'react-router-dom';
 import { v4 as uuidv4 } from "uuid";
 
 const UpdateIndentIssue = () => {
