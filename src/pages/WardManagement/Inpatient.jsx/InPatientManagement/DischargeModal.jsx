@@ -21,6 +21,8 @@ const { Text } = Typography;
 import male from "../../../../assets/m.png";
 import { FcDocument, FcInfo, FcOpenedFolder } from "react-icons/fc";
 import { DollarTwoTone, FolderOpenTwoTone } from "@ant-design/icons";
+import customAxios from "../../../../components/customAxios/customAxios.jsx";
+import { urlDischargePatient } from "../../../../../endpoints.js";
 import PatientHeader from "../../../../components/PatientHeader";
 import dayjs from "dayjs";
 
@@ -30,11 +32,22 @@ function DischargeModal({ bed, patient, Dropdown, open, handleClose }) {
     const [beds, setBeds] = useState([])
     const [bedNumber, setBedNumber] = useState()
     const [blockChecked, setBlockChecked] = useState(false)
+    const [pendingStatus, setPendingStatus] = useState(false)
     const data = Dropdown.DischargeClearance
     const handleCancel = () => {
         form.resetFields();
+        setBlockChecked(false)
+        setPendingStatus(false)
         handleClose();
     };
+
+    useEffect(() => {
+        for (let i = 0; i < (Dropdown.DischargeClearance || []).length; i++) {
+            if (Dropdown.DischargeClearance[i].ClearanceStatusString != 'Done') {
+                setPendingStatus(true)
+            }
+        }
+    }, [Dropdown.DischargeClearance])
 
     const Block = (event) => {
         setBlockChecked(event.target.checked)
@@ -44,37 +57,6 @@ function DischargeModal({ bed, patient, Dropdown, open, handleClose }) {
         debugger
         handleCancel();
     }
-
-    // const DepartChange = async (value) => {
-    //   debugger
-    //   const response = await customAxios.get(
-    //     `${urlGetServiceLocation}?FacilityDepartmentId=${value}&ID=${1}`);
-    //   if (response.status === 200 && response.data.data != null) {
-    //     Dropdown.FacilityDeptServiceLocation = response.data.data.FacilityDeptServiceLocation
-    //   } else {
-    //     console.error("Failed to fetch patient details");
-    //   }
-    // }
-
-    // const fetchServiceLocation = (value) => {
-    //   debugger
-    //   Dropdown.FacilityDeptServiceLocation = []
-    // const departmentValue = form.getFieldValue('Department');
-    // if (departmentValue) {
-    //   try {
-    //     const response = await customAxios.get(
-    //       `${urlGetServiceLocation}?FacilityDepartmentId=${departmentValue}&ID=${1}`
-    //     );
-    //     // setDropdown((prevDropdown) => ({
-    //     //   ...prevDropdown,
-    //     //   FacilityDeptServiceLocation: response.data.data.FacilityDeptServiceLocation,
-    //     // }));
-    //     // Dropdown.FacilityDeptServiceLocation = response.data.data.FacilityDeptServiceLocation
-    //   } catch (error) {
-    //     console.error('Error fetching service location:', error);
-    //   }
-    // }
-    // };
 
     const columns = [
         {
@@ -94,10 +76,45 @@ function DischargeModal({ bed, patient, Dropdown, open, handleClose }) {
         },
         {
             title: "Perfomed Date",
-            dataIndex: "ClearanceDate",
-            key: "ClearanceDate",
+            dataIndex: "ClearanceDateString",
+            key: "ClearanceDateString",
         },
     ]
+
+    const handleSubmit = async (value) => {
+        debugger
+        if (pendingStatus) {
+            message.warning('Please complete discharge clearance.')
+            return false
+        }
+        const postData = {
+            DischargeID: value.DischargeID,
+            DischargeStatus: 'Discharged',
+            BedId: value.BedId,
+            EncounterId: value.EncounterId,
+            DischargeDate: value.DischargeDateTime.format("DD-MM-YYYY"),
+            DischargeTime: value.DischargeDateTime.format("HH:mm:ss"),
+            BlockDate: value.BlockTill.format("DD-MM-YYYY"),
+            BlockTime: value.BlockTill.format("HH:mm:ss"),
+            BlockReason: value.Block ? value.BlockReason : 0,
+            RetainBed: value.Block ? 'Y' : 'N'
+        }
+        try {
+            const response = await customAxios.get(
+                `${urlDischargePatient}?DischargeID=${postData.DischargeID
+                }&DischargeStatus=${postData.DischargeStatus}&BedId=${postData.BedId
+                }&EncounterId=${postData.EncounterId}&DischargeDate=${postData.DischargeDate}&DischargeTime=${postData.DischargeTime
+                }&BlockDate=${postData.BlockDate}&BlockTime=${postData.BlockTime
+                }&BlockReason=${postData.BlockReason}&RetainBed=${postData.RetainBed}`
+            );
+            if (response.status === 200) {
+                message.success('Success');
+                handleCancel()
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
 
     const dischargeHeaders = [
         {
@@ -108,8 +125,203 @@ function DischargeModal({ bed, patient, Dropdown, open, handleClose }) {
         {
             label: `Discharge`,
             key: 2,
-            disabled: true,
-            children: <Table columns={columns} dataSource={data} />,
+            disabled: pendingStatus,
+            children: <>
+                {/* <PatientHeader patient={patient} /> */}
+                <Row gutter={16}>
+                    <Col span={10}>
+                        <div
+                            style={{
+                                border: "1px solid silver",
+                                borderRadius: "0.5rem",
+                                padding: "0.5rem",
+                                marginTop: "1.2rem",
+                            }}
+                        >
+                            <Row>
+                                <Col span={24}>Admitted Date and Time</Col>
+                                <Col span={24}>
+                                    <b>{Dropdown.PatientsCurrentDetails.AdmittedDateString}</b>
+                                </Col>
+                            </Row>
+                            <Row style={{ marginTop: "0.5rem" }}>
+                                <Col span={12}>
+                                    <Col span={23}>Department</Col>
+                                    <Col span={23}>
+                                        <b>{Dropdown.PatientsCurrentDetails.DepartmentName}</b>
+                                    </Col>
+                                </Col>
+
+                                <Col span={12}>
+                                    <Col span={24}>Service Location</Col>
+                                    <Col span={24}>
+                                        <b>{Dropdown.PatientsCurrentDetails.ServiceLocationName}</b>
+                                    </Col>
+                                </Col>
+                            </Row>
+                            <Row style={{ marginTop: "0.5rem" }}>
+                                <Col span={12}>
+                                    <Col span={23}>Provider</Col>
+                                    <Col span={23}>
+                                        <b>{Dropdown.PatientsCurrentDetails.Provider}</b>
+                                    </Col>
+                                </Col>
+
+                                <Col span={12}>
+                                    <Col span={24}>Ward Category</Col>
+                                    <Col span={24}>
+                                        <b>{Dropdown.PatientsCurrentDetails.WardCategory}</b>
+                                    </Col>
+                                </Col>
+                            </Row>
+                            <Row style={{ marginTop: "0.5rem" }}>
+                                <Col span={12}>
+                                    <Col span={23}>Ward</Col>
+                                    <Col span={23}>
+                                        <b>{Dropdown.PatientsCurrentDetails.Ward}</b>
+                                    </Col>
+                                </Col>
+
+                                <Col span={12}>
+                                    <Col span={24}>Bed</Col>
+                                    <Col span={24}>
+                                        <b>{Dropdown.PatientsCurrentDetails.Bed}</b>
+                                    </Col>
+                                </Col>
+                            </Row>
+                        </div>
+                    </Col>
+                    <Col span={14}>
+                        <Form
+                            style={{ marginTop: "1rem" }}
+                            layout="vertical"
+                            form={form}
+                            onFinish={handleSubmit}
+                            initialValues={{
+                                DischargeDateTime: dayjs(),
+                                BlockTill: dayjs()
+                            }}
+                        >
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="DischargeAdvisedBy"
+                                        label="Discharge Advised By"
+                                    >
+                                        <label>{(Dropdown.DischargeDetails || {}).Provider}</label>
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="AdvisedDateTime"
+                                        label="Advised Date&Time"
+                                    >
+                                        <label>{(Dropdown.DischargeDetails || {}).AdvisedDateTimeString}</label>
+                                    </Form.Item>
+                                    <Form.Item hidden
+                                        name="EncounterId"
+                                        initialValue={Dropdown.PatientsCurrentDetails.EncounterId}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                    <Form.Item hidden
+                                        name="BedId"
+                                        initialValue={Dropdown.PatientsCurrentDetails.BedID}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                    <Form.Item hidden
+                                        name="DischargeID"
+                                        initialValue={(Dropdown.DischargeDetails || {}).DischargeId}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="ExpectedDateTime"
+                                        label="Expected Date&Time of Discharge"
+                                    >
+                                        <label>{(Dropdown.DischargeDetails || {}).ExpectedDischargeDateString}</label>
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="DispositionType"
+                                        label="Disposition Type"
+                                    >
+                                        <label>{(Dropdown.DischargeDetails || {}).DispositionType}</label>
+                                    </Form.Item>
+                                </Col>
+                                <Col span={22}>
+                                    <Form.Item
+                                        name="DischargeDateTime"
+                                        label="Discharge Date&Time"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: "Please Enter Lookup Description",
+                                            },
+                                        ]}
+                                    >
+                                        <DatePicker
+                                            style={{ width: "100%" }}
+                                            showTime={{ format: "hh:mm A" }}
+                                            format="dddd , DD-MM-YYYY , hh:mm A"
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={24}>
+                                    <Form.Item name="Block" valuePropName="checked">
+                                        <Checkbox onChange={Block}>Block Bed Till</Checkbox>
+                                    </Form.Item>
+                                </Col>
+                                <Col span={22} hidden={!blockChecked}>
+                                    <Form.Item
+                                        name="BlockTill"
+                                        label="Block Till"
+                                        rules={[
+                                            {
+                                                required: blockChecked,
+                                                message: "Please select",
+                                            },
+                                        ]}
+                                    >
+                                        <DatePicker
+                                            style={{ width: "100%" }}
+                                            showTime={{ format: "hh:mm A" }}
+                                            format="dddd , DD-MM-YYYY , hh:mm A"
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={22} hidden={!blockChecked}>
+                                    <Form.Item
+                                        name="BlockReason"
+                                        label="Reason For Block"
+                                        rules={[
+                                            {
+                                                required: blockChecked,
+                                                message: "Please select Reason",
+                                            },
+                                        ]}
+                                    >
+                                        <Select style={{ width: "100%" }} placeholder='Select Reason'>
+                                            {(Dropdown.ReasonForBlock || []).map((option) => (
+                                                <Select.Option
+                                                    key={option.LookupID}
+                                                    value={option.LookupID}
+                                                >
+                                                    {option.LookupDescription}
+                                                </Select.Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </Form>
+                    </Col>
+                </Row>
+            </>,
         }
     ]
 
@@ -135,7 +347,7 @@ function DischargeModal({ bed, patient, Dropdown, open, handleClose }) {
                         style={{ marginTop: "1rem", width: '100%' }}
                         layout="vertical"
                         form={form}
-                        onFinish={onFinish}
+                        onFinish={handleSubmit}
                     >
                         <div style={{ marginTop: "1.5rem" }} >
                             <Tabs
@@ -162,265 +374,6 @@ function DischargeModal({ bed, patient, Dropdown, open, handleClose }) {
                             </Col>
                         </Row>
                     </Form>
-
-                    {/* <Col span={16}>
-                        <Form
-                            style={{ marginTop: "1rem" }}
-                            layout="vertical"
-                            form={form}
-                            onFinish={onFinish}
-                            initialValues={{
-                                DateTimeTransfer: dayjs(),
-                                BlockTill: dayjs()
-                            }}
-                        >
-                            <Row gutter={16}>
-                                <Col span={12}>
-                                    <Form.Item
-                                        style={{ marginBottom: "0.5rem" }}
-                                        name="Department"
-                                        label="Department"
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: "Please select Reason",
-                                            },
-                                        ]}
-                                        initialValue={Dropdown.PatientsCurrentDetails.DepartmentId}
-                                    >
-                                        <Select style={{ width: "100%" }} defaultValue={Dropdown.PatientsCurrentDetails.DepartmentId}>
-                                            {Dropdown.FacilityDepartment.map((option) => (
-                                                <Select.Option key={option.FacilityDepartmentId} value={option.FacilityDepartmentId}>
-                                                    {option.DepartmentName}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={12}>
-                                    <Form.Item hidden
-                                        name="PatientId"
-                                        initialValue={Dropdown.PatientsCurrentDetails.PatientID}
-                                    >
-                                        <Input />
-                                    </Form.Item>
-                                    <Form.Item hidden
-                                        name="EncounterId"
-                                        initialValue={Dropdown.PatientsCurrentDetails.EncounterId}
-                                    >
-                                        <Input />
-                                    </Form.Item>
-                                    <Form.Item
-                                        style={{ marginBottom: "0.5rem" }}
-                                        name="Provider"
-                                        label="Provider"
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: "Please select Reason",
-                                            },
-                                        ]}
-                                        initialValue={Dropdown.PatientsCurrentDetails.ID}
-                                    >
-                                        <Select disabled style={{ width: "100%" }} defaultValue={Dropdown.PatientsCurrentDetails.ID}>
-                                            <Select.Option key={Dropdown.PatientsCurrentDetails.ID} value={Dropdown.PatientsCurrentDetails.ID}>
-                                                {Dropdown.PatientsCurrentDetails.Provider}
-                                            </Select.Option>
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={12}>
-                                    <Form.Item hidden
-                                        name="FromServiceLocation"
-                                        initialValue={Dropdown.PatientsCurrentDetails.ServiceLocationId}
-                                    >
-                                        <Input />
-                                    </Form.Item>
-                                    <Form.Item
-                                        style={{ marginBottom: "0.5rem" }}
-                                        name="ToServiceLocation"
-                                        label="Service Location"
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: "Please select",
-                                            },
-                                        ]}
-                                        initialValue={Dropdown.PatientsCurrentDetails.ServiceLocationId}
-                                    >
-                                        <Select style={{ width: "100%" }} defaultValue={Dropdown.PatientsCurrentDetails.ServiceLocationId}>
-                                            {Dropdown.FacilityDeptServiceLocation.map((option) => (
-                                                <Select.Option key={option.FacilityDepartmentServiceLocationId} value={option.FacilityDepartmentServiceLocationId}>
-                                                    {option.ServiceLocationName}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={12}>
-                                    <Form.Item hidden
-                                        name="FromWardCategory"
-                                        initialValue={Dropdown.PatientsCurrentDetails.WardCategoryID}
-                                    >
-                                        <Input />
-                                    </Form.Item>
-                                    <Form.Item
-                                        style={{ marginBottom: "0.5rem" }}
-                                        name="ToWardCategory"
-                                        label="Ward Category"
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: "Please select Reason",
-                                            },
-                                        ]}
-                                        initialValue={Dropdown.PatientsCurrentDetails.WardCategoryID}
-                                    >
-                                        <Select style={{ width: "100%" }} defaultValue={Dropdown.PatientsCurrentDetails.WardCategory}>
-                                            {Dropdown.WardCategory.map((option) => (
-                                                <Select.Option key={option.LookupID} value={option.LookupID}>
-                                                    {option.LookupDescription}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={12}>
-                                    <Form.Item hidden
-                                        name="FromWard"
-                                        initialValue={Dropdown.PatientsCurrentDetails.WardID}
-                                    >
-                                        <Input />
-                                    </Form.Item>
-                                    <Form.Item
-                                        style={{ marginBottom: "0.5rem" }}
-                                        name="ToWard"
-                                        label="Ward"
-                                        // initialValue={Dropdown.PatientsCurrentDetails.Ward}
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: "Please select",
-                                            },
-                                        ]}
-                                    >
-                                        <Select style={{ width: "100%" }}>
-                                            {Dropdown.Wards
-                                                .filter(option => option.WardID === Dropdown.PatientsCurrentDetails.WardID)
-                                                .map(option => (
-                                                    <Select.Option key={option.WardID} value={option.WardID}>
-                                                        {option.WardName}
-                                                    </Select.Option>
-                                                ))}
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={12}>
-                                    <Form.Item hidden
-                                        name="FromBed"
-                                        initialValue={Dropdown.PatientsCurrentDetails.BedID}
-                                    >
-                                        <Input />
-                                    </Form.Item>
-                                    <Form.Item
-                                        style={{ marginBottom: "0.5rem" }}
-                                        name="ToBed"
-                                        label="Bed"
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: "Please select",
-                                            },
-                                        ]}
-                                    >
-                                        <Select style={{ width: "100%" }}>
-                                            {(beds || [])
-                                                .map(option => (
-                                                    <Select.Option key={option.BedID} value={option.BedID}>
-                                                        {option.BedNo} */}
-                    {/* {setBedNumber(option.BedNo)} */}
-                    {/* </Select.Option>
-                                                ))}
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={24}>
-                                    <Form.Item
-                                        style={{ marginBottom: "0.5rem" }}
-                                        name="DateTimeTransfer"
-                                        label="Date and Time of Transfer"
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: "Please Enter Lookup Description",
-                                            },
-                                        ]}
-                                    >
-                                        <DatePicker
-                                            style={{ width: "100%" }}
-                                            showTime={{ format: "hh:mm A" }}
-                                            format="dddd , DD-MM-YYYY , hh:mm A"
-                                        />
-                                    </Form.Item>
-                                </Col>
-                                <Col span={24}>
-                                    <Form.Item name="Reason" label="Reason for Transfer"
-                                        rules={[
-                                            {
-                                                required: true,
-                                                message: "Please select",
-                                            },
-                                        ]}
-                                    >
-                                        <Select style={{ width: "100%" }} >
-                                            {Dropdown.ReasonForTransfer.map((option) => (
-                                                <Select.Option key={option.LookupID} value={option.LookupID}>
-                                                    {option.LookupDescription}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={24}>
-                                    <Form.Item name="Block" valuePropName='checked'>
-                                        <Checkbox onChange={Block}>Submit</Checkbox>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={24} hidden={!blockChecked}>
-                                    <Form.Item name="BlockTill" label="Block Till"
-                                        rules={[
-                                            {
-                                                required: blockChecked,
-                                                message: "Please select",
-                                            },
-                                        ]}
-                                    >
-                                        <DatePicker
-                                            style={{ width: "100%" }}
-                                            showTime={{ format: "hh:mm A" }}
-                                            format="dddd , DD-MM-YYYY , hh:mm A"
-                                        />
-                                    </Form.Item>
-                                </Col> */}
-                    {/* </Row>
-                            <Row gutter={32} style={{ height: "1.8rem" }}>
-                                <Col offset={17} span={3}>
-                                    <Form.Item>
-                                        <Button type="primary" htmlType="submit">
-                                            Submit
-                                        </Button>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={3}>
-                                    <Form.Item>
-                                        <Button type="default" danger onClick={handleCancel}>
-                                            Cancel
-                                        </Button>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                        </Form> */}
-                    {/* </Col> */}
                 </Row>
             </Modal>
         </div>

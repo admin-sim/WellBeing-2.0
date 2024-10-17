@@ -14,7 +14,7 @@ function FamilyHistory(Patient) {
   const showModal = async () => {
     try {
       const response = await customAxios.get(
-        `${urlGetFamilyBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.EncounterId}&Range=${dayjs()}`
+        `${urlGetFamilyBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&Range=${dayjs()}`
       );
       if (response.status === 200 && response.data.data != null) {
         const detailsheader = response.data.data.FamilyHistoryList;
@@ -64,7 +64,7 @@ function FamilyHistory(Patient) {
         params: {
           Id: record.HeaderId,
           PatientId: Patient.Patient.PatientId,
-          EncounterId: Patient.Patient.EncounterId
+          EncounterId: Patient.Patient.Encounter
         }
       });
       if (response.status === 200 && response.data.data != null) {
@@ -98,7 +98,7 @@ function FamilyHistory(Patient) {
                 Description: value.FamilyHistory,
                 HeaderId: value.FHID ? value.FHID : 0,
                 PatientId: Patient.Patient.PatientId,
-                EncounterId: Patient.Patient.EncounterId,
+                EncounterId: Patient.Patient.Encounter,
               }
               try {
                 const response = await customAxios.post(urlSaveFamily, family, {

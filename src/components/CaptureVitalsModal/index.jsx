@@ -11,14 +11,14 @@ import {
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { MdAirlineSeatReclineNormal } from "react-icons/md";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaBed, FaRegClock } from "react-icons/fa";
 import { BsPersonStanding } from "react-icons/bs";
 import TextArea from "antd/es/input/TextArea";
 import { ColWithSixSpan, ColWithThreeSpan } from "../customGridColumns";
 import { IoCalendarOutline } from "react-icons/io5";
 
-function CaptureVitalsModal({ open, close, onSubmit }) {
+function CaptureVitalsModal({ open, close, onSubmit, onSet }) {
   const [form] = useForm();
   const currentDate = new Date();
   const currentTimeString = currentDate.toLocaleString("en-US", {
@@ -31,6 +31,36 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
     second: "numeric",
     hour12: true,
   });
+
+  useEffect(() => {
+    debugger
+    if (onSet != null) {
+      form.setFieldsValue({
+        Height: onSet.height,
+        Feet: 0,
+        Inch: 0,
+        Weight: onSet.Weight,
+        BodyMassIndex: onSet.BodyMassIndex,
+        HeadCircumference: onSet.HeadCircumference,
+        Temperature: onSet.Temperature,
+        HeartRate: onSet.HeartRate,
+        SystolicBP: onSet.SystolicBP,
+        DiastolicBP: onSet.DiastolicBP,
+        MeanAtrialPressure: onSet.MeanAtrialPressure,
+        position: onSet.Position,
+        RespiratoryRate: onSet.RespiratoryRate,
+        OxygenSaturation: onSet.Oxygensaturation,
+        oedema: onSet.Oedema,
+        pallor: onSet.Pallor,
+        otherComments: onSet.OtherComments,
+        PatientVitalId: onSet.PatientVitalId
+      });
+      onHeightChange({ target: { value: onSet.height } });
+      onWeightChange({ target: { value: onSet.Weight } });
+      onDiastolicBPChange({ target: { value: onSet.DiastolicBP } });
+      onSystolicBPChange({ target: { value: onSet.SystolicBP } });
+    }
+  }, [onSet])
 
   const [MAPValues, setMAPValues] = useState({
     SystolicBP: "",
@@ -170,7 +200,7 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
             type="primary"
             onClick={() => form.submit()}
           >
-            Save
+            {form.getFieldValue('PatientVitalId') ? 'Update' : 'Save'}
           </Button>,
           <Button danger size="middle" onClick={handleCancel}>
             Cancel
@@ -220,6 +250,9 @@ function CaptureVitalsModal({ open, close, onSubmit }) {
                   ]}
                 >
                   <Input addonAfter="cm" onChange={onHeightChange} />
+                </Form.Item>
+                <Form.Item hidden name="PatientVitalId">
+                  <Input />
                 </Form.Item>
               </ColWithSixSpan>
               <ColWithThreeSpan>

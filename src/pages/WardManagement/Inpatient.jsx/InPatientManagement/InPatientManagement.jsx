@@ -110,7 +110,13 @@ function InPatientManagement() {
   );
 
   const ReLoad = (value) => {
-    handleMenuClick(value);
+    if (value == 'Start') {
+      setTableLoading(true)
+    } else if (value == 'End') {
+      setTableLoading(false)
+    } else {
+      handleMenuClick(value);
+    }
   };
 
   const renderAwaitingPatients = () => (
@@ -153,9 +159,9 @@ function InPatientManagement() {
   const groupedBeds = groupBedsByWard();
   const firstWardKey = Object.keys(groupedBeds)[0];
 
-  const IncomingTransfer = () => {};
+  const IncomingTransfer = () => { };
 
-  const OutgoingTransfer = () => {};
+  const OutgoingTransfer = () => { };
 
   return (
     <>
@@ -351,7 +357,7 @@ function InPatientManagement() {
             </Col>
             <Col
               style={{
-                backgroundColor: "#CADABF",
+                backgroundColor: "#7C93C3",
                 flexGrow: 1,
                 padding: "0.2rem",
               }}

@@ -22,24 +22,59 @@ import { FcDocument, FcInfo, FcOpenedFolder } from "react-icons/fc";
 import { DollarTwoTone, FolderOpenTwoTone } from "@ant-design/icons";
 import PatientHeader from "../../../../components/PatientHeader";
 import customAxios from '../../../../components/customAxios/customAxios.jsx'
-import { urlGetBeds, urlSaveModal, urlGetServiceLocation } from "../../../../../endpoints.js";
+import { urlSaveDischargeInitiation } from "../../../../../endpoints.js";
 import dayjs from "dayjs";
 
 
 function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClose }) {
   const [form] = Form.useForm();
-  const [beds, setBeds] = useState([])
-  const [bedNumber, setBedNumber] = useState()
-  const [blockChecked, setBlockChecked] = useState(false)
   const handleCancel = () => {
     form.resetFields();
     handleClose();
   };
+  const [isDeceased, setIsDeceased] = useState(true)
 
   const onFinish = async (values) => {
     debugger
+    const Amend = {
+      Department: (Dropdown.PatientsCurrentDetails || {}).DepartmentId,
+      LocationId: bed.ServiceLocationId,
+      BedID: bed.BedID,
+      PatientID: values.PatientId,
+      DischargeAdvisedBy: values.FacilityDepartmentProvider,
+      dateExpected: values.ExpectedDateTimeofDischarge.format('DD-MM-YYYY'),
+      timeExpected: values.ExpectedDateTimeofDischarge.format('HH:mm:ss'),
+      DispositionTypeId: values.DispositionType,
+      dateAdvised: values.AdvisedDateTime.format('DD-MM-YYYY'),
+      timeAdvised: values.AdvisedDateTime.format('HH:mm:ss'),
+      dateDeceased: values.DateDeceased.format('DD-MM-YYYY'),
+      timeDeceased: values.DateDeceased.format('HH:mm:ss'),
+      DischargeStatus: 'Initiated',
+      EncounterId: values.EncounterId,
+      AmendReason: values.Reason,
+      WardCategoryID: (Dropdown.PatientsCurrentDetails || {}).WardCategoryID
+    }
+    try {
+      const response = await customAxios.get(
+        `${urlSaveDischargeInitiation}?Department=${Amend.Department}&LocationId=${Amend.LocationId}&BedID=${Amend.BedID}&PatientID=${Amend.PatientID}&DischargeAdvisedBy=${Amend.DischargeAdvisedBy}&dateExpected=${Amend.dateExpected}&timeExpected=${Amend.timeExpected}&DispositionTypeId=${Amend.DispositionTypeId}
+        &dateAdvised=${Amend.dateAdvised}&timeAdvised=${Amend.timeAdvised}&dateDeceased=${Amend.dateDeceased}&timeDeceased=${Amend.timeDeceased}&DischargeStatus=${Amend.DischargeStatus}&EncounterId=${Amend.EncounterId}&AmendReason=${Amend.AmendReason}&WardCategoryID=${Amend.WardCategoryID}`
+      );
+      if (response.status === 200 && response.data === 'Success') {
+        message.success(response.data)
+        handleCancel()
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
 
-    handleCancel();
+  const handleDiseaseDate = (value) => {
+    debugger
+    if (value == 9070) {
+      setIsDeceased(false)
+    } else {
+      setIsDeceased(true)
+    }
   }
 
   return (
@@ -82,7 +117,6 @@ function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClo
                     <b>{Dropdown.PatientsCurrentDetails.DepartmentName}</b>
                   </Col>
                 </Col>
-
                 <Col span={12}>
                   <Col span={24}>Service Location</Col>
                   <Col span={24}>
@@ -97,7 +131,6 @@ function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClo
                     <b>{Dropdown.PatientsCurrentDetails.Provider}</b>
                   </Col>
                 </Col>
-
                 <Col span={12}>
                   <Col span={24}>Ward Category</Col>
                   <Col span={24}>
@@ -112,7 +145,6 @@ function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClo
                     <b>{Dropdown.PatientsCurrentDetails.Ward}</b>
                   </Col>
                 </Col>
-
                 <Col span={12}>
                   <Col span={24}>Bed</Col>
                   <Col span={24}>
@@ -128,6 +160,11 @@ function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClo
               layout="vertical"
               form={form}
               onFinish={onFinish}
+              initialValues={{
+                AdvisedDateTime: dayjs(),
+                ExpectedDateTimeofDischarge: dayjs(),
+                DateDeceased: dayjs()
+              }}
             >
               <Row gutter={16}>
                 <Col span={24}>
@@ -167,7 +204,7 @@ function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClo
                   </Form.Item>
                   <Form.Item
                     style={{ marginBottom: "0.5rem" }}
-                    name="AdvisedDate&Time"
+                    name="AdvisedDateTime"
                     label="Advised Date&Time"
                     rules={[
                       {
@@ -175,19 +212,19 @@ function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClo
                         message: "Please select Reason",
                       },
                     ]}
-                    // initialValue={Dropdown.DischargeDetails.AdvisedDateTime}
+                  // initialValue={Dropdown.DischargeDetails.AdvisedDateTime}
                   >
                     <DatePicker
                       style={{ width: "100%" }}
                       showTime={{ format: "hh:mm A" }}
-                      format="dddd , DD-MM-YYYY , hh:mm A"
+                      format="DD-MM-YYYY , hh:mm A"
                     />
                   </Form.Item>
                 </Col>
                 <Col span={24}>
                   <Form.Item
                     style={{ marginBottom: "0.5rem" }}
-                    name="ExpectedDate&TimeofDischarge"
+                    name="ExpectedDateTimeofDischarge"
                     label="Expected Date & Time of Discharge"
                     rules={[
                       {
@@ -195,12 +232,11 @@ function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClo
                         message: "Please select",
                       },
                     ]}
-                    // initialValue={Dropdown.DischargeDetails.ExpectedDischargeDate}
                   >
                     <DatePicker
                       style={{ width: "100%" }}
                       showTime={{ format: "hh:mm A" }}
-                      format="dddd , DD-MM-YYYY , hh:mm A"
+                      format="DD-MM-YYYY , hh:mm A"
                     />
                   </Form.Item>
                 </Col>
@@ -212,17 +248,35 @@ function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClo
                     rules={[
                       {
                         required: true,
-                        message: "Please select Reason",
+                        message: "Please select Disposition",
                       },
                     ]}
                   >
-                    <Select style={{ width: "100%" }}>
+                    <Select style={{ width: "100%" }} onChange={handleDiseaseDate} placeholder='Select Disposition'>
                       {Dropdown.DispositionType.map((option) => (
                         <Select.Option key={option.LookupID} value={option.LookupID}>
                           {option.LookupDescription}
                         </Select.Option>
                       ))}
                     </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={24} hidden={isDeceased}>
+                  <Form.Item
+                    name="DateDeceased"
+                    label="Deceased Date & Time"
+                    rules={[
+                      {
+                        required: !isDeceased,
+                        message: "Please select",
+                      },
+                    ]}
+                  >
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      showTime={{ format: "hh:mm A" }}
+                      format="DD-MM-YYYY , hh:mm A"
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={24}>
@@ -237,7 +291,7 @@ function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClo
                       },
                     ]}
                   >
-                    <Select style={{ width: "100%" }}>
+                    <Select style={{ width: "100%" }} placeholder='Select Reason'>
                       {(Dropdown.ReasonForAmend || []).map(option => (
                         <Select.Option key={option.LookupID} value={option.LookupID}>
                           {option.LookupDescription}

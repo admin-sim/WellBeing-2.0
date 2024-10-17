@@ -8,6 +8,7 @@ import {
   Modal,
   Row,
   Select,
+  Spin,
   Table,
   Tabs,
   AutoComplete,
@@ -41,17 +42,19 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
   const [defaultActiveKey, setDefaultActiveKey] = useState("1");
   const [buttonTitle, setButtonTitle] = useState("Save");
   const [tabName, setTabName] = useState("New");
+  const [loading, setLoading] = useState(false)
 
   const initial = [
     {
       key: uuidv4(),
-      Drug: "",
+      DrugId: "",
       Route: "",
       Frequency: "",
       IntervalInDays: "",
       TotalQty: "",
       Instruction: "",
       ActiveFlag: true,
+      PrescriptionStatus: true
     },
   ];
 
@@ -72,22 +75,26 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     handleClose();
   };
 
-  const onChange = (key) => {
+  const onTabChange = (key) => {
+    setDefaultActiveKey(key)
     console.log(key);
   };
 
-  const handleAddRow = () => {
+  const handleAddRow = async () => {
+    setProductOptions([])
+    await form3.validateFields()
     setTableData1([
       ...tableData1,
       {
         key: uuidv4(),
-        Drug: "",
+        DrugId: "",
         Route: "",
         Frequency: "",
         IntervalInDays: "",
         TotalQty: "",
         Instruction: "",
         ActiveFlag: true,
+        PrescriptionStatus: true
       },
     ]);
   };
@@ -96,7 +103,7 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     debugger;
     const newData = tableData1.map((item) => {
       if (item.key === record.key) {
-        return { ...item, ActiveFlag: false };
+        return { ...item, PrescriptionStatus: false };
       }
       return item;
     });
@@ -104,19 +111,22 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
   };
 
   const handleSearch = async (searchText) => {
-    debugger;
+    debugger
     if (searchText) {
       const response = await customAxios.get(
         `${urlGetAllDrugs}?Type=${searchText}`
       );
       const apiData = response.data.data;
-      const newdata = apiData.map((item) => {
-        return {
-          label: item.ProductName + " (Stock)" + item.CurrentStock,
+      const newdata = apiData
+        .filter((item) =>
+          tableData1.every((item1) => item1.DrugId !== item.ProductId && item1.PrescriptionStatus == true)
+        )
+        .map((item) => ({
+          label: `${item.ProductName} (Stock: ${item.CurrentStock})`,
           value: item.ProductName,
           id: item.ProductId,
-        };
-      });
+        }));
+
       setProductOptions(newdata);
     }
   };
@@ -126,30 +136,16 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
   };
 
   const handleInputChange = async (value, record, option) => {
-    const response = await customAxios.get(
-      `${urlGetProductDetails}?ProductId=${option.id}`
-    );
+    debugger
+    const response = await customAxios.get(`${urlGetProductDetails}?ProductId=${option.id}`);
     const apiData = response.data.data;
     if (response.status === 200 && apiData != null) {
-      form3.setFieldsValue({
-        tableData: {
-          [record.key]: {
-            ProductId: apiData.ProductDefinitionId,
-          },
-        },
-      });
-      form3.setFieldsValue({
-        tableData: {
-          [record.key]: {
-            UomId: apiData.UOMPrimaryUOM,
-          },
-        },
-      });
+      form3.setFieldsValue({ [record.key]: { DrugId: apiData.ProductDefinitionId } })
+      form3.setFieldsValue({ [record.key]: { UomId: apiData.UOMPrimaryUOM } })
     }
   };
 
   const getInstruction = (value) => {
-    debugger;
     switch (value) {
       case 5:
         return { text: "Afternoon", round: 1 };
@@ -165,88 +161,39 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
   };
 
   const SelectFrequency = (value, option, record) => {
-    debugger;
     const total = 0;
-    const interval = form3.getFieldValue([
-      "tableData",
-      record.key,
-      "IntervalInDays",
-    ]);
+    const interval = form3.getFieldValue([record.key, "IntervalInDays"]);
     if (value) {
-      form3.setFieldsValue({
-        tableData: {
-          [record.key]: {
-            Instruction: getInstruction(value).text,
-          },
-        },
-      });
+      form3.setFieldsValue({ [record.key]: { Instruction: getInstruction(value).text } });
       if (interval) {
-        form3.setFieldsValue({
-          tableData: {
-            [record.key]: {
-              TotalQty: getInstruction(value).round * parseInt(interval),
-            },
-          },
-        });
+        form3.setFieldsValue({ [record.key]: { TotalQty: getInstruction(value).round * parseInt(interval) } });
       } else {
-        form3.setFieldsValue({
-          tableData: {
-            [record.key]: {
-              TotalQty: total,
-            },
-          },
-        });
+        form3.setFieldsValue({ [record.key]: { TotalQty: total } });
       }
     } else {
-      form3.setFieldsValue({
-        tableData: {
-          [record.key]: {
-            Instruction: "",
-          },
-        },
-      });
-      form3.setFieldsValue({
-        tableData: {
-          [record.key]: {
-            TotalQty: 1,
-          },
-        },
-      });
+      form3.setFieldsValue({ [record.key]: { Instruction: "" } });
+      form3.setFieldsValue({ [record.key]: { TotalQty: 0 } });
     }
   };
 
   const Interval = (value, record) => {
-    debugger;
     const form3data = form3.getFieldsValue();
-    const specific = form3data.tableData?.[record.key];
-    form3.setFieldsValue({
-      tableData: {
-        [record.key]: {
-          TotalQty: getInstruction(specific.Frequency).round * parseInt(value),
-        },
-      },
-    });
+    const specific = form3data[record.key].Frequency;
+    form3.setFieldsValue({ [record.key]: { TotalQty: getInstruction(specific).round * (value ? parseInt(value) : 1) } });
   };
-  console.log("form3", form3.getFieldsValue().tableData);
+
   const columns = [
     {
       title: "Drug",
       dataIndex: "Drug",
-
       render: (text, record) => (
         <>
           <Form.Item
-            name={["tableData", record.key, "Drug"]}
+            name={[record.key, "Drug"]}
             style={{ marginBottom: 0 }}
             rules={[{ required: true, message: "Please input drug!" }]}
             initialValue={record.DrugName}
           >
-            {/* <Input
-            value={text}
-            onChange={(e) =>
-              handleInputChange(e.target.value, record.key, "Drug")
-            }
-          /> */}
             <AutoComplete
               disabled={!!record.PrescriptionLineId}
               options={productOptions}
@@ -258,28 +205,28 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
           </Form.Item>
           <Form.Item
             hidden
-            name={["tableData", record.key, "ProductId"]}
-            initialValue={record.ProductId}
+            name={[record.key, "DrugId"]}
+            initialValue={record.DrugId}
           >
             <Input />
           </Form.Item>
           <Form.Item
             hidden
-            name={["tableData", record.key, "UomId"]}
+            name={[record.key, "UomId"]}
             initialValue={record.UomId}
           >
             <Input />
           </Form.Item>
           <Form.Item
             hidden
-            name={["tableData", record.key, "PrescriptionLineId"]}
+            name={[record.key, "PrescriptionLineId"]}
             initialValue={record.PrescriptionLineId}
           >
             <Input />
           </Form.Item>
           <Form.Item
             hidden
-            name={["tableData", record.key, "IndentLineId"]}
+            name={[record.key, "IndentLineId"]}
             initialValue={record.IndentLineId}
           >
             <Input />
@@ -290,10 +237,9 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     {
       title: "Route",
       dataIndex: "Route",
-
       render: (text, record) => (
         <Form.Item
-          name={["tableData", record.key, "Route"]}
+          name={[record.key, "Route"]}
           style={{ marginBottom: 0 }}
           rules={[{ required: true, message: "Please select route!" }]}
           initialValue={record.Route}
@@ -311,10 +257,9 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     {
       title: "Frequency",
       dataIndex: "Frequency",
-
       render: (text, record) => (
         <Form.Item
-          name={["tableData", record.key, "Frequency"]}
+          name={[record.key, "Frequency"]}
           style={{ marginBottom: 0 }}
           rules={[{ required: true, message: "Please input frequency!" }]}
           initialValue={record.FrequencyId}
@@ -339,15 +284,11 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     {
       title: "IntervalInDays",
       dataIndex: "IntervalInDays",
-
       render: (text, record) => (
         <Form.Item
-          name={["tableData", record.key, "IntervalInDays"]}
+          name={[record.key, "IntervalInDays"]}
           style={{ marginBottom: 0 }}
           initialValue={record.Interval}
-          // rules={[
-          //   { required: true, message: "Please input interval in days!" },
-          // ]}
         >
           <Input
             value={text}
@@ -359,19 +300,17 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     {
       title: "TotalQty",
       dataIndex: "TotalQty",
-
       render: (text, record) => (
         <Form.Item
-          name={["tableData", record.key, "TotalQty"]}
+          name={[record.key, "TotalQty"]}
           style={{ marginBottom: 0 }}
           initialValue={record.TotalQty}
-          // rules={[{ required: true, message: "Please input total quantity!" }]}
         >
           <Input
             value={text}
-            onChange={(e) =>
-              handleInputChange(e.target.value, record.key, "TotalQty")
-            }
+          // onChange={(e) =>
+          //   handleInputChange(e.target.value, record.key, "TotalQty")
+          // }
           />
         </Form.Item>
       ),
@@ -379,20 +318,13 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     {
       title: "Instruction",
       dataIndex: "Instruction",
-
       render: (text, record) => (
         <Form.Item
-          name={["tableData", record.key, "Instruction"]}
+          name={[record.key, "Instruction"]}
           style={{ marginBottom: 0 }}
           initialValue={record.Instruction}
-          // rules={[{ required: true, message: "Please input instruction!" }]}
         >
-          <Input
-            value={text}
-            // onChange={(e) =>
-            //   handleInputChange(e.target.value, record.key, "Instruction")
-            // }
-          />
+          <Input value={text} />
         </Form.Item>
       ),
     },
@@ -402,7 +334,6 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
           <PlusCircleOutlined />
         </Button>
       ),
-
       // render: (_, record) => (
       //   <Button type="link" danger onClick={() => handleDeleteRow(record.key)}>
       //     <DeleteOutlined />
@@ -421,8 +352,8 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
   ];
 
   const EditTab = () => {
-    debugger;
-    setDefaultActiveKey("1");
+    onTabChange('1')
+    // setDefaultActiveKey("1");
     setButtonTitle("Update");
     setTabName("Edit");
   };
@@ -439,13 +370,8 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     const apiData = response.data.data;
     if (response.status === 200 && apiData !== null) {
       const newData = apiData.PrescriptionModel.map((item, index) => {
-        form3.setFieldsValue({
-          tableData: {
-            [0]: {
-              IndentId: item.IndentId,
-            },
-          },
-        });
+        form1.setFieldsValue({ PriscptionHedderId: item.PriscptionHedderId })
+        form1.setFieldsValue({ IndentId: item.IndentId });
         return {
           ...item,
           key: uuidv4(),
@@ -461,12 +387,11 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
   const columns2 = [
     {
       title: "Sl. No.",
-      dataIndex: "key",
+      dataIndex: "index",
     },
     {
       title: "Order Id",
       dataIndex: "PrescriptionId",
-
       render: (text, record, index) => {
         if (record.IndentStatus === "Pending") {
           return (
@@ -489,7 +414,7 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     },
     {
       title: "Order Date",
-      dataIndex: "PresDate",
+      dataIndex: "PresDateString",
     },
     {
       title: "Encounter",
@@ -527,10 +452,11 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
       >
         <PatientHeader patient={patient} />
         <Tabs
-          defaultActiveKey={defaultActiveKey}
+          defaultActiveKey="1"
           size="small"
-          onChange={onChange}
+          onChange={onTabChange}
           tabBarGutter={0}
+          activeKey={defaultActiveKey}
           type="card"
           style={{ marginTop: "1rem" }}
           tabBarStyle={{ display: "flex" }}
@@ -552,69 +478,89 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
             <Form
               layout="vertical"
               form={form1}
-              // onFinish={handlePreFinish}
               onFinish={async (values) => {
-                debugger;
+                debugger
                 const Drugss = [];
                 await form3.validateFields();
                 const obj = {
                   IssueingStoreId: values.Store,
-                  IndentDatestring: values.IndentDate
-                    ? values.IndentDate.format("DD-MM-YYYY")
-                    : "",
-                  // Remarks: $("#Remarks").val(),
+                  IndentDatestring: values.IndentDate ? values.IndentDate.format("DD-MM-YYYY") : "",
                   FacilityId: 1,
                   IndentTemplateId: 0,
-                  // IndentType: $("#IndentType").val(),
                   PatientId: values.PatientId,
                   EncounterId: values.EncounterId,
                   IndentCategory: "PatientIndent",
                   IndentStatus: "Pending",
+                  PriscptionHedderId: values.PriscptionHedderId,
+                  IndentId: values.IndentId
                 };
-                const form2data = form3.getFieldsValue().tableData;
-                for (let i = 0; i < form2data.length; i++) {
-                  const Drug = {
-                    DrugId: form2data[i].ProductId,
-                    UomId: form2data[i].UomId,
-                    Dose: form2data[i].Dose ? form2data[i].Dose : 0,
-                    Route: form2data[i].Route.toString(),
-                    FrequencyId: form2data[i].Frequency,
-                    Interval: parseInt(form2data[i].IntervalInDays),
-                    Instruction: form2data[i].Instruction,
-                    EncounterID: values.EncounterId,
-                    PatientId: values.PatientId,
-                    Stock: form2data[i].Stock,
-                    TotalQty: form2data[i].TotalQty,
-                    FoodRelation: form2data[i].FoodRelation
-                      ? form2data[i].FoodRelation
-                      : 0,
-                    ProductId: form2data[i].ProductId,
-                    RequestQty: form2data[i].TotalQty,
-                    PrescriptionLineId: form2data[i].PrescriptionLineId,
-                  };
-                  Drugss.push(Drug);
+                const form2data = form3.getFieldsValue();
+                for (let i = 0; i < tableData1.length; i++) {
+                  const item = form2data[tableData1[i].key]
+                  const Products = tableData1.filter(item => item.PrescriptionStatus == true)
+                  if (Products.length == 0) {
+                    message.warning('Please Add Drug');
+                    return false;
+                  }
+                  if (item && tableData1[i].PrescriptionLineId == (form2data[tableData1[i].key] || {}).PrescriptionLineId) {
+                    const Drug = {
+                      DrugId: item.DrugId,
+                      UomId: item.UomId,
+                      Dose: item.Dose ? item.Dose : 0,
+                      Route: item.Route.toString(),
+                      FrequencyId: item.Frequency,
+                      Interval: parseInt(item.IntervalInDays),
+                      Instruction: item.Instruction,
+                      EncounterID: values.EncounterId,
+                      PatientId: values.PatientId,
+                      Stock: item.Stock,
+                      TotalQty: item.TotalQty,
+                      FoodRelation: item.FoodRelation ? item.FoodRelation : 0,
+                      ProductId: item.DrugId,
+                      RequestQty: item.TotalQty,
+                      PrescriptionLineId: item.PrescriptionLineId,
+                      IndentLineId: item.IndentLineId,
+                      PrescriptionStatus: true,
+                      ActiveFlag: true,
+                      // Favourite: 'N'
+                    };
+                    Drugss.push(Drug);
+                  } else {
+                    const Drug = {
+                      DrugId: tableData1[i].DrugId,
+                      UomId: tableData1[i].UomId,
+                      Dose: tableData1[i].Dose ? tableData1[i].Dose : 0,
+                      Route: tableData1[i].Route.toString(),
+                      FrequencyId: tableData1[i].FrequencyId,
+                      Interval: parseInt(tableData1[i].Interval),
+                      Instruction: tableData1[i].Instruction,
+                      EncounterID: values.EncounterId,
+                      PatientId: values.PatientId,
+                      // Stock: tableData1[i].Stock,
+                      TotalQty: tableData1[i].TotalQty,
+                      FoodRelation: tableData1[i].FoodRelation ? tableData1[i].FoodRelation : 0,
+                      ProductId: tableData1[i].DrugId,
+                      RequestQty: tableData1[i].TotalQty,
+                      PrescriptionLineId: tableData1[i].PrescriptionLineId,
+                      IndentLineId: tableData1[i].IndentLineId,
+                      PrescriptionStatus: false,
+                      ActiveFlag: false,
+                    }
+                    Drugss.push(Drug);
+                  }
                 }
                 const IndentViewModel = {
                   newIndentModel: obj,
                   IndentDetails: Drugss
                 }
-                const urlIndent = !!form2data[0].PrescriptionLineId ? urlUpdateIndent : urlAddNewPatientIndent
-                const urlPres = !!form2data[0].PrescriptionLineId ? urlUpdateRequest : urlAddNewNewRequest
-                const response = await customAxios.post(urlIndent, IndentViewModel, {
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                });
-                if (response.status === 200 && response.data.data != null) {
-                  const Prescription = Drugss.map((item) => {
-                    return {
-                      ...item,
-                      IndentId: response.data.data.IndentId,
-                      IndentNumber: response.data.data.IndentNumber,
-                      Stock: item.Stock ? item.Stock : 0
-                    }
-                  })
-                  const response1 = await customAxios.post(urlPres, Prescription, {
+                const urlIndent = !!obj.PriscptionHedderId ? urlUpdateIndent : urlAddNewPatientIndent
+                const urlPres = !!obj.PriscptionHedderId ? urlUpdateRequest : urlAddNewNewRequest
+                if (Dropdown.LastEncounter != null && Dropdown.LastEncounter.PatientType == 22) {
+                  const PrescriptionViewModel = {
+                    PrescriptionModel: obj,
+                    PrescriptionDetails: Prescription
+                  }
+                  const response1 = await customAxios.post(urlPres, PrescriptionViewModel, {
                     headers: {
                       "Content-Type": "application/json",
                     },
@@ -622,7 +568,68 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                   if (response1.status === 200 && response1.data === 'Success') {
                     message.success('Success')
                     form3.resetFields()
+                    setTableData1(initial);
+                    setTabName("New");
+                    setButtonTitle('Save')
                     // handleCancel()
+                  }
+                } else {
+                  const response = await customAxios.post(urlIndent, IndentViewModel, {
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                  });
+                  if (response.status === 200) {
+                    let Prescription = {}
+                    if (urlIndent == urlUpdateIndent) {
+                      Prescription = Drugss.map((item) => {
+                        return {
+                          ...item,
+                          IndentNumber: '',
+                          Stock: item.Stock ? item.Stock : 0,
+                          PrescriptionLineId: item.PrescriptionLineId,
+                        }
+                      })
+                      const PrescriptionViewModel = {
+                        PrescriptionModel: obj,
+                        PrescriptionDetails: Prescription
+                      }
+                      const response1 = await customAxios.post(urlPres, PrescriptionViewModel, {
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                      });
+                      if (response1.status === 200 && response1.data === 'Success') {
+                        message.success('Updated Success')
+                        form3.resetFields()
+                        setTableData1(initial);
+                        setTabName("New");
+                        setButtonTitle('Save')
+                        // handleCancel()
+                      }
+                    } else {
+                      Prescription = Drugss.map((item) => {
+                        return {
+                          ...item,
+                          IndentId: response.data.data.IndentId,
+                          IndentNumber: response.data.data.IndentNumber,
+                          Stock: item.Stock ? item.Stock : 0
+                        }
+                      })
+                      const response1 = await customAxios.post(urlPres, Prescription, {
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                      });
+                      if (response1.status === 200 && response1.data === 'Success') {
+                        message.success('Success')
+                        form3.resetFields()
+                        setTableData1(initial);
+                        setButtonTitle('Save')
+                        setTabName('New')
+                        // handleCancel()
+                      }
+                    }
                   }
                 }
               }}
@@ -659,6 +666,9 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                     <Input />
                   </Form.Item>
                   <Form.Item name="IndentId" hidden>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name="PriscptionHedderId" hidden>
                     <Input />
                   </Form.Item>
                 </Col>
@@ -713,7 +723,7 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                   <Table
                     columns={columns}
                     dataSource={tableData1.filter(
-                      (item) => item.ActiveFlag !== false
+                      (item) => item.PrescriptionStatus !== false
                     )}
                     pagination={false}
                     bordered
@@ -742,9 +752,9 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
             <Form
               layout="vertical"
               form={form2}
-              // onFinish={handlePreFinish}
               onFinish={async (values) => {
                 debugger;
+                setLoading(true)
                 const Pre = {
                   FromDateString: values.FromDate
                     ? values.FromDate.format("DD-MM-YYYY")
@@ -766,6 +776,7 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                           return {
                             ...item,
                             key: uuidv4(),
+                            index: index + 1
                           };
                         }
                       );
@@ -776,6 +787,8 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                   }
                 } catch (error) {
                   console.error("Error:", error);
+                } finally {
+                  setLoading(false)
                 }
                 // handleCancel();
               }}
@@ -850,20 +863,22 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
               </Row>
               <Divider style={{ marginBottom: "0rem" }} />
             </Form>
-            <CustomTable
-              columns={columns2}
-              dataSource={tableData2}
-              actionColumn={false}
-              isFilter={true}
-              scroll={{
-                //   x: 1500,
-                y: 110,
-              }}
-            />
+            <Spin spinning={loading}>
+              <CustomTable
+                columns={columns2}
+                dataSource={tableData2}
+                actionColumn={false}
+                isFilter={true}
+                scroll={{
+                  //   x: 1500,
+                  y: 110,
+                }}
+              />
+            </Spin>
           </Tabs.TabPane>
         </Tabs>
       </Modal>
-    </div>
+    </div >
   );
 }
 
