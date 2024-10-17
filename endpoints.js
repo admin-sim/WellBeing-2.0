@@ -204,6 +204,7 @@ export const urlEditOrDeletePatientVisit = `${baseURL}/api/Encounter/EditOrCance
 export const urlServiceIndex = `${baseURL}/api/Service/ServiceIndex`;
 export const urlGetAllQueues = `${baseURL}/api/Queue/GetAllQueues`;
 export const urlGetAllProviders = `${baseURL}/api/Queue/GetAllProviders`;
+export const urlGetAllAutocompleteProviders = `${baseURL}/api/Billing/GetAllAutocompleteProviders`;
 export const urlGetMarkArrival = `${baseURL}/api/Queue/MarkArrival`;
 export const urlAssignQueue = `${baseURL}/api/Queue/AssignQueue`;
 export const urlGetPatientVitalSigns = `${baseURL}/api/Queue/PatientVitalDetails`;
@@ -472,6 +473,10 @@ export const urlSaveDischargeClearanceForPatient = `${baseURL}/api/DischargeClea
 export const urlPharmacyCreate = `${baseURL}/api/Pharmacy/Create`;
 export const urlGetProductBatchDetails = `${baseURL}/api/Pharmacy/GetProductBatchDetails`;
 export const urlGetPharmacyServiceCharge = `${baseURL}/api/Pharmacy/GetPharmacyServiceCharge`;
+export const urlAddNewChargePharmacy = `${baseURL}/api/Pharmacy/AddNewCharge`;
+export const urlAddNewBillPharmacy = `${baseURL}/api/Pharmacy/AddNewBill`;
+export const urlSaveChargesForPharmacyTempTable = `${baseURL}/api/Pharmacy/SaveChargesForPharmacyTempTable`;
+export const urlDeletePharmacyBillCharge = `${baseURL}/api/Pharmacy/DeletePharmacyBillCharge`;
 
 
 

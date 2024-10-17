@@ -803,7 +803,7 @@ const CreateBilling = () => {
       FacilityId: 1,
       ActiveFlag: true,
       ServiceQuantity: 1,
-      PatientTypeID: 22,
+      PatientTypeID:patientData.PatientType,
     };
     try {
       const response = await customAxios.post(urlAddNewCharge, Charge, {

@@ -33,18 +33,25 @@ import DiscountModal from "../AccountManagement/Billling/DiscountModal.jsx";
 import InvoiceDiscountModal from "../AccountManagement/Billling/InvoiceDiscountModal.jsx";
 
 import {
+  urlAddNewBillPharmacy,
+  urlAddNewChargePharmacy,
+  urlDeletePharmacyBillCharge,
+  urlGetAllAutocompleteProviders,
+  urlGetAllProviders,
   urlGetPatientHeaderDetails,
   urlGetPharmacyServiceCharge,
   urlGetProductBatchDetails,
   urlGetStoreProductDetails,
   urlPharmacyCreate,
+  urlSaveChargesForPharmacyTempTable,
+  urlSaveChargesForTempTable,
 } from "../../../endpoints.js";
 import Title from "antd/es/typography/Title";
 import { useLocation } from "react-router-dom";
 import PatientHeader from "../../components/PatientHeader/index.jsx";
 import { CiDiscount1 } from "react-icons/ci";
 import dayjs from "dayjs";
-import { debounce } from "lodash";
+import { debounce, min } from "lodash";
 
 const OtcDispense = () => {
   const location = useLocation();
@@ -52,7 +59,7 @@ const OtcDispense = () => {
   const EncounterId = location.state.encounterId;
   const Encounter = location.state.encounter;
   const [services, setServices] = useState(null);
-  const [providers, setProviders] = useState(null);
+
   const [charges, setCharges] = useState([]);
   const [totalInstrumentAmount, setTotalInstrumentAmount] = useState(0);
   const [serviceId, setSelectedServiceId] = useState(null);
@@ -82,7 +89,10 @@ const OtcDispense = () => {
   const [billNumber, setBillNumber] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [options, setOptions] = useState([]);
+  const [providers, setProviders] = useState([]);
+
   const [storeId, setStoreId] = useState([]);
+  const [batchOptions, setBatchOptions] = useState([]);
   console.log("l", location.state);
 
   useEffect(() => {
@@ -209,8 +219,29 @@ const OtcDispense = () => {
       setLoading(false);
     }
   };
+  const fetchProviders = async (searchText) => {
+    debugger;
+    setLoading(true);
+    try {
+      const response = await customAxios.get(
+        `${urlGetAllAutocompleteProviders}?providerName=${searchText}`
+      );
+
+      const newOptions = response.data.ProviderModel.map((item) => ({
+        value: item.ProviderId,
+        label: item.ProviderFirstName,
+      }));
+
+      setProviders(newOptions);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const debouncedFetchProducts = debounce(fetchProducts, 300);
+  const debouncedFetchProvider = debounce(fetchProviders, 300);
 
   const handleSearch = (value) => {
     if (value) {
@@ -222,29 +253,53 @@ const OtcDispense = () => {
 
   const handleChange = async (value, option) => {
     debugger;
-    
+
     if (value) {
       try {
         const batchResponse = await customAxios.get(
           `${urlGetProductBatchDetails}?Product=${value}&StoreId=${storeId}`
         );
-
-        // Process batch data
-        const batchData = batchResponse.data.data;
-        // ... (process batch data as needed)
         const Qty = form.getFieldValue("Qty");
-        // Fetch service price
+        // Process batch data
+        const fetchedBatchData = batchResponse.data.data;
 
-        if (batchData.length > 0) {
+        if (fetchedBatchData.length > 0) {
+          const formattedBatchOptions = fetchedBatchData.map((batch) => ({
+            value: `${batch.BatchNo}/${batch.EXPDateString}/${batch.PendingQty}`, // Combine values
+            label: `${batch.BatchNo}/${batch.EXPDateString}/${batch.PendingQty}`,
+          }));
+
+          setBatchOptions(formattedBatchOptions);
+          form.setFieldsValue({
+            Batch: formattedBatchOptions[0].value,
+            Rate: fetchedBatchData[0].MRP,
+            Amount: fetchedBatchData[0].MRP * Qty,
+            StockId: fetchedBatchData[0].StockId,
+            AvlQty: fetchedBatchData[0].PendingQty,
+          });
+
           const servicePriceResponse = await customAxios.get(
-            `${urlGetPharmacyServiceCharge}?BatchId=${batchData[0].BatchNo}&ExpDate=${batchData[0].EXPDate}&ServiceId=${value}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${Qty}&StockId=${batchData[0].StockId}`
+            `${urlGetPharmacyServiceCharge}?BatchId=${fetchedBatchData[0].BatchNo}&ServiceId=${value}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${Qty}&StockId=${fetchedBatchData[0].StockId}`
           );
 
           // Process service price data
-          const servicePriceData = servicePriceResponse.data;
+          const servicePriceData = servicePriceResponse.data.data.servicePrice;
+          if (servicePriceData) {
+            form.setFieldsValue({
+              PatientAmount: servicePriceData.PatientNetAmount,
+              TaxAmount: servicePriceData.TaxAmount,
+              Provider: servicePriceData.ProviderName,
+            });
+            setSelectedProviderId(servicePriceData.ProviderID);
+          } else {
+          }
         } else {
           message.warning("There is no batch for selected Product");
+          setBatchOptions([]); // Clear batch options if none available
         }
+        // ... (process batch data as needed)
+
+        // Fetch service price
 
         // ... (process service price data as needed)
 
@@ -257,48 +312,103 @@ const OtcDispense = () => {
       } catch (error) {
         console.error("Error fetching additional data:", error);
       }
+    } else {
+      setOptions([]);
+      setSelectedProviderId(null);
     }
   };
 
-  const handleproviderAutoCompleteChange = async (value) => {
+  const handleQtyChange = async (e) => {
     debugger;
-    setLoading(true); // Start loading
-    try {
-      if (!value.trim()) {
-        setProviders(null); // Set options to an empty array
-        setLoading(false); // Stop loading
-        return;
-      }
-      const response = await customAxios.get(
-        `${urlGetAllProviders}?providerName=${value}`
-      );
-      const responseData = response.data.data.Providers || [];
-      // Ensure responseData is an array and has the expected structure
-      if (
-        Array.isArray(responseData) &&
-        responseData.length > 0 &&
-        responseData[0].ProviderId !== undefined
-      ) {
-        const newOptions = responseData.map((option) => ({
-          value: option.ProviderFirstName,
-          label: option.ProviderFirstName,
-          key: option.ProviderId,
-        }));
-        setProviders(newOptions);
-      } else {
-        setProviders(null);
-        form.setFieldValue("Provider", "");
-      }
-    } catch (error) {
-      setProviders(null); // Set options to an empty array in case of an error
+    const values = form.getFieldsValue();
+  
+    // Check if Batch is defined and not null
+    if (values.Batch && e.target.value!="") {
+      const [BatchNo, ExpDate] = values.Batch.split("/");
+        const qty = values.Qty;
+        const rate = values.Rate;
+        let amount=0;
+         amount = qty * parseFloat(rate);
+        
+        form.setFieldsValue({
+          Amount: amount,
+        });
+        try {
+          const servicePriceResponse = await customAxios.get(
+            `${urlGetPharmacyServiceCharge}?BatchId=${BatchNo}&ServiceId=${values.Product}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${values.Qty}&StockId=${values.StockId}`
+          );
+  
+          // Process service price data
+          const servicePriceData = servicePriceResponse.data.data.servicePrice;
+          if (servicePriceData) {
+            form.setFieldsValue({
+              PatientAmount: servicePriceData.PatientNetAmount,
+              TaxAmount: servicePriceData.TaxAmount,
+              // Provider: servicePriceData.ProviderName,
+            });
+            setSelectedProviderId(servicePriceData.ProviderID);
+          }
+        } catch (error) {
+          console.error('Error fetching service price:', error);
+        }
+      
+    } else {
+      console.warn('Batch is null or undefined');
     }
-    setLoading(false); // Stop loading
   };
 
-  const debouncedHandleAutoCompleteChange = debounce(
-    handleproviderAutoCompleteChange,
-    300
-  );
+
+  const handleBatchChange = async () => {
+    debugger;
+    const values = form.getFieldsValue();
+    
+    // Check if Batch is defined and not null
+    if (values.Batch) {
+      const [BatchNo, ExpDate, RemQty] = values.Batch.split("/");
+      
+      try {
+        const servicePriceResponse = await customAxios.get(
+          `${urlGetPharmacyServiceCharge}?BatchId=${BatchNo}&ServiceId=${values.Product}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${values.Qty}&StockId=${values.StockId}`
+        );
+  
+        // Process service price data
+        const servicePriceData = servicePriceResponse.data.data.servicePrice;
+        const rate = servicePriceData.OriginalChargeAmount;
+        let amount = 0;
+        amount = values.Qty * parseFloat(rate);
+  
+        if (servicePriceData) {
+          form.setFieldsValue({
+            PatientAmount: servicePriceData.PatientNetAmount,
+            TaxAmount: servicePriceData.TaxAmount,
+            Rate: servicePriceData.OriginalChargeAmount,
+            Amount: amount,
+            AvlQty: RemQty,
+          });
+  
+          form.validateFields(['Qty']);
+  
+          setSelectedProviderId(servicePriceData.ProviderID);
+        }
+      } catch (error) {
+        console.error('Error fetching service price:', error);
+      }
+    } else {
+      console.warn('Batch is null or undefined');
+    }
+  };
+  
+  
+  
+
+  const handleProviderSearch = (value) => {
+    debugger;
+    if (value) {
+      debouncedFetchProvider(value);
+    } else {
+      setProviders([]);
+    }
+  };
 
   const handleProviderSelect = async (value, option) => {
     setSelectedProviderId(option.key);
@@ -330,9 +440,8 @@ const OtcDispense = () => {
 
   const handleDeleteCharge = async (record) => {
     debugger;
-    const amt = 0;
     const response = await customAxios.delete(
-      `${urlDeleteBillCharge}?chargeId=${record.ChargeID}&patientId=${record.PatientId}&encounterId=${record.EncounterId}&amt=${record.AdjustedAmount}`
+      `${urlDeletePharmacyBillCharge}?chargeId=${record.ChargeID}&patientId=${record.PatientId}&encounterId=${record.EncounterId}&storeId=${record.StoreId}&stockId=${record.StockId}&amt=${record.AdjustedAmount}`
     );
     if (response.status === 200 && response.data != null) {
       setCharges(response.data.PatientAccountCharges);
@@ -352,51 +461,61 @@ const OtcDispense = () => {
 
       children: [
         {
-          title: "ServiceName",
+          title: "Product",
           dataIndex: "ServiceName",
           //  key: "ServiceName",
-          width: 200,
+          width: 150,
+        },
+        {
+          title: "Batch",
+          dataIndex: "BatchNo",
+          // key: "StrServiceDate",
+          width: 80,
+        },
+        {
+          title: "ExpDate",
+          dataIndex: "EXPDateString",
+          width: 100,
         },
         {
           title: "Date",
           dataIndex: "StrServiceDate",
-          // key: "StrServiceDate",
-          width: 110,
+          width: 100,
+          //  key: "ChargeAmount",
         },
         {
           title: "Provider",
           dataIndex: "ProviderFirstName",
-          key: "ProviderFirstName",
-        },
-        {
-          title: "ChargeAmt",
-          dataIndex: "ChargeAmount",
-          //  key: "ChargeAmount",
+          // key: "Quantity",
+          width: 50,
         },
         {
           title: "Qty",
           dataIndex: "Quantity",
-          // key: "Quantity",
-          width: 80,
-        },
-        {
-          title: "NetAmt",
-          dataIndex: "NetAmount",
           // key: "NetAmount",
         },
         {
-          title: "InsAmt",
-          dataIndex: "InsuranceCoveredAmount",
+          title: "Amount",
+          dataIndex: "ChargeAmount",
           /// key: "InsuranceCoveredAmount",
         },
         {
-          title: "TaxAmt",
+          title: "CGST",
           dataIndex: "TaxRate",
+        },
+        {
+          title: "SGST",
+          dataIndex: "TaxRate1",
           key: "TaxRate",
         },
         {
-          title: "NetInsAmt",
-          dataIndex: "NetInsurenceAmount",
+          title: "Net Amt",
+          dataIndex: "NetAmount",
+          key: "TaxRate",
+        },
+        {
+          title: "Ins Amt",
+          dataIndex: "InsuranceCoveredAmount",
           //  key: "NetInsurenceAmount",
         },
       ],
@@ -411,36 +530,38 @@ const OtcDispense = () => {
         {
           title: "Charge",
           dataIndex: "PatientChargeAmount",
-          //  key: "PatientChargeAmount",
+          //  key: "NetInsurenceAmount",
         },
         {
-          title: "Discount",
+          title: "Disc",
           dataIndex: "PatientDiscountAmount",
-          //  key: "PatientDiscountAmount",
+          //  key: "NetInsurenceAmount",
         },
         {
-          title: "Tax",
+          title: "CGST",
           dataIndex: "PatientTaxRate",
-          //  key: "PatientTaxRate",
+          //  key: "NetInsurenceAmount",
         },
         {
-          title: "NetAmt",
+          title: "SGST",
+          dataIndex: "PatientTaxRate1",
+          //  key: "NetInsurenceAmount",
+        },
+        {
+          title: "Net Amt",
           dataIndex: "PatientNetAmount",
-          //  key: "PatientNetAmount",
+          //  key: "NetInsurenceAmount",
         },
         {
-          title: "AdjAmt",
+          title: "Adjusted Amt",
           dataIndex: "AdjustedAmount",
-          //   key: "AdjustedAmount",
+          //  key: "NetInsurenceAmount",
         },
         {
           title: "LL Disc",
           dataIndex: "Discount",
           //key: "Discount",
           render: (_, row) => {
-            if (row.ServiceType.trim() === "P") {
-              return null; // Hide the discount button if ServiceType is "P"
-            }
             return (
               <Tooltip title="Discount">
                 <Button type="link" onClick={() => handleDiscount(row)}>
@@ -455,9 +576,6 @@ const OtcDispense = () => {
           dataIndex: "actions",
           // key: "actions",
           render: (_, row) => {
-            if (row.ServiceType.trim() === "P") {
-              return null; // Hide the delete button if ServiceType is "P"
-            }
             return (
               <span style={{ display: "flex" }}>
                 <Tooltip title="Delete">
@@ -775,26 +893,42 @@ const OtcDispense = () => {
       receiptInsAmtData.filter((item) => item.key !== record.key)
     );
   };
+  const parseDate = (dateString) => {
+    const [day, month, year] = dateString.split('-');
+    return new Date(year, month - 1, day); // month is 0-indexed in JavaScript Date
+  };
 
   const handleOnFinish = async (values) => {
     setTableLoading(true);
     debugger;
+    const [BatchNo, ExpDate] = values.Batch.split("/");
+    const expDate = parseDate(ExpDate);
+    const formattedExpDate = expDate.toISOString();
+    console.log("header", patientData);
 
     const Charge = {
       PatientId: PatientId,
       EncounterId: EncounterId,
-      ServiceId: serviceId,
+      ServiceId: values.Product,
       ProviderID: providerId,
-      Rate: Amount2,
+      Rate: values.Rate,
       PatientChargeAmount: values.PatientAmount,
-      ChargeAmount: PatientAmount2,
       FacilityId: 1,
       ActiveFlag: true,
-      ServiceQuantity: 1,
-      PatientTypeID: 22,
+      PatientTypeID: patientData.PatientType,
+      BatchNo: BatchNo,
+      Quantity: values.Qty,
+      ExpiryDate: formattedExpDate,
+      EXPDateString: ExpDate,
+      StockId: values.StockId,
+      StoreId: storeId,
+      PatientDiscountAmount: 0,
+      TaxAmount: values.TaxAmount,
+      PFlag: 1,
     };
+
     try {
-      const response = await customAxios.post(urlAddNewCharge, Charge, {
+      const response = await customAxios.post(urlAddNewChargePharmacy, Charge, {
         headers: {
           "Content-Type": "application/json", // Replace with the appropriate content type if needed
           // Add any other required headers here
@@ -802,10 +936,12 @@ const OtcDispense = () => {
       });
 
       if (response.status == 200 && response.data != null) {
-        message.success("Charge Added Successfully");
+        message.success("Product Added Successfully");
         setTableLoading(false);
         setCharges(response.data.PatientAccountCharges);
-        setServices(null);
+        setOptions([]);
+        setBatchOptions([]);
+        setSelectedProviderId(null);
         form.resetFields();
       } else {
         message.error("Something went wrong");
@@ -815,9 +951,6 @@ const OtcDispense = () => {
     }
   };
 
-  const handleServiceDate = (date, dateString) => {
-    setServiceDate(dateString);
-  };
   const handleReceiptDate = (date, dateString) => {
     setReceiptDate(dateString);
   };
@@ -860,7 +993,7 @@ const OtcDispense = () => {
         PatientAccountChargeModel: charges, // Assuming chargeDetails is an array of charge details
       };
 
-      const response = await customAxios.post(urlAddNewBill, billingData, {
+      const response = await customAxios.post(urlAddNewBillPharmacy, billingData, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -893,9 +1026,9 @@ const OtcDispense = () => {
   };
 
   async function GetBillReceipt(BillNumber) {
-    const fg = 1;
+    const fg = "";
     const response = await customAxios.get(
-      `${urlSaveChargesForTempTable}?billId=${BillNumber}&Flag=${fg}`
+      `${urlSaveChargesForPharmacyTempTable}?billId=${BillNumber}&Flag=${fg}`
     );
     if (response.status === 200) {
     } else {
@@ -944,11 +1077,11 @@ const OtcDispense = () => {
           style={{ padding: "0rem 1rem" }}
           form={form}
           initialValues={{
-            Qty: 1, 
+            Qty: 1,
           }}
         >
           <Row gutter={16}>
-          <Col className="gutter-row" span={2}>
+            <Col className="gutter-row" span={2}>
               <div>
                 <Form.Item
                   style={{ width: "100%" }}
@@ -959,9 +1092,9 @@ const OtcDispense = () => {
                 </Form.Item>
               </div>
             </Col>
-            <Col className="gutter-row" span={5}>
+            <Col className="gutter-row" span={4}>
               <div>
-                <Form.Item name="product" label="Product">
+                <Form.Item name="Product" label="Product">
                   <Select
                     showSearch
                     placeholder="Select a product"
@@ -980,34 +1113,50 @@ const OtcDispense = () => {
                 </Form.Item>
               </div>
             </Col>
-            <Col className="gutter-row" span={4}>
+            <Col className="gutter-row" span={3}>
               <div>
                 <Form.Item
                   style={{ width: "100%" }}
-                  label="Provider"
-                  name="Provider"
+                  label="Batch"
+                  name="Batch"
                   rules={[
                     {
                       required: true,
-                      message: "Provider Is Required",
+                      message: "Batch Is Required",
                     },
                   ]}
                 >
-                  <AutoComplete
-                    options={providers}
-                    //onSearch={handleproviderAutoCompleteChange}
-                    onSearch={debouncedHandleAutoCompleteChange}
-                    onSelect={handleProviderSelect}
-                    onChange={(value) => {
-                      if (!value) {
-                        setProviders(null);
-                      }
-                    }}
-                    allowClear={{
-                      clearIcon: <CloseSquareFilled />,
-                    }}
+                  <Select  onChange={handleBatchChange}
+                    disabled={!batchOptions.length}
+                    dropdownStyle={{ minWidth: "12rem" }} // Set dropdown min width
+                  >
+                    {batchOptions.map((batch) => (
+                      <Option key={batch.value} value={batch.value}>
+                        {batch.label}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </div>
+            </Col>
+            <Col className="gutter-row" span={3}>
+              <div>
+                <Form.Item name="Provider" label="Provider">
+                  <Select
+                    showSearch
+                    placeholder="Select a provider"
+                    optionFilterProp="children"
+                    onSearch={handleProviderSearch}
+                    onChange={handleProviderSelect}
                     loading={loading}
-                  />
+                    filterOption={false}
+                  >
+                    {providers?.map((option) => (
+                      <Option key={option.value} value={option.value}>
+                        {option.label}
+                      </Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </div>
             </Col>
@@ -1020,12 +1169,28 @@ const OtcDispense = () => {
                   rules={[
                     {
                       required: true,
-                      message: "Qty Is Required",
+                      message: "Qty is required",
+                    },
+                    {
+                      validator: async (_, value) => {
+                        const avlQty = form.getFieldValue("AvlQty"); // Assuming you have access to form context
+                        if (value > avlQty) {
+                          return Promise.reject(
+                            new Error(
+                              `Qty cannot be greater than AvlQty (${avlQty})`
+                            )
+                          );
+                        }
+                        return Promise.resolve();
+                      },
                     },
                   ]}
-               
                 >
-                  <Input disabled></Input>
+                  <Input
+                    onChange={handleQtyChange}
+                    min={1}
+                    type="number"
+                  ></Input>
                 </Form.Item>
               </div>
             </Col>
@@ -1064,7 +1229,7 @@ const OtcDispense = () => {
                 </Form.Item>
               </div>
             </Col>
-       
+
             <Col className="gutter-row" span={2}>
               <div>
                 <Form.Item
@@ -1081,12 +1246,15 @@ const OtcDispense = () => {
                   <Input disabled></Input>
                 </Form.Item>
               </div>
+              <Form.Item name="TaxAmount" hidden></Form.Item>
+              <Form.Item name="StockId" hidden></Form.Item>
+              <Form.Item name="AvlQty" hidden></Form.Item>
             </Col>
-            <Col className="gutter-row" span={3}>
+            <Col className="gutter-row" span={2}>
               <div>
                 <Form.Item label="&nbsp;">
                   <Button type="link" onClick={() => handleInvoiceDiscount()}>
-                    InvoiceDisc <CiDiscount1 style={{ fontSize: "1.8rem" }} />
+                    InvDisc <CiDiscount1 style={{ fontSize: "1.8rem" }} />
                   </Button>
                 </Form.Item>
               </div>
