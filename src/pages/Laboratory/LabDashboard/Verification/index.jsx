@@ -727,7 +727,7 @@ const Verification = () => {
   async function fetchReport(request) {
     debugger;
     const response = await fetch(
-      "http://localhost:43705/api/ReportsApi/GetLabReport",
+      "http://localhost:901/api/ReportsApi/GetLabReport",
       {
         method: "POST",
         headers: {

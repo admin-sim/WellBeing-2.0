@@ -666,7 +666,7 @@ const OtcDispense = () => {
   };
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:43705/api/ReportsApi/PharmacyBillReport",
+      "http://localhost:901/api/ReportsApi/PharmacyBillReport",
       {
         method: "POST",
         headers: {
