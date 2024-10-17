@@ -54,7 +54,7 @@ function Allergy(Patient) {
   const showModal = async () => {
     try {
       const response = await customAxios.get(
-        `${urlGetAllergyBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.EncounterId}&Range=${dayjs()}`
+        `${urlGetAllergyBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&Range=${dayjs()}`
       );
       if (response.status === 200 && response.data.data != null) {
         const detailsheader = response.data.data.NewAllergyList;
@@ -65,19 +65,20 @@ function Allergy(Patient) {
   }
 
   useEffect(() => {
-    const fetch = async () => {
-      try {
-        const response = await customAxios.get(
-          `${urlGetAllHistoryAsync}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.EncounterId}`
-        );
-        if (response.status === 200 && response.data.data != null) {
-          const detailsheader = response.data.data
-          setDropDown(detailsheader)
-        }
-      } catch (error) { }
-    }
     fetch()
-  }, [Patient])
+  }, [])
+
+  const fetch = async () => {
+    try {
+      const response = await customAxios.get(
+        `${urlGetAllHistoryAsync}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}`
+      );
+      if (response.status === 200 && response.data.data != null) {
+        const detailsheader = response.data.data
+        setDropDown(detailsheader)
+      }
+    } catch (error) { }
+  }
 
   function showAllergyFormModal() {
     setButtonTitle('Save')
@@ -116,7 +117,7 @@ function Allergy(Patient) {
       RelievingFactor: values.reliving,
       DateOfClosurestring: values.closureDate ? values.closureDate.format('DD-MM-YYYY') : '',
       Remarks: values.remarks,
-      EncounterId: Patient.Patient.EncounterId,
+      EncounterId: Patient.Patient.Encounter,
       PatientId: Patient.Patient.PatientId
     }
     const response = await customAxios.post(urlSaveAllergy, allergy, {
@@ -125,24 +126,10 @@ function Allergy(Patient) {
       },
     });
     if (response.status === 200) {
+      fetch()
       handleClose()
     }
   }
-
-  const allergyCategoryOptions = [
-    {
-      value: "jack",
-      label: "Jack",
-    },
-    {
-      value: "lucy",
-      label: "Lucy",
-    },
-    {
-      value: "tom",
-      label: "Tom",
-    },
-  ];
 
   const handleOkPrev = () => setIsModalOpen(false)
 
@@ -183,7 +170,7 @@ function Allergy(Patient) {
     //     params: {
     //       Id: record.HeaderId,
     //       PatientId: Patient.Patient.PatientId,
-    //       EncounterId: Patient.Patient.EncounterId
+    //       EncounterId: Patient.Patient.Encounter
     //     }
     //   });
     //   if (response.status === 200 && response.data.data != null) {
@@ -290,7 +277,9 @@ function Allergy(Patient) {
           onFinish={handleSaveAllergyDetails}
           scrollToFirstError={true}
           initialValues={{
-            Approximately: false
+            Approximately: false,
+            onsetDate: dayjs(),
+            closureDate: dayjs()
           }}
         >
           <Row gutter={32}>
@@ -432,7 +421,7 @@ function Allergy(Patient) {
               <Form.Item name="onsetDate" label="Date of Onset (Approx.)" rules={[{ required: true, message: "Please Pick Date" }]}>
                 <DatePicker
                   style={{ width: "100%" }}
-                  foramt="DD-MM-YYYY"
+                  format="DD-MM-YYYY"
                   allowClear
                 />
               </Form.Item>
@@ -476,7 +465,7 @@ function Allergy(Patient) {
               <Form.Item name="closureDate" label="Date of Closure (Approx.)">
                 <DatePicker
                   style={{ width: "100%" }}
-                  placeholder="DD-MM-YYYY"
+                  format="DD-MM-YYYY"
                   allowClear
                 />
               </Form.Item>

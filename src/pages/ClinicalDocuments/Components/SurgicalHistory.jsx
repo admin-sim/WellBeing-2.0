@@ -42,7 +42,7 @@ function SurgicalHistory(Patient) {
 
   const showModal = async () => {
     debugger
-    const response = await customAxios.get(`${urlGetSHBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.EncounterId}&Range=${dayjs()}`);
+    const response = await customAxios.get(`${urlGetSHBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&Range=${dayjs()}`);
     const apiData = response.data.data.SurgicalHistoryList.map((item, index) => {
       return {
         ...item,
@@ -117,7 +117,7 @@ function SurgicalHistory(Patient) {
     const Cpt = data.map((item) => {
       return {
         PatientId: Patient.Patient.PatientId,
-        EncounterId: Patient.Patient.EncounterId,
+        EncounterId: Patient.Patient.Encounter,
         CptCode: item.code,
         CptDescription: item.name
       }
@@ -160,7 +160,7 @@ function SurgicalHistory(Patient) {
         params: {
           Id: record.HeaderId,
           PatientId: Patient.Patient.PatientId,
-          EncounterId: Patient.Patient.EncounterId
+          EncounterId: Patient.Patient.Encounter
         }
       });
       if (response.status === 200 && response.data.data != null) {

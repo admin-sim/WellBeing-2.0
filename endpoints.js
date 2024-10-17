@@ -478,5 +478,17 @@ export const urlAddNewBillPharmacy = `${baseURL}/api/Pharmacy/AddNewBill`;
 export const urlSaveChargesForPharmacyTempTable = `${baseURL}/api/Pharmacy/SaveChargesForPharmacyTempTable`;
 export const urlDeletePharmacyBillCharge = `${baseURL}/api/Pharmacy/DeletePharmacyBillCharge`;
 
-
+export const urlDischargePatient = `${baseURL}/api/WardManagement/DischargePatient`;
+export const urlAddNewChargeForParticularPatient = `${baseURL}/api/WardManagement/AddNewChargeForParticularPatient`;
+export const urlGetNewRequest = `${baseURL}/api/ClinicalSetup/GetNewRequest`;
+export const urlGetPatientBillStatus = `${baseURL}/api/WardManagement/GetPatientBillStatus`;
+export const urlAddNewPatientVital1 = `${baseURL}/api/WardManagement/AddNewPatientVital`;
+export const urlGetPatientVitals = `${baseURL}/api/ClinicalChart/GetPatientVitals`;
+export const urlDeletePatientVital = `${baseURL}/api/ClinicalChart/DeletePatientVital`;
+export const urlGetPatientVitalForEdit = `${baseURL}/api/ClinicalChart/GetPatientVitalForEdit`;
+export const urlSaveDiagnosis = `${baseURL}/api/ClinicalChart/SaveDiagnosis`;
+export const urlGetAllDiagnosis = `${baseURL}/api/ClinicalChart/GetAllDiagnosis`;
+export const urlEditDiagnosis = `${baseURL}/api/ClinicalChart/EditDiagnosis`;
+export const urlDeleteDiagnosis = `${baseURL}/api/ClinicalChart/DeleteDiagnosis`;
+export const urlClinicalChartFlows = `${baseURL}/api/ClinicalSetup/ClinicalChartFlows`;
 

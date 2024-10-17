@@ -37,8 +37,10 @@ function DirectTransferModal({
   const [beds, setBeds] = useState([]);
   const [bedNumber, setBedNumber] = useState();
   const [blockChecked, setBlockChecked] = useState(false);
+  const [loading, setLoading] = useState(false)
   const handleCancel = () => {
     form.resetFields();
+    setLoading(false)
     handleClose();
   };
 
@@ -48,6 +50,7 @@ function DirectTransferModal({
 
   const onFinish = async (values) => {
     debugger;
+    setLoading(true)
     const form = {
       DepartmentId: values.Department,
       ProviderId: values.Provider,
@@ -550,7 +553,7 @@ function DirectTransferModal({
               <Row gutter={32} style={{ height: "1.8rem" }}>
                 <Col offset={17} span={3}>
                   <Form.Item>
-                    <Button type="primary" htmlType="submit">
+                    <Button loading={loading} type="primary" htmlType="submit">
                       Submit
                     </Button>
                   </Form.Item>

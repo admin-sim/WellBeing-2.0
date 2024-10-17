@@ -17,7 +17,7 @@ function ChiefComplaint(Patient) {
   const showModal = async () => {
     try {
       const response = await customAxios.get(
-        `${urlGetChiefBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.EncounterId}&Range=${dayjs()}`
+        `${urlGetChiefBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&Range=${dayjs()}`
       );
       if (response.status === 200 && response.data.data != null) {
         const detailsheader = response.data.data.ChiefList;
@@ -65,7 +65,7 @@ function ChiefComplaint(Patient) {
         params: {
           Id: record.CFID,
           PatientId: Patient.Patient.PatientId,
-          EncounterId: Patient.Patient.EncounterId
+          EncounterId: Patient.Patient.Encounter
         }
       });
       if (response.status === 200 && response.data.data != null) {
@@ -98,16 +98,16 @@ function ChiefComplaint(Patient) {
               if (value.Complaint) {
                 const chief = {
                   PresentingComplint: value.Complaint,
-                  EncounterId: Patient.Patient.EncounterId,
+                  EncounterId: Patient.Patient.Encounter,
                   PatientId: Patient.Patient.PatientId,
                   CFID: value.CFID ? value.CFID : 0
                 }
                 try {
-                  // const response = await customAxios.post(urlChiefComplaints, chief, {
-                  //   headers: {
-                  //     "Content-Type": "application/json",
-                  //   },
-                  // });
+                  const response = await customAxios.post(urlChiefComplaints, chief, {
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                  });
                   if (response.status === 200) {
                     message.success('Saved Success')
                     form.resetFields()
