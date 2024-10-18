@@ -29,13 +29,13 @@ import Layout from "antd/es/layout/layout";
 const { Text } = Typography;
 import { useNavigate } from "react-router";
 import customAxios from "../../components/customAxios/customAxios.jsx";
-import DiscountModal from "../AccountManagement/Billling/DiscountModal.jsx";
 import InvoiceDiscountModal from "../AccountManagement/Billling/InvoiceDiscountModal.jsx";
 
 import {
   urlAddNewBillPharmacy,
   urlAddNewChargePharmacy,
   urlDeletePharmacyBillCharge,
+  urlEditPharmacyDiscount,
   urlGetAllAutocompleteProviders,
   urlGetAllProviders,
   urlGetLastBillNumber,
@@ -43,6 +43,7 @@ import {
   urlGetPharmacyServiceCharge,
   urlGetProductBatchDetails,
   urlGetStoreProductDetails,
+  urlInvoiceDiscount,
   urlPharmacyCreate,
   urlSaveChargesForPharmacyTempTable,
   urlSaveChargesForTempTable,
@@ -53,6 +54,8 @@ import PatientHeader from "../../components/PatientHeader/index.jsx";
 import { CiDiscount1 } from "react-icons/ci";
 import dayjs from "dayjs";
 import { debounce, min } from "lodash";
+import PharmacyDiscountModal from "./PharmacyDiscountModal.jsx";
+import PharmacyInvoiceDiscountModal from "./PharmacyInvoiceDiscountModal.jsx";
 
 const OtcDispense = () => {
   const location = useLocation();
@@ -418,7 +421,7 @@ const OtcDispense = () => {
   const handleDiscount = async (row) => {
     debugger;
     const response = await customAxios.get(
-      `${urlEditDiscount}?DiscountChargeId=${row.ChargeID}&PatientId=${row.PatientId}&EncounterId=${row.EncounterId}`
+      `${urlEditPharmacyDiscount}?DiscountChargeId=${row.ChargeID}&PatientId=${row.PatientId}&EncounterId=${row.EncounterId}`
     );
     if (response.status === 200 && response.data != null) {
       setDiscountReason(response.data.DiscountReasons);
@@ -428,7 +431,7 @@ const OtcDispense = () => {
   };
   const handleInvoiceDiscount = async (row) => {
     debugger;
-    const Flag = "";
+    const Flag = "Y";
     const response = await customAxios.get(
       `${urlInvoiceDiscount}?PatientId=${PatientId}&EncounterId=${EncounterId}&Flag=${Flag}`
     );
@@ -1379,14 +1382,14 @@ const OtcDispense = () => {
             />
           </Spin>
         </ConfigProvider>
-        <InvoiceDiscountModal
+        <PharmacyInvoiceDiscountModal
           options={invoicediscountReason}
           open={isinvoiceModalOpen}
           handleClose={() => setIsInvoiceModalOpen(false)}
           discountDetails={invoicediscountDetails}
           setCharges={setCharges}
         />
-        <DiscountModal
+        <PharmacyDiscountModal
           options={discountReason}
           open={isModalOpen}
           handleClose={() => setIsModalOpen(false)}

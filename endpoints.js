@@ -477,6 +477,8 @@ export const urlAddNewChargePharmacy = `${baseURL}/api/Pharmacy/AddNewCharge`;
 export const urlAddNewBillPharmacy = `${baseURL}/api/Pharmacy/AddNewBill`;
 export const urlSaveChargesForPharmacyTempTable = `${baseURL}/api/Pharmacy/SaveChargesForPharmacyTempTable`;
 export const urlDeletePharmacyBillCharge = `${baseURL}/api/Pharmacy/DeletePharmacyBillCharge`;
+export const urlEditPharmacyDiscount = `${baseURL}/api/Pharmacy/EditPharmacyDiscount`;
+export const urlUpdatePharmacyDiscount = `${baseURL}/api/Pharmacy/UpdatePharmacyDiscount`;
 
 export const urlDischargePatient = `${baseURL}/api/WardManagement/DischargePatient`;
 export const urlAddNewChargeForParticularPatient = `${baseURL}/api/WardManagement/AddNewChargeForParticularPatient`;
