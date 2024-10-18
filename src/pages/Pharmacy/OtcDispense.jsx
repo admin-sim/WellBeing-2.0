@@ -1301,9 +1301,9 @@ const OtcDispense = () => {
               }}
               scroll={{ x: 1000 }}
               summary={() => {
-                let netamt = 0;
-                let insamt = 0;
-                let taxamt = 0;
+                let totalUnitAmt = 0;
+                let netAmount = 0;
+                let insuranceCoveredAmount = 0;
                 let netinsamt = 0;
                 let discamt = 0;
                 let taxrate = 0;
@@ -1313,18 +1313,18 @@ const OtcDispense = () => {
                 // Summing over the entire dataset (charges) instead of just pageData
                 charges?.forEach(
                   ({
+                    ChargeAmount,
                     NetAmount,
                     InsuranceCoveredAmount,
-                    TaxRate,
                     NetInsurenceAmount,
                     PatientDiscountAmount,
                     PatientTaxRate,
                     PatientNetAmount,
                     AdjustedAmount,
                   }) => {
-                    netamt += NetAmount;
-                    insamt += InsuranceCoveredAmount;
-                    taxamt += TaxRate;
+                    totalUnitAmt += ChargeAmount;
+                    netAmount += NetAmount;
+                    insuranceCoveredAmount += InsuranceCoveredAmount;
                     netinsamt += NetInsurenceAmount;
                     discamt += PatientDiscountAmount;
                     taxrate += PatientTaxRate;
@@ -1340,32 +1340,32 @@ const OtcDispense = () => {
                       index={0}
                       colSpan={4}
                     ></Table.Summary.Cell>
-                    <Table.Summary.Cell index={3}>
+                    <Table.Summary.Cell index={2} colSpan={2}>
                       <Text style={{ fontWeight: 600 }}>Total</Text>
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{netamt}</Text>
+                    <Table.Summary.Cell index={2} colSpan={3}>
+                      <Text style={{ fontWeight: 600 }}>{totalUnitAmt}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2} colSpan={1}>
+                      <Text style={{ fontWeight: 600 }}>{netAmount}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{insamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>{insuranceCoveredAmount}</Text>
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{taxamt}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
+                    {/* <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}>{netinsamt}</Text>
-                    </Table.Summary.Cell>
+                    </Table.Summary.Cell> */}
                     <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}>Total</Text>
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
+                    <Table.Summary.Cell index={2} colSpan={3}>
                       <Text style={{ fontWeight: 600 }}>
                         {discamt.toFixed(2)}
                       </Text>
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
+                    {/* <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}>{taxrate}</Text>
-                    </Table.Summary.Cell>
+                    </Table.Summary.Cell> */}
                     <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}>{patientnetamt}</Text>
                     </Table.Summary.Cell>
