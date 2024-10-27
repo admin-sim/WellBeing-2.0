@@ -403,7 +403,6 @@ const NewPatient = () => {
   };
 
   const handleOnFinish = async (values) => {
-    debugger;
     setLoadings(true);
     console.log("Received values from form: ", values);
 
@@ -996,7 +995,6 @@ const NewPatient = () => {
                 <WebcamImage onImageUpload={handleImageUpload} />
               </Col>
             </Row>
-
             <Divider />
             <Row gutter={32}>
               <Col span={12}>

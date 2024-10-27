@@ -22,15 +22,15 @@ import {
   urlSearchPatientsForLab,
   urlSearchUHID,
 } from "../../../../endpoints.js";
-import { Link } from "react-router-dom";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import { useNavigate } from "react-router";
+import PageHeader from "../../../components/PageHeader/index.jsx";
+import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
 
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 const LabDashboard = () => {
   const navigate = useNavigate();
-  const [patientData, setPatientData] = useState(null);
   const [form] = Form.useForm(); // Ant Design Form hook
   const [loaddata, setLoadedData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,6 @@ const LabDashboard = () => {
   const [selectedUhId, setSelectedUhId] = useState(null);
 
   const handleAutoCompleteChange = async (value) => {
-    debugger;
     try {
       if (!value.trim()) {
         setOptions([]); // Set options to an empty array
@@ -71,30 +70,19 @@ const LabDashboard = () => {
   };
 
   const handleSelect = (value, option) => {
-    debugger;
-    console.log("UhId", value);
     setSelectedUhId(option.value);
   };
 
   const handleSampleCollection = (record) => {
-    console.log(record);
-
-    debugger;
     // Navigate to the desired page and pass the record object as a parameter
     navigate("/SampleCollection", { state: { record } });
   };
   const handleResultEntry = (record) => {
-    console.log(record);
-
-    debugger;
     // Navigate to the desired page and pass the record object as a parameter
     navigate("/ResultEntry", { state: { record } });
   };
 
   const handleVerification = (record) => {
-    console.log(record);
-
-    debugger;
     // Navigate to the desired page and pass the record object as a parameter
     navigate("/Verification", { state: { record } });
   };
@@ -110,9 +98,6 @@ const LabDashboard = () => {
   };
 
   const onFinish = async (values) => {
-    debugger;
-    console.log("Received values of form: ", values);
-
     try {
       setLoading(true);
       const data = {
@@ -160,7 +145,7 @@ const LabDashboard = () => {
       key: "key",
     },
     {
-      title: "Uhid",
+      title: "UhId",
       dataIndex: "UhId",
       key: "UhId",
       sorter: (a, b) => a.UhId - b.UhId,
@@ -178,7 +163,7 @@ const LabDashboard = () => {
       sortDirections: ["descend", "ascend"],
     },
     {
-      title: "PatientDetails",
+      title: "Patient Details",
       dataIndex: "PatientFullName",
       key: "PatientFullName",
       sorter: (a, b) => a.PatientFullName.localeCompare(b.PatientFullName),
@@ -198,7 +183,7 @@ const LabDashboard = () => {
       ),
     },
     {
-      title: "BillDetails",
+      title: "Bill Details",
       dataIndex: "BillStatus",
       key: "BillStatus",
       sorter: (a, b) => a.BillStatus.localeCompare(b.BillStatus),
@@ -214,14 +199,14 @@ const LabDashboard = () => {
       ),
     },
     {
-      title: "LabNumber",
+      title: "Lab Number",
       dataIndex: "LabNumber",
       key: "LabNumber",
       sorter: (a, b) => a.LabNumber.localeCompare(b.LabNumber),
       sortDirections: ["descend", "ascend"],
     },
     {
-      title: "OrderDate",
+      title: "Order Date",
       dataIndex: "CreatedDateTime",
       key: "CreatedDateTime",
       sorter: (a, b) => a.CreatedDateTime.localeCompare(b.CreatedDateTime),
@@ -329,11 +314,6 @@ const LabDashboard = () => {
             </Space>
           )}
 
-
-
-
-
-
           {record.IsVerificationPartiallyDone === true &&
             !record.IsAllVerificationDone && (
               <Space align="start">
@@ -361,20 +341,21 @@ const LabDashboard = () => {
               </Tooltip>
             </Space>
           )}
-          {!record.IsVerificationPartiallyDone && !record.IsAllVerificationDone && (
-            <Space align="start">
-              <Button type="link" onClick={() => handleVerification(record)}>
-                Verification
-              </Button>
-              <Tooltip
-                title="Verification  Not Done"
-                placement="right"
-                overlayStyle={{ fontSize: "10px" }}
-              >
-                <MinusCircleOutlined style={{ color: "#b98c54" }} />
-              </Tooltip>
-            </Space>
-          )}
+          {!record.IsVerificationPartiallyDone &&
+            !record.IsAllVerificationDone && (
+              <Space align="start">
+                <Button type="link" onClick={() => handleVerification(record)}>
+                  Verification
+                </Button>
+                <Tooltip
+                  title="Verification  Not Done"
+                  placement="right"
+                  overlayStyle={{ fontSize: "10px" }}
+                >
+                  <MinusCircleOutlined style={{ color: "#b98c54" }} />
+                </Tooltip>
+              </Space>
+            )}
         </Space>
       ),
     },
@@ -390,9 +371,11 @@ const LabDashboard = () => {
           borderRadius: "10px",
         }}
       >
-        <Card
-          title="Laboratory Dashboard"
+        <PageHeader title={"Laboratory Dashboard"} button={false} />
+        <div
           style={{
+            padding: "1rem",
+            borderRadius: "0.5rem",
             margin: "1rem",
             boxShadow: "rgba(0, 0, 0, 0.15) 0px 5px 15px 0px",
           }}
@@ -406,8 +389,8 @@ const LabDashboard = () => {
             onFinish={onFinish}
             form={form}
           >
-            <Row gutter={24} style={{ marginBottom: "12px" }}>
-              <Col span={6}>
+            <Row gutter={16} style={{ marginBottom: "12px" }}>
+              <ColWithSixSpan>
                 <Form.Item label="UHID" name="Uhid">
                   <AutoComplete
                     options={options}
@@ -421,25 +404,24 @@ const LabDashboard = () => {
                     }
                   />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="name" label="Name">
                   <Input placeholder="Enter Name" />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="mobile" label="Mobile Number">
                   <Input placeholder="Enter Mobile Number" />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="labNumber" label="Lab Number">
                   <Input placeholder="Enter Lab Number" />
                 </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={24}>
-              <Col span={6}>
+              </ColWithSixSpan>
+
+              <ColWithSixSpan>
                 <Form.Item name="fromDate" label="From Date">
                   <DatePicker
                     style={{ width: "100%" }}
@@ -447,8 +429,8 @@ const LabDashboard = () => {
                     // disabledDate={disabledDate}
                   />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="toDate" label="To Date">
                   <DatePicker
                     style={{ width: "100%" }}
@@ -456,8 +438,8 @@ const LabDashboard = () => {
                     //disabledDate={disabledDate}
                   />
                 </Form.Item>
-              </Col>
-              <Col span={6} style={{ display: "flex", alignItems: "end" }}>
+              </ColWithSixSpan>
+              <ColWithSixSpan style={{ display: "flex", alignItems: "end" }}>
                 <Row gutter={24}>
                   <Col span={12}>
                     <Form.Item>
@@ -468,25 +450,14 @@ const LabDashboard = () => {
                   </Col>
                   <Col span={12}>
                     <Form.Item>
-                      <Button htmlType="button" onClick={handleReset}>
+                      <Button htmlType="button" danger onClick={handleReset}>
                         Reset
                       </Button>
                     </Form.Item>
                   </Col>
                 </Row>
-              </Col>
-              <Col
-                span={6}
-                style={
-                  {
-                    // marginTop: '20px',
-                    // justifyContent: 'center',
-                    // display: 'flex',
-                    // flexDirection: 'column',
-                    // alignItems: 'start',
-                  }
-                }
-              >
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <div>
                   <span style={{ margin: "0 8px" }}>Partially Done </span>
                   <PlusCircleOutlined style={{ color: "#f39c12" }} />
@@ -501,12 +472,17 @@ const LabDashboard = () => {
                   <span style={{ margin: "0 8px" }}>All Done</span>
                   <CheckCircleOutlined style={{ color: "green" }} />
                 </div>
-              </Col>
+              </ColWithSixSpan>
             </Row>
           </Form>
-        </Card>
+        </div>
         <Card
-          title="Patients VisitFor Laboratory"
+          title={
+            <div style={{ textAlign: "center" }}>
+              Patients Visit For Laboratory
+            </div>
+          }
+          bordered={false}
           style={{
             margin: "1rem",
             boxShadow: "rgba(0, 0, 0, 0.15) 0px 5px 15px 0px",
@@ -519,7 +495,8 @@ const LabDashboard = () => {
               rowKey={(row) => row.AppUserId} // Specify the custom id property here
               size="small"
               bordered
-            ></Table>
+              scroll={{ x: 1200 }}
+            />
           </Spin>
         </Card>
       </div>

@@ -176,15 +176,16 @@ function WebcamImage({ onImageUpload }) {
                 <Button
                   size="middle"
                   style={{
-                    height: "min-content",
                     width: "6rem",
                     borderColor: "green",
                     marginBottom: "0.5rem",
+                    textAlign: "center",
+                    whiteSpace: "nowrap", // Prevents text wrapping
+                    padding: "0.5rem 0", // Adjust padding for button height
                   }}
                   onClick={capture}
                 >
-                  Capture <br />
-                  photo
+                  Capture Photo
                 </Button>
               </Col>
             )}
@@ -193,13 +194,17 @@ function WebcamImage({ onImageUpload }) {
                 <Button
                   size="middle"
                   style={{
-                    height: "min-content",
                     width: "6rem",
                     borderColor: "brown",
+                    marginBottom: "0.5rem",
+                    textAlign: "center",
+                    fontSize: "0.65rem", // Adjusted font size to fit the text within the width
+                    padding: "0.5rem 0", // Adjust padding for height
+                    lineHeight: "1", // Adjust line height to keep the content vertically centered
                   }}
                   icon={<UploadOutlined />}
                 >
-                  Upload <br /> &nbsp;(&lt;1MB)
+                  Upload (&lt;1MB)
                 </Button>
               </Upload>
             </Col>
@@ -225,14 +230,14 @@ function WebcamImage({ onImageUpload }) {
                   height: "min-content",
                   width: "6rem",
                   borderColor: "green",
+                  marginBottom: "0.5rem",
                 }}
                 onClick={() => {
                   setImg(null);
                   setFileList([]);
                 }}
               >
-                Retake <br />
-                Photo
+                Retake Photo
               </Button>
             </Col>
             <Col offset={4} span={20}>
@@ -240,14 +245,17 @@ function WebcamImage({ onImageUpload }) {
                 <Button
                   size="middle"
                   style={{
-                    height: "min-content",
                     width: "6rem",
                     borderColor: "brown",
-                    marginTop: "0.5rem",
+                    marginBottom: "0.5rem",
+                    textAlign: "center",
+                    fontSize: "0.65rem", // Adjusted font size to fit the text within the width
+                    padding: "0.5rem 0", // Adjust padding for height
+                    lineHeight: "1",
                   }}
                   icon={<UploadOutlined />}
                 >
-                  Upload <br /> &nbsp;(&lt;1MB)
+                  Upload (&lt;1MB)
                 </Button>
               </Upload>
             </Col>
