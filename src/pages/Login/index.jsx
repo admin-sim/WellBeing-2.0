@@ -1,4 +1,4 @@
-import { React, useState } from "react";
+import { React, useEffect, useState } from "react";
 import {
   LockOutlined,
   UserOutlined,
@@ -31,6 +31,12 @@ import logo from "../../assets/smileslogo.png";
 import desktop_Login from "../../assets/desktop_Login.jpg";
 import mobile_Login from "../../assets/mobile_Login.jpg";
 import { isMobile } from "react-device-detect";
+import { useDispatch } from "react-redux";
+import { persistStore } from "redux-persist";
+import { store } from "../../ReduxStore/store";
+import { updateTabAccessData } from "../../ReduxStore/features/TabAccessData";
+import { updateUserContext } from "../../ReduxStore/features/userContext";
+import { update } from "../../ReduxStore/features/LeftMenuItemSlice";
 // import CustomLoader from "../../components/CustomLoader";
 
 // Spin.setDefaultIndicator(<CustomLoader />);
@@ -39,10 +45,18 @@ const Login = () => {
   const navigate = useNavigate();
   //   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
-  const onFinish = async (values) => {
-    debugger;
-    setLoading(true);
+  const dispatch = useDispatch();
+  const persistor = persistStore(store);
 
+  useEffect(() => {
+    dispatch(updateTabAccessData({}));
+    dispatch(updateUserContext({}));
+    dispatch(update({}));
+    persistor.purge(); // Clear the persisted state
+  }, []);
+
+  const onFinish = async (values) => {
+    setLoading(true);
     try {
       const response = await axios.post(urlLogin, values, {
         headers: {
@@ -51,12 +65,19 @@ const Login = () => {
       });
 
       if (response.status === 200) {
+        console.log("Login ", response.data.data);
+
         if (response) {
           let decodedJwt = jwtDecode(response.data.data.Accesstoken);
           let expirationDate = new Date(decodedJwt.exp * 1000);
           Cookies.set("authToken", response.data.data.Accesstoken, {
             expires: expirationDate,
           });
+          dispatch(updateTabAccessData(response.data.data.TabAccessData));
+          dispatch(updateUserContext(response.data.data.userContext));
+
+          dispatch(update(response.data.data.MenuAccesData));
+
           navigate("/");
         } else {
           notification.error({
