@@ -40,6 +40,7 @@ const Login = () => {
   //   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const onFinish = async (values) => {
+    debugger;
     setLoading(true);
 
     try {
@@ -51,9 +52,9 @@ const Login = () => {
 
       if (response.status === 200) {
         if (response) {
-          let decodedJwt = jwtDecode(response.data.data);
+          let decodedJwt = jwtDecode(response.data.data.Accesstoken);
           let expirationDate = new Date(decodedJwt.exp * 1000);
-          Cookies.set("authToken", response.data.data, {
+          Cookies.set("authToken", response.data.data.Accesstoken, {
             expires: expirationDate,
           });
           navigate("/");
