@@ -134,6 +134,8 @@ const SampleCollection = () => {
         });
         LoadSampleCollectionGrid();
         form.resetFields();
+   setSelectedRow([]);
+   setSelectedRowKeys([]);
       } else {
         notification.error({
           message: "Error",

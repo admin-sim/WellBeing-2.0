@@ -42,7 +42,8 @@ import {
   urlGetBeds,
   urlGetWardCategory,
   urlGetServiceLocation,
-  urlBillingCreate
+  urlBillingCreate,
+  urlGetPatientBillStatus
 } from "../../../../../endpoints.js";
 import { values } from "lodash";
 
@@ -100,7 +101,7 @@ function WardBed({ bed, ReLoad }) {
           setPatientData(detailsheader);
         } else {
         }
-      } catch (error) {}
+      } catch (error) { }
     };
     fetchDataHeader();
   }, []);
@@ -170,8 +171,16 @@ function WardBed({ bed, ReLoad }) {
     {
       label: "Discharge",
       key: "10",
-      onClick: (record) => {
-        OpenModel(record);
+      onClick: async (record) => {
+        debugger
+        const response = await customAxios.get(`${urlGetPatientBillStatus}?PatientId=${bed.PatientId}`)
+        if (response.status == 200 && response.data.data.length == 0) {
+          message.warning('Patient Bill is Not Settled')
+        } else if (response.data.data[0].BillStatus == 'Bill Settled') {
+          OpenModel(record);
+        } else {
+          message.warning('Patient Bill is Not Completely Settled')
+        }
       },
     },
     {
@@ -222,6 +231,7 @@ function WardBed({ bed, ReLoad }) {
 
   const OpenModel = async (record) => {
     debugger;
+    ReLoad('Start')
     GetPatientData()
     try {
       const response = await customAxios.get(
@@ -278,6 +288,7 @@ function WardBed({ bed, ReLoad }) {
     } else if (record.key == "19") {
       setNrNoteModalOpen(true);
     }
+    ReLoad('End')
   };
 
   const GetPatientData = async () => {
@@ -298,6 +309,7 @@ function WardBed({ bed, ReLoad }) {
 
   const OpenOrderEntry = async (record) => {
     debugger
+    ReLoad('Start')
     GetPatientData()
     const response = await customAxios.get(
       `${urlBillingCreate}?PatientId=${bed.PatientId}&EncounterId=${bed.EncounterId}`
@@ -305,6 +317,7 @@ function WardBed({ bed, ReLoad }) {
     if (response.status == 200) {
       setOrderEntry(response.data)
       setOrderEntryModalOpen(true);
+      ReLoad('End')
     }
   }
 

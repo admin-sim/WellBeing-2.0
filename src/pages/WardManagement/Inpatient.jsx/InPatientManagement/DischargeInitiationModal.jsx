@@ -16,16 +16,18 @@ import {
 import React, { useState } from "react";
 import PatientHeader from "../../../../components/PatientHeader";
 import customAxios from '../../../../components/customAxios/customAxios.jsx'
-import { urlSaveDischargeInitiation } from "../../../../../endpoints.js";
+import { urlSaveDischargeInitiation, urlAddNewChargeForParticularPatient } from "../../../../../endpoints.js";
 import dayjs from "dayjs";
 
 function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose }) {
   const [form] = Form.useForm();
   const [provider, setProvider] = useState(true)
   const [disposition, setDisposition] = useState(true)
+  const [loading, setLoading] = useState(false)
   const handleCancel = () => {
     setProvider(true)
     setDisposition(true)
+    setLoading(false)
     form.resetFields();
     handleClose();
   };
@@ -38,6 +40,25 @@ function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose })
     } else {
       setProvider(true)
 
+    }
+  }
+
+  const ApplyWardChargesOnDischargeInitiate = async () => {
+    debugger
+    const data1 = {
+      FacillityID: 1,
+      // ReturnHeaderId: 1,
+      PatientId: bed.PatientId,
+      EncounterId: bed.EncounterId
+    }
+    const response = await customAxios.post(urlAddNewChargeForParticularPatient, data1, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (response.status === 200) {
+      message.success('Ward Charges has been applied successfully.')
+      handleCancel()
     }
   }
 
@@ -163,8 +184,7 @@ function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose })
                     &dateAdvised=${discharge.dateAdvised}&timeAdvised=${discharge.timeAdvised}&dateDeceased=${discharge.dateDeceased}&timeDeceased=${discharge.timeDeceased}&DischargeStatus=${discharge.DischargeStatus}&EncounterId=${discharge.EncounterId}&AmendReason=${discharge.AmendReason}&WardCategoryID=${discharge.WardCategoryID}`
                   );
                   if (response.status === 200 && response.data === 'Success') {
-                    message.success(response.data)
-                    handleCancel()
+                    ApplyWardChargesOnDischargeInitiate()
                   }
                 } catch (error) {
                   console.error("Error:", error);

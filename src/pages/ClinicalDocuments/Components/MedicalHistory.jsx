@@ -43,7 +43,7 @@ function MedicalHistory(Patient) {
 
   const showModal = async () => {
     debugger
-    const response = await customAxios.get(`${urlGetMHBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.EncounterId}&Range=${dayjs()}`);
+    const response = await customAxios.get(`${urlGetMHBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&Range=${dayjs()}`);
     const apiData = response.data.data.MedicalHistoryList.map((item, index) => {
       return {
         ...item,
@@ -59,7 +59,7 @@ function MedicalHistory(Patient) {
   //   const fetchData = async () => {
   //     try {
   //       const response = await customAxios.get(
-  //         `${urlGetMHBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.EncounterId}&Range=${dayjs()}`
+  //         `${urlGetMHBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&Range=${dayjs()}`
   //       );
   //       if (response.status === 200 && response.data.data != null) {
   //         const detailsheader = response.data.data.ChiefList;
@@ -131,7 +131,7 @@ function MedicalHistory(Patient) {
     const Icd = data.map((item) => {
       return {
         PatientId: Patient.Patient.PatientId,
-        EncounterId: Patient.Patient.EncounterId,
+        EncounterId: Patient.Patient.Encounter,
         IcdCode: item.code,
         IcdDescription: item.name
       }
@@ -175,7 +175,7 @@ function MedicalHistory(Patient) {
         params: {
           Id: record.HeaderId,
           PatientId: Patient.Patient.PatientId,
-          EncounterId: Patient.Patient.EncounterId
+          EncounterId: Patient.Patient.Encounter
         }
       });
       if (response.status === 200 && response.data.data != null) {

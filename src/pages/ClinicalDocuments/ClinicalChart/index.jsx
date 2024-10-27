@@ -25,8 +25,8 @@ import { asyncThunkCreator } from "@reduxjs/toolkit";
 
 function ClinicalChart() {
   const location = useLocation();
-  const Patient = location.state.va;
-  const [patientData, setPatientData] = useState();
+  const Patient = location.state.record;
+  const [patientData, setPatientData] = useState()
   const [initialData, setInitialData] = useState({
     ChiefList: [],
     MedicalHistoryList: [],
@@ -40,7 +40,7 @@ function ClinicalChart() {
     const fetch = async () => {
       try {
         const response = await customAxios.get(
-          `${urlGetAllPatientComplaints}?PatientId=${Patient.PatientId}&EncounterId=${Patient.EncounterId}`
+          `${urlGetAllPatientComplaints}?PatientId=${Patient.PatientId}&EncounterId=${Patient.Encounter}`
         );
         if (response.status === 200 && response.data.data != null) {
           const detailsheader = response.data.data;
@@ -55,7 +55,7 @@ function ClinicalChart() {
     const fetchDataHeader = async () => {
       try {
         const response = await customAxios.get(
-          `${urlGetPatientHeaderDetails}?PatientId=${Patient.PatientId}&EncounterId=${Patient.EncounterId}`
+          `${urlGetPatientHeaderDetails}?PatientId=${Patient.PatientId}&EncounterId=${Patient.Encounter}`
         );
         if (response.status === 200 && response.data.data != null) {
           const detailsheader = response.data.data.EncounterModel;
@@ -182,14 +182,14 @@ function ClinicalChart() {
           tabPosition="left"
           items={[
             {
-              label: `Vital Signs`,
+              label: <Badge dot={initialData.ChiefList.length > 0}>Vital Signs&nbsp;&nbsp;</Badge>,
               key: 11,
-              children: <VitalSigns />,
+              children: <VitalSigns Patient={Patient} />,
             },
             {
               label: `Physical Examination`,
               key: 12,
-              children: <PhysicalExamination />,
+              children: <PhysicalExamination Patient={Patient} />,
             },
           ]}
         />
@@ -205,7 +205,7 @@ function ClinicalChart() {
             {
               label: `Provisional Diagnosis`,
               key: 11,
-              children: <ProvisionalDiagnosis />,
+              children: <ProvisionalDiagnosis Patient={Patient} />,
             },
           ]}
         />
@@ -237,7 +237,7 @@ function ClinicalChart() {
             {
               label: `Prescription`,
               key: 11,
-              children: <Prescription />,
+              children: <Prescription Patient={Patient} />,
             },
           ]}
         />
