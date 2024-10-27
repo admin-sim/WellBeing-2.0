@@ -95,8 +95,7 @@ const User = () => {
     },
     {
       title: "User Name",
-      dataIndex: "FirstName",
-      key: "FirstName",
+      dataIndex: "ProviderFirstName",
       width: 120,
     },
     {
@@ -237,7 +236,7 @@ const User = () => {
       <Layout.Content>
         <Row style={{ padding: "0 3rem", backgroundColor: "lavender" }}>
           <Col>
-            <h2>Employee List</h2>
+            <h2>ProviderList</h2>
           </Col>
         </Row>
         {addUserAccess?.AccessStatus && (
@@ -274,7 +273,7 @@ const User = () => {
             scroll={{
               x: 1000,
             }}
-            rowKey={(record) => record.AppUserId} // use the id property as the key prop
+            rowKey={(record) => record.ProviderId} // use the id property as the key prop
           />
         </Spin>
 

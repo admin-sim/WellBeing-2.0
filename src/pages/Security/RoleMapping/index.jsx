@@ -71,9 +71,9 @@ export default function RoleMapping() {
         const usersResponse = await customAxios.get(urlGetAllUsers);
         setOptions(
           usersResponse.data.data.map((user, index) => ({
-            value: user.FirstName,
-            id: user.AppUserId,
-            key: `${user.AppUserId}-${index}`,
+            value: user.ProviderFirstName,
+            id: user.ProviderId,
+            key: `${user.ProviderId}-${index}`,
           }))
         );
 
@@ -134,7 +134,7 @@ export default function RoleMapping() {
 
   const onFinish = async (values) => {
     //
-
+debugger;
     values.Role_Id = selectedRole;
     values.AppUserID = selectedUser;
     values.AppUserRole_Id = AppUserRoleID;
@@ -274,11 +274,11 @@ export default function RoleMapping() {
                   style={{ width: "100%" }}
                   options={options}
                   placeholder="Type to search for a user"
-                  filterOption={(inputValue, option) =>
-                    option.value
-                      .toUpperCase()
-                      .indexOf(inputValue.toUpperCase()) !== -1
-                  }
+                  // filterOption={(inputValue, option) =>
+                  //   option.value
+                  //     .toUpperCase()
+                  //     .indexOf(inputValue.toUpperCase()) !== -1
+                  // }
                   onSelect={handleSelect}
                   allowClear={{
                     clearIcon: <CloseSquareFilled />,

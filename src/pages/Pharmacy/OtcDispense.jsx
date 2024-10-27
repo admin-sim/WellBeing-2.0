@@ -325,62 +325,60 @@ const OtcDispense = () => {
   const handleQtyChange = async (e) => {
     debugger;
     const values = form.getFieldsValue();
-  
+
     // Check if Batch is defined and not null
-    if (values.Batch && e.target.value!="") {
+    if (values.Batch && e.target.value != "") {
       const [BatchNo, ExpDate] = values.Batch.split("/");
-        const qty = values.Qty;
-        const rate = values.Rate;
-        let amount=0;
-         amount = qty * parseFloat(rate);
-        
-        form.setFieldsValue({
-          Amount: amount,
-        });
-        try {
-          const servicePriceResponse = await customAxios.get(
-            `${urlGetPharmacyServiceCharge}?BatchId=${BatchNo}&ServiceId=${values.Product}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${values.Qty}&StockId=${values.StockId}`
-          );
-  
-          // Process service price data
-          const servicePriceData = servicePriceResponse.data.data.servicePrice;
-          if (servicePriceData) {
-            form.setFieldsValue({
-              PatientAmount: servicePriceData.PatientNetAmount,
-              TaxAmount: servicePriceData.TaxAmount,
-              // Provider: servicePriceData.ProviderName,
-            });
-            setSelectedProviderId(servicePriceData.ProviderID);
-          }
-        } catch (error) {
-          console.error('Error fetching service price:', error);
-        }
-      
-    } else {
-      console.warn('Batch is null or undefined');
-    }
-  };
+      const qty = values.Qty;
+      const rate = values.Rate;
+      let amount = 0;
+      amount = qty * parseFloat(rate);
 
-
-  const handleBatchChange = async () => {
-    debugger;
-    const values = form.getFieldsValue();
-    
-    // Check if Batch is defined and not null
-    if (values.Batch) {
-      const [BatchNo, ExpDate, RemQty] = values.Batch.split("/");
-      
+      form.setFieldsValue({
+        Amount: amount,
+      });
       try {
         const servicePriceResponse = await customAxios.get(
           `${urlGetPharmacyServiceCharge}?BatchId=${BatchNo}&ServiceId=${values.Product}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${values.Qty}&StockId=${values.StockId}`
         );
-  
+
+        // Process service price data
+        const servicePriceData = servicePriceResponse.data.data.servicePrice;
+        if (servicePriceData) {
+          form.setFieldsValue({
+            PatientAmount: servicePriceData.PatientNetAmount,
+            TaxAmount: servicePriceData.TaxAmount,
+            // Provider: servicePriceData.ProviderName,
+          });
+          setSelectedProviderId(servicePriceData.ProviderID);
+        }
+      } catch (error) {
+        console.error("Error fetching service price:", error);
+      }
+    } else {
+      console.warn("Batch is null or undefined");
+    }
+  };
+
+  const handleBatchChange = async () => {
+    debugger;
+    const values = form.getFieldsValue();
+
+    // Check if Batch is defined and not null
+    if (values.Batch) {
+      const [BatchNo, ExpDate, RemQty] = values.Batch.split("/");
+
+      try {
+        const servicePriceResponse = await customAxios.get(
+          `${urlGetPharmacyServiceCharge}?BatchId=${BatchNo}&ServiceId=${values.Product}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${values.Qty}&StockId=${values.StockId}`
+        );
+
         // Process service price data
         const servicePriceData = servicePriceResponse.data.data.servicePrice;
         const rate = servicePriceData.OriginalChargeAmount;
         let amount = 0;
         amount = values.Qty * parseFloat(rate);
-  
+
         if (servicePriceData) {
           form.setFieldsValue({
             PatientAmount: servicePriceData.PatientNetAmount,
@@ -389,21 +387,18 @@ const OtcDispense = () => {
             Amount: amount,
             AvlQty: RemQty,
           });
-  
-          form.validateFields(['Qty']);
-  
+
+          form.validateFields(["Qty"]);
+
           setSelectedProviderId(servicePriceData.ProviderID);
         }
       } catch (error) {
-        console.error('Error fetching service price:', error);
+        console.error("Error fetching service price:", error);
       }
     } else {
-      console.warn('Batch is null or undefined');
+      console.warn("Batch is null or undefined");
     }
   };
-  
-  
-  
 
   const handleProviderSearch = (value) => {
     debugger;
@@ -468,7 +463,7 @@ const OtcDispense = () => {
           title: "Product",
           dataIndex: "ServiceName",
           //  key: "ServiceName",
-          width: 150,
+          width: 130,
         },
         {
           title: "Batch",
@@ -501,6 +496,7 @@ const OtcDispense = () => {
         {
           title: "Amount",
           dataIndex: "ChargeAmount",
+          render: (value) => value.toFixed(2),
           /// key: "InsuranceCoveredAmount",
         },
         {
@@ -510,17 +506,17 @@ const OtcDispense = () => {
         {
           title: "SGST",
           dataIndex: "TaxRate1",
-          key: "TaxRate",
         },
         {
           title: "Net Amt",
           dataIndex: "NetAmount",
-          key: "TaxRate",
+          render: (value) => value.toFixed(2),
+          width: 80,
         },
         {
           title: "Ins Amt",
           dataIndex: "InsuranceCoveredAmount",
-          //  key: "NetInsurenceAmount",
+          render: (value) => value.toFixed(2),
         },
       ],
     },
@@ -534,12 +530,13 @@ const OtcDispense = () => {
         {
           title: "Charge",
           dataIndex: "PatientChargeAmount",
-          //  key: "NetInsurenceAmount",
+          render: (value) => value.toFixed(2),
         },
         {
           title: "Disc",
           dataIndex: "PatientDiscountAmount",
-          //  key: "NetInsurenceAmount",
+          render: (value) => value.toFixed(2),
+          width: 80,
         },
         {
           title: "CGST",
@@ -554,12 +551,12 @@ const OtcDispense = () => {
         {
           title: "Net Amt",
           dataIndex: "PatientNetAmount",
-          //  key: "NetInsurenceAmount",
+          render: (value) => value.toFixed(2),
         },
         {
           title: "Adjusted Amt",
           dataIndex: "AdjustedAmount",
-          //  key: "NetInsurenceAmount",
+          render: (value) => value.toFixed(2),
         },
         {
           title: "LL Disc",
@@ -898,7 +895,7 @@ const OtcDispense = () => {
     );
   };
   const parseDate = (dateString) => {
-    const [day, month, year] = dateString.split('-');
+    const [day, month, year] = dateString.split("-");
     return new Date(year, month - 1, day); // month is 0-indexed in JavaScript Date
   };
 
@@ -997,12 +994,16 @@ const OtcDispense = () => {
         PatientAccountChargeModel: charges, // Assuming chargeDetails is an array of charge details
       };
 
-      const response = await customAxios.post(urlAddNewBillPharmacy, billingData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true, // This ensures the session cookie is sent
-      });
+      const response = await customAxios.post(
+        urlAddNewBillPharmacy,
+        billingData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, // This ensures the session cookie is sent
+        }
+      );
       if (response.status === 200 && response.data) {
         if (
           response.data.data === "Failed To Generate Bill" ||
@@ -1130,7 +1131,8 @@ const OtcDispense = () => {
                     },
                   ]}
                 >
-                  <Select  onChange={handleBatchChange}
+                  <Select
+                    onChange={handleBatchChange}
                     disabled={!batchOptions.length}
                     dropdownStyle={{ minWidth: "12rem" }} // Set dropdown min width
                   >
@@ -1340,17 +1342,31 @@ const OtcDispense = () => {
                       index={0}
                       colSpan={4}
                     ></Table.Summary.Cell>
-                    <Table.Summary.Cell index={2} colSpan={2}>
+                    <Table.Summary.Cell index={2} colSpan={1}>
                       <Text style={{ fontWeight: 600 }}>Total</Text>
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2} colSpan={3}>
-                      <Text style={{ fontWeight: 600 }}>{totalUnitAmt}</Text>
+                    <Table.Summary.Cell index={2}>
+                      <Text style={{ fontWeight: 600 }}></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2} >
+                      <Text style={{ fontWeight: 600 }}>
+                        {totalUnitAmt.toFixed(2)}
+                      </Text>
+                    </Table.Summary.Cell>
+                     <Table.Summary.Cell index={2}>
+                      <Text style={{ fontWeight: 600 }}></Text>
+                    </Table.Summary.Cell>    <Table.Summary.Cell index={2}>
+                      <Text style={{ fontWeight: 600 }}></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2} colSpan={1}>
-                      <Text style={{ fontWeight: 600 }}>{netAmount}</Text>
+                      <Text style={{ fontWeight: 600 }}>
+                        {netAmount.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{insuranceCoveredAmount}</Text>
+                      <Text style={{ fontWeight: 600 }}>
+                        {insuranceCoveredAmount.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     {/* <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}>{netinsamt}</Text>
@@ -1358,19 +1374,28 @@ const OtcDispense = () => {
                     <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}>Total</Text>
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2} colSpan={3}>
+                    <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}>
                         {discamt.toFixed(2)}
                       </Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2}>
+                      <Text style={{ fontWeight: 600 }}></Text>
+                    </Table.Summary.Cell>    <Table.Summary.Cell index={2}>
+                      <Text style={{ fontWeight: 600 }}></Text>
                     </Table.Summary.Cell>
                     {/* <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}>{taxrate}</Text>
                     </Table.Summary.Cell> */}
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{patientnetamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>
+                        {patientnetamt.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{adjamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>
+                        {adjamt.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell
                       index={2}

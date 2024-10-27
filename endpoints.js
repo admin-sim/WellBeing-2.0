@@ -200,6 +200,7 @@ export const urlFacilityPriceDefinitionIndex = `${baseURL}/api/PriceDefinition/F
 export const urlGetPriceDefinitionsForFacility = `${baseURL}/api/PriceDefinition/GetPriceDefinitionsForFacility`;
 export const urlGetAllServicePricesForSelectedServiceClassification = `${baseURL}/api/PriceDefinition/GetAllServicePricesForSelectedServiceClassification`;
 export const urlRevisionServicePrices = `${baseURL}/api/PriceDefinition/UpdateFacilityPrices`;
+export const urlAddOrUpdateServicePrices = `${baseURL}/api/PriceDefinition/AddOrUpdateServicePrices`;
 export const urlEditOrDeletePatientVisit = `${baseURL}/api/Encounter/EditOrCancelEncounter`;
 export const urlServiceIndex = `${baseURL}/api/Service/ServiceIndex`;
 export const urlGetAllQueues = `${baseURL}/api/Queue/GetAllQueues`;

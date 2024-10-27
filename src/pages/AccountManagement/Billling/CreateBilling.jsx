@@ -135,6 +135,9 @@ const CreateBilling = () => {
     }
   };
 
+
+  
+
   const totalAmount =
     charges?.reduce((total, row) => {
       // Ensure both PatientNetAmount.Value and AdjustedAmount exist or default to 0
@@ -356,55 +359,50 @@ const CreateBilling = () => {
           ChargeDetails
         </span>
       ),
-
       children: [
         {
           title: "ServiceName",
           dataIndex: "ServiceName",
-          //  key: "ServiceName",
           width: 200,
         },
         {
           title: "Date",
           dataIndex: "StrServiceDate",
-          // key: "StrServiceDate",
           width: 110,
         },
         {
           title: "Provider",
           dataIndex: "ProviderFirstName",
-          key: "ProviderFirstName",
         },
         {
           title: "ChargeAmt",
           dataIndex: "ChargeAmount",
-          //  key: "ChargeAmount",
+          render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "Qty",
           dataIndex: "Quantity",
-          // key: "Quantity",
           width: 80,
         },
         {
           title: "NetAmt",
           dataIndex: "NetAmount",
-          // key: "NetAmount",
+          render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "InsAmt",
           dataIndex: "InsuranceCoveredAmount",
-          /// key: "InsuranceCoveredAmount",
+          render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "TaxAmt",
           dataIndex: "TaxRate",
-          key: "TaxRate",
+          render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "NetInsAmt",
           dataIndex: "NetInsurenceAmount",
-          //  key: "NetInsurenceAmount",
+         // render: (value) => value.toFixed(2), // Format with toFixed
         },
       ],
     },
@@ -418,32 +416,31 @@ const CreateBilling = () => {
         {
           title: "Charge",
           dataIndex: "PatientChargeAmount",
-          //  key: "PatientChargeAmount",
+          render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "Discount",
           dataIndex: "PatientDiscountAmount",
-          //  key: "PatientDiscountAmount",
+          //render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "Tax",
           dataIndex: "PatientTaxRate",
-          //  key: "PatientTaxRate",
+          render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "NetAmt",
           dataIndex: "PatientNetAmount",
-          //  key: "PatientNetAmount",
+          render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "AdjAmt",
           dataIndex: "AdjustedAmount",
-          //   key: "AdjustedAmount",
+          render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "LL Disc",
           dataIndex: "Discount",
-          //key: "Discount",
           render: (_, row) => {
             if (row.ServiceType.trim() === "P") {
               return null; // Hide the discount button if ServiceType is "P"
@@ -460,7 +457,6 @@ const CreateBilling = () => {
         {
           title: "",
           dataIndex: "actions",
-          // key: "actions",
           render: (_, row) => {
             if (row.ServiceType.trim() === "P") {
               return null; // Hide the delete button if ServiceType is "P"
@@ -470,7 +466,7 @@ const CreateBilling = () => {
                 <Tooltip title="Delete">
                   <Popconfirm
                     title="Are you sure you want to delete this Charge?"
-                    onConfirm={() => handleDeleteCharge(row)} // Function to call on confirm
+                    onConfirm={() => handleDeleteCharge(row)}
                     okText="Yes"
                     cancelText="No"
                   >
@@ -486,6 +482,7 @@ const CreateBilling = () => {
       ],
     },
   ];
+  
 
   // const handleInputChange = (e, column, index,record) => {
   //   const newData = [...receiptInsAmtData];
@@ -559,7 +556,7 @@ const CreateBilling = () => {
   };
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:901/api/ReportsApi/BillReport",
+      "http://localhost:43705/api/ReportsApi/BillReport",
       {
         method: "POST",
         headers: {
@@ -1163,16 +1160,16 @@ const CreateBilling = () => {
                       <Text style={{ fontWeight: 600 }}>Total</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{netamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>{netamt.toFixed(2)}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{insamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>{insamt.toFixed(2)}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{taxamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>{taxamt.toFixed(2)}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{netinsamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>{netinsamt.toFixed(2)}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}>Total</Text>
@@ -1183,13 +1180,13 @@ const CreateBilling = () => {
                       </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{taxrate}</Text>
+                      <Text style={{ fontWeight: 600 }}>{taxrate.toFixed(2)}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{patientnetamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>{patientnetamt.toFixed(2)}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{adjamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>{adjamt.toFixed(2)}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell
                       index={2}

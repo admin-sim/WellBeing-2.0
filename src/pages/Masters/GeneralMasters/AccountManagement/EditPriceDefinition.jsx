@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Col, Form, Input, InputNumber, Row, Select, DatePicker, Divider, notification, Table, Modal, Tooltip, Skeleton } from 'antd';
+import { Button, Col, Form, Input, InputNumber, Row, Select, DatePicker, Divider, notification, Table, Modal, Tooltip, Skeleton, message } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import Layout from 'antd/es/layout/layout';
 import { useNavigate } from 'react-router';
-import { urlGetAllServiceGroups, urlGetServiceClassificationsForServiceGroup, urlGetAllServicePricesForSelectedServiceClassification ,urlRevisionServicePrices} from '../../../../../endpoints';
+import { urlGetAllServiceGroups, urlGetServiceClassificationsForServiceGroup, urlGetAllServicePricesForSelectedServiceClassification ,urlRevisionServicePrices, urlAddOrUpdateServicePrices} from '../../../../../endpoints';
 import customAxios from '../../../../components/customAxios/customAxios';
 import Title from 'antd/es/typography/Title';
 import { useLocation } from 'react-router-dom';
@@ -15,6 +15,7 @@ const EditPriceDefinition = () => {
   const [services, setServices] = useState([]);
   const [modifiedServices, setModifiedServices] = useState([]);
   const [serviceclassificationid, setServiceClassificationId] = useState(null);
+  const [modifiedRows, setModifiedRows] = React.useState({}); // Store only modified rows
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10, // Change this value according to your pagination settings
@@ -255,73 +256,104 @@ const EditPriceDefinition = () => {
     },
   ];
   const handleTableInputChange = (ServiceId, dataIndex, value) => {
-    setServices((prevDataSource) =>
-      prevDataSource.map((item) =>
+    // Update the main `services` state
+    setServices((prevServices) =>
+      prevServices.map((item) =>
         item.ServiceId === ServiceId
           ? { ...item, [dataIndex]: value }
           : item
       )
     );
-
+  
+    // Update the `modifiedServices` state to track changes
     setModifiedServices((prevModifiedServices) => {
-      const existingService = prevModifiedServices.find(
+      const existingIndex = prevModifiedServices.findIndex(
         (service) => service.ServiceId === ServiceId
       );
-
-      if (existingService) {
-        return prevModifiedServices.map((service) =>
-          service.ServiceId === ServiceId
-            ? { ...service, [dataIndex]: value }
-            : service
-        );
+  
+      if (existingIndex !== -1) {
+        // Update existing modified service
+        const updatedServices = [...prevModifiedServices];
+        updatedServices[existingIndex] = {
+          ...updatedServices[existingIndex],
+          [dataIndex]: value,
+        };
+        return updatedServices;
       } else {
+        // Add a new modified service
         const newService = services.find(
           (service) => service.ServiceId === ServiceId
         );
         return [...prevModifiedServices, { ...newService, [dataIndex]: value }];
       }
     });
-};
+  };
+  
 
 
 
-  const handleOnFinish =async (values) => {
-    const { ServiceGroups, ServiceClassifications, effectiveFrom, effectiveTo } = values;
-   const  EffectiveFrom=value.EffectiveFromDatestring;
-   const EffectiveTo=value.EffectiveToDatestring;
-
+  const handleOnFinish = async (values) => {
+    debugger;
+    console.log('Modified Services:', modifiedServices);
     console.log(services);
+
+    // Validate the form fields
     await form.validateFields();
+    if(modifiedServices.length<0){
+      message.warning("please make any changes in price");
+      return false;
+    }
+
+    // Extract the EffectiveFromDate from the form values
+    const effectiveFromDate = values.effectiveFrom;
+    const effectiveToDate = values.effectiveTo;
+
+    // Initialize a variable to hold the updated services
+    let updatedServices = modifiedServices; // Start with the current modifiedServices
+
+    // Check if effectiveFromDate is not null
+    if (effectiveFromDate) {
+        // Format the date to a string (if needed, based on your date format)
+        const formattedDate = effectiveFromDate.format('DD-MM-YYYY'); // Assuming you want to format it as 'DD-MM-YYYY'
+        const formtodate=effectiveToDate.format('DD-MM-YYYY'); 
+
+        // Create a new array with the updated EffectiveFromDatestring
+        updatedServices = modifiedServices.map(service => ({
+            ...service,
+            EffectiveFromDatestring: formattedDate ,
+            EffectiveToDatestring :formtodate
+
+        }));
+    }
 
     try {
-      const response = await customAxios.post(urlRevisionServicePrices, modifiedServices, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (response.status==200 && response.data.data == true) {
-        notification.success({
-          message: "Success",
-          description: "ServiceAdded Succeessfully.....",
+        const response = await customAxios.post(urlAddOrUpdateServicePrices, updatedServices, {
+            headers: {
+                "Content-Type": "application/json",
+            },
         });
-        //form.resetFields();
-       // const url = "/Service";
-       // navigate(url);
-      } else {
-        notification.error({
-          message: "Error",
-          description: "Something Went Wrong.....",
-        });
-      }
+        if (response.status === 200 && response.data.data === true) {
+            notification.success({
+                message: "Success",
+                description: "Service Added Successfully.....",
+            });
+            setModifiedServices([]);
+            // Optionally reset form fields or navigate
+            // form.resetFields();
+            // const url = "/Service";
+            // navigate(url);
+        } else {
+            notification.error({
+                message: "Error",
+                description: "Something Went Wrong.....",
+            });
+        }
     } catch (error) {
         notification.error({
             message: "Error",
             description: "Something Went Wrong.....",
-          });
+        });
     }
-    
-
-    // Your logic here
 };
 
 
