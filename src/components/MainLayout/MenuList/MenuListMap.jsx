@@ -28,8 +28,6 @@ import { TbCalendarCog, TbReportMoney, TbSettingsPlus } from "react-icons/tb";
 const { SubMenu } = Menu;
 
 export default function MenuList({ menuData, onClose }) {
-  console.log("k", menuData);
-
   const getAntIcon = (iconName) => {
     switch (iconName) {
       case "FaUserPlus":
