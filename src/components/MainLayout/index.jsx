@@ -34,7 +34,6 @@ import { isBrowser } from "react-device-detect";
 import LogoMobile from "./LogoMobile.jsx";
 import LogoDrawer from "./LogoDrawer.jsx";
 import Cookies from "js-cookie";
-import { AiOutlineFullscreen, AiOutlineFullscreenExit } from "react-icons/ai";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { persistStore } from "redux-persist";
@@ -43,15 +42,9 @@ import { updateTabAccessData } from "../../ReduxStore/features/TabAccessData.js"
 import { updateUserContext } from "../../ReduxStore/features/userContext.js";
 import { update } from "../../ReduxStore/features/LeftMenuItemSlice.js";
 const { Header, Sider, Content } = Layout;
-const notificationData = [
-  "AMC due on 01/03/2024 for ABC Hospital",
-  "Client XYZ successfully onboarded",
-  "Visit Scheduled for PQY Hospital on 02/03/2024",
-];
 
 function MainLayout() {
   const navigate = useNavigate();
-  const [isFullScreen, setIsFullScreen] = useState(false);
   // const userContext = JSON.parse(localStorage.getItem("userContext"));
   //useSelector((state) => state.userContext.value);
   const [sessionTimeRemaining, setSessionTimeRemaining] = useState(
@@ -108,13 +101,9 @@ function MainLayout() {
   const [visible, setVisible] = useState(false);
 
   const [userOpen, setUserOpen] = useState(false);
-  const [notificationOpen, setNotificationOpen] = useState(false);
 
   const handleUserOpenChange = (newOpen) => {
     setUserOpen(newOpen);
-  };
-  const handleNotificationOpen = (open) => {
-    setNotificationOpen(open);
   };
 
   const showDrawer = () => {
@@ -230,54 +219,7 @@ function MainLayout() {
         </div>
       ),
     },
-    {
-      key: 1,
-      label: (
-        <Popover
-          content={
-            <>
-              <List
-                size="small"
-                // header={<div>Header</div>}
-                footer={
-                  <a style={{ display: "flex", justifyContent: "end" }}>
-                    <IoCheckmarkDoneSharp
-                      style={{
-                        fontSize: "1.1rem",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    />
-                    Mark All As Read
-                  </a>
-                }
-                // bordered
-                dataSource={notificationData}
-                renderItem={(item) => (
-                  <ul style={{ padding: "0", listStyleType: "square" }}>
-                    <List.Item>
-                      <li>{item}</li>
-                    </List.Item>
-                  </ul>
-                )}
-              />
-            </>
-          }
-          // title="Title"
-          trigger="click"
-          open={notificationOpen}
-          onOpenChange={handleNotificationOpen}
-        >
-          <Space>
-            <Badge count={notificationData.length}>
-              <BellOutlined style={{ fontSize: "1.1rem" }} />
-            </Badge>
-            <span style={{ fontSize: "1rem" }}>Notifications</span>
-            <DownOutlined />
-          </Space>
-        </Popover>
-      ),
-    },
+
     {
       key: 2,
       label: (
@@ -340,52 +282,6 @@ function MainLayout() {
     },
   ];
   const headerItemsMobile = [
-    {
-      key: 1,
-      label: (
-        <Popover
-          content={
-            <>
-              <List
-                size="small"
-                // header={<div>Header</div>}
-                footer={
-                  <a style={{ display: "flex", justifyContent: "end" }}>
-                    <IoCheckmarkDoneSharp
-                      style={{
-                        fontSize: "1.1rem",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    />
-                    Mark All As Read
-                  </a>
-                }
-                // bordered
-                dataSource={notificationData}
-                renderItem={(item) => (
-                  <ul style={{ padding: "0", listStyleType: "square" }}>
-                    <List.Item>
-                      <li>{item}</li>
-                    </List.Item>
-                  </ul>
-                )}
-              />
-            </>
-          }
-          title="Notifications"
-          trigger="click"
-          open={notificationOpen}
-          onOpenChange={handleNotificationOpen}
-        >
-          <Space style={{ marginTop: "0.3em" }}>
-            <Badge count={notificationData.length}>
-              <BellOutlined style={{ fontSize: "1.5rem" }} />
-            </Badge>
-          </Space>
-        </Popover>
-      ),
-    },
     {
       key: 2,
       label: (
