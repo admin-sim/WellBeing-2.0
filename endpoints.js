@@ -477,7 +477,6 @@ export const urlAddNewChargePharmacy = `${baseURL}/api/Pharmacy/AddNewCharge`;
 export const urlAddNewBillPharmacy = `${baseURL}/api/Pharmacy/AddNewBill`;
 export const urlSaveChargesForPharmacyTempTable = `${baseURL}/api/Pharmacy/SaveChargesForPharmacyTempTable`;
 export const urlDeletePharmacyBillCharge = `${baseURL}/api/Pharmacy/DeletePharmacyBillCharge`;
-
 export const urlDischargePatient = `${baseURL}/api/WardManagement/DischargePatient`;
 export const urlAddNewChargeForParticularPatient = `${baseURL}/api/WardManagement/AddNewChargeForParticularPatient`;
 export const urlGetNewRequest = `${baseURL}/api/ClinicalSetup/GetNewRequest`;
@@ -491,4 +490,9 @@ export const urlGetAllDiagnosis = `${baseURL}/api/ClinicalChart/GetAllDiagnosis`
 export const urlEditDiagnosis = `${baseURL}/api/ClinicalChart/EditDiagnosis`;
 export const urlDeleteDiagnosis = `${baseURL}/api/ClinicalChart/DeleteDiagnosis`;
 export const urlClinicalChartFlows = `${baseURL}/api/ClinicalSetup/ClinicalChartFlows`;
+export const urlShowClinicalModal = `${baseURL}/api/ClinicalSetup/ShowClinicalModal`;
+export const urlClinicalAddNewCharge = `${baseURL}/api/ClinicalSetup/ClinicalAddNewCharge`;
+export const urlSendTestsFOrLabModule = `${baseURL}/api/ClinicalSetup/SendTestsFOrLabModule`;
+export const urlAddNewAVHeader = `${baseURL}/api/ClinicalSetup/AddNewAVHeader`;
+export const urlAddNewAVLine = `${baseURL}/api/ClinicalSetup/AddNewAVLine`;
 

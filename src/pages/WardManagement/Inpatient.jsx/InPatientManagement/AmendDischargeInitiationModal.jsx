@@ -28,14 +28,17 @@ import dayjs from "dayjs";
 
 function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClose }) {
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false)
   const handleCancel = () => {
     form.resetFields();
+    setLoading(false)
     handleClose();
   };
   const [isDeceased, setIsDeceased] = useState(true)
 
   const onFinish = async (values) => {
     debugger
+    setLoading(true)
     const Amend = {
       Department: (Dropdown.PatientsCurrentDetails || {}).DepartmentId,
       LocationId: bed.ServiceLocationId,
@@ -304,8 +307,8 @@ function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClo
               <Row gutter={32} style={{ height: "1.8rem" }}>
                 <Col offset={17} span={3}>
                   <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                      Save
+                    <Button type="primary" htmlType="submit" loading={loading}>
+                      Submit
                     </Button>
                   </Form.Item>
                 </Col>

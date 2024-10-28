@@ -1,20 +1,14 @@
 import {
-  Avatar,
-  Badge,
   Button,
   Col,
   Spin,
   DatePicker,
-  Divider,
   Form,
   Input,
   message,
   Modal,
   Row,
-  Select,
-  TimePicker,
-  Card,
-  Typography,
+  Card
 } from "antd";
 import React, { useEffect, useState } from "react";
 import CustomTable from "../../../../components/customTable/index";
@@ -167,6 +161,7 @@ function NrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
               Date: dayjs(),
             }}
             onFinish={async (values) => {
+              setLoading(true)
               if (templateEditorData == "") {
                 message.warning("No data to Save");
                 return false;
@@ -191,6 +186,7 @@ function NrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
                 setTemplateEditorData("");
                 setButtonTitle("Save");
                 setReadOnly(false);
+                setLoading(false)
               }
               handleCancel1();
             }}
@@ -208,16 +204,15 @@ function NrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
                     format="dddd , DD-MM-YYYY , hh:mm A"
                   />
                 </Form.Item>
+                <Form.Item name="NrNoteId" hidden><Input /></Form.Item>
               </ColWithEightSpan>
             </Row>
-
             <CkEditor
               key={key ? key : customKey}
               initialData={templateEditorData}
               printButton={true}
               setData={setTemplateEditorData}
             />
-
             <Row
               justify="end"
               gutter={16}
@@ -225,7 +220,7 @@ function NrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
             >
               <Col>
                 <Form.Item hidden={readOnly}>
-                  <Button type="primary" htmlType="submit">
+                  <Button type="primary" htmlType="submit" loading={loading}>
                     {buttonTitle}
                   </Button>
                 </Form.Item>

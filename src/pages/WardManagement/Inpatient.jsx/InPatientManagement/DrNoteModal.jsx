@@ -149,7 +149,6 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
           />
         </Spin>
       </Modal>
-
       <Modal
         width={"70%"}
         height={"auto"}
@@ -174,6 +173,8 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
             Date: dayjs(),
           }}
           onFinish={async (values) => {
+            debugger
+            setLoading(true)
             if (templateEditorData == "") {
               message.warning("No data to Save");
               return false;
@@ -198,6 +199,7 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
               setTemplateEditorData("");
               setButtonTitle("Save");
               setReadOnly(false);
+              setLoading(false)
             }
             handleCancel1();
           }}
@@ -215,10 +217,11 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
                   format="dddd , DD-MM-YYYY , hh:mm A"
                 />
               </Form.Item>
+              <Form.Item name="DrNoteId" hidden><Input /></Form.Item>
             </ColWithEightSpan>
           </Row>
           <CkEditor
-            key={key ? key : customKey} //added default key to 123456 so that it is unique for adding new notes
+            key={key ? key : customKey}
             initialData={templateEditorData}
             printButton={true}
             setData={setTemplateEditorData}
@@ -226,7 +229,7 @@ function DrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
           <Row justify="end" gutter={16} style={{ margin: "1rem 0.5rem 0 0" }}>
             <Col>
               <Form.Item hidden={readOnly}>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={loading}>
                   {buttonTitle}
                 </Button>
               </Form.Item>

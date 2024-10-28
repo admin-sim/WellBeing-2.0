@@ -1,25 +1,13 @@
 import React, { useEffect, useState } from "react";
 import {
     Button,
-    Carousel,
     Col,
-    Modal,
-    AutoComplete,
-    Card,
-    Dropdown,
     Layout,
-    Table,
     Row,
-    Segmented,
-    Space,
     Form,
-    message,
-    Badge,
-    Spin,
     Select,
-    DatePicker,
     Input,
-    Checkbox,
+    message,
 } from "antd";
 import PageHeader from "../../../components/PageHeader";
 import { useNavigate } from "react-router";
@@ -33,7 +21,6 @@ import {
 } from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios";
 import PatientHeader from "../../../components/PatientHeader/index.jsx";
-import { render } from "react-dom";
 
 function EditDischargeClearance() {
     const location = useLocation();
@@ -41,7 +28,7 @@ function EditDischargeClearance() {
     const [patientData, setPatientData] = useState()
     const navigate = useNavigate();
     const [tableData, setTableData] = useState([])
-    const [tableData1, setTableData1] = useState([])
+    const [loading, setLoading] = useState(true)
     const [form] = Form.useForm();
 
     const getPatientHeader = async () => {
@@ -51,6 +38,7 @@ function EditDischargeClearance() {
             );
             if (response.status === 200 && response.data != null) {
                 const detailsheader = response.data.data.EncounterModel;
+                setLoading(false)
                 setPatientData(detailsheader);
             }
         } catch (error) { }
@@ -106,8 +94,8 @@ function EditDischargeClearance() {
         },
         {
             title: 'Date Of Clearance',
-            dataIndex: 'ClearanceDateString',
-            key: 'ClearanceDateString',
+            dataIndex: 'ClearanceDate',
+            key: 'ClearanceDate',
             // render: (text) => (text ? dayjs(text).format('DD-MM-YYYY') : ''),
         },
         {
@@ -171,7 +159,7 @@ function EditDischargeClearance() {
                 if (matchingDetail) {
                     status = matchingDetail.ClearanceStatus;
                     remarks = matchingDetail.Remarks;
-                    date = matchingDetail.ClearanceDate ? dayjs(matchingDetail.ClearanceDate).format('DD-MM-YYYY') : '';
+                    date = matchingDetail.ClearanceDateString
                 }
 
                 const previousClearanceNotDone = (tableData.DischargeClearanceSetupDetails || []).some(
@@ -232,10 +220,26 @@ function EditDischargeClearance() {
                 "Content-Type": "application/json",
             },
         });
-        if (response.status == 200) {
+        if (response.status == 200 && response.data.data == 'Patient Bill Not Settled') {
+            message.warning('Patient Bill Not Settled')
+        } else {
             navigate("/DischargeClearance")
         }
     }
+
+    // if (loading) {
+    //     return (
+    //         <div style={{
+    //             display: 'flex',
+    //             justifyContent: 'center',
+    //             alignItems: 'center',
+    //             height: '100vh',
+    //             backgroundColor: '#f0f2f5'
+    //         }}>
+    //             <Spin size="large" />
+    //         </div>
+    //     );
+    // }
 
     return (
         <>
@@ -262,7 +266,7 @@ function EditDischargeClearance() {
                     initialValues={{
                         Date: dayjs()
                     }}>
-                    <CustomTable columns={columns} dataSource={dataSource} actionColumn={false} />
+                    <CustomTable columns={columns} dataSource={dataSource} actionColumn={false} loading={loading} />
                     <Row justify="end">
                         <Col>
                             <Form.Item>

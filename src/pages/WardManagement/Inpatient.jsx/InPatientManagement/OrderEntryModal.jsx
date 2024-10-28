@@ -50,6 +50,10 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
     handleClose();
   };
 
+  useEffect(() => {
+    setLoading(false)
+  }, [Dropdown])
+
   const handleAutoCompleteChange = async (value) => {
     debugger;
     setLoading(true);
@@ -180,138 +184,6 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
     setTableData(newData);
   };
 
-  const columns = [
-    {
-      title: "Drug",
-      dataIndex: "Drug",
-      key: "Drug",
-      render: (text, record) => (
-        <Form.Item
-          name={["tableData", record.key, "Drug"]}
-          style={{ marginBottom: 0 }}
-          rules={[{ required: true, message: "Please input drug!" }]}
-        >
-          <Input
-            value={text}
-            onChange={(e) =>
-              handleInputChange(e.target.value, record.key, "Drug")
-            }
-          />
-        </Form.Item>
-      ),
-    },
-    {
-      title: "Route",
-      dataIndex: "Route",
-      key: "Route",
-      render: (text, record) => (
-        <Form.Item
-          name={["tableData", record.key, "Route"]}
-          style={{ marginBottom: 0 }}
-          rules={[{ required: true, message: "Please select route!" }]}
-        >
-          <Select
-            width={100}
-            style={{ width: "100%" }}
-            value={text}
-            onChange={(value) => handleInputChange(value, record.key, "Route")}
-          />
-        </Form.Item>
-      ),
-    },
-    {
-      title: "Frequency",
-      dataIndex: "Frequency",
-      key: "Frequency",
-      render: (text, record) => (
-        <Form.Item
-          name={["tableData", record.key, "Frequency"]}
-          style={{ marginBottom: 0 }}
-          rules={[{ required: true, message: "Please input frequency!" }]}
-        >
-          <Input
-            value={text}
-            onChange={(e) =>
-              handleInputChange(e.target.value, record.key, "Frequency")
-            }
-          />
-        </Form.Item>
-      ),
-    },
-    {
-      title: "IntervalInDays",
-      dataIndex: "IntervalInDays",
-      key: "IntervalInDays",
-      render: (text, record) => (
-        <Form.Item
-          name={["tableData", record.key, "IntervalInDays"]}
-          style={{ marginBottom: 0 }}
-          rules={[
-            { required: true, message: "Please input interval in days!" },
-          ]}
-        >
-          <Input
-            value={text}
-            onChange={(e) =>
-              handleInputChange(e.target.value, record.key, "IntervalInDays")
-            }
-          />
-        </Form.Item>
-      ),
-    },
-    {
-      title: "TotalQty",
-      dataIndex: "TotalQty",
-      key: "TotalQty",
-      render: (text, record) => (
-        <Form.Item
-          name={["tableData", record.key, "TotalQty"]}
-          style={{ marginBottom: 0 }}
-          rules={[{ required: true, message: "Please input total quantity!" }]}
-        >
-          <Input
-            value={text}
-            onChange={(e) =>
-              handleInputChange(e.target.value, record.key, "TotalQty")
-            }
-          />
-        </Form.Item>
-      ),
-    },
-    {
-      title: "Instruction",
-      dataIndex: "Instruction",
-      key: "Instruction",
-      render: (text, record) => (
-        <Form.Item
-          name={["tableData", record.key, "Instruction"]}
-          style={{ marginBottom: 0 }}
-          rules={[{ required: true, message: "Please input instruction!" }]}
-        >
-          <Input
-            value={text}
-            onChange={(e) =>
-              handleInputChange(e.target.value, record.key, "Instruction")
-            }
-          />
-        </Form.Item>
-      ),
-    },
-    {
-      title: (
-        <Button type="link" onClick={handleAddRow}>
-          <PlusCircleOutlined />
-        </Button>
-      ),
-      key: "action",
-      render: (_, record) => (
-        <Button type="link" danger onClick={() => handleDeleteRow(record.key)}>
-          <DeleteOutlined />
-        </Button>
-      ),
-    },
-  ];
-
   const columns2 = [
     {
       title: "Service Name",
@@ -353,99 +225,6 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
     },
   ];
 
-  const dataSource3 = [
-    {
-      key: "1",
-      ServiceName: "ORS",
-      OrderBy: "Nagaraj",
-      ServiceDate: "20/05/2023",
-    },
-    {
-      key: "2",
-      ServiceName: "ORS",
-      OrderBy: "Nagaraj",
-      ServiceDate: "20/05/2023",
-    },
-    {
-      key: "3",
-      ServiceName: "ORS",
-      OrderBy: "Nagaraj",
-      ServiceDate: "20/05/2023",
-    },
-  ];
-
-  const dataSource2 = [
-    {
-      key: "1",
-      ServiceName: "ORS",
-      ChargeAmount: "500.00",
-      Provider: "Nagaraj",
-      Date: "20/05/2023",
-    },
-    {
-      key: "2",
-      ServiceName: "ORS",
-      ChargeAmount: "500.00",
-      Provider: "Nagaraj",
-      Date: "20/05/2023",
-    },
-    {
-      key: "3",
-      ServiceName: "ORS",
-      ChargeAmount: "500.00",
-      Provider: "Nagaraj",
-      Date: "20/05/2023",
-    },
-    {
-      key: "4",
-      ServiceName: "ORS",
-      ChargeAmount: "500.00",
-      Provider: "Nagaraj",
-      Date: "20/05/2023",
-    },
-    {
-      key: "4",
-      ServiceName: "ORS",
-      ChargeAmount: "500.00",
-      Provider: "Nagaraj",
-      Date: "20/05/2023",
-    },
-    {
-      key: "4",
-      ServiceName: "ORS",
-      ChargeAmount: "500.00",
-      Provider: "Nagaraj",
-      Date: "20/05/2023",
-    },
-    {
-      key: "4",
-      ServiceName: "ORS",
-      ChargeAmount: "500.00",
-      Provider: "Nagaraj",
-      Date: "20/05/2023",
-    },
-    {
-      key: "4",
-      ServiceName: "ORS",
-      ChargeAmount: "500.00",
-      Provider: "Nagaraj",
-      Date: "20/05/2023",
-    },
-    {
-      key: "4",
-      ServiceName: "ORS",
-      ChargeAmount: "500.00",
-      Provider: "Nagaraj",
-      Date: "20/05/2023",
-    },
-    {
-      key: "4",
-      ServiceName: "ORS",
-      ChargeAmount: "500.00",
-      Provider: "Nagaraj",
-      Date: "20/05/2023",
-    },
-  ];
   const columns5 = [
     {
       title: "Test Name",
@@ -457,6 +236,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
       render: (text) => <a>{text}</a>,
     },
   ];
+
   const dataSource5 = [
     {
       key: "1",
@@ -464,6 +244,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
       TemplateName: "Template",
     },
   ];
+  
   const columns4 = [
     {
       title: "Test Name",
@@ -472,27 +253,6 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
     {
       title: "Lab Number",
       dataIndex: "LabNumber",
-    },
-  ];
-
-  const dataSource4 = [
-    {
-      key: "1",
-      testName: "John Brown",
-      LabNumber: 32,
-      address: "New York No. 1 Lake Park",
-    },
-    {
-      key: "2",
-      testName: "John Brown",
-      LabNumber: 32,
-      address: "New York No. 1 Lake Park",
-    },
-    {
-      key: "3",
-      testName: "John Brown",
-      LabNumber: 32,
-      address: "New York No. 1 Lake Park",
     },
   ];
 
@@ -529,9 +289,9 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
       try {
         const newData = await fetchDataForSelectedService(option.key);
         setServiceDetails(newData)
-        if (newData[0]) {
+        if (newData.servicePrice) {
           form1.setFieldsValue({
-            Provider: newData[0].ProviderName,
+            Provider: newData.servicePrice.ProviderName,
           });
         }
       } catch (error) {
@@ -548,9 +308,9 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
       try {
         const newData = await fetchDataForSelectedService(option.key);
         setServiceDetails(newData)
-        if (newData[0]) {
+        if (newData.servicePrice) {
           form2.setFieldsValue({
-            Provider: newData[0].ProviderName,
+            Provider: newData.servicePrice.ProviderName,
           });
         }
       } catch (error) {
@@ -648,16 +408,17 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                   form={form1}
                   onFinish={async (values) => {
                     debugger
+                    setLoading(true)
                     const service = {
                       StrServiceDate: values.Date ? values.Date.format('DD-MM-YYYY') : '',
                       PatientId: bed.PatientId,
-                      ProviderID: serviceDetails[0].ProviderID,
+                      ProviderID: serviceDetails.servicePrice.ProviderID,
                       EncounterId: bed.EncounterId,
-                      ServiceId: serviceDetails[0].ServiceId,
-                      Rate: serviceDetails[0].Amount,
-                      ChargeAmount: serviceDetails[0].ChargeAmount,
-                      NetAmount: serviceDetails[0].ChargeAmount,
-                      PatientChargeAmount: serviceDetails[0].PatientChargeAmount,
+                      ServiceId: serviceDetails.servicePrice.ServiceId,
+                      Rate: serviceDetails.servicePrice.ChargeAmount,
+                      ChargeAmount: serviceDetails.servicePrice.ChargeAmount,
+                      NetAmount: serviceDetails.servicePrice.ChargeAmount,
+                      PatientChargeAmount: serviceDetails.servicePrice.PatientChargeAmount,
                       PatientTypeID: 22,
                       OrderEntry: 1
                     }
@@ -669,6 +430,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                     if (response.status == 200 && response.data != null) {
                       handleOrderEntry(response.data.PatientAccountCharges)
                       form1.resetFields()
+                      setLoading(false)
                       message.success("Charge Added Successfully");
                     }
                     // handleCancel();
@@ -735,7 +497,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                     </Col>
                     <Col offset={1} span={4}>
                       <Form.Item label="&nbsp;">
-                        <Button type="primary" htmlType="submit">
+                        <Button type="primary" htmlType="submit" loading={loading}>
                           Add Service
                         </Button>
                       </Form.Item>
@@ -836,16 +598,17 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                   form={form2}
                   onFinish={async (values) => {
                     debugger
+                    setLoading(true)
                     const service = {
                       StrServiceDate: values.Date ? values.Date.format('DD-MM-YYYY') : '',
                       PatientId: bed.PatientId,
-                      ProviderID: serviceDetails[0].ProviderID,
+                      ProviderID: serviceDetails.servicePrice.ProviderID,
                       EncounterId: bed.EncounterId,
-                      ServiceId: serviceDetails[0].ServiceId,
-                      Rate: serviceDetails[0].Amount,
-                      ChargeAmount: serviceDetails[0].ChargeAmount,
-                      NetAmount: serviceDetails[0].ChargeAmount,
-                      PatientChargeAmount: serviceDetails[0].PatientChargeAmount,
+                      ServiceId: serviceDetails.servicePrice.ServiceId,
+                      Rate: serviceDetails.servicePrice.ChargeAmount,
+                      ChargeAmount: serviceDetails.servicePrice.ChargeAmount,
+                      NetAmount: serviceDetails.servicePrice.ChargeAmount,
+                      PatientChargeAmount: serviceDetails.servicePrice.PatientChargeAmount,
                       PatientTypeID: 22,
                       OrderEntry: 1
                     }
@@ -857,6 +620,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                     if (response.status == 200 && response.data != null) {
                       handleOrderEntry(response.data.PatientAccountCharges)
                       form2.resetFields()
+                      setLoading(false)
                       message.success("Charge Added Successfully");
                     }
                     // handleCancel();
@@ -923,7 +687,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                     </Col>
                     <Col offset={1} span={4}>
                       <Form.Item label="&nbsp;">
-                        <Button type="primary" htmlType="submit">
+                        <Button type="primary" htmlType="submit" loading={loading}>
                           Add Service
                         </Button>
                       </Form.Item>
@@ -1031,7 +795,10 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                 <Form
                   layout="vertical"
                   form={form3}
-                  onFinish={handleFinish}
+                  onFinish={(values) => {
+                    setLoading(true),
+                      handleFinish(values)
+                  }}
                   style={{ margin: "1rem" }}
                   initialValues={{
                     FromDate: dayjs().subtract(1, 'day'),

@@ -89,12 +89,14 @@ function DirectTransferModal({
     if (response.status === 200 && response.data.data != null) {
       if (response.data.data === "Failure") {
         message.warning(response.data.data);
+        setLoading(false)
         return false;
       } else if (response.data.data === "Success") {
         message.success(response.data.data);
         handleCancel();
       } else {
         message.warning(response.data.data);
+        setLoading(false)
         return false;
       }
     } else {

@@ -73,84 +73,14 @@ function DischargeClearance() {
             );
           }
           return null;
-        });
+        }).filter(rowItem => rowItem != null);
         return {
           ...item,
           key: idx1 + 1,
           statusDots: statusDots
         };
       });
-
       setTableData1(disc)
-
-      // const disc = response.data.data.DischargeClearanceDetails.map((item) => {
-      //   const matching = response.data.data.DischargeDetails.find((pro) => {
-      //     const statusDots = []
-      //     if (item.PatientId == pro.PatientId) {
-      //       statusDots.push(<Badge
-      //         key={idx + 1}
-      //         color={item.DischargeClearanceDetails === 'Done' ? 'green' : 'red'}
-      //         style={{ marginRight: 5 }}
-      //       />)
-      //     }
-      //   })
-      //   return {
-      //     ...item,
-      //     key: idx + 1,
-      //     statusDots: <>{statusDots}</>
-      //   }
-      // })
-
-      // for (let i = 0; i < response.data.data.DischargeClearanceDetails.length; i += itemsPerRow) {
-      //   const rowItems = response.data.data.DischargeClearanceDetails.slice(i, i + itemsPerRow);
-      //   const statusDots = rowItems.map((item, idx) => (
-      //     <Badge
-      //       key={idx + 1}
-      //       color={item.DischargeClearanceDetails === 'Done' ? 'green' : 'red'}
-      //       style={{ marginRight: 5 }}
-      //     />
-      //   ));
-
-      //   disc.push({
-      //     ...rowItems[i],
-      //     key: i + 1,
-      //     statusDots: <>{statusDots}</>,
-      //     rowItems: rowItems
-      //   });
-      // }
-
-
-
-      // const disc = response.data.data.DischargeDetails.map((item, idx) => {        
-      //   const statusDots = []
-      //     statusDots.push(
-      //       <Badge
-      //         key={idx}
-      //         color={item.DischargeClearanceDetails === 'Done' ? 'green' : 'red'}
-      //         style={{ marginRight: 5 }}
-      //       />
-      //     );          
-      //   return {
-      //     ...item,
-      //     key: idx + 1,
-      //     statusDots: <>{statusDots}</>
-      //   }
-      // })
-      // const disc = response.data.data.DischargeClearanceDetails.map((person) => {
-      //   const statusDots=(
-      //     <Badge
-      //       key={idx}
-      //       color={person.DischargeClearanceDetails === 'Done' ? 'green' : 'red'}
-      //       style={{ marginRight: 5 }}
-      //     />
-      //   );
-      //   return {
-      //     ...person,
-      //     statusDots: <>{statusDots}</>
-      //   };
-      // });
-      // DischargeClearanceDetails
-      // ClearanceStatusString
       setLoading(false)
     });
   }, [])

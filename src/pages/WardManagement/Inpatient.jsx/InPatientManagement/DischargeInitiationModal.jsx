@@ -160,6 +160,7 @@ function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose })
               form={form}
               onFinish={async (values) => {
                 debugger
+                setLoading(true)
                 const discharge = {
                   Department: values.Department,
                   ServiceLocationId: values.LocationId,
@@ -319,7 +320,7 @@ function DischargeInitiationModal({ bed, patient, Dropdown, open, handleClose })
               <Row gutter={32} style={{ height: "1.8rem", marginTop: "3rem" }}>
                 <Col offset={15} span={4}>
                   <Form.Item>
-                    <Button type="primary" htmlType="submit">
+                    <Button type="primary" htmlType="submit" loading={loading}>
                       Submit
                     </Button>
                   </Form.Item>
