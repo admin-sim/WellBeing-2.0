@@ -35,7 +35,10 @@ import LogoMobile from "./LogoMobile.jsx";
 import LogoDrawer from "./LogoDrawer.jsx";
 import Cookies from "js-cookie";
 import { AiOutlineFullscreen, AiOutlineFullscreenExit } from "react-icons/ai";
-// import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import { persistStore } from "redux-persist";
+import { store } from "../../ReduxStore/store.js";
 const { Header, Sider, Content } = Layout;
 const notificationData = [
   "AMC due on 01/03/2024 for ABC Hospital",
@@ -51,6 +54,10 @@ function MainLayout() {
   const [sessionTimeRemaining, setSessionTimeRemaining] = useState(
     getSessionTimeRemaining()
   );
+  const persistor = persistStore(store);
+  const dispatch = useDispatch();
+
+  const userContext = useSelector((state) => state.userContext.value);
 
   useEffect(() => {
     // Update session time remaining every second
@@ -121,6 +128,10 @@ function MainLayout() {
 
   function logout() {
     Cookies.remove("authToken");
+    dispatch(updateTabAccessData({}));
+    dispatch(updateUserContext({}));
+    dispatch(update({}));
+    persistor.purge();
     navigate("/login");
   }
   const FullScreenRef = useRef(null);
@@ -273,14 +284,17 @@ function MainLayout() {
               <Space.Compact direction="vertical">
                 <Button
                   type="text"
-                  style={{ width: "100%", textAlign: "left" }}
+                  style={{
+                    width: "100%",
+                    justifyContent: "start",
+                  }}
                   icon={<UserOutlined />}
                 >
                   My Profile
                 </Button>
                 <Button
                   type="text"
-                  style={{ width: "100%" }}
+                  style={{ width: "100%",  justifyContent: "start", }}
                   icon={<SettingOutlined />}
                 >
                   Change Password
@@ -289,7 +303,7 @@ function MainLayout() {
                 <Button
                   type="text"
                   onClick={logout}
-                  style={{ width: "100%", textAlign: "left" }}
+                  style={{ width: "100%",   justifyContent: "start" }}
                   icon={<LogoutOutlined />}
                 >
                   Logout
@@ -310,10 +324,10 @@ function MainLayout() {
               icon={<UserOutlined />}
             />
             <span style={{ fontSize: "1rem" }}>
-              Hi, Admin
-              {/* {userContext === null || userContext.AppUserName === undefined
+              {/* Hi,{" "} */}
+              {userContext === null || userContext.AppUserName === undefined
                 ? ""
-                : userContext.AppUserName} */}
+                : userContext.AppUserName}
             </span>
             <DownOutlined />
           </Space>
@@ -441,12 +455,12 @@ function MainLayout() {
               }}
               icon={<UserOutlined />}
             />
-            {/* <span style={{ fontSize: "1rem" }}>
-                Hi,{" "}
-                {userContext === null || userContext.AppUserName === undefined
-                  ? ""
-                  : userContext.AppUserName}
-              </span> */}
+            <span style={{ fontSize: "1rem" }}>
+              {/* Hi,{" "} */}
+              {userContext === null || userContext.AppUserName === undefined
+                ? ""
+                : userContext.AppUserName}
+            </span>
             <DownOutlined />
           </Space>
         </Popover>

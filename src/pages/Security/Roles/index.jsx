@@ -47,6 +47,7 @@ export default function Roles() {
 
   const fetchAllRoles = async () => {
     //
+    debugger;
     setLoading(true);
     try {
       const response = await customAxios.get(urlGetAllRoles);

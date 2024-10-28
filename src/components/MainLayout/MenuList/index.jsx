@@ -1,11 +1,12 @@
 import React from "react";
 import MenuList from "./MenuListMap";
+import { useSelector } from "react-redux";
 
 // import { useSelector } from "react-redux";
 
 export default function MenuList1(onClose) {
-  // const menuItems = useSelector((state) => state.LeftMenuItems.value);
-  return <MenuList menuData={menuData} onClose={onClose} />;
+  const menuItems = useSelector((state) => state.LeftMenuItems?.value);
+  return <MenuList menuData={menuItems} onClose={onClose} />;
 }
 
 const menuData = [
@@ -84,7 +85,7 @@ const menuData = [
             key: "Security",
             icon: "GoDotFill",
             title: "Security",
-            children:[
+            children: [
               {
                 key: "UserRegistration",
                 icon: "GoDotFill",
@@ -108,9 +109,9 @@ const menuData = [
                 icon: "GoDotFill",
                 title: "Role Access",
                 link: "/RoleAccess",
-              }
-            ]
-          }
+              },
+            ],
+          },
         ],
       },
       {

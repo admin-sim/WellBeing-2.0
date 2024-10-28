@@ -14,6 +14,7 @@ import {
   Select,
   AutoComplete,
   Modal,
+  Divider,
 } from "antd";
 
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
@@ -35,6 +36,7 @@ import { useLocation } from "react-router-dom";
 import PatientHeader from "../../../../components/PatientHeader/index.jsx";
 import CkEditor from "../../../../components/CKEditor/index.jsx";
 import { useNavigate } from "react-router";
+import PageHeader from "../../../../components/PageHeader/index.jsx";
 const ResultEntry = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm(); // Ant Design Form hook
@@ -51,17 +53,15 @@ const ResultEntry = () => {
   const [invalidInputs, setInvalidInputs] = useState({});
   const [ckModalOpen, setCkModalOpen] = useState(false);
   const [templateEditorData, setTemplateEditorData] = useState("");
-  const [key, setKey] = useState(null);
-  const [customKey, setCustomKey] = useState(resultEntry?.length+1000);
+  const [key, setKey] = useState(1);
+  const [editorKey, setEditorKey] = useState(0);
   const [currentRecord, setCurrentRecord] = useState(null);
-  
+
   useEffect(() => {
-    if(!ckModalOpen)
-    handleCancel();
+    if (!ckModalOpen) handleCancel();
   }, [ckModalOpen]);
 
   useEffect(() => {
-    debugger;
     fetchDataHeader();
   }, []);
 
@@ -83,7 +83,6 @@ const ResultEntry = () => {
   }, []);
 
   const fetchChargeDetails = async () => {
-    debugger;
     setTableLoading(true);
     try {
       const response = await customAxios.get(
@@ -112,8 +111,7 @@ const ResultEntry = () => {
     }
   };
 
-  const LoadSampleCollectionGrid=async()=>{
-    debugger;
+  const LoadSampleCollectionGrid = async () => {
     try {
       const response = await customAxios.get(
         `${urlLoadSampleCollectionGrid}?PatientId=${record.PatientId}&EncounterId=${record.EncounterId}&SelclabId=${record.PatientLabStatusID}`
@@ -131,10 +129,9 @@ const ResultEntry = () => {
       console.error("Error fetching data:", error);
       setTableLoading(false);
     }
-  }
+  };
 
   const onFinish = async (values) => {
-    debugger;
     console.log("resultentry", resultEntry);
 
     if (selectedRow.length === 0) {
@@ -194,13 +191,12 @@ const ResultEntry = () => {
   const handleReset = async (values) => {};
 
   const columns = [
-    { title: "TestName", dataIndex: "TestName", key: "TestName" },
+    { title: "Test Name", dataIndex: "TestName", key: "TestName" },
     { title: "Amount", dataIndex: "PatientNetAmount", key: "PatientNetAmount" },
-    { title: "LabNumber", dataIndex: "LabNumber", key: "LabNumber" },
+    { title: "Lab Number", dataIndex: "LabNumber", key: "LabNumber" },
   ];
 
   const LoadAndSetReferences = async (entry, methodid) => {
-    debugger;
     // If entry is from test values, return the existing values without modification
     if (entry.IsFromTestValues) {
       return {
@@ -234,9 +230,8 @@ const ResultEntry = () => {
       TestRefDescription: refrangedesc,
     };
   };
-
+  
   async function LoadTestReferenceValues(TestId, TestMethodId, GenderId) {
-    debugger;
     const PTestID = parseInt(TestId);
     const PGenderID = parseInt(GenderId);
     const mthid = TestMethodId ? TestMethodId : "";
@@ -256,7 +251,6 @@ const ResultEntry = () => {
   }
 
   function GetMatchingTestReference(TestReflist) {
-    debugger;
     if (TestReflist && TestReflist.length > 0) {
       let Year, Month, days;
       if (patientData?.Age) {
@@ -296,56 +290,73 @@ const ResultEntry = () => {
   }
 
   const handleTemplateClick = async (record) => {
-    debugger;
-    // Handle the click event, you can log the record or perform other actions
-    console.log("Template clicked for record:", record);
-    // Additional logic to handle the template click
     setCurrentRecord(record);
-    if(record.ResId>0){
-      setTemplateEditorData(record.ObservedValues);
-    }else{
-      const response = await customAxios.get(
-        `${urlGetTemplateDataByTemplateId}?Tid=${record.TemplateId}`
-      );
-      if(response.status===200){
-        setTemplateEditorData(response.data.data.TempData);
-        //setKey();
-       
+    let templateData = "";
+    if (record.ResId > 0 || record.ObservedValues) {
+      templateData = record.ObservedValues;
+    } else {
+      try {
+        const response = await customAxios.get(
+          `${urlGetTemplateDataByTemplateId}?Tid=${record.TemplateId}`
+        );
+        if (response.status === 200) {
+          templateData = response.data.data.TempData;
+        }
+      } catch (error) {
+        console.error("Error fetching template data:", error);
+        notification.error({
+          message: "Error",
+          description: "Failed to load template data. Please try again.",
+        });
+        return;
       }
     }
+    setTemplateEditorData(templateData);
+    setEditorKey((prevKey) => prevKey + 1);
     setCkModalOpen(true);
-    
-  
   };
 
- const handleCancel=()=>{
-  setCustomKey(customKey+1);
-  setTemplateEditorData("");
-  setCkModalOpen(false);
-  
- }
- const handleTemplateSave = () => {
-  debugger;
-  if (currentRecord) {
-    const updatedRecord = {
-      ...currentRecord,
-      ObservedValues: templateEditorData,
-    };
-    updateRecords(updatedRecord);
+  const handleCancel = () => {
+    setTemplateEditorData("");
     setCkModalOpen(false);
-  }
-};
+    setEditorKey((prevKey) => prevKey + 1);
+  };
 
-const updateRecords = (updatedRecord) => {
-  setResultEntry((prevRecords) =>
-    prevRecords.map((record) =>
-      record.key === updatedRecord.key ? updatedRecord : record
-    )
-  );
-};
+  const handleTemplateSave = () => {
+    if (currentRecord) {
+      const updatedRecord = {
+        ...currentRecord,
+        ObservedValues: templateEditorData,
+        ResId: currentRecord.ResId > 0 ? currentRecord.ResId : 1, // Assign a non-zero value if it's a new entry
+      };
+      updateRecords(updatedRecord);
+      setCkModalOpen(false);
+    }
+  };
+
+  const updateRecords = (updatedRecord) => {
+    setResultEntry((prevRecords) =>
+      prevRecords.map((record) =>
+        record.key === updatedRecord.key ? updatedRecord : record
+      )
+    );
+
+    // Update the services state to reflect the changes
+    setServices((prevServices) =>
+      prevServices.map((service) =>
+        service.key === updatedRecord.key
+          ? {
+              ...service,
+              ObservedValues: updatedRecord.ObservedValues,
+              ResId: updatedRecord.ResId,
+            }
+          : service
+      )
+    );
+  };
   const resultEntrycolumns = [
     {
-      title: "TestName",
+      title: "Test Name",
       dataIndex: "TestName",
       width: 150,
     },
@@ -484,7 +495,6 @@ const updateRecords = (updatedRecord) => {
 
   // Separate function for handling method change
   const handleMethodChange = async (methodId, record) => {
-    debugger;
     if (methodId === "NoMethod") {
       methodId = null;
     }
@@ -535,7 +545,6 @@ const updateRecords = (updatedRecord) => {
   };
 
   function validateResult(id, observedValue, refRange, record) {
-    debugger;
     const isValid = IsResultWithinRefRange(observedValue, refRange, record);
 
     setInvalidInputs((prev) => ({
@@ -590,7 +599,6 @@ const updateRecords = (updatedRecord) => {
     type: "radio", // Change to radio for single selection
     selectedRowKeys,
     onChange: (selectedRowKeys, selectedRows) => {
-      debugger;
       console.log(
         `selectedRowKeys: ${selectedRowKeys}`,
         "selectedRow: ",
@@ -601,11 +609,9 @@ const updateRecords = (updatedRecord) => {
 
       if (selectedRows[0].IsResultEntryDone === true) {
         LoadAlreadyResEnteredTests(
-
           selectedRows[0].TestId,
           selectedRows[0].ChargeId
         );
-       
       } else {
         LoadResEntryGridBasedOnTestId(
           selectedRows[0].TestId,
@@ -637,7 +643,6 @@ const updateRecords = (updatedRecord) => {
     chargeid,
     labstatusid
   ) => {
-    debugger;
     try {
       const response = await customAxios.get(
         `${urlGetSelectedTestDataForResEntry}?TestId=${testid}&ChargeId=${chargeid}&ChargeId=${labstatusid}&GenderId=${patientData.Gender}`
@@ -666,7 +671,6 @@ const updateRecords = (updatedRecord) => {
   };
 
   const LoadAlreadyResEnteredTests = async (testid, chargeid) => {
-    debugger;
     try {
       const response = await customAxios.get(
         `${urlGetSelectedTestDataForResEntered}?TestId=${testid}&ChargeId=${chargeid}&PatientId=${record.PatientId}&EncounterId=${record.EncounterId}`
@@ -707,7 +711,6 @@ const updateRecords = (updatedRecord) => {
   };
 
   const handleVerification = () => {
-    debugger;
     navigate("/Verification", { state: { record } });
   };
 
@@ -721,23 +724,26 @@ const updateRecords = (updatedRecord) => {
           borderRadius: "10px",
         }}
       >
-        <Card
-          title="ResultEntry"
-          style={{
-            margin: "1rem",
-            boxShadow: "rgba(0, 0, 0, 0.15) 0px 5px 15px 0px",
-          }}
-        >
-          <Space style={{ marginTop: "16px" }}>
-            <Button onClick={() => handleSampleCollection()}>Sample Collection</Button>
+        <PageHeader title={"Result Entry"} button={false} />
+        <div style={{ padding: "0.5 1rem" }}>
+          <Space style={{ margin: "1rem 1rem 0 1rem" }}>
+            <Button onClick={() => handleSampleCollection()}>
+              Sample Collection
+            </Button>
             <Button type="primary">Result Entry</Button>
-            <Button  onClick={() => handleVerification()}>Verification</Button>
+            <Button onClick={() => handleVerification()}>Verification</Button>
             <Button>Report</Button>
           </Space>
-          <div style={{ margin: "0 2rem 1rem 2rem" }}>
+          <Divider />
+          <div style={{ margin: "0 1rem 1rem 1rem" }}>
             <PatientHeader patient={patientData} />
           </div>
-          <Form layout="vertical" onFinish={onFinish} form={form}>
+          <Form
+            layout="vertical"
+            onFinish={onFinish}
+            form={form}
+            style={{ padding: " 0 0.5rem" }}
+          >
             <ConfigProvider
               theme={{
                 components: {
@@ -803,11 +809,11 @@ const updateRecords = (updatedRecord) => {
               </Col>
             </Row>
           </Form>
-        </Card>
+        </div>
       </div>
       <div>
         <Modal
-          width={"70%"}
+          width={"60rem"}
           height={"auto"}
           centered
           title={
@@ -820,20 +826,28 @@ const updateRecords = (updatedRecord) => {
           footer={null}
           onCancel={handleCancel}
         >
-          <CkEditor
-            key={key? key : customKey}
-            initialData={templateEditorData}
-            printButton={true}
-            setData={setTemplateEditorData}
-          />
-          <Row gutter={16} justify={"end"} style={{marginTop:"1rem"}} >
-            <Col> 
-            <Button type="primary" onClick={handleTemplateSave} >Save</Button>
+          {ckModalOpen && (
+            <CkEditor
+              key={editorKey}
+              initialData={templateEditorData}
+              printButton={true}
+              onChange={(event, editor) => {
+                const data = editor.getData();
+                setTemplateEditorData(data);
+              }}
+            />
+          )}
+          <Row gutter={16} justify={"end"} style={{ marginTop: "1rem" }}>
+            <Col>
+              <Button type="primary" onClick={handleTemplateSave}>
+                Save
+              </Button>
             </Col>
-            <Col style={{marginRight:"1rem"}}> 
-            <Button  danger onClick={handleCancel} >Cancel</Button>
+            <Col style={{ marginRight: "1rem" }}>
+              <Button danger onClick={handleCancel}>
+                Cancel
+              </Button>
             </Col>
-
           </Row>
         </Modal>
       </div>

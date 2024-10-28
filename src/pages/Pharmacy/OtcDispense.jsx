@@ -29,19 +29,21 @@ import Layout from "antd/es/layout/layout";
 const { Text } = Typography;
 import { useNavigate } from "react-router";
 import customAxios from "../../components/customAxios/customAxios.jsx";
-import DiscountModal from "../AccountManagement/Billling/DiscountModal.jsx";
 import InvoiceDiscountModal from "../AccountManagement/Billling/InvoiceDiscountModal.jsx";
 
 import {
   urlAddNewBillPharmacy,
   urlAddNewChargePharmacy,
   urlDeletePharmacyBillCharge,
+  urlEditPharmacyDiscount,
   urlGetAllAutocompleteProviders,
   urlGetAllProviders,
+  urlGetLastBillNumber,
   urlGetPatientHeaderDetails,
   urlGetPharmacyServiceCharge,
   urlGetProductBatchDetails,
   urlGetStoreProductDetails,
+  urlInvoiceDiscount,
   urlPharmacyCreate,
   urlSaveChargesForPharmacyTempTable,
   urlSaveChargesForTempTable,
@@ -52,6 +54,8 @@ import PatientHeader from "../../components/PatientHeader/index.jsx";
 import { CiDiscount1 } from "react-icons/ci";
 import dayjs from "dayjs";
 import { debounce, min } from "lodash";
+import PharmacyDiscountModal from "./PharmacyDiscountModal.jsx";
+import PharmacyInvoiceDiscountModal from "./PharmacyInvoiceDiscountModal.jsx";
 
 const OtcDispense = () => {
   const location = useLocation();
@@ -321,62 +325,60 @@ const OtcDispense = () => {
   const handleQtyChange = async (e) => {
     debugger;
     const values = form.getFieldsValue();
-  
+
     // Check if Batch is defined and not null
-    if (values.Batch && e.target.value!="") {
+    if (values.Batch && e.target.value != "") {
       const [BatchNo, ExpDate] = values.Batch.split("/");
-        const qty = values.Qty;
-        const rate = values.Rate;
-        let amount=0;
-         amount = qty * parseFloat(rate);
-        
-        form.setFieldsValue({
-          Amount: amount,
-        });
-        try {
-          const servicePriceResponse = await customAxios.get(
-            `${urlGetPharmacyServiceCharge}?BatchId=${BatchNo}&ServiceId=${values.Product}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${values.Qty}&StockId=${values.StockId}`
-          );
-  
-          // Process service price data
-          const servicePriceData = servicePriceResponse.data.data.servicePrice;
-          if (servicePriceData) {
-            form.setFieldsValue({
-              PatientAmount: servicePriceData.PatientNetAmount,
-              TaxAmount: servicePriceData.TaxAmount,
-              // Provider: servicePriceData.ProviderName,
-            });
-            setSelectedProviderId(servicePriceData.ProviderID);
-          }
-        } catch (error) {
-          console.error('Error fetching service price:', error);
-        }
-      
-    } else {
-      console.warn('Batch is null or undefined');
-    }
-  };
+      const qty = values.Qty;
+      const rate = values.Rate;
+      let amount = 0;
+      amount = qty * parseFloat(rate);
 
-
-  const handleBatchChange = async () => {
-    debugger;
-    const values = form.getFieldsValue();
-    
-    // Check if Batch is defined and not null
-    if (values.Batch) {
-      const [BatchNo, ExpDate, RemQty] = values.Batch.split("/");
-      
+      form.setFieldsValue({
+        Amount: amount,
+      });
       try {
         const servicePriceResponse = await customAxios.get(
           `${urlGetPharmacyServiceCharge}?BatchId=${BatchNo}&ServiceId=${values.Product}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${values.Qty}&StockId=${values.StockId}`
         );
-  
+
+        // Process service price data
+        const servicePriceData = servicePriceResponse.data.data.servicePrice;
+        if (servicePriceData) {
+          form.setFieldsValue({
+            PatientAmount: servicePriceData.PatientNetAmount,
+            TaxAmount: servicePriceData.TaxAmount,
+            // Provider: servicePriceData.ProviderName,
+          });
+          setSelectedProviderId(servicePriceData.ProviderID);
+        }
+      } catch (error) {
+        console.error("Error fetching service price:", error);
+      }
+    } else {
+      console.warn("Batch is null or undefined");
+    }
+  };
+
+  const handleBatchChange = async () => {
+    debugger;
+    const values = form.getFieldsValue();
+
+    // Check if Batch is defined and not null
+    if (values.Batch) {
+      const [BatchNo, ExpDate, RemQty] = values.Batch.split("/");
+
+      try {
+        const servicePriceResponse = await customAxios.get(
+          `${urlGetPharmacyServiceCharge}?BatchId=${BatchNo}&ServiceId=${values.Product}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${values.Qty}&StockId=${values.StockId}`
+        );
+
         // Process service price data
         const servicePriceData = servicePriceResponse.data.data.servicePrice;
         const rate = servicePriceData.OriginalChargeAmount;
         let amount = 0;
         amount = values.Qty * parseFloat(rate);
-  
+
         if (servicePriceData) {
           form.setFieldsValue({
             PatientAmount: servicePriceData.PatientNetAmount,
@@ -385,21 +387,18 @@ const OtcDispense = () => {
             Amount: amount,
             AvlQty: RemQty,
           });
-  
-          form.validateFields(['Qty']);
-  
+
+          form.validateFields(["Qty"]);
+
           setSelectedProviderId(servicePriceData.ProviderID);
         }
       } catch (error) {
-        console.error('Error fetching service price:', error);
+        console.error("Error fetching service price:", error);
       }
     } else {
-      console.warn('Batch is null or undefined');
+      console.warn("Batch is null or undefined");
     }
   };
-  
-  
-  
 
   const handleProviderSearch = (value) => {
     debugger;
@@ -417,7 +416,7 @@ const OtcDispense = () => {
   const handleDiscount = async (row) => {
     debugger;
     const response = await customAxios.get(
-      `${urlEditDiscount}?DiscountChargeId=${row.ChargeID}&PatientId=${row.PatientId}&EncounterId=${row.EncounterId}`
+      `${urlEditPharmacyDiscount}?DiscountChargeId=${row.ChargeID}&PatientId=${row.PatientId}&EncounterId=${row.EncounterId}`
     );
     if (response.status === 200 && response.data != null) {
       setDiscountReason(response.data.DiscountReasons);
@@ -427,7 +426,7 @@ const OtcDispense = () => {
   };
   const handleInvoiceDiscount = async (row) => {
     debugger;
-    const Flag = "";
+    const Flag = "Y";
     const response = await customAxios.get(
       `${urlInvoiceDiscount}?PatientId=${PatientId}&EncounterId=${EncounterId}&Flag=${Flag}`
     );
@@ -464,7 +463,7 @@ const OtcDispense = () => {
           title: "Product",
           dataIndex: "ServiceName",
           //  key: "ServiceName",
-          width: 150,
+          width: 130,
         },
         {
           title: "Batch",
@@ -497,6 +496,7 @@ const OtcDispense = () => {
         {
           title: "Amount",
           dataIndex: "ChargeAmount",
+          render: (value) => value.toFixed(2),
           /// key: "InsuranceCoveredAmount",
         },
         {
@@ -506,17 +506,17 @@ const OtcDispense = () => {
         {
           title: "SGST",
           dataIndex: "TaxRate1",
-          key: "TaxRate",
         },
         {
           title: "Net Amt",
           dataIndex: "NetAmount",
-          key: "TaxRate",
+          render: (value) => value.toFixed(2),
+          width: 80,
         },
         {
           title: "Ins Amt",
           dataIndex: "InsuranceCoveredAmount",
-          //  key: "NetInsurenceAmount",
+          render: (value) => value.toFixed(2),
         },
       ],
     },
@@ -530,12 +530,13 @@ const OtcDispense = () => {
         {
           title: "Charge",
           dataIndex: "PatientChargeAmount",
-          //  key: "NetInsurenceAmount",
+          render: (value) => value.toFixed(2),
         },
         {
           title: "Disc",
           dataIndex: "PatientDiscountAmount",
-          //  key: "NetInsurenceAmount",
+          render: (value) => value.toFixed(2),
+          width: 80,
         },
         {
           title: "CGST",
@@ -550,12 +551,12 @@ const OtcDispense = () => {
         {
           title: "Net Amt",
           dataIndex: "PatientNetAmount",
-          //  key: "NetInsurenceAmount",
+          render: (value) => value.toFixed(2),
         },
         {
           title: "Adjusted Amt",
           dataIndex: "AdjustedAmount",
-          //  key: "NetInsurenceAmount",
+          render: (value) => value.toFixed(2),
         },
         {
           title: "LL Disc",
@@ -637,7 +638,7 @@ const OtcDispense = () => {
     debugger;
 
     try {
-      const flag = 0;
+      const flag = 1;
       const response = await customAxios.get(
         `${urlGetLastBillNumber}?PatientId=${PatientId}&EncounterId=${EncounterId}&Flag=${flag}`
       );
@@ -665,7 +666,7 @@ const OtcDispense = () => {
   };
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:901/api/ReportsApi/BillReport",
+      "http://localhost:901/api/ReportsApi/PharmacyBillReport",
       {
         method: "POST",
         headers: {
@@ -894,7 +895,7 @@ const OtcDispense = () => {
     );
   };
   const parseDate = (dateString) => {
-    const [day, month, year] = dateString.split('-');
+    const [day, month, year] = dateString.split("-");
     return new Date(year, month - 1, day); // month is 0-indexed in JavaScript Date
   };
 
@@ -993,12 +994,16 @@ const OtcDispense = () => {
         PatientAccountChargeModel: charges, // Assuming chargeDetails is an array of charge details
       };
 
-      const response = await customAxios.post(urlAddNewBillPharmacy, billingData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true, // This ensures the session cookie is sent
-      });
+      const response = await customAxios.post(
+        urlAddNewBillPharmacy,
+        billingData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, // This ensures the session cookie is sent
+        }
+      );
       if (response.status === 200 && response.data) {
         if (
           response.data.data === "Failed To Generate Bill" ||
@@ -1126,7 +1131,8 @@ const OtcDispense = () => {
                     },
                   ]}
                 >
-                  <Select  onChange={handleBatchChange}
+                  <Select
+                    onChange={handleBatchChange}
                     disabled={!batchOptions.length}
                     dropdownStyle={{ minWidth: "12rem" }} // Set dropdown min width
                   >
@@ -1297,9 +1303,9 @@ const OtcDispense = () => {
               }}
               scroll={{ x: 1000 }}
               summary={() => {
-                let netamt = 0;
-                let insamt = 0;
-                let taxamt = 0;
+                let totalUnitAmt = 0;
+                let netAmount = 0;
+                let insuranceCoveredAmount = 0;
                 let netinsamt = 0;
                 let discamt = 0;
                 let taxrate = 0;
@@ -1309,18 +1315,18 @@ const OtcDispense = () => {
                 // Summing over the entire dataset (charges) instead of just pageData
                 charges?.forEach(
                   ({
+                    ChargeAmount,
                     NetAmount,
                     InsuranceCoveredAmount,
-                    TaxRate,
                     NetInsurenceAmount,
                     PatientDiscountAmount,
                     PatientTaxRate,
                     PatientNetAmount,
                     AdjustedAmount,
                   }) => {
-                    netamt += NetAmount;
-                    insamt += InsuranceCoveredAmount;
-                    taxamt += TaxRate;
+                    totalUnitAmt += ChargeAmount;
+                    netAmount += NetAmount;
+                    insuranceCoveredAmount += InsuranceCoveredAmount;
                     netinsamt += NetInsurenceAmount;
                     discamt += PatientDiscountAmount;
                     taxrate += PatientTaxRate;
@@ -1336,21 +1342,35 @@ const OtcDispense = () => {
                       index={0}
                       colSpan={4}
                     ></Table.Summary.Cell>
-                    <Table.Summary.Cell index={3}>
+                    <Table.Summary.Cell index={2} colSpan={1}>
                       <Text style={{ fontWeight: 600 }}>Total</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{netamt}</Text>
+                      <Text style={{ fontWeight: 600 }}></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2} >
+                      <Text style={{ fontWeight: 600 }}>
+                        {totalUnitAmt.toFixed(2)}
+                      </Text>
+                    </Table.Summary.Cell>
+                     <Table.Summary.Cell index={2}>
+                      <Text style={{ fontWeight: 600 }}></Text>
+                    </Table.Summary.Cell>    <Table.Summary.Cell index={2}>
+                      <Text style={{ fontWeight: 600 }}></Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2} colSpan={1}>
+                      <Text style={{ fontWeight: 600 }}>
+                        {netAmount.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{insamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>
+                        {insuranceCoveredAmount.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{taxamt}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
+                    {/* <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}>{netinsamt}</Text>
-                    </Table.Summary.Cell>
+                    </Table.Summary.Cell> */}
                     <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}>Total</Text>
                     </Table.Summary.Cell>
@@ -1360,13 +1380,22 @@ const OtcDispense = () => {
                       </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
+                      <Text style={{ fontWeight: 600 }}></Text>
+                    </Table.Summary.Cell>    <Table.Summary.Cell index={2}>
+                      <Text style={{ fontWeight: 600 }}></Text>
+                    </Table.Summary.Cell>
+                    {/* <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}>{taxrate}</Text>
+                    </Table.Summary.Cell> */}
+                    <Table.Summary.Cell index={2}>
+                      <Text style={{ fontWeight: 600 }}>
+                        {patientnetamt.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{patientnetamt}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{adjamt}</Text>
+                      <Text style={{ fontWeight: 600 }}>
+                        {adjamt.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell
                       index={2}
@@ -1378,14 +1407,14 @@ const OtcDispense = () => {
             />
           </Spin>
         </ConfigProvider>
-        <InvoiceDiscountModal
+        <PharmacyInvoiceDiscountModal
           options={invoicediscountReason}
           open={isinvoiceModalOpen}
           handleClose={() => setIsInvoiceModalOpen(false)}
           discountDetails={invoicediscountDetails}
           setCharges={setCharges}
         />
-        <DiscountModal
+        <PharmacyDiscountModal
           options={discountReason}
           open={isModalOpen}
           handleClose={() => setIsModalOpen(false)}
@@ -1491,7 +1520,7 @@ const OtcDispense = () => {
                   Close
                 </Button>,
               ]}
-              width={800} // You can adjust the width as needed
+              width={"60rem"} // You can adjust the width as needed
             >
               {reportUrl && (
                 <iframe

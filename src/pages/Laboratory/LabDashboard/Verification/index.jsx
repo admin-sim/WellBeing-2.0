@@ -15,18 +15,16 @@ import {
   AutoComplete,
   Modal,
   message,
+  Divider,
 } from "antd";
-
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import { useState, useEffect } from "react";
 //import ".//style.css";
 
 import {
   urlGetPatientHeaderDetails,
-  urlGetSelectedTestDataForResEntry,
   urlResultEntryIndex,
   urlLoadTestReferenceForResEntry,
-  urlSaveTestsResultEntry,
   urlGetSelectedTestDataForResEntered,
   urlGetTemplateDataByTemplateId,
   urlLoadSampleCollectionGrid,
@@ -37,6 +35,7 @@ import { useLocation } from "react-router-dom";
 import PatientHeader from "../../../../components/PatientHeader/index.jsx";
 import CkEditor from "../../../../components/CKEditor/index.jsx";
 import { useNavigate } from "react-router";
+import PageHeader from "../../../../components/PageHeader/index.jsx";
 const Verification = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm(); // Ant Design Form hook
@@ -60,12 +59,12 @@ const Verification = () => {
   const [error, setError] = useState(null);
   const [reportUrl, setReportUrl] = useState(null);
   const [blobData, setBlobData] = useState(null);
+
   useEffect(() => {
     if (!ckModalOpen) handleCancel();
   }, [ckModalOpen]);
 
   useEffect(() => {
-    debugger;
     fetchDataHeader();
   }, []);
 
@@ -87,7 +86,6 @@ const Verification = () => {
   }, []);
 
   const fetchChargeDetails = async () => {
-    debugger;
     setTableLoading(true);
     try {
       const response = await customAxios.get(
@@ -116,8 +114,7 @@ const Verification = () => {
     }
   };
 
-  const LoadSampleCollectionGrid=async()=>{
-    debugger;
+  const LoadSampleCollectionGrid = async () => {
     try {
       const response = await customAxios.get(
         `${urlLoadSampleCollectionGrid}?PatientId=${record.PatientId}&EncounterId=${record.EncounterId}&SelclabId=${record.PatientLabStatusID}`
@@ -135,13 +132,9 @@ const Verification = () => {
       console.error("Error fetching data:", error);
       setTableLoading(false);
     }
-  }
+  };
 
- 
-
- 
-  const handleSaveVerificationStatus =async (VerifyStatus) => {
-    debugger;
+  const handleSaveVerificationStatus = async (VerifyStatus) => {
     if (selectedRow?.length === 0) {
       notification.warning({
         message: "Warning",
@@ -163,79 +156,78 @@ const Verification = () => {
     }
 
     // Check if resultEntry is defined and has one record
-  
-  
 
-      if (selectedRow.IsVerificationDone === true && intverifystatus === 1) {
-        var message2 = "This Test Is Already Verified.";
-        message.warning(message2);
-        return false;
-      } else if (selectedRow.IsVerificationDone === false && intverifystatus === 0) {
-        var message3 = "Please Verify the Test To Unverify.";
-        message.warning(message3);
-        return false;
-      }
-      else {
-        // Create a new array with updated values
-        const SmplColList = [{
+    if (selectedRow.IsVerificationDone === true && intverifystatus === 1) {
+      var message2 = "This Test Is Already Verified.";
+      message.warning(message2);
+      return false;
+    } else if (
+      selectedRow.IsVerificationDone === false &&
+      intverifystatus === 0
+    ) {
+      var message3 = "Please Verify the Test To Unverify.";
+      message.warning(message3);
+      return false;
+    } else {
+      // Create a new array with updated values
+      const SmplColList = [
+        {
           PatientId: selectedRow.PatientId, // Update PatientId
           EncounterId: selectedRow.EncounterId, // Update EncounterId
           LabStatusId: selectedRow.LabStatusId, // Update LabStatusId
           SmpColHeaderId: selectedRow.SmpColHeaderId,
           SmpColLineId: selectedRow.SmpColLineId,
           IsVerificationDone: boolverifyStatus,
-      }];
-  
-  
-        try {
-          const response = await customAxios.post(
-              urlSaveVerification,
-              SmplColList,
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              }
-            );
-    
-          if (response.data.data.Status !== "") {
-            const message1 = "Saved Successfully";
-            notification.success({
-              message: "Success",
-              description: message1,
-            });
-            setResultEntry([]);
-            LoadSampleCollectionGrid();
-            setSelectedRow([]);
-            setSelectedRowKeys([]);
-    
-            form.resetFields();
-          } else {
-            notification.error({
-              message: "Error",
-              description: "Something Went Wrong.....",
-            });
+        },
+      ];
+
+      try {
+        const response = await customAxios.post(
+          urlSaveVerification,
+          SmplColList,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
-        } catch (error) {
+        );
+
+        if (response.data.data.Status !== "") {
+          const message1 = "Saved Successfully";
+          notification.success({
+            message: "Success",
+            description: message1,
+          });
+          setResultEntry([]);
+          LoadSampleCollectionGrid();
+          setSelectedRow([]);
+          setSelectedRowKeys([]);
+
+          form.resetFields();
+        } else {
           notification.error({
             message: "Error",
-            description: "An error occurred while adding the user.",
+            description: "Something Went Wrong.....",
           });
         }
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: "An error occurred while adding the user.",
+        });
       }
-    
+    }
   };
 
   const handleReset = async (values) => {};
 
   const columns = [
-    { title: "TestName", dataIndex: "TestName", key: "TestName" },
+    { title: "Test Name", dataIndex: "TestName", key: "TestName" },
     { title: "Amount", dataIndex: "PatientNetAmount", key: "PatientNetAmount" },
-    { title: "LabNumber", dataIndex: "LabNumber", key: "LabNumber" },
+    { title: "Lab Number", dataIndex: "LabNumber", key: "LabNumber" },
   ];
 
   const LoadAndSetReferences = async (entry, methodid) => {
-    debugger;
     // If entry is from test values, return the existing values without modification
     if (entry.IsFromTestValues) {
       return {
@@ -271,7 +263,6 @@ const Verification = () => {
   };
 
   async function LoadTestReferenceValues(TestId, TestMethodId, GenderId) {
-    debugger;
     const PTestID = parseInt(TestId);
     const PGenderID = parseInt(GenderId);
     const mthid = TestMethodId ? TestMethodId : "";
@@ -291,7 +282,6 @@ const Verification = () => {
   }
 
   function GetMatchingTestReference(TestReflist) {
-    debugger;
     if (TestReflist && TestReflist.length > 0) {
       let Year, Month, days;
       if (patientData?.Age) {
@@ -331,9 +321,8 @@ const Verification = () => {
   }
 
   const handleTemplateClick = async (record) => {
-    debugger;
     // Handle the click event, you can log the record or perform other actions
-    console.log("Template clicked for record:", record);
+
     // Additional logic to handle the template click
     setCurrentRecord(record);
     if (record.ResId > 0) {
@@ -347,7 +336,7 @@ const Verification = () => {
         //setKey();
       }
     }
-   // setReadOnly(true)
+    // setReadOnly(true)
     setCkModalOpen(true);
   };
 
@@ -357,7 +346,6 @@ const Verification = () => {
     setCkModalOpen(false);
   };
   const handleTemplateSave = () => {
-    debugger;
     if (currentRecord) {
       const updatedRecord = {
         ...currentRecord,
@@ -377,7 +365,7 @@ const Verification = () => {
   };
   const resultEntrycolumns = [
     {
-      title: "TestName",
+      title: "Test Name",
       dataIndex: "TestName",
       width: 150,
     },
@@ -519,7 +507,6 @@ const Verification = () => {
 
   // Separate function for handling method change
   const handleMethodChange = async (methodId, record) => {
-    debugger;
     if (methodId === "NoMethod") {
       methodId = null;
     }
@@ -570,7 +557,6 @@ const Verification = () => {
   };
 
   function validateResult(id, observedValue, refRange, record) {
-    debugger;
     const isValid = IsResultWithinRefRange(observedValue, refRange, record);
 
     setInvalidInputs((prev) => ({
@@ -625,12 +611,6 @@ const Verification = () => {
     type: "radio", // Change to radio for single selection
     selectedRowKeys,
     onChange: (selectedRowKeys, selectedRows) => {
-      debugger;
-      console.log(
-        `selectedRowKeys: ${selectedRowKeys}`,
-        "selectedRow: ",
-        selectedRows[0]
-      );
       setSelectedRowKeys(selectedRowKeys);
       setSelectedRow(selectedRows[0]);
 
@@ -645,9 +625,9 @@ const Verification = () => {
     //   disabled: record.IsVerificationDone || !record.IsResultEntryDone,
     // }),
     renderCell: (checked, record, index, originNode) => {
-    //   if (record.IsVerificationDone) {
-    //     return <span>Done</span>;
-    //   }
+      //   if (record.IsVerificationDone) {
+      //     return <span>Done</span>;
+      //   }
       if (!record.IsResultEntryDone) {
         return <span></span>;
       }
@@ -660,7 +640,6 @@ const Verification = () => {
   };
 
   const LoadAlreadyResEnteredTests = async (testid, chargeid) => {
-    debugger;
     try {
       const response = await customAxios.get(
         `${urlGetSelectedTestDataForResEntered}?TestId=${testid}&ChargeId=${chargeid}&PatientId=${record.PatientId}&EncounterId=${record.EncounterId}`
@@ -697,37 +676,29 @@ const Verification = () => {
   };
 
   const handleSampleCollection = () => {
-    console.log(record);
-
-    debugger;
     // Navigate to the desired page and pass the record object as a parameter
     navigate("/SampleCollection", { state: { record } });
   };
   const handleResultEntry = () => {
-    console.log(record);
-
-    debugger;
     // Navigate to the desired page and pass the record object as a parameter
     navigate("/ResultEntry", { state: { record } });
   };
-  const handleReport = async() => {
-    debugger;
+  const handleReport = async () => {
     const request = {
       //  EncounterId: 1,
 
-      ChargeId:selectedRow.ChargeId,
+      ChargeId: selectedRow.ChargeId,
       PatientId: selectedRow.PatientId, // or 'excel'
-      EncounterId:selectedRow.EncounterId
-      };
-      const { url, blob } = await fetchReport(request);
-      setReportUrl(url);
-      setBlobData(blob);
-      setIsModalVisible(true);
+      EncounterId: selectedRow.EncounterId,
+    };
+    const { url, blob } = await fetchReport(request);
+    setReportUrl(url);
+    setBlobData(blob);
+    setIsModalVisible(true);
   };
   async function fetchReport(request) {
-    debugger;
     const response = await fetch(
-      "http://localhost:43705/api/ReportsApi/GetLabReport",
+      "http://localhost:901/api/ReportsApi/GetLabReport",
       {
         method: "POST",
         headers: {
@@ -736,7 +707,6 @@ const Verification = () => {
         body: JSON.stringify(request),
       }
     );
-    console.log("respo", response);
 
     if (!response.ok) {
       throw new Error("Failed to fetch report");
@@ -757,23 +727,21 @@ const Verification = () => {
           borderRadius: "10px",
         }}
       >
-        <Card
-          title="Verification"
-          style={{
-            margin: "1rem",
-            boxShadow: "rgba(0, 0, 0, 0.15) 0px 5px 15px 0px",
-          }}
-        >
-          <Space style={{ marginTop: "16px" }}>
-            <Button onClick={() => handleSampleCollection()}>Sample Collection</Button>
+        <PageHeader title={"Verification"} button={false} />
+        <div style={{ padding: "0.5 1rem" }}>
+          <Space style={{ margin: "1rem 1rem 0 1rem" }}>
+            <Button onClick={() => handleSampleCollection()}>
+              Sample Collection
+            </Button>
             <Button onClick={() => handleResultEntry()}>Result Entry</Button>
             <Button type="primary">Verification</Button>
             <Button onClick={() => handleReport()}>Report</Button>
           </Space>
-          <div style={{ margin: "0 2rem 1rem 2rem" }}>
+          <Divider />
+          <div style={{ margin: "0 1rem 1rem 1rem" }}>
             <PatientHeader patient={patientData} />
           </div>
-          <Form layout="vertical"  form={form}>
+          <Form layout="vertical" form={form} style={{ padding: " 0 0.5rem" }}>
             <ConfigProvider
               theme={{
                 components: {
@@ -820,8 +788,8 @@ const Verification = () => {
               bordered
             />
 
-            <Row justify="end">
-              <Col style={{ marginRight: "10px" }}>
+            <Row justify="end" gutter={16} style={{ marginTop: "1rem" }}>
+              <Col>
                 <Form.Item>
                   <Button
                     type="primary"
@@ -831,33 +799,28 @@ const Verification = () => {
                   </Button>
                 </Form.Item>
               </Col>
-              <Col style={{ marginRight: "10px" }}>
+              <Col>
                 <Form.Item>
                   <Button
                     danger
                     onClick={() => handleSaveVerificationStatus(0)}
                   >
-                    UnVerify
+                    Unverify
                   </Button>
                 </Form.Item>
               </Col>
-              <Col style={{ marginRight: "10px" }}>
+              <Col>
                 <Form.Item>
-                  <Button
-                    danger
-                    onClick={() => handleReport()}
-                  >
-                    Report
-                  </Button>
+                  <Button onClick={() => handleReport()}>Report</Button>
                 </Form.Item>
               </Col>
             </Row>
           </Form>
-        </Card>
+        </div>
       </div>
       <div>
         <Modal
-          width={"70%"}
+          width={"65rem"}
           height={"auto"}
           centered
           title={
@@ -892,30 +855,34 @@ const Verification = () => {
         </Modal>
 
         <div>
-            {error && <div>Error: {error}</div>}
+          {error && <div>Error: {error}</div>}
 
-            <Modal
+          <Modal
             centered
-              title="Report"
-              open={isModalVisible}
-              onCancel={() => setIsModalVisible(false)}
-              footer={[
-                <Button key="close" danger onClick={() => setIsModalVisible(false)}>
-                  Close
-                </Button>,
-              ]}
-              width={"60rem"} // You can adjust the width as needed
-              height={"auto"}
-            >
-              {reportUrl && (
-                <iframe
-                  src={reportUrl}
-                  style={{ width: "100%", height: "500px", border: "none" }}
-                  title="Report"
-                />
-              )}
-            </Modal>
-          </div>
+            title="Report"
+            open={isModalVisible}
+            onCancel={() => setIsModalVisible(false)}
+            footer={[
+              <Button
+                key="close"
+                danger
+                onClick={() => setIsModalVisible(false)}
+              >
+                Close
+              </Button>,
+            ]}
+            width={"60rem"} // You can adjust the width as needed
+            height={"auto"}
+          >
+            {reportUrl && (
+              <iframe
+                src={reportUrl}
+                style={{ width: "100%", height: "500px", border: "none" }}
+                title="Report"
+              />
+            )}
+          </Modal>
+        </div>
       </div>
     </Layout>
   );

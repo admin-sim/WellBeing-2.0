@@ -11,11 +11,10 @@ import {
   Space,
   ConfigProvider,
   Spin,
+  Divider,
 } from "antd";
-
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import { useState, useEffect } from "react";
-
 import {
   urlSampleCollectionIndex,
   urlSaveSampleColResult,
@@ -25,6 +24,8 @@ import {
 import { useLocation } from "react-router-dom";
 import PatientHeader from "../../../../components/PatientHeader/index.jsx";
 import { useNavigate } from "react-router";
+import PageHeader from "../../../../components/PageHeader/index.jsx";
+import { ColWithSixSpan } from "../../../../components/customGridColumns/index.jsx";
 const SampleCollection = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm(); // Ant Design Form hook
@@ -36,9 +37,8 @@ const SampleCollection = () => {
   const [patientData, setPatientData] = useState(null);
   const location = useLocation();
   const record = location.state.record;
-  useEffect(() => {
-    debugger;
 
+  useEffect(() => {
     fetchDataHeader();
   }, []);
 
@@ -49,7 +49,6 @@ const SampleCollection = () => {
       );
       if (response.status === 200 && response.data != null) {
         const detailsheader = response.data.data.EncounterModel;
-        console.log("header", detailsheader);
 
         setPatientData(detailsheader);
       } else {
@@ -61,8 +60,7 @@ const SampleCollection = () => {
     fetchChargeDetails();
   }, []);
 
-  const LoadSampleCollectionGrid=async()=>{
-    debugger;
+  const LoadSampleCollectionGrid = async () => {
     try {
       const response = await customAxios.get(
         `${urlLoadSampleCollectionGrid}?PatientId=${record.PatientId}&EncounterId=${record.EncounterId}&SelclabId=${record.PatientLabStatusID}`
@@ -80,10 +78,9 @@ const SampleCollection = () => {
       console.error("Error fetching data:", error);
       setTableLoading(false);
     }
-  }
+  };
 
   const fetchChargeDetails = async () => {
-    debugger;
     setTableLoading(true);
     try {
       const response = await customAxios.get(
@@ -105,7 +102,6 @@ const SampleCollection = () => {
   };
 
   const onFinish = async (values) => {
-    debugger;
     if (selectedRow.length === 0) {
       notification.warning({
         message: "Warning",
@@ -138,6 +134,8 @@ const SampleCollection = () => {
         });
         LoadSampleCollectionGrid();
         form.resetFields();
+   setSelectedRow([]);
+   setSelectedRowKeys([]);
       } else {
         notification.error({
           message: "Error",
@@ -154,22 +152,15 @@ const SampleCollection = () => {
 
   const handleReset = async (values) => {};
 
-
   const columns = [
-    { title: "TestName", dataIndex: "TestName", key: "TestName" },
+    { title: "Test Name", dataIndex: "TestName", key: "TestName" },
     { title: "Amount", dataIndex: "PatientNetAmount", key: "PatientNetAmount" },
-    { title: "LabNumber", dataIndex: "LabNumber", key: "LabNumber" },
+    { title: "Lab Number", dataIndex: "LabNumber", key: "LabNumber" },
   ];
 
   const rowSelection = {
     selectedRowKeys,
     onChange: (selectedRowKeys, selectedRows) => {
-      debugger;
-      console.log(
-        `selectedRowKeys: ${selectedRowKeys}`,
-        "selectedRows: ",
-        selectedRows
-      );
       const filteredSelectedRows = selectedRows.filter(
         (row) => !row.IsSampleCollected
       );
@@ -190,17 +181,13 @@ const SampleCollection = () => {
     },
   };
 
-
-  const handleResultEntry =()=>{
+  const handleResultEntry = () => {
     navigate("/ResultEntry", { state: { record } });
-  }
+  };
   const handleVerification = () => {
-    debugger;
     navigate("/Verification", { state: { record } });
   };
-  const handleReport =()=>{
-    
-  }
+  const handleReport = () => {};
 
   return (
     <Layout style={{ width: "100%" }}>
@@ -212,23 +199,25 @@ const SampleCollection = () => {
           borderRadius: "10px",
         }}
       >
-        <Card
-          title="SampleCollectionIndex"
-          style={{
-            margin: "1rem",
-            boxShadow: "rgba(0, 0, 0, 0.15) 0px 5px 15px 0px",
-          }}
-        >
-          <Space style={{ marginTop: "16px" }}>
+        <PageHeader title={"Sample Collection Index"} button={false} />
+        <div style={{ padding: "0.5 1rem" }}>
+          <Space style={{ margin: "1rem 1rem 0 1rem" }}>
             <Button type="primary">Sample Collection</Button>
-            <Button onClick={() => handleResultEntry()} >Result Entry</Button>
-            <Button onClick={() => handleVerification()} >Verification</Button>
-            <Button onClick={() => handleReport()} >Report</Button>
+            <Button onClick={() => handleResultEntry()}>Result Entry</Button>
+            <Button onClick={() => handleVerification()}>Verification</Button>
+            <Button onClick={() => handleReport()}>Report</Button>
           </Space>
-          <div style={{ margin: "0 2rem 1rem 2rem" }}>
+
+          <Divider />
+          <div style={{ margin: "0 1rem 1rem 1rem" }}>
             <PatientHeader patient={patientData} />
           </div>
-          <Form layout="vertical" onFinish={onFinish} form={form}>
+          <Form
+            layout="vertical"
+            onFinish={onFinish}
+            form={form}
+            style={{ padding: " 0 0.5rem" }}
+          >
             <ConfigProvider
               theme={{
                 components: {
@@ -257,30 +246,30 @@ const SampleCollection = () => {
               </Spin>
             </ConfigProvider>
 
-            <Row gutter={24} style={{ marginBottom: "12px" }}>
-              <Col span={6}>
+            <Row gutter={16} style={{ marginBottom: "12px" }}>
+              <ColWithSixSpan>
                 <Form.Item name="Container1" label="Container1">
                   <Input placeholder="" />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="Container2" label="Container2">
                   <Input placeholder="Enter Name" />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="Container3" label="Container3">
                   <Input placeholder="Enter Mobile Number" />
                 </Form.Item>
-              </Col>
-              <Col span={6}>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
                 <Form.Item name="Container4" label="Container4">
                   <Input placeholder="Enter Lab Number" />
                 </Form.Item>
-              </Col>
+              </ColWithSixSpan>
             </Row>
-            <Row justify="end">
-              <Col style={{ marginRight: "10px" }}>
+            <Row justify="end" gutter={16}>
+              <Col>
                 <Form.Item>
                   <Button type="primary" htmlType="submit">
                     Submit
@@ -289,14 +278,14 @@ const SampleCollection = () => {
               </Col>
               <Col>
                 <Form.Item>
-                  <Button type="primary" onClick={handleReset}>
+                  <Button danger onClick={handleReset}>
                     Clear
                   </Button>
                 </Form.Item>
               </Col>
             </Row>
           </Form>
-        </Card>
+        </div>
       </div>
     </Layout>
   );
