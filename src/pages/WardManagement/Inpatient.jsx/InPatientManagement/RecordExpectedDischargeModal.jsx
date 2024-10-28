@@ -14,7 +14,7 @@ import {
   Tooltip,
   Typography,
 } from "antd";
-import React from "react";
+import React, { useState } from "react";
 const { Text } = Typography;
 import male from "../../../../assets/m.png";
 import { FcDocument, FcInfo, FcOpenedFolder } from "react-icons/fc";
@@ -24,7 +24,6 @@ import dayjs from "dayjs";
 
 function RecordExpectedDischarge({ bed, patient, Dropdown, open, handleClose, handleFinish }) {
   const [form] = Form.useForm();
-  console.log("bed info", bed);
   const handleCancel = () => {
     form.resetFields();
     handleClose();
@@ -121,12 +120,12 @@ function RecordExpectedDischarge({ bed, patient, Dropdown, open, handleClose, ha
                     style={{ marginBottom: "0.9rem" }}
                     name="Department"
                     label="Discharge Advised By"
-                    // rules={[
-                    //   {
-                    //     required: true,
-                    //     message: "Please select Reason",
-                    //   },
-                    // ]}
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //     message: "Please select Reason",
+                  //   },
+                  // ]}
                   >
                     <Select style={{ width: "100%" }}>
                       {Dropdown.FacilityDepartmentProvider.map((option) => (

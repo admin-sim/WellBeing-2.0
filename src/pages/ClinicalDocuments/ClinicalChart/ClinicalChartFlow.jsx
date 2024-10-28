@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Tabs, Button, Table } from 'antd'
+import { Tabs, Button, Table, Layout, Card, Row, Form, Input, Col } from 'antd'
 import customAxios from "../../../components/customAxios/customAxios";
 import { urlClinicalChartFlows } from "../../../../endpoints";
 import { useNavigate } from "react-router";
+import PageHeader from '../../../components/PageHeader/index'
+import UhidSelectComponet from '../../../components/UhidSelectComponent/index'
 
 function ClinicalChartFlow() {
+    const [form1] = Form.useForm();
     const [defaultActiveKey, setDefaultActiveKey] = useState("1");
     const [tableData, setTableData] = useState([])
     const [loading, setLoading] = useState()
@@ -36,11 +39,14 @@ function ClinicalChartFlow() {
         if (key == '1') {
             fetch('Ambulatory Patient')
         } else if (key == '2') {
-            fetch('InPatient')
+            fetch('Ambulatory Patient')
         } else if (key == '3') {
+            fetch('InPatient')
+        } else if (key == 4) {
             fetch('Day Care')
         } else {
             fetch('Emergency')
+
         }
         setDefaultActiveKey(key)
     };
@@ -79,81 +85,140 @@ function ClinicalChartFlow() {
     ];
 
     return (
-        <Tabs
-            defaultActiveKey="1"
-            size="small"
-            onChange={onTabChange}
-            tabBarGutter={0}
-            activeKey={defaultActiveKey}
-            type="card"
-            style={{ marginTop: "1rem" }}
-            tabBarStyle={{ display: "flex" }}
-        >
-            <Tabs.TabPane
-                tab={
-                    <div
-                        style={{
-                            width: "19vw",
-                            textAlign: "center",
-                            fontWeight: "600",
-                        }}
-                    >
-                        OP
+        <Layout style={{ zIndex: '999999999' }}>
+            <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
+                <PageHeader title={"Clinical Chart"} button={false} />
+                <Card>
+                    <Form
+                        layout="vertical"
+                        form={form1}
+                        onFinish={(values) => {
+                            debugger
+                        }}>
+                        <Row gutter={32}>
+                            <Col span={6}>
+                                <Form.Item name='UHID' label='UHID'
+                                    // rules={[
+                                    //     {
+                                    //         required: true,
+                                    //         message: "Please enter Provider",
+                                    //     },
+                                    // ]}
+                                >
+                                    <UhidSelectComponet />
+                                </Form.Item>
+                            </Col>
+                            <Col span={6}>
+                                <Form.Item name='Name' label='Name'>
+                                    <Input />
+                                </Form.Item>
+                            </Col>
+                            <Col span={6}>
+                                <Form.Item label="&nbsp;">
+                                    <Button type="primary" htmlType="submit">
+                                        Search
+                                    </Button>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Form>
+                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                        <Tabs
+                            defaultActiveKey="1"
+                            size="small"
+                            onChange={onTabChange}
+                            tabBarGutter={0}
+                            activeKey={defaultActiveKey}
+                            // type="card"
+                            style={{ marginTop: "1rem" }}
+                        // tabBarStyle={{ display: "flex", justifyContent: "right" }}
+                        >
+                            <Tabs.TabPane
+                                tab={
+                                    <div
+                                        style={{
+                                            width: "3vw",
+                                            textAlign: "center",
+                                            fontWeight: "600",
+                                        }}
+                                    >
+                                        ALL
+                                    </div>
+                                }
+                                key="1"
+                            >
+                                {/* <Table columns={columns} dataSource={tableData} /> */}
+                            </Tabs.TabPane>
+                            <Tabs.TabPane
+                                tab={
+                                    <div
+                                        style={{
+                                            width: "3vw",
+                                            textAlign: "center",
+                                            fontWeight: "600",
+                                        }}
+                                    >
+                                        OP
+                                    </div>
+                                }
+                                key="2"
+                            >
+                                {/* <Table columns={columns} dataSource={tableData} /> */}
+                            </Tabs.TabPane>
+                            <Tabs.TabPane
+                                tab={
+                                    <div
+                                        style={{
+                                            width: "3vw",
+                                            textAlign: "center",
+                                            fontWeight: "600",
+                                        }}
+                                    >
+                                        IP
+                                    </div>
+                                }
+                                key="3"
+                            >
+                                {/* <Table columns={columns} dataSource={tableData} /> */}
+                            </Tabs.TabPane>
+                            <Tabs.TabPane
+                                tab={
+                                    <div
+                                        style={{
+                                            width: "3vw",
+                                            textAlign: "center",
+                                            fontWeight: "600",
+                                        }}
+                                    >
+                                        DM
+                                    </div>
+                                }
+                                key="4"
+                            >
+                                {/* <Table columns={columns} dataSource={tableData} /> */}
+                            </Tabs.TabPane>
+                            <Tabs.TabPane
+                                tab={
+                                    <div
+                                        style={{
+                                            width: "3vw",
+                                            textAlign: "center",
+                                            fontWeight: "600",
+                                        }}
+                                    >
+                                        EM
+                                    </div>
+                                }
+                                key="5"
+                            >
+                                {/* <Table columns={columns} dataSource={tableData} loading={loading} /> */}
+                            </Tabs.TabPane>
+                        </Tabs>
                     </div>
-                }
-                key="1"
-            >
-                <Table columns={columns} dataSource={tableData} />
-            </Tabs.TabPane>
-            <Tabs.TabPane
-                tab={
-                    <div
-                        style={{
-                            width: "19vw",
-                            textAlign: "center",
-                            fontWeight: "600",
-                        }}
-                    >
-                        IP
-                    </div>
-                }
-                key="2"
-            >
-                <Table columns={columns} dataSource={tableData} />
-            </Tabs.TabPane>
-            <Tabs.TabPane
-                tab={
-                    <div
-                        style={{
-                            width: "19vw",
-                            textAlign: "center",
-                            fontWeight: "600",
-                        }}
-                    >
-                        DM
-                    </div>
-                }
-                key="3"
-            >
-                <Table columns={columns} dataSource={tableData} />
-            </Tabs.TabPane>
-            <Tabs.TabPane
-                tab={
-                    <div
-                        style={{
-                            width: "19vw",
-                            textAlign: "center",
-                            fontWeight: "600",
-                        }}
-                    >
-                        EM
-                    </div>
-                }
-                key="4"
-            >
-                <Table columns={columns} dataSource={tableData} loading={loading} />
-            </Tabs.TabPane>
-        </Tabs>
+                    <Table columns={columns} dataSource={tableData} loading={loading} />
+                </Card>
+            </div>
+        </Layout>
     )
 }
 

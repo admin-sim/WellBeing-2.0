@@ -29,8 +29,8 @@ import dayjs from "dayjs";
 
 function DischargeModal({ bed, patient, Dropdown, open, handleClose }) {
     const [form] = Form.useForm();
-    const [beds, setBeds] = useState([])
-    const [bedNumber, setBedNumber] = useState()
+    const [loading, setLoading] = useState(false)
+    const [defaultActiveKey, setDefaultActiveKey] = useState('1')
     const [blockChecked, setBlockChecked] = useState(false)
     const [pendingStatus, setPendingStatus] = useState(false)
     const data = Dropdown.DischargeClearance
@@ -83,6 +83,7 @@ function DischargeModal({ bed, patient, Dropdown, open, handleClose }) {
 
     const handleSubmit = async (value) => {
         debugger
+        setLoading(true)
         if (pendingStatus) {
             message.warning('Please complete discharge clearance.')
             return false
@@ -113,6 +114,8 @@ function DischargeModal({ bed, patient, Dropdown, open, handleClose }) {
             }
         } catch (error) {
             console.error("Error:", error);
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -325,6 +328,11 @@ function DischargeModal({ bed, patient, Dropdown, open, handleClose }) {
         }
     ]
 
+    const handleTabChange = (activeKey) => {
+        debugger
+        setDefaultActiveKey(activeKey)
+    };
+
     return (
         <div>
             <Modal
@@ -351,16 +359,17 @@ function DischargeModal({ bed, patient, Dropdown, open, handleClose }) {
                     >
                         <div style={{ marginTop: "1.5rem" }} >
                             <Tabs
-                                defaultActiveKey="1"
+                                defaultActiveKey={defaultActiveKey}
                                 type="card"
                                 size="small"
                                 items={dischargeHeaders}
+                                onChange={handleTabChange}
                             />
                         </div>
                         <Row justify="end">
                             <Col>
-                                <Form.Item>
-                                    <Button type="primary" htmlType="submit">
+                                <Form.Item hidden={defaultActiveKey != 1 ? false : true}>
+                                    <Button type="primary" htmlType="submit" loading={loading}>
                                         Save
                                     </Button>
                                 </Form.Item>

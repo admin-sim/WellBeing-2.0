@@ -1,230 +1,158 @@
 import {
-    Avatar,
-    Badge,
-    Button,
-    Col,
-    ConfigProvider,
-    DatePicker,
-    Divider,
-    Form,
-    Input,
-    Modal,
-    Row,
-    Select,
-    TimePicker,
-    Tooltip,
-    Typography,
+  Button,
+  Col,
+  Form,
+  message,
+  Modal,
+  Row,
 } from "antd";
-import React from "react";
+import React, { useState } from "react";
 
 import PatientHeader from "../../../../components/PatientHeader";
+import CustomTable from "../../../../components/customTable";
+import CaptureVitalsModal from "../../../../components/CaptureVitalsModal";
+import { useSearchParams } from "react-router-dom";
+import { PlusCircleOutlined } from "@ant-design/icons";
+import { FaHistory } from "react-icons/fa";
+import { urlAddNewPatientVital1, urlDeletePatientVital, urlGetPatientVitalForEdit } from "../../../../../endpoints";
+import customAxios from "../../../../components/customAxios/customAxios";
+import dayjs from "dayjs";
 
 function PatientVitalModal({ bed, patient, Dropdown, open, handleClose }) {
-    const [form] = Form.useForm();
+  const [form] = Form.useForm();
+  const [showCaptureVitalsModal, setShowCaptureVitalsModal] = useState(false)
+  const [tableData, setTableData] = useState([])
+  const [formData, setFormData] = useState({})
 
-    const handleCancel = () => {
-        form.resetFields();
-        handleClose();
-    };
+  const handleCancel = () => {
+    form.resetFields();
+    handleClose();
+  };
 
-    return (
-        <div>
-            <Modal
-                width={"60%"}
-                height={"auto"}
-                centered
-                title={
-                    <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>
-                        Patient Vitals
-                    </span>
-                }
-                open={open}
-                maskClosable={false}
-                footer={null}
-                onCancel={handleCancel}
+  async function handleEdit(params) {
+    debugger
+    const response = await customAxios.get(`${urlGetPatientVitalForEdit}?PatientVitaId=${params.PatientVitalId}`)
+    if (response.status == 200) {
+      setFormData(response.data.data)
+      setShowCaptureVitalsModal(true)
+    }
+  }
+
+  async function handleDelete(params) {
+    debugger
+    const response = await customAxios.delete(`${urlDeletePatientVital}?PatientVitalId=${params.PatientVitalId}&PatientId=${patient.PatientId}&EncounterId=${patient.EncounterId}`)
+    if (response.status == 200) {
+      setTableData(response.data.data)
+    }
+  }
+
+  async function handleSubmit(values) {
+    debugger
+    const vital = {
+      PatientId: patient.PatientId,
+      EncounterId: patient.EncounterId,
+      Height: values.Height,
+      Weight: values.Weight,
+      BodyMassIndex: values.BodyMassIndex === 0 ? "0" : null,
+      MeanAtrialPressure: values.MeanAtrialPressure === 0 ? "0" : null,
+      Temperature: values.Temperature,
+      HeartRate: values.HeartRate,
+      SystolicBP: values.SystolicBP,
+      DiastolicBP: values.DiastolicBP,
+      Position: values.position,
+      RespiratoryRate: values.RespiratoryRate,
+      Oxygensaturation: values.OxygenSaturation,
+      PvDate1: dayjs().format('DD-MM-YYYY'),
+      Time: dayjs().format('HH:mm:ss'),
+      Oedema: values.oedema,
+      pallor: values.pallor,
+      HeadCircumference: values.HeadCircumference,
+      OtherComments: values.otherComments,
+      PatientVitalId: values.PatientVitalId ? values.PatientVitalId : 0
+    }
+    const response = await customAxios.post(urlAddNewPatientVital1, vital, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (response.status == 200) {
+      message.success('Success')
+      setTableData(response.data.data)
+      setShowCaptureVitalsModal(false)
+    }
+  }
+
+  const columns = [
+    {
+      title: "Date",
+      dataIndex: "DateOfBirthstring",
+      key: "DateOfBirthstring",
+    },
+    {
+      title: "Height",
+      dataIndex: "height",
+      key: "height",
+    },
+    {
+      title: "Weight",
+      dataIndex: "Weight",
+      key: "Weight",
+    },
+    {
+      title: "Temperature",
+      dataIndex: "Temperature",
+      key: "Temperature",
+    },
+  ];
+
+  return (
+    <div>
+      <Modal
+        width={"60%"}
+        height={"auto"}
+        centered
+        title={
+          <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>
+            Patient Vitals
+          </span>
+        }
+        open={open}
+        maskClosable={false}
+        footer={null}
+        onCancel={handleCancel}
+      >
+        <PatientHeader patient={patient} />
+        <Row gutter={32} style={{ marginTop: '20px' }}>
+          <Col span={5}>
+            <Button
+              className="dfja"
+              type="primary"
+              size="middle"
+              onClick={() => setShowCaptureVitalsModal(true)}
             >
-                <PatientHeader patient={patient} />
-                {/* <Row gutter={16}>
-            <Col span={10}>
-              <div
-                style={{
-                  border: "1px solid silver",
-                  borderRadius: "0.5rem",
-                  padding: "0.5rem",
-                  marginTop: "1.2rem",
-                }}
-              >
-                <Row>
-                  <Col span={24}>Admitted Date and Time</Col>
-                  <Col span={24}>
-                    <b>14-05-2024 04:18:00 PM</b>
-                  </Col>
-                </Row>
-                <Row style={{ marginTop: "0.5rem" }}>
-                  <Col span={12}>
-                    <Col span={23}>Department</Col>
-                    <Col span={23}>
-                      <b>General Medicine</b>
-                    </Col>
-                  </Col>
-  
-                  <Col span={12}>
-                    <Col span={24}>Service Location</Col>
-                    <Col span={24}>
-                      <b>First Floor</b>
-                    </Col>
-                  </Col>
-                </Row>
-                <Row style={{ marginTop: "0.5rem" }}>
-                  <Col span={12}>
-                    <Col span={23}>Provider</Col>
-                    <Col span={23}>
-                      <b>Dr. Clement Atlee</b>
-                    </Col>
-                  </Col>
-  
-                  <Col span={12}>
-                    <Col span={24}>Ward Category</Col>
-                    <Col span={24}>
-                      <b>General Ward</b>
-                    </Col>
-                  </Col>
-                </Row>
-                <Row style={{ marginTop: "0.5rem" }}>
-                  <Col span={12}>
-                    <Col span={23}>Ward</Col>
-                    <Col span={23}>
-                      <b>Female Ward First Floor</b>
-                    </Col>
-                  </Col>
-  
-                  <Col span={12}>
-                    <Col span={24}>Bed</Col>
-                    <Col span={24}>
-                      <b>FWFF2</b>
-                    </Col>
-                  </Col>
-                </Row>
-              </div>
-            </Col>
-            <Col span={14}>
-              <Form
-                style={{ marginTop: "1rem" }}
-                layout="vertical"
-                form={form}
-                onFinish={(values) => {
-                  console.log(values);
-                  handleCancel();
-                }}
-              >
-                <Row gutter={16}>
-                  <Col span={24}>
-                    <Form.Item
-                      style={{ marginBottom: "0rem" }}
-                      name="Department"
-                      label="Department"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select Reason",
-                        },
-                      ]}
-                    >
-                      <Select style={{ width: "100%" }}>
-                        {Dropdown.FacilityDepartment.map((option) => (
-                          <Select.Option key={option.DepartmentId} value={option.DepartmentId}>
-                            {option.DepartmentName}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-  
-                  <Col span={24}>
-                    <Form.Item
-                      style={{ marginBottom: "0rem" }}
-                      name="ServiceLocation"
-                      label="Service Location"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select Reason",
-                        },
-                      ]}
-                    >
-                      <Select style={{ width: "100%" }} >
-                        {Dropdown.FacilityDeptServiceLocation.map((option) => (
-                          <Select.Option key={option.ServiceLocationId} value={option.ServiceLocationId}>
-                            {option.ServiceLocationName}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                  <Col span={24}>
-                    <Form.Item
-                      style={{ marginBottom: "0rem" }}
-                      name="Reason"
-                      label="Reason for Movement"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please select Reason",
-                        },
-                      ]}
-                    >
-                      <Select style={{ width: "100%" }} >
-                        {Dropdown.ReasonForTransfer.map((option) => (
-                          <Select.Option key={option.LookupID} value={option.LookupID}>
-                            {option.LookupDescription}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-  
-                  <Col span={24}>
-                    <Form.Item
-                      style={{ marginBottom: "3rem" }}
-                      name="DateTimeTransfer"
-                      label="Date and Time of Transfer"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please Enter Lookup Description",
-                        },
-                      ]}
-                    >
-                      <TimePicker
-                        style={{ width: "100%" }}
-                        showTime={{ format: "hh:mm A" }}
-                        format="hh:mm A"
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
-                <Row gutter={32} style={{ height: "2rem" }}>
-                  <Col offset={15} span={4}>
-                    <Form.Item>
-                      <Button type="primary" htmlType="submit">
-                        Submit
-                      </Button>
-                    </Form.Item>
-                  </Col>
-                  <Col span={4}>
-                    <Form.Item>
-                      <Button type="default" danger onClick={handleCancel}>
-                        Cancel
-                      </Button>
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </Form>
-            </Col>
-          </Row> */}
-            </Modal>
-        </div>
-    );
+              <PlusCircleOutlined
+                className="dfja"
+                style={{ fontSize: "1.1rem" }}
+              />
+              Capture Vitals
+            </Button>
+          </Col>
+          {/* <Col span={6}>
+            <Button size="middle">
+              Previous Vital Details
+              <FaHistory style={{ marginLeft: "0.5rem" }} />
+            </Button>
+          </Col> */}
+        </Row>
+        <CaptureVitalsModal onSet={formData}
+          open={showCaptureVitalsModal}
+          close={() => setShowCaptureVitalsModal(false)}
+          onSubmit={handleSubmit}
+        />
+        <CustomTable dataSource={tableData} columns={columns} onEdit={handleEdit} onDelete={handleDelete} />
+      </Modal>
+    </div>
+  );
 }
 
 export default PatientVitalModal;

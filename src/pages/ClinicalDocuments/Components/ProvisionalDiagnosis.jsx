@@ -270,11 +270,11 @@ function ProvisionalDiagnosis(Patient) {
                   icd.push(i)
                 }
               })
-              // const response = await customAxios.post(urlSaveDiagnosis, { ClinicalAdvice: diagnosis, icdcode: icd }, {
-              //   headers: {
-              //     "Content-Type": "application/json",
-              //   },
-              // })
+              const response = await customAxios.post(urlSaveDiagnosis, { ClinicalAdvice: diagnosis, icdcode: icd }, {
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              })
               if (response.status == 200) {
                 form.resetFields()
                 setData(initialData)

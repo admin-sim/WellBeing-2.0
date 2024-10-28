@@ -1,20 +1,14 @@
 import {
-  Avatar,
-  Badge,
   Button,
   Col,
   Spin,
   DatePicker,
-  Divider,
   Form,
   Input,
   message,
   Modal,
   Row,
-  Select,
-  TimePicker,
-  Card,
-  Typography,
+  Card
 } from "antd";
 import React, { useEffect, useState } from "react";
 import CustomTable from "../../../../components/customTable/index";
@@ -159,81 +153,88 @@ function NrNoteModal({ bed, patient, Dropdown, open, handleClose }) {
         footer={null}
         onCancel={handleCancel1}
       >
-        <Form
-          form={form}
-          variant="outlined"
-          initialValues={{
-            Date: dayjs(),
-          }}
-          onFinish={async (values) => {
-            if (templateEditorData == "") {
-              message.warning("No data to Save");
-              return false;
-            }
-            const note = {
-              NrNoteId: values.NrNoteId ? values.NrNoteId : 0,
-              PatientId: bed.PatientId,
-              EncounterId: bed.EncounterId,
-              datestring: values.Date ? values.Date.format("DD-MM-YYYY") : "",
-              timestring: values.Date ? values.Date.format("HH:mm:ss") : "",
-              NrNote: templateEditorData,
-            };
-            const response = await customAxios.post(urlAddNewNrNote, note, {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            });
-            if (response.status === 200 && response.data.data != null) {
-              message.success("Success");
-              setFilteredData(response.data.data.NrNotesList);
-              form.resetFields();
-              setTemplateEditorData("");
-              setButtonTitle("Save");
-              setReadOnly(false);
-            }
-            handleCancel1();
-          }}
-        >
-          <Row gutter={16} style={{ margin: "1.5rem 0 -1rem 0" }}>
-            <ColWithEightSpan>
-              <Form.Item
-                name="Date"
-                label="Date"
-                rules={[{ required: true, message: "Please input!" }]}
-              >
-                <DatePicker
-                  style={{ width: "100%" }}
-                  showTime={{ format: "hh:mm A" }}
-                  format="dddd , DD-MM-YYYY , hh:mm A"
-                />
-              </Form.Item>
-            </ColWithEightSpan>
-          </Row>
-
-          <CkEditor
-            key={key ? key : customKey}
-            initialData={templateEditorData}
-            printButton={true}
-            setData={setTemplateEditorData}
-          />
-
-          <Row justify="end" gutter={16} style={{ margin: "1rem 0.5rem 0 0" }}>
-            <Col>
-              <Form.Item hidden={readOnly}>
-                <Button type="primary" htmlType="submit">
-                  {buttonTitle}
-                </Button>
-              </Form.Item>
-            </Col>
-            <Col>
-              <Form.Item>
-                <Button danger onClick={handleCancel1}>
-                  Cancel
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
+        <Card>
+          <Form
+            form={form}
+            variant="outlined"
+            initialValues={{
+              Date: dayjs(),
+            }}
+            onFinish={async (values) => {
+              setLoading(true)
+              if (templateEditorData == "") {
+                message.warning("No data to Save");
+                return false;
+              }
+              const note = {
+                NrNoteId: values.NrNoteId ? values.NrNoteId : 0,
+                PatientId: bed.PatientId,
+                EncounterId: bed.EncounterId,
+                datestring: values.Date ? values.Date.format("DD-MM-YYYY") : "",
+                timestring: values.Date ? values.Date.format("HH:mm:ss") : "",
+                NrNote: templateEditorData,
+              };
+              const response = await customAxios.post(urlAddNewNrNote, note, {
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              });
+              if (response.status === 200 && response.data.data != null) {
+                message.success("Success");
+                setFilteredData(response.data.data.NrNotesList);
+                form.resetFields();
+                setTemplateEditorData("");
+                setButtonTitle("Save");
+                setReadOnly(false);
+                setLoading(false)
+              }
+              handleCancel1();
+            }}
+          >
+            <Row gutter={16} style={{ margin: "1.5rem 0 -1rem 0" }}>
+              <ColWithEightSpan>
+                <Form.Item
+                  name="Date"
+                  label="Date"
+                  rules={[{ required: true, message: "Please input!" }]}
+                >
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    showTime={{ format: "hh:mm A" }}
+                    format="dddd , DD-MM-YYYY , hh:mm A"
+                  />
+                </Form.Item>
+                <Form.Item name="NrNoteId" hidden><Input /></Form.Item>
+              </ColWithEightSpan>
+            </Row>
+            <CkEditor
+              key={key ? key : customKey}
+              initialData={templateEditorData}
+              printButton={true}
+              setData={setTemplateEditorData}
+            />
+            <Row
+              justify="end"
+              gutter={16}
+              style={{ margin: "1rem 0.5rem 0 0" }}
+            >
+              <Col>
+                <Form.Item hidden={readOnly}>
+                  <Button type="primary" htmlType="submit" loading={loading}>
+                    {buttonTitle}
+                  </Button>
+                </Form.Item>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button danger onClick={handleCancel1}>
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Card>
       </Modal>
     </div>
   );

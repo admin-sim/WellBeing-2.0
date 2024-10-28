@@ -182,7 +182,7 @@ function ClinicalChart() {
           tabPosition="left"
           items={[
             {
-              label: <Badge dot={initialData.ChiefList.length > 0}>Vital Signs&nbsp;&nbsp;</Badge>,
+              label: <Badge dot={false}>Vital Signs&nbsp;&nbsp;</Badge>,
               key: 11,
               children: <VitalSigns Patient={Patient} />,
             },
@@ -221,7 +221,7 @@ function ClinicalChart() {
             {
               label: `Investigation`,
               key: 11,
-              children: <Investigation />,
+              children: <Investigation Patient={Patient} />,
             },
           ]}
         />

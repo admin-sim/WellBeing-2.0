@@ -28,9 +28,8 @@ import dayjs from "dayjs";
 
 function CancelDischargeInitiationModal({ bed, patient, Dropdown, open, handleClose }) {
   const [form] = Form.useForm();
-  const [beds, setBeds] = useState([])
-  const [bedNumber, setBedNumber] = useState()
   const [blockChecked, setBlockChecked] = useState(false)
+  const [loading, setLoading] = useState(false)
   const handleCancel = () => {
     form.resetFields();
     handleClose();
@@ -59,6 +58,7 @@ function CancelDischargeInitiationModal({ bed, patient, Dropdown, open, handleCl
 
   const onFinish = async (values) => {
     debugger
+    setLoading(true)
     const cancel = {
       DischargeID: values.DischargeID,
       BedId: values.BedID,
@@ -73,6 +73,7 @@ function CancelDischargeInitiationModal({ bed, patient, Dropdown, open, handleCl
       );
       if (response.status === 200 && response.data === "Success") {
         message.success(response.data)
+        setLoading(false)
         handleCancel();
       } else {
         console.error("Failed");
@@ -274,8 +275,8 @@ function CancelDischargeInitiationModal({ bed, patient, Dropdown, open, handleCl
               <Row gutter={32} style={{ height: "1.8rem" }}>
                 <Col offset={17} span={3}>
                   <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                      Save
+                    <Button type="primary" htmlType="submit" loading={loading}>
+                      Submit
                     </Button>
                   </Form.Item>
                 </Col>

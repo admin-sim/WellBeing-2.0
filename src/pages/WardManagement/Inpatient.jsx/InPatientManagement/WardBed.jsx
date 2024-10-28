@@ -46,6 +46,7 @@ import {
   urlGetPatientBillStatus
 } from "../../../../../endpoints.js";
 import { values } from "lodash";
+import AntenatalVitalsModal from "./AntenatalVitalsModal.jsx";
 
 function WardBed({ bed, ReLoad }) {
   const [blockBedModalOpen, setBlockBedModalOpen] = useState(false);
@@ -72,6 +73,7 @@ function WardBed({ bed, ReLoad }) {
   const [patientVitalModalOpen, setPatientVitalModalOpen] = useState()
   const [patientData, setPatientData] = useState()
   const [locaton, setLocation] = useState(0)
+  const [antenatalVitalsOpen, setAntenatalVitalsOpen] = useState(false)
   const [orderEntry, setOrderEntry] = useState({
     DocumentType: [],
     PatientAccountCharges: [],
@@ -89,6 +91,7 @@ function WardBed({ bed, ReLoad }) {
     FacilityDepartmentProvider: [],
     MovementDetails: {},
   });
+  const [aVitals, setAVitals] = useState(true)
 
   useEffect(() => {
     const fetchDataHeader = async () => {
@@ -247,7 +250,8 @@ function WardBed({ bed, ReLoad }) {
           record.key !== "18" &&
           record.key !== "19" &&
           record.key !== "15" &&
-          record.key !== "17"
+          record.key !== "17" &&
+          record.key !== "16"
         ) {
           setDropDown(response.data.data);
         } else {
@@ -287,6 +291,8 @@ function WardBed({ bed, ReLoad }) {
       setFluidChartModalOpen(true);
     } else if (record.key == "19") {
       setNrNoteModalOpen(true);
+    } else if (record.key == "16") {
+      setAntenatalVitalsOpen(true);
     }
     ReLoad('End')
   };
@@ -418,11 +424,11 @@ function WardBed({ bed, ReLoad }) {
     },
     {
       label: "Antenatal Vitals",
-      key: "34",
+      key: "16",
       onClick: (record) => {
-        setIsBlockBedModalOpen(true);
-      },
-    },
+        OpenModel(record);
+      }
+    }
   ];
 
   const occupiedBedMenu = (
@@ -463,8 +469,7 @@ function WardBed({ bed, ReLoad }) {
       );
       if (response.status === 200 && response.data === "Success") {
         message.success(response.data);
-        setMovementModalOpen(false);
-        setArrivalModalOpen(false);
+        Close()
       } else {
         console.error("Failed to fetch patient details");
       }
@@ -500,6 +505,17 @@ function WardBed({ bed, ReLoad }) {
       console.error("Error:", error);
     }
   };
+
+  const handleMenuClick = () => {
+    debugger
+    if (bed.PatientGender == 'Male') {
+      setAVitals(false)
+    }
+    else {
+      setAVitals(true)
+    }
+    occupiedBedMenu
+  }
 
   const getStatusInfo = (status) => {
     switch (status) {
@@ -896,6 +912,13 @@ function WardBed({ bed, ReLoad }) {
         patient={patientData}
         open={fluidChartModalOpen}
         handleClose={() => setFluidChartModalOpen(false)}
+      />
+      <AntenatalVitalsModal
+        bed={bed}
+        Dropdown={dropDown1}
+        patient={patientData}
+        open={antenatalVitalsOpen}
+        handleClose={() => setAntenatalVitalsOpen(false)}
       />
     </Col>
   );
