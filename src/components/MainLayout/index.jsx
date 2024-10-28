@@ -39,6 +39,9 @@ import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { persistStore } from "redux-persist";
 import { store } from "../../ReduxStore/store.js";
+import { updateTabAccessData } from "../../ReduxStore/features/TabAccessData.js";
+import { updateUserContext } from "../../ReduxStore/features/userContext.js";
+import { update } from "../../ReduxStore/features/LeftMenuItemSlice.js";
 const { Header, Sider, Content } = Layout;
 const notificationData = [
   "AMC due on 01/03/2024 for ABC Hospital",
@@ -294,7 +297,7 @@ function MainLayout() {
                 </Button>
                 <Button
                   type="text"
-                  style={{ width: "100%",  justifyContent: "start", }}
+                  style={{ width: "100%", justifyContent: "start" }}
                   icon={<SettingOutlined />}
                 >
                   Change Password
@@ -303,7 +306,7 @@ function MainLayout() {
                 <Button
                   type="text"
                   onClick={logout}
-                  style={{ width: "100%",   justifyContent: "start" }}
+                  style={{ width: "100%", justifyContent: "start" }}
                   icon={<LogoutOutlined />}
                 >
                   Logout
