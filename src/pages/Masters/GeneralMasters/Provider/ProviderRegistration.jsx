@@ -1318,7 +1318,7 @@ const Provider = () => {
                     </Select>
                   </Form.Item>
                 </ColWithSixSpan>
-                <ColWithSixSpan>
+                <ColWithThreeSpan>
                   <Form.Item
                     name="consultantType"
                     label="Consultant&nbsp;Type"
@@ -1344,7 +1344,7 @@ const Provider = () => {
                       ))}
                     </Select>
                   </Form.Item>
-                </ColWithSixSpan>
+                </ColWithThreeSpan>
                 <ColWithSixSpan>
                   <Form.Item
                     name="UserId"
