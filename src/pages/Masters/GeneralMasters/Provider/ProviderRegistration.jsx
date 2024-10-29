@@ -147,6 +147,7 @@ const Provider = () => {
       form.setFieldsValue({
         title: providerDetails?.ProviderTitle || null,
         FirstName: providerDetails.ProviderFirstName || null,
+        UserId: providerDetails.UserId || null,
         MiddleName: providerDetails.ProviderMiddleName || null,
         LastName: providerDetails.ProviderLastName || null,
         Gender: providerDetails.Gender || null,
@@ -196,10 +197,13 @@ const Provider = () => {
   };
 
   const handleOnFinish = async (values) => {
+    debugger;
     setIsSubmitClicked(true);
     const patientDetails = isEditProviderRegistration
       ? {
+         
           ProviderId: providerDetails.ProviderId,
+          UserId:values.UserId,
           ProviderTitle: values.title,
           ProviderFirstName: values.FirstName,
           ProviderMiddleName:
@@ -252,6 +256,8 @@ const Provider = () => {
           EmailId: values.EmailId === undefined ? null : values.EmailId,
         }
       : {
+        UserId:values.UserId,
+        Password: values.Password, 
           ProviderId: 0,
           ProviderTitle: values.title,
           ProviderFirstName: values.FirstName,
@@ -1339,6 +1345,79 @@ const Provider = () => {
                     </Select>
                   </Form.Item>
                 </ColWithSixSpan>
+                <ColWithSixSpan>
+                  <Form.Item
+                    name="UserId"
+                    label="UserId"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please add UserId",
+                      },
+                    ]}
+                  >
+                    <Input allowClear />
+                  </Form.Item>
+                </ColWithSixSpan>
+                <ColWithSixSpan>
+              <Form.Item
+                name="Password"
+                label="Password"
+                rules={
+                  providerDetails?.ProviderId > 0
+                    ? []
+                    : [
+                        {
+                          required: true,
+                          min:6,
+                        },
+                      ]
+                }
+                hasFeedback
+              >
+                <Input.Password
+                  placeholder="Enter Password"
+                  size="medium"
+                  disabled={  providerDetails?.ProviderId > 0}
+                />
+              </Form.Item>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
+              <Form.Item
+                name="confirm"
+                label="Confirm Password"
+                dependencies={["Password"]}
+                hasFeedback
+                rules={
+                  providerDetails?.ProviderId> 0
+                    ? []
+                    : [
+                        {
+                          required: true,
+                         min:6,
+                        },
+                        ({ getFieldValue }) => ({
+                          validator(_, value) {
+                            if (!value || getFieldValue("Password") === value) {
+                              return Promise.resolve();
+                            }
+                            return Promise.reject(
+                              new Error(
+                                "The new password that you entered do not match!"
+                              )
+                            );
+                          },
+                        }),
+                      ]
+                }
+              >
+                <Input.Password
+                  placeholder="Enter Confirm Password"
+                  size="medium"
+                  disabled={providerDetails?.ProviderId > 0}
+                />
+              </Form.Item>
+            </ColWithSixSpan>
               </Row>
             </Col>
             <Col xl={6} lg={6} md={6} span={24}>

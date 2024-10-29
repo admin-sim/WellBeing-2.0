@@ -93,10 +93,10 @@ export default function MenuList({ menuData, onClose }) {
   const renderMenuItems = (items) => {
     return items
       ?.map((item) => {
-        // Render the item only if it or any of its descendants have AccessStatus set to true
-        // if (!hasAccess(item)) {
-        //   return null;
-        // }
+      //  Render the item only if it or any of its descendants have AccessStatus set to true
+        if (!hasAccess(item)) {
+          return null;
+        }
 
         if (item.children?.length > 0) {
           return (
