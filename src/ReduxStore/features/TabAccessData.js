@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const TabAccessData = createSlice({
   name: "TabAccessData",
   initialState: {
-    value: {},
+    value: [],
   },
   reducers: {
     updateTabAccessData: (state, action) => {

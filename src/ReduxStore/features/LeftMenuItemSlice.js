@@ -5,7 +5,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const LeftMenuItems = createSlice({
   name: "LeftMenuItems",
   initialState: {
-    value: {},
+    value: [],
   },
   reducers: {
     update: (state, action) => {

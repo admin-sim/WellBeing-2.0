@@ -134,7 +134,7 @@ export default function MenuList({ menuData, onClose }) {
       className="menu-bar"
       style={{ fontSize: "14px", padding: "0px" }}
     >
-      {renderMenuItems(menuData)}
+      {Object.keys(menuData).length !== 0 && renderMenuItems(menuData)}
     </Menu>
   );
 }
