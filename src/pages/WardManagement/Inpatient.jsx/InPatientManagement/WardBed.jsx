@@ -426,6 +426,10 @@ function WardBed({ bed, ReLoad }) {
       label: "Antenatal Vitals",
       key: "16",
       onClick: (record) => {
+        if (bed.PatientGender != 'Female') {
+          message.warning('Only for Female Patient')
+          return false
+        }
         OpenModel(record);
       }
     }

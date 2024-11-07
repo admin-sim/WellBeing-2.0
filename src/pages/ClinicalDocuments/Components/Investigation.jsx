@@ -7,23 +7,28 @@ import {
   DatePicker,
   Form,
   Input,
-  Popconfirm,
   Row,
-  Select, message,
+  message,
   Space, AutoComplete,
   Table,
   Tabs,
+  Tooltip,
 } from "antd";
 import { debounce } from "lodash";
 import { useForm } from "antd/es/form/Form";
 import moment from "moment/moment";
 import React, { useEffect, useState } from "react";
 import CustomTable from "../../../components/customTable/index";
-import { render } from "react-dom";
 import customAxios from "../../../components/customAxios/customAxios";
-import { urlPackageDescriptionServiceforclincal, urlGetServiceCharge, urlClinicalAddNewCharge, urlShowClinicalModal, urlSendTestsFOrLabModule } from "../../../../endpoints";
+import {
+  urlPackageDescriptionServiceforclincal,
+  urlGetServiceCharge,
+  urlClinicalAddNewCharge,
+  urlShowClinicalModal,
+  urlSendTestsFOrLabModule,
+  urlGetAllLabReportsForHealthSummary
+} from "../../../../endpoints";
 import dayjs from "dayjs";
-import { PiDeviceMobileBold } from "react-icons/pi";
 
 function Investigation(Patient) {
   const [dropDown, setDropDown] = useState({
@@ -37,6 +42,7 @@ function Investigation(Patient) {
       ...prevDropdown,
       PatientAccountCharges: value
     }));
+    // setLoading(false)
   }
 
   const handleLoading = (status) => {
@@ -62,16 +68,15 @@ function Investigation(Patient) {
   ];
 
   useEffect(() => {
-    debugger
     async function fetch(params) {
-      const response = await customAxios(`${urlShowClinicalModal}?Id=${0}&PatientID=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&FromDate=${dayjs()}&ToDate=${dayjs()}&flag=${1}&returnType=${2}`)
+      const response = await customAxios(`${urlShowClinicalModal}?Id=${0}&PatientID=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&FromDate=${dayjs()}&ToDate=${dayjs()}&flag=${1}&returnType=${0}`)
       if (response.status == 200) {
         setDropDown(response.data.data)
         setLoading(false)
       }
     }
     fetch()
-  }, [dropDown])
+  }, [UpdateDropDown])
 
   return (
     <>
@@ -131,6 +136,7 @@ const OrderDetails = (Patient) => {
   );
 
   const handleSelectDia = async (value, option) => {
+    debugger
     setLoading(true);
     if (option.key) {
       try {
@@ -172,27 +178,27 @@ const OrderDetails = (Patient) => {
     },
     {
       title: "Charge Amount",
-      dataIndex: "Rate", //ChargeAmount
+      dataIndex: "ChargeAmount", //Rate
       width: 150,
     },
     {
       title: "Action",
       width: 70,
-      render: (_, record) => (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <Popconfirm
-            title="Sure to delete?"
-            onConfirm={() => handleDeleteRow(record.key)}
-          >
-            <Button danger icon={<DeleteOutlined />} />
-          </Popconfirm>
-        </div>
-      ),
+      // render: (_, record) => (
+      //   <div
+      //     style={{
+      //       display: "flex",
+      //       justifyContent: "center",
+      //     }}
+      //   >
+      //     <Popconfirm
+      //       title="Sure to delete?"
+      //       onConfirm={() => handleDeleteRow(record.key)}
+      //     >
+      //       <Button danger icon={<DeleteOutlined />} />
+      //     </Popconfirm>
+      //   </div>
+      // ),
     },
     {
       title: "Lab Number",
@@ -204,10 +210,22 @@ const OrderDetails = (Patient) => {
       width: 120,
       render: (_, record) => (
         <Space>
-          <Badge status={record.IsProfileTest ? "success" : 'error'} />
-          <Badge status={record.IsSamplCollected ? "success" : 'error'} />
-          <Badge status={record.IsResultEntryDone ? "success" : 'error'} />
-          <Badge status={record.IsVerificationDone ? "success" : 'error'} />
+          <Tooltip title={record.SamplColHeaderId ? 'Sent' : 'Click on Send to Lab'}>
+            <Badge status={record.SamplColHeaderId ? 'success' : 'error'} />
+          </Tooltip>
+          <Tooltip title={record.IsSamplCollected ? 'Sample Collected' : 'Sample Collection Pending'}>
+            <Badge status={record.IsSamplCollected ? "success" : 'error'} />
+          </Tooltip>
+          <Tooltip title={record.IsResultEntryDone ? 'Result Entry Done' : 'Result Entry Pending'}>
+            <Badge status={record.IsResultEntryDone ? "success" : 'error'} />
+          </Tooltip>
+          <Tooltip title={record.IsVerificationDone ? 'Verification Done' : 'Verification Pending'}>
+            <Badge status={record.IsVerificationDone ? "success" : 'error'} />
+          </Tooltip>
+          {/* <Badge status={record.SamplColHeaderId ? 'success' : 'error'} /> */}
+          {/* <Badge status={record.IsSamplCollected ? "success" : 'error'} /> */}
+          {/* <Badge status={record.IsResultEntryDone ? "success" : 'error'} /> */}
+          {/* <Badge status={record.IsVerificationDone ? "success" : 'error'} /> */}
           {/* <Badge status="error" />
           <Badge status="default" />
           <Badge status="processing" />
@@ -250,21 +268,21 @@ const OrderDetails = (Patient) => {
         Patient.UpdateDropDown(response.data.data.PatientAccountCharges)
         form1.resetFields()
         message.success("Investigations Has Been Sent Successfully.");
-        Patient.handleLoading(false)
+        // Patient.handleLoading(false)
       }
       else {
         message.error('Failed To Send Investigations.')
-        Patient.handleLoading(false)
+        // Patient.handleLoading(false)
       }
     }
-    else {
-      if (Patient.dropDown.LastEncounter.PatientType == 22) {
-        message.success("For Out Patient Investigations Will Be Sent After Billing");
-      } else {
-        message.error("Please Add Some Investigations To Send.")
-      }
-      Patient.handleLoading(false)
-    }
+    // else {
+    //   if (Patient.dropDown.LastEncounter.PatientType == 22) {
+    //     message.success("For Out Patient Investigations Will Be Sent After Billing");
+    //   } else {
+    //     message.error("Please Add Some Investigations To Send.")
+    //   }
+    //   Patient.handleLoading(false)
+    // }
   }
 
   return (
@@ -275,7 +293,7 @@ const OrderDetails = (Patient) => {
         form={form1}
         onFinish={async (values) => {
           debugger
-          setLoading(true)
+          Patient.handleLoading(true)
           const service = {
             StrServiceDate: values.Date ? values.Date.format('DD-MM-YYYY') : '',
             PatientId: Patient.Patient.Patient.PatientId,
@@ -286,7 +304,7 @@ const OrderDetails = (Patient) => {
             ChargeAmount: serviceDetails.servicePrice.ChargeAmount,
             NetAmount: serviceDetails.servicePrice.ChargeAmount,
             PatientChargeAmount: serviceDetails.servicePrice.PatientChargeAmount,
-            PatientTypeID: 22,
+            PatientTypeID: Patient.dropDown.LastEncounter.PatientType,
             OrderEntry: 1
           }
           const response = await customAxios.post(urlClinicalAddNewCharge, service, {
@@ -297,8 +315,8 @@ const OrderDetails = (Patient) => {
           if (response.status == 200 && response.data != null) {
             Patient.UpdateDropDown(response.data.data.PatientAccountCharges)
             form1.resetFields()
-            setLoading(false)
             message.success("Charge Added Successfully");
+            Patient.handleLoading(false)
           }
         }}
         initialValues={{
@@ -372,33 +390,14 @@ const OrderDetails = (Patient) => {
 
 const PreviousOrderDetails = (Patient) => {
   const [form1] = useForm();
+  const [fromDate, setFromDate] = useState(dayjs().subtract(1, 'day'));
+  const [toDate, setToDate] = useState(dayjs());
+  const [dataSource, setDataSource] = useState()
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    debugger
-    async function fetch() {
-      const response = await customAxios(`${urlShowClinicalModal}?Id=${0}&PatientID=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&FromDate=${dayjs()}&ToDate=${dayjs()}&flag=${2}&returnType=${2}`)
-      if (response.status == 200) {
-        setDropDown(response.data.data)
-        setLoading(false)
-      }
-    }
-    fetch()
+    handleSearch()
   }, [])
-
-  const [dataSource, setDataSource] = useState([
-    {
-      Encounter: "COH/IP107",
-      ServiceName: "ANKLE JOINT[BOTH] X-RAY",
-      ServiceDate: "6/7/2023 10:36:22 AM",
-      OrderBy: "OCHUWA KANOBA",
-    },
-    {
-      Encounter: "COH/IP107",
-      ServiceName: "FULL BLOOD COUNT/[FBC]",
-      ServiceDate: "6/7/2023 4:38:36 PM",
-      OrderBy: "OCHUWA KANOBA",
-    },
-  ]);
 
   const columns = [
     {
@@ -411,13 +410,22 @@ const PreviousOrderDetails = (Patient) => {
     },
     {
       title: "Service Date",
-      dataIndex: "ServiceDate",
+      dataIndex: "AdvisedDateTimeString",
     },
     {
       title: "Order By",
-      dataIndex: "OrderBy",
+      dataIndex: "Provider",
     },
   ];
+
+  async function handleSearch() {
+    setLoading(true)
+    const response = await customAxios(`${urlShowClinicalModal}?Id=${0}&PatientID=${Patient.Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Patient.Encounter}&FromDate=${fromDate.format('DD-MM-YYYY')}&ToDate=${toDate.format('DD-MM-YYYY')}&flag=${2}&returnType=${0}`)
+    if (response.status == 200) {
+      setDataSource(response.data.data.OrderModel)
+      setLoading(false)
+    }
+  }
 
   return (
     <>
@@ -428,26 +436,40 @@ const PreviousOrderDetails = (Patient) => {
           console.log(values);
         }}
         style={{ marginBottom: "-2rem" }}
+        initialValues={{
+          FromDate: dayjs().subtract(1, "day"),
+          ToDate: dayjs(),
+        }}
       >
         <Row gutter={32}>
           <Col span={6}>
             <Form.Item name="FromDate" label="From Date">
-              <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+              {/* <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" /> */}
+              <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                value={fromDate}
+                onChange={(date) => setFromDate(date)}
+                disabledDate={(current) => current > moment()}
+              />
             </Form.Item>
           </Col>
           <Col span={6}>
             <Form.Item name="ToDate" label="To Date">
-              <DatePicker
+              {/* <DatePicker
                 style={{ width: "100%" }}
                 defaultValue={moment()}
                 format="DD-MM-YYYY"
+              /> */}
+              <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                value={toDate}
+                onChange={(date) => setToDate(date)}
+                disabledDate={(current) => current < fromDate}
               />
             </Form.Item>
           </Col>
           <Form.Item label=" ">
             <Col>
-              <Button type="primary" style={{ width: "100%" }}>
-                Select
+              <Button type="primary" style={{ width: "100%" }} onClick={handleSearch}>
+                Search
               </Button>
             </Col>
           </Form.Item>
@@ -458,21 +480,28 @@ const PreviousOrderDetails = (Patient) => {
         dataSource={dataSource}
         actionColumn={false}
         isFilter={true}
+        loading={loading}
       />
     </>
   );
 };
 
-const LabReports = () => {
-  const [dataSource, setDataSource] = useState([
-    {
-      key: "1",
-      TestName: "ANKLE JOINT[BOTH] X-RAY",
-      LabNumber: "COH/LAB/240",
-    },
-    { key: "2", TestName: "FULL BLOOD COUNT/[FBC]", LabNumber: "COH/LAB/245" },
-    { key: "3", TestName: "UREA", LabNumber: "COH/LAB/248" },
-  ]);
+const LabReports = (Patient) => {
+  const [dataSource, setDataSource] = useState([]);
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    handleLoad()
+  }, [])
+
+  async function handleLoad() {
+    debugger
+    const response = await customAxios(`${urlGetAllLabReportsForHealthSummary}?PatientId=${Patient.Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Patient.Encounter}&Flag=${0}`)
+    if (response.status == 200) {
+      setDataSource(response.data.data.ListOfSamplColTests)
+      setLoading(false)
+    }
+  }
 
   const columns = [
     {
@@ -488,7 +517,7 @@ const LabReports = () => {
   return (
     <>
       <span style={{ fontSize: "1rem", fontWeight: 600 }}>Lab Reports</span>
-      <CustomTable
+      <CustomTable loading={loading}
         rowSelection={{
           onChange: (selectedRowKeys, selectedRows) => {
             console.log(

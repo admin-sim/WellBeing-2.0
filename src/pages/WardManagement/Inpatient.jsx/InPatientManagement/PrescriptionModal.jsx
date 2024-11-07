@@ -75,9 +75,37 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     handleClose();
   };
 
-  const onTabChange = (key) => {
+  const onTabChange = async (key) => {
+    debugger
+    setLoading(true)
     setDefaultActiveKey(key)
-    console.log(key);
+    if (key == '2') {
+      try {
+        const response = await customAxios.get(
+          `${urlSearchExistingPrescription}?Provider=${0}&Patientid=${patient.PatientId}&FromDateString=${null}&ToDateString=${null}`
+        );
+        if (response.status === 200 && response.data.data !== null) {
+          const newdata =
+            response.data.data.ExistingPrescriptionModel.map(
+              (item, index) => {
+                return {
+                  ...item,
+                  key: uuidv4(),
+                  index: index + 1
+                };
+              }
+            );
+          setTableData2(newdata);
+          // setRecordExpectedDischargeModalOpen(false)
+        } else {
+          console.error("Failed to fetch Record EDD");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      } finally {
+        setLoading(false)
+      }
+    }
   };
 
   const handleAddRow = async () => {
@@ -863,8 +891,8 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
               </Row>
               <Divider style={{ marginBottom: "0rem" }} />
             </Form>
-            <Spin spinning={loading}>
-              <CustomTable
+            {/* <Spin spinning={loading}> */}
+              <CustomTable loading={loading}
                 columns={columns2}
                 dataSource={tableData2}
                 actionColumn={false}
@@ -874,7 +902,7 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                   y: 110,
                 }}
               />
-            </Spin>
+            {/* </Spin> */}
           </Tabs.TabPane>
         </Tabs>
       </Modal>

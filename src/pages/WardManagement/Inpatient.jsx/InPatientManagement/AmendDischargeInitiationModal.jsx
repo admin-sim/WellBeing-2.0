@@ -221,6 +221,11 @@ function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClo
                       style={{ width: "100%" }}
                       showTime={{ format: "hh:mm A" }}
                       format="DD-MM-YYYY , hh:mm A"
+                      disabledDate={(current) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return current && current < today;
+                      }}
                     />
                   </Form.Item>
                 </Col>
@@ -240,6 +245,11 @@ function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClo
                       style={{ width: "100%" }}
                       showTime={{ format: "hh:mm A" }}
                       format="DD-MM-YYYY , hh:mm A"
+                      disabledDate={(current) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return current && current < today;
+                      }}
                     />
                   </Form.Item>
                 </Col>
@@ -279,6 +289,11 @@ function AmendDischargeInitiationModal({ bed, patient, Dropdown, open, handleClo
                       style={{ width: "100%" }}
                       showTime={{ format: "hh:mm A" }}
                       format="DD-MM-YYYY , hh:mm A"
+                      disabledDate={(current) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return current && current < today;
+                      }}
                     />
                   </Form.Item>
                 </Col>

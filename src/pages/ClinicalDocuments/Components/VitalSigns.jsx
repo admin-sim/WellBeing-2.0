@@ -1,5 +1,5 @@
 import { LoginOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Modal, Spin, Row, Select, message } from "antd";
+import { Button, Col, Form, Modal, Spin, Row, Select, message, Table } from "antd";
 import { useForm } from "antd/es/form/Form";
 import React, { useEffect, useState } from "react";
 import { FaHistory } from "react-icons/fa";
@@ -12,19 +12,24 @@ import CustomTable from "../../../components/customTable";
 function VitalSigns(Patient) {
   const [showCaptureVitalsModal, setShowCaptureVitalsModal] = useState(false);
   const [loading, setLoading] = useState(true)
-  const [tableData, setTableData] = useState([])
   const [formData, setFormData] = useState({})
+  const [prevVitalsTable, setPrevVitalsTable] = useState([])
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetch()
-  }, [])
+  const handleOkPrev = () => setIsModalOpen(false)
 
-  const fetch = async () => {
-    const response = await customAxios.get(`${urlGetPatientVitals}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}`)
-    if (response.status == 200) {
-      setTableData(response.data.data)
-      setLoading(false)
-    }
+  const showModal = async (params) => {
+    debugger
+    try {
+      const response = await customAxios.get(
+        `${urlGetPatientVitals}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&RangeString=${params}`
+      );
+      if (response.status === 200 && response.data.data != null) {
+        const detailsheader = response.data.data;
+        setPrevVitalsTable(detailsheader);
+        setIsModalOpen(true);
+      }
+    } catch (error) { }
   }
 
   const columns = [
@@ -81,7 +86,7 @@ function VitalSigns(Patient) {
     });
     if (response.status == 200) {
       message.success('Success')
-      setTableData(response.data.data)
+      Patient.handleVitals(response.data.data)
       setShowCaptureVitalsModal(false)
     }
   }
@@ -90,7 +95,7 @@ function VitalSigns(Patient) {
     debugger
     const response = await customAxios.delete(`${urlDeletePatientVital}?PatientVitalId=${params.PatientVitalId}&PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}`)
     if (response.status == 200) {
-      setTableData(response.data.data)
+      Patient.handleVitals(response.data.data)
     }
   }
 
@@ -121,7 +126,7 @@ function VitalSigns(Patient) {
           </Button>
         </Col>
         <Col span={6}>
-          <Button size="middle">
+          <Button size="middle" onClick={() => showModal(dayjs().subtract(1, "month").format('DD-MM-YYYY'))}>
             Previous Vital Details
             <FaHistory style={{ marginLeft: "0.5rem" }} />
           </Button>
@@ -132,9 +137,58 @@ function VitalSigns(Patient) {
         close={() => setShowCaptureVitalsModal(false)}
         onSubmit={handleSubmit}
       />
-      {/* <Spin loading={loading}> */}
-      <CustomTable columns={columns} dataSource={tableData} onDelete={handleDelete} onEdit={handleEdit} />
-      {/* </Spin> */}
+      <CustomTable columns={columns} dataSource={Patient.initialData.PatientVital} onDelete={handleDelete} onEdit={handleEdit} />
+      <Modal
+        title="Previous Allergies"
+        open={isModalOpen}
+        onOk={handleOkPrev}
+        onCancel={handleOkPrev}
+        maskClosable={false}
+        footer={[
+          <Button key="ok" type="primary" onClick={handleOkPrev}>
+            Close
+          </Button>,
+        ]}
+      >
+        <div>
+          <span>Previous Deatils : </span>
+          <Select
+            defaultValue={dayjs().subtract(1, "month").format('DD-MM-YYYY')}
+            onChange={(value) => showModal(value)}
+            placeholder="Select Range"
+            style={{
+              margin: "0.5rem",
+              width: "40%",
+            }}
+            options={[
+              { value: dayjs().subtract(6, "year").format('DD-MM-YYYY'), label: "Previous All" },
+              { value: dayjs().subtract(7, "day").format('DD-MM-YYYY'), label: "Last One Week" },
+              { value: dayjs().subtract(15, "day").format('DD-MM-YYYY'), label: "Last 15 Days" },
+              { value: dayjs().subtract(1, "month").format('DD-MM-YYYY'), label: "Last 1 Month" },
+              { value: dayjs().subtract(3, "month").format('DD-MM-YYYY'), label: "Last 3 Months" },
+              { value: dayjs().subtract(6, "month").format('DD-MM-YYYY'), label: "Last 6 Months" },
+              { value: dayjs().subtract(1, "year").format('DD-MM-YYYY'), label: "Last 1 Year" },
+            ]}
+          />
+        </div>
+        <Table
+          size="small"
+          columns={columns}
+          // expandable={{
+          //   expandedRowRender: (record) => (
+          //     <span
+          //       style={{
+          //         margin: 0,
+          //       }}
+          //     >
+          //       {record.Temperature}
+          //     </span>
+          //   ),
+          //   // rowExpandable: (record) => record.name !== "Not Expandable",
+          // }}
+          dataSource={prevVitalsTable}
+        />
+      </Modal>
     </>
   );
 }

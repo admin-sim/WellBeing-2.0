@@ -34,6 +34,7 @@ import customAxios from "../../../components/customAxios/customAxios.jsx";
 import { v4 as uuidv4 } from "uuid";
 import dayjs from "dayjs";
 import CustomTable from "../../../components/customTable/index.jsx";
+import moment from "moment";
 
 function Prescription(Patient) {
   const [form] = useForm();
@@ -64,6 +65,8 @@ function Prescription(Patient) {
     Route: [],
     Frequency: []
   })
+  const [fromDate, setFromDate] = useState(dayjs().subtract(1, 'day'));
+  const [toDate, setToDate] = useState(dayjs());
 
   const handleReset = () => {
     form2.resetFields();
@@ -71,7 +74,7 @@ function Prescription(Patient) {
 
   const onTabChange = (key) => {
     setDefaultActiveKey(key)
-    console.log(key);
+    form2.submit()
   };
 
   const handleAddRow = async () => {
@@ -111,6 +114,7 @@ function Prescription(Patient) {
 
   useEffect(() => {
     const fetch = async () => {
+      debugger
       const response = await customAxios.get(
         `${urlGetNewRequest}?EncounterId=${Patient.Patient.Encounter}&Patientid=${Patient.Patient.PatientId}`
       );
@@ -771,11 +775,11 @@ function Prescription(Patient) {
               const urlIndent = !!obj.PriscptionHedderId ? urlUpdateIndent : urlAddNewPatientIndent
               const urlPres = !!obj.PriscptionHedderId ? urlUpdateRequest : urlAddNewNewRequest
               if (dropDown.LastEncounter != null && dropDown.LastEncounter.PatientType == 22) {
-                const PrescriptionViewModel = {
-                  PrescriptionModel: obj,
-                  PrescriptionDetails: Prescription
-                }
-                const response1 = await customAxios.post(urlPres, PrescriptionViewModel, {
+                // const PrescriptionViewModel = {
+                //   Prescription: Drugss,
+                //   PrescriptionHeader: obj
+                // }
+                const response1 = await customAxios.post(urlPres, Drugss, {
                   headers: {
                     "Content-Type": "application/json",
                   },
@@ -864,7 +868,12 @@ function Prescription(Patient) {
                     },
                   ]}
                 >
-                  <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' />
+                  <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY'
+                    disabledDate={(current) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return current && current < today;
+                    }} />
                 </Form.Item>
                 <Form.Item hidden name='PatientId'>
                   <Input />
@@ -900,11 +909,12 @@ function Prescription(Patient) {
               <Col>
                 {" "}
                 <Button type="primary" size="middle" htmlType="submit">
-                  {form.getFieldValue('PriscptionHedderId') ? 'Update' : 'Save'}
+                  {/* {form.getFieldValue('PriscptionHedderId') ? 'Update' : 'Save'} */}
+                  {buttonTitle}
                 </Button>
               </Col>
               <Col>
-                <Button danger size="middle" onClick={() => { form1.resetFields(), setDataSource(initial) }}>
+                <Button danger size="middle" onClick={() => { setButtonTitle('Save'), setTabName('New'), form1.resetFields(), setDataSource(initial) }}>
                   Reset
                 </Button>
               </Col>
@@ -950,18 +960,18 @@ function Prescription(Patient) {
               debugger;
               setLoading(true)
               const Pre = {
-                FromDateString: values.FromDate
-                  ? values.FromDate.format("DD-MM-YYYY")
+                FromDateString: fromDate
+                  ? fromDate.format("DD-MM-YYYY")
                   : "",
-                ToDateString: values.ToDate
-                  ? values.ToDate.format("DD-MM-YYYY")
+                ToDateString: toDate
+                  ? toDate.format("DD-MM-YYYY")
                   : "",
                 Provider: 0,
                 Patientid: values.PatientId,
               };
               try {
                 const response = await customAxios.get(
-                  `${urlSearchExistingPrescription}?Provider=${Pre.Provider}&Patientid=${Pre.Patientid}&FromDateString=${Pre.FromDateString}&ToDateString=${Pre.ToDateString}`
+                  `${urlSearchExistingPrescription}?Provider=${0}&Patientid=${Patient.Patient.PatientId}&FromDateString=${Pre.FromDateString}&ToDateString=${Pre.ToDateString}`
                 );
                 if (response.status === 200 && response.data.data !== null) {
                   const newdata =
@@ -1003,7 +1013,11 @@ function Prescription(Patient) {
                     },
                   ]}
                 >
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                    value={fromDate}
+                    onChange={(date) => setFromDate(date)}
+                    disabledDate={(current) => current > moment()}
+                  />
                 </Form.Item>
               </Col>
               <Col span={6}>
@@ -1017,7 +1031,11 @@ function Prescription(Patient) {
                     },
                   ]}
                 >
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                    value={toDate}
+                    onChange={(date) => setToDate(date)}
+                    disabledDate={(current) => current < fromDate}
+                  />
                 </Form.Item>
                 <Form.Item name="Provider" hidden>
                   <Input />

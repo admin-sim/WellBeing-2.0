@@ -569,9 +569,9 @@ function FluidChartModal({ bed, patient, Dropdown, open, handleClose }) {
                                         </Form.Item>
                                     </Col>
                                     <Col span={3}>
-                                        <Form.Item hidden={buttonTitle === 'Save' ? true : false}>
-                                            <Button type="default" danger onClick={handleReset}>
-                                                Cancel
+                                        <Form.Item>
+                                            <Button type="default" danger onClick={buttonTitle === 'Save' ? handleClose : handleReset}>
+                                                {buttonTitle === 'Save' ? 'Cancel' : 'Reset'}
                                             </Button>
                                         </Form.Item>
                                     </Col>

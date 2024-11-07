@@ -11,6 +11,9 @@ function FamilyHistory(Patient) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
   const [prevFamilyTable, setPrevFamilyTable] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [buttonTitle, setButtonTitle] = useState('Save')
+
   const showModal = async () => {
     try {
       const response = await customAxios.get(
@@ -77,8 +80,14 @@ function FamilyHistory(Patient) {
 
   const handleEdit = async (record) => {
     debugger
-    form.setFieldsValue({ 'FHID': record.HeaderId })
-    form.setFieldsValue({ 'FamilyHistory': record.Description });
+    form.setFieldsValue({ FHID: record.HeaderId })
+    form.setFieldsValue({ FamilyHistory: record.Description });
+    setButtonTitle('Update')
+  }
+
+  function handleClr() {
+    setButtonTitle('Save')
+    form.resetFields()
   }
 
   const GetUpdate = (value) => {
@@ -93,6 +102,7 @@ function FamilyHistory(Patient) {
           <Form
             layout="vertical"
             onFinish={async (value) => {
+              setLoading(true)
               debugger
               const family = {
                 Description: value.FamilyHistory,
@@ -108,8 +118,9 @@ function FamilyHistory(Patient) {
                 });
                 if (response.status === 200) {
                   message.success('Saved Success')
-                  form.resetFields()
+                  handleClr()
                   GetUpdate(response.data.data)
+                  setLoading(false)
                 }
               } catch (error) { }
             }}
@@ -134,8 +145,13 @@ function FamilyHistory(Patient) {
               }}
             >
               <Form.Item>
-                <Button type="primary" htmlType="submit">
-                  Save
+                <Button type="primary" htmlType="submit" loading={loading}>
+                  {buttonTitle}
+                </Button>
+              </Form.Item>
+              <Form.Item hidden={buttonTitle == 'Save' ? true : false}>
+                <Button type="primary" onClick={handleClr}>
+                  Clear
                 </Button>
               </Form.Item>
             </div>
@@ -195,41 +211,20 @@ function FamilyHistory(Patient) {
         <div>
           <span>Previous Deatils : </span>
           <Select
-            defaultValue={["lastOneMonth"]}
+            defaultValue={dayjs().subtract(1, "month").format('DD-MM-YYYY')}
             placeholder="Select Range"
             style={{
               margin: "0.5rem",
               width: "40%",
             }}
             options={[
-              {
-                value: "previousAll",
-                label: "Previous All",
-              },
-              {
-                value: "lastOneWeek",
-                label: "Last One Week",
-              },
-              {
-                value: "last15days",
-                label: "Last 15 Days",
-              },
-              {
-                value: "lastOneMonth",
-                label: "Last 1 Month",
-              },
-              {
-                value: "lastThreeMonths",
-                label: "Last 3 Months",
-              },
-              {
-                value: "lastSixMonths",
-                label: "Last 6 Months",
-              },
-              {
-                value: "lastOneYear",
-                label: "Last 1 Year",
-              },
+              { value: dayjs().subtract(6, "year").format('DD-MM-YYYY'), label: "Previous All" },
+              { value: dayjs().subtract(7, "day").format('DD-MM-YYYY'), label: "Last One Week" },
+              { value: dayjs().subtract(15, "day").format('DD-MM-YYYY'), label: "Last 15 Days" },
+              { value: dayjs().subtract(1, "month").format('DD-MM-YYYY'), label: "Last 1 Month" },
+              { value: dayjs().subtract(3, "month").format('DD-MM-YYYY'), label: "Last 3 Months" },
+              { value: dayjs().subtract(6, "month").format('DD-MM-YYYY'), label: "Last 6 Months" },
+              { value: dayjs().subtract(1, "year").format('DD-MM-YYYY'), label: "Last 1 Year" },
             ]}
           />
         </div>

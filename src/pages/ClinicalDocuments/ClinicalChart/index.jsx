@@ -34,6 +34,8 @@ function ClinicalChart() {
     FamilyHistoryList: [],
     SocialHistoryList: [],
     NewAllergyList: [],
+    PatientVital: [],
+    ClinicalAdvices: []
   });
 
   useEffect(() => {
@@ -46,7 +48,7 @@ function ClinicalChart() {
           const detailsheader = response.data.data;
           setInitialData(detailsheader);
         }
-      } catch (error) {}
+      } catch (error) { }
     };
     fetch();
   }, []);
@@ -61,7 +63,7 @@ function ClinicalChart() {
           const detailsheader = response.data.data.EncounterModel;
           setPatientData(detailsheader);
         }
-      } catch (error) {}
+      } catch (error) { }
     };
     fetchDataHeader();
   }, []);
@@ -76,6 +78,25 @@ function ClinicalChart() {
     //   return updatedDropdown;
     // });
   };
+
+  function handleAllery(params) {
+    setInitialData(params)
+  }
+
+  function handleClinicalAdvices(params) {
+    setInitialData(prevState => ({
+      ...prevState,
+      ClinicalAdvices: params
+    }));
+  }
+
+  function handleVitals(params) {
+    debugger
+    setInitialData(prevState => ({
+      ...prevState,
+      PatientVital: params
+    }));
+  }
 
   const clinicalHeaders = [
     {
@@ -168,7 +189,7 @@ function ClinicalChart() {
                 </Badge>
               ),
               key: 6,
-              children: <Allergy Patient={Patient} initialData={initialData} />,
+              children: <Allergy Patient={Patient} initialData={initialData} handleAllery={handleAllery} />,
             },
           ]}
         />
@@ -182,9 +203,9 @@ function ClinicalChart() {
           tabPosition="left"
           items={[
             {
-              label: <Badge dot={false}>Vital Signs&nbsp;&nbsp;</Badge>,
+              label: <Badge dot={initialData.PatientVital.length > 0}>Vital Signs&nbsp;&nbsp;</Badge>,
               key: 11,
-              children: <VitalSigns Patient={Patient} />,
+              children: <VitalSigns Patient={Patient} initialData={initialData} handleVitals={handleVitals} />,
             },
             {
               label: `Physical Examination`,
@@ -203,9 +224,9 @@ function ClinicalChart() {
           tabPosition="left"
           items={[
             {
-              label: `Provisional Diagnosis`,
+              label: <Badge dot={initialData.ClinicalAdvices.length > 0}>Provisional Diagnosis&nbsp;&nbsp;</Badge>,
               key: 11,
-              children: <ProvisionalDiagnosis Patient={Patient} />,
+              children: <ProvisionalDiagnosis Patient={Patient} initialData={initialData} handleClinicalAdvices={handleClinicalAdvices} />,
             },
           ]}
         />
@@ -254,6 +275,7 @@ function ClinicalChart() {
     //   children: `Content 6`,
     // },
   ];
+
   return (
     <div
       style={{

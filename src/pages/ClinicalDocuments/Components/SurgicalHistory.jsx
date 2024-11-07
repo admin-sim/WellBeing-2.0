@@ -38,11 +38,12 @@ function SurgicalHistory(Patient) {
   const [selectedMedicalHistoryDetails, setSelectedMedicalHistoryDetails] = useState([]);
   const [form] = Form.useForm();
   const [previousHistory, setPreviousHistory] = useState([])
+  const [loading, setLoading] = useState(false)
   const [productOptions, setProductOptions] = useState([]);
 
-  const showModal = async () => {
+  const showModal = async (params) => {
     debugger
-    const response = await customAxios.get(`${urlGetSHBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&Range=${dayjs()}`);
+    const response = await customAxios.get(`${urlGetSHBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${0}&RangeString=${params}`);
     const apiData = response.data.data.SurgicalHistoryList.map((item, index) => {
       return {
         ...item,
@@ -114,6 +115,7 @@ function SurgicalHistory(Patient) {
 
   const handleToSave = async () => {
     debugger
+    setLoading(true)
     const Cpt = data.map((item) => {
       return {
         PatientId: Patient.Patient.PatientId,
@@ -131,6 +133,7 @@ function SurgicalHistory(Patient) {
       setSelectedMedicalHistoryDetails([])
       message.success('Saved')
       GetUpdate(response.data.data)
+      setLoading(false)
     }
   }
 
@@ -205,7 +208,7 @@ function SurgicalHistory(Patient) {
           <Button
             size="middle"
             className="d-flex allignCenter"
-            onClick={showModal}
+            onClick={() => showModal(dayjs().subtract(1, "month").format('DD-MM-YYYY'))}
           >
             Previous Surgical History
             <FaHistory style={{ marginLeft: "0.5rem" }} />
@@ -214,7 +217,7 @@ function SurgicalHistory(Patient) {
       </Row>
       <Table size="small" columns={columns} dataSource={data} />
       <Col span={20}>
-        <Button onClick={handleToSave} style={{ float: 'right', marginTop: '10px' }} type="primary">Save</Button>
+        <Button onClick={handleToSave} loading={loading} style={{ float: 'right', marginTop: '10px' }} type="primary">Save</Button>
       </Col>
       <Row>
         <Col span={18}>
@@ -241,17 +244,18 @@ function SurgicalHistory(Patient) {
         <div>
           <span>Previous Details : </span>
           <Select
-            defaultValue={["lastOneMonth"]}
+            defaultValue={dayjs().subtract(7, "day").format('DD-MM-YYYY')}
             placeholder="Select Range"
+            onChange={(value) => showModal(value)}
             style={{ margin: "0.5rem", width: "40%" }}
             options={[
-              { value: "previousAll", label: "Previous All" },
-              { value: "lastOneWeek", label: "Last One Week" },
-              { value: "last15days", label: "Last 15 Days" },
-              { value: "lastOneMonth", label: "Last 1 Month" },
-              { value: "lastThreeMonths", label: "Last 3 Months" },
-              { value: "lastSixMonths", label: "Last 6 Months" },
-              { value: "lastOneYear", label: "Last 1 Year" },
+              { value: dayjs().subtract(6, "year").format('DD-MM-YYYY'), label: "Previous All" },
+              { value: dayjs().subtract(7, "day").format('DD-MM-YYYY'), label: "Last One Week" },
+              { value: dayjs().subtract(15, "day").format('DD-MM-YYYY'), label: "Last 15 Days" },
+              { value: dayjs().subtract(1, "month").format('DD-MM-YYYY'), label: "Last 1 Month" },
+              { value: dayjs().subtract(3, "month").format('DD-MM-YYYY'), label: "Last 3 Months" },
+              { value: dayjs().subtract(6, "month").format('DD-MM-YYYY'), label: "Last 6 Months" },
+              { value: dayjs().subtract(1, "year").format('DD-MM-YYYY'), label: "Last 1 Year" },
             ]}
           />
         </div>

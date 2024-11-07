@@ -11,11 +11,14 @@ function SocialHistory(Patient) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [prevSocialTable, setPrevSocialTable] = useState([])
   const [form] = Form.useForm();
-  const showModal = async () => {
+  const [loading, setLoading] = useState(false)
+  const [buttonTitle, setButtonTitle] = useState('Save')
+
+  const showModal = async (params) => {
     debugger
     try {
       const response = await customAxios.get(
-        `${urlGetSocailBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&Range=${dayjs()}`
+        `${urlGetSocailBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&RangeString=${params}`
       );
       if (response.status === 200 && response.data.data != null) {
         const detailsheader = response.data.data.SocialHistoryList;
@@ -77,6 +80,12 @@ function SocialHistory(Patient) {
     debugger
     form.setFieldsValue({ 'SHID': record.HeaderId })
     form.setFieldsValue({ 'SocialHistory': record.Description });
+    setButtonTitle('Update')
+  }
+
+  function handleClr() {
+    setButtonTitle('Save')
+    form.resetFields()
   }
 
   const GetUpdate = (value) => {
@@ -91,6 +100,7 @@ function SocialHistory(Patient) {
           <Form
             layout="vertical"
             onFinish={async (value) => {
+              setLoading(true)
               debugger
               const Social = {
                 Description: value.SocialHistory,
@@ -106,8 +116,9 @@ function SocialHistory(Patient) {
                 });
                 if (response.status === 200) {
                   message.success('Saved Success')
-                  form.resetFields()
+                  handleClr()
                   GetUpdate(response.data.data)
+                  setLoading(false)
                 }
               } catch (error) { }
             }}
@@ -132,8 +143,13 @@ function SocialHistory(Patient) {
               }}
             >
               <Form.Item>
-                <Button type="primary" htmlType="submit">
-                  Save
+                <Button type="primary" htmlType="submit" loading={loading}>
+                  {buttonTitle}
+                </Button>
+              </Form.Item>
+              <Form.Item hidden={buttonTitle == 'Save' ? true : false}>
+                <Button type="primary" onClick={handleClr}>
+                  Clear
                 </Button>
               </Form.Item>
             </div>
@@ -160,7 +176,7 @@ function SocialHistory(Patient) {
           <Button
             size="middle"
             className="d-flex allignCenter"
-            onClick={showModal}
+            onClick={() => showModal(dayjs().subtract(1, "month").format('DD-MM-YYYY'))}
           >
             Previous Social History
             <FaHistory style={{ marginLeft: "0.5rem" }} />
@@ -193,41 +209,21 @@ function SocialHistory(Patient) {
         <div>
           <span>Previous Deatils : </span>
           <Select
-            defaultValue={["lastOneMonth"]}
+            defaultValue={dayjs().subtract(1, "month").format('DD-MM-YYYY')}
+            onChange={(value) => showModal(value)}
             placeholder="Select Range"
             style={{
               margin: "0.5rem",
               width: "40%",
             }}
             options={[
-              {
-                value: "previousAll",
-                label: "Previous All",
-              },
-              {
-                value: "lastOneWeek",
-                label: "Last One Week",
-              },
-              {
-                value: "last15days",
-                label: "Last 15 Days",
-              },
-              {
-                value: "lastOneMonth",
-                label: "Last 1 Month",
-              },
-              {
-                value: "lastThreeMonths",
-                label: "Last 3 Months",
-              },
-              {
-                value: "lastSixMonths",
-                label: "Last 6 Months",
-              },
-              {
-                value: "lastOneYear",
-                label: "Last 1 Year",
-              },
+              { value: dayjs().subtract(6, "year").format('DD-MM-YYYY'), label: "Previous All" },
+              { value: dayjs().subtract(7, "day").format('DD-MM-YYYY'), label: "Last One Week" },
+              { value: dayjs().subtract(15, "day").format('DD-MM-YYYY'), label: "Last 15 Days" },
+              { value: dayjs().subtract(1, "month").format('DD-MM-YYYY'), label: "Last 1 Month" },
+              { value: dayjs().subtract(3, "month").format('DD-MM-YYYY'), label: "Last 3 Months" },
+              { value: dayjs().subtract(6, "month").format('DD-MM-YYYY'), label: "Last 6 Months" },
+              { value: dayjs().subtract(1, "year").format('DD-MM-YYYY'), label: "Last 1 Year" },
             ]}
           />
         </div>
