@@ -21,6 +21,7 @@ import { IoCalendarOutline } from "react-icons/io5";
 function CaptureVitalsModal({ open, close, onSubmit, onSet }) {
   const [form] = useForm();
   const currentDate = new Date();
+  const [loading, setLoading] = useState(false)
   const currentTimeString = currentDate.toLocaleString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -194,7 +195,7 @@ function CaptureVitalsModal({ open, close, onSubmit, onSet }) {
         onCancel={handleCancel}
         maskClosable={false}
         footer={[
-          <Button
+          <Button loading={loading}
             key="submit"
             size="middle"
             type="primary"
@@ -230,8 +231,14 @@ function CaptureVitalsModal({ open, close, onSubmit, onSet }) {
           <Form
             form={form}
             layout="vertical"
-            onFinish={(values) => {
-              onSubmit(values);
+            onFinish={async (values) => {
+              debugger
+              setLoading(true)
+              const flag = await onSubmit(values);
+              if (flag) {
+                handleCancel()
+              }
+              setLoading(false)
             }}
           >
             <Row
@@ -244,6 +251,7 @@ function CaptureVitalsModal({ open, close, onSubmit, onSet }) {
                   label="Height"
                   rules={[
                     {
+                      required: true,
                       pattern: /^\d{2,3}$/,
                       message: "Please enter valid input for height",
                     },
@@ -271,6 +279,7 @@ function CaptureVitalsModal({ open, close, onSubmit, onSet }) {
                   label="Weight"
                   rules={[
                     {
+                      required: true,
                       pattern: /^\d{1,3}$/,
                       message: "Please enter valid input for weight",
                     },
@@ -324,6 +333,7 @@ function CaptureVitalsModal({ open, close, onSubmit, onSet }) {
                   label="Heart Rate"
                   rules={[
                     {
+                      required: true,
                       pattern: /^\d{2,3}$/,
                       message: "Please enter valid input for Heart Rate",
                     },

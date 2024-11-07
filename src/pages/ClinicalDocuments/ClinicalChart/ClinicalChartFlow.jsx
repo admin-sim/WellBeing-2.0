@@ -8,7 +8,7 @@ import UhidSelectComponet from '../../../components/UhidSelectComponent/index'
 
 function ClinicalChartFlow() {
     const [form1] = Form.useForm();
-    const [defaultActiveKey, setDefaultActiveKey] = useState("1");
+    const [defaultActiveKey, setDefaultActiveKey] = useState("2");
     const [tableData, setTableData] = useState([])
     const [loading, setLoading] = useState()
     const navigate = useNavigate();
@@ -98,12 +98,12 @@ function ClinicalChartFlow() {
                         <Row gutter={32}>
                             <Col span={6}>
                                 <Form.Item name='UHID' label='UHID'
-                                    // rules={[
-                                    //     {
-                                    //         required: true,
-                                    //         message: "Please enter Provider",
-                                    //     },
-                                    // ]}
+                                // rules={[
+                                //     {
+                                //         required: true,
+                                //         message: "Please enter Provider",
+                                //     },
+                                // ]}
                                 >
                                     <UhidSelectComponet />
                                 </Form.Item>
@@ -124,7 +124,7 @@ function ClinicalChartFlow() {
                     </Form>
                     <div style={{ display: "flex", justifyContent: "flex-end" }}>
                         <Tabs
-                            defaultActiveKey="1"
+                            defaultActiveKey="2"
                             size="small"
                             onChange={onTabChange}
                             tabBarGutter={0}

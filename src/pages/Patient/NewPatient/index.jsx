@@ -416,7 +416,7 @@ const NewPatient = () => {
           : values.PatientFirstName,
       PatientMiddleName:
         values.PatientMiddleName === undefined ||
-        values.PatientMiddleName === ""
+          values.PatientMiddleName === ""
           ? null
           : values.PatientMiddleName,
       PatientLastName:
@@ -433,7 +433,7 @@ const NewPatient = () => {
           : values.titleFatherHusband,
       FatherHusbandName:
         values.FatherHusbandName === undefined ||
-        values.FatherHusbandName === ""
+          values.FatherHusbandName === ""
           ? null
           : values.FatherHusbandName,
       MaritalStatus:
@@ -465,7 +465,7 @@ const NewPatient = () => {
       ReligionId: values.Religion === undefined ? null : values.Religion,
       PermanentAddress1:
         values.permanentAddress1 === undefined ||
-        values.permanentAddress1 === ""
+          values.permanentAddress1 === ""
           ? null
           : values.permanentAddress1,
       PermanentCountryId: values?.permanentCountryId,
@@ -504,12 +504,12 @@ const NewPatient = () => {
           : values.BirthPlace,
       BirthIdentification1:
         values.birthIdentification1 === undefined ||
-        values.birthIdentification1 === ""
+          values.birthIdentification1 === ""
           ? null
           : values.birthIdentification1,
       BirthIdentification2:
         values.birthIdentification2 === undefined ||
-        values.birthIdentification2 === ""
+          values.birthIdentification2 === ""
           ? null
           : values.birthIdentification2,
     };
@@ -1460,12 +1460,14 @@ const NewPatient = () => {
             label="Card Number"
             rules={[
               {
+                min: 12,
+                max: 12,
                 required: true,
-                message: "Please enter card number",
+                message: "Please enter valid number",
               },
             ]}
           >
-            <Input style={{ width: "100%" }} />
+            <Input style={{ width: "100%" }} placeholder='xxxx-xxxx-xxxx' />
           </Form.Item>
 
           <Row gutter={32} style={{ height: "1rem" }} justify={"end"}>

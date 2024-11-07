@@ -13,11 +13,14 @@ function ChiefComplaint(Patient) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
   const [prevChiefTable, setPrevChiefTable] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [buttonTitle, setButtonTitle] = useState('Save')
 
-  const showModal = async () => {
+  const showModal = async (params) => {
+    debugger
     try {
       const response = await customAxios.get(
-        `${urlGetChiefBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&Range=${dayjs()}`
+        `${urlGetChiefBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${0}&RangeString=${encodeURIComponent(params)}`
       );
       if (response.status === 200 && response.data.data != null) {
         const detailsheader = response.data.data.ChiefList;
@@ -36,6 +39,11 @@ function ChiefComplaint(Patient) {
       title: "Date",
       dataIndex: "DateString",
       key: "DateString",
+    },
+    {
+      title: "Encounter",
+      dataIndex: "Encounter",
+      key: "Encounter",
     },
     {
       title: "Medical Officer",
@@ -78,13 +86,19 @@ function ChiefComplaint(Patient) {
 
   const handleEdit = async (record) => {
     debugger
-    form.setFieldsValue({ 'CFID': record.CFID })
-    form.setFieldsValue({ 'Complaint': record.PresentingComplint });
+    form.setFieldsValue({ CFID: record.CFID })
+    form.setFieldsValue({ Complaint: record.PresentingComplint });
+    setButtonTitle('Update')
   }
 
   const GetUpdate = (value) => {
     debugger
     Patient.handleUpdate(value);
+  }
+
+  function handleClr() {
+    setButtonTitle('Save')
+    form.resetFields()
   }
 
   return (
@@ -95,6 +109,7 @@ function ChiefComplaint(Patient) {
             layout="vertical"
             onFinish={async (value) => {
               debugger
+              setLoading(true)
               if (value.Complaint) {
                 const chief = {
                   PresentingComplint: value.Complaint,
@@ -110,15 +125,15 @@ function ChiefComplaint(Patient) {
                   });
                   if (response.status === 200) {
                     message.success('Saved Success')
-                    form.resetFields()
+                    handleClr()
                     GetUpdate(response.data.data)
+                    setLoading(false)
                   }
                 } catch (error) { }
               } else {
                 message.warning('No Data for Save')
               }
             }}
-            // variant="outlined"
             form={form}>
             <Form.Item name='Complaint'>
               <TextArea
@@ -139,8 +154,13 @@ function ChiefComplaint(Patient) {
               }}
             >
               <Form.Item>
-                <Button type="primary" htmlType="submit">
-                  Save
+                <Button type="primary" htmlType="submit" loading={loading}>
+                  {buttonTitle}
+                </Button>
+              </Form.Item>
+              <Form.Item hidden={buttonTitle == 'Save' ? true : false}>
+                <Button type="primary" onClick={handleClr}>
+                  Clear
                 </Button>
               </Form.Item>
             </div>
@@ -157,7 +177,7 @@ function ChiefComplaint(Patient) {
           <Button
             size="middle"
             className="d-flex allignCenter"
-            onClick={showModal}
+            onClick={() => showModal(dayjs().subtract(1, "month").format('DD-MM-YYYY'))}
           >
             Previous Complaints <FaHistory style={{ marginLeft: "0.5rem" }} />
           </Button>
@@ -189,39 +209,40 @@ function ChiefComplaint(Patient) {
         <div>
           <span>Previous Deatils : </span>
           <Select
-            defaultValue={["lastOneMonth"]}
+            defaultValue={dayjs().subtract(1, "month").format('DD-MM-YYYY')}
             placeholder="Select Range"
+            onChange={(value) => showModal(value)}
             style={{
               margin: "0.5rem",
               width: "40%",
             }}
             options={[
               {
-                value: "previousAll",
+                value: dayjs().subtract(6, "year").format('DD-MM-YYYY'),
                 label: "Previous All",
               },
               {
-                value: "lastOneWeek",
+                value: dayjs().subtract(7, "day").format('DD-MM-YYYY'),
                 label: "Last One Week",
               },
               {
-                value: "last15days",
+                value: dayjs().subtract(15, "day").format('DD-MM-YYYY'),
                 label: "Last 15 Days",
               },
               {
-                value: "lastOneMonth",
+                value: dayjs().subtract(1, "month").format('DD-MM-YYYY'),
                 label: "Last 1 Month",
               },
               {
-                value: "lastThreeMonths",
+                value: dayjs().subtract(3, "month").format('DD-MM-YYYY'),
                 label: "Last 3 Months",
               },
               {
-                value: "lastSixMonths",
+                value: dayjs().subtract(6, "month").format('DD-MM-YYYY'),
                 label: "Last 6 Months",
               },
               {
-                value: "lastOneYear",
+                value: dayjs().subtract(1, "year").format('DD-MM-YYYY'),
                 label: "Last 1 Year",
               },
             ]}

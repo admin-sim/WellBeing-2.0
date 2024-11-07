@@ -14,37 +14,39 @@ function ProvisionalDiagnosis(Patient) {
   const [form] = useForm();
   const initialData = [{ key: 0, name: "ICDCode", ICDCode: '', ActiveFlag: true }]
   const [data, setData] = useState(initialData)
-  const [tableData, setTableData] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [buttonTitle, setButtonTitle] = useState('Save Provisional Diagnosis')
 
   useEffect(() => {
-    async function fetch() {
-      const response = await customAxios.get(`${urlGetAllDiagnosis}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&$Range=${dayjs()}`)
-      if (response.status == 200) {
-        const groupedData = [];
-        response.data.data.ClinicalAdvices.forEach((item) => {
-          const existingWard = groupedData.find(
-            (icd) => icd.ADID === item.ADID
-          );
+    debugger
+    // function fetch() {
+    // const response = await customAxios.get(`${urlGetAllDiagnosis}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&$Range=${dayjs()}`)
+    // if (response.status == 200) {
+    const groupedData = [];
+    Patient.initialData.ClinicalAdvices.forEach((item) => {
+      const existingWard = groupedData.find(
+        (icd) => icd.ADID === item.ADID
+      );
 
-          if (existingWard) {
-            existingWard.Details.push(item.ICD_Code + '-' + item.ICD_Desc);
-          } else {
-            groupedData.push({
-              ...item,
-              Details: [item.ICD_Code + '-' + item.ICD_Desc]
-            });
-          }
+      if (existingWard) {
+        existingWard.Details.push(item.ICD_Code + '-' + item.ICD_Desc);
+      } else {
+        groupedData.push({
+          ...item,
+          Details: [item.ICD_Code + '-' + item.ICD_Desc]
         });
-
-        const newData = groupedData.map((icd, index) => ({
-          ...icd,
-          key: index + 1,
-          Details: icd.Details.join(', '),
-        }));
-        setTableData(newData);
       }
-    }
-    fetch()
+    });
+
+    const newData = groupedData.map((icd, index) => ({
+      ...icd,
+      key: index + 1,
+      Details: icd.Details.join(', '),
+    }));
+    Patient.handleClinicalAdvices(newData);
+    // }
+    // }
+    // fetch()
   }, [])
 
   const handleSearch = async (searchText) => {
@@ -62,7 +64,8 @@ function ProvisionalDiagnosis(Patient) {
           id: item.IcdCode,
         };
       });
-      setProductOptions(newdata);
+      // setProductOptions(newdata)
+      setProductOptions(newdata.filter(item1 => !data.some(item2 => item2.ActiveFlag == true && (item1.id === item2.ICDCode ?? item2.ICDCode))));
     }
   };
 
@@ -123,6 +126,7 @@ function ProvisionalDiagnosis(Patient) {
 
   function handleAddRow() {
     debugger
+    setProductOptions([])
     const newData = {
       key: data.length + 1,
       name: `ICDCode`,
@@ -176,7 +180,6 @@ function ProvisionalDiagnosis(Patient) {
     debugger
     const response = await customAxios.delete(`${urlDeleteDiagnosis}?id=${params.ADID}&PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}`)
     if (response.status == 200) {
-      // setTableData(response.data.data.ClinicalAdvices)
       const groupedData = [];
       response.data.data.ClinicalAdvices.forEach((item) => {
         const existingWard = groupedData.find(
@@ -198,7 +201,7 @@ function ProvisionalDiagnosis(Patient) {
         key: index + 1,
         Details: icd.Details.join(', '),
       }));
-      setTableData(newData);
+      Patient.handleClinicalAdvices(newData);
     }
   }
 
@@ -231,12 +234,14 @@ function ProvisionalDiagnosis(Patient) {
           }
         })
       })
+      setButtonTitle('Update Provisional Diagnosis')
     }
   }
 
   function handleClear() {
     setData(initialData)
     form.resetFields()
+    setButtonTitle('Save Provisional Diagnosis')
   }
 
   return (
@@ -251,6 +256,7 @@ function ProvisionalDiagnosis(Patient) {
             layout="vertical"
             onFinish={async (values) => {
               debugger
+              setLoading(true)
               const icd = []
               const diagnosis = {
                 DiagDate: values.DiagnosisDate.format('DD-MM-YYYY'),
@@ -258,7 +264,7 @@ function ProvisionalDiagnosis(Patient) {
                 Diagnosis_time: values.DiagnosisDate.format('HH:mm:ss'),
                 EncounterId: Patient.Patient.Encounter,
                 PatientId: Patient.Patient.PatientId,
-                Follow_Up: values.FollowUp.toString(),
+                Follow_Up: values.FollowUp ? values.FollowUp.toString() : values.FollowUp,
                 ADID: values.ADID ? values.ADID : 0
               }
               data.map((item) => {
@@ -276,14 +282,12 @@ function ProvisionalDiagnosis(Patient) {
                 },
               })
               if (response.status == 200) {
-                form.resetFields()
-                setData(initialData)
+                handleClear()
                 const groupedData = [];
                 response.data.data.ClinicalAdvices.forEach((item) => {
                   const existingWard = groupedData.find(
                     (icd) => icd.ADID === item.ADID
                   );
-
                   if (existingWard) {
                     existingWard.Details.push(item.ICD_Code + '-' + item.ICD_Desc);
                   } else {
@@ -293,13 +297,13 @@ function ProvisionalDiagnosis(Patient) {
                     });
                   }
                 });
-
                 const newData = groupedData.map((icd, index) => ({
                   ...icd,
                   key: index + 1,
                   Details: icd.Details.join(', '),
                 }));
-                setTableData(newData);
+                Patient.handleClinicalAdvices(newData);
+                setLoading(false)
               }
             }}
             initialValues={{
@@ -321,6 +325,11 @@ function ProvisionalDiagnosis(Patient) {
                     style={{ width: "100%" }}
                     showTime={{ format: "hh:mm A" }}
                     format="DD-MM-YYYY , hh:mm A"
+                    disabledDate={(current) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return current && current < today;
+                    }}
                   />
                 </Form.Item>
               </Col>
@@ -342,9 +351,8 @@ function ProvisionalDiagnosis(Patient) {
               actionColumnName={<PlusOutlined onClick={handleAddRow} />} onDelete={handleDelete}
               actionColumn={true} />
             <Form.Item>
-              <Button type="primary" size="middle" htmlType="submit">
-                {/* {form.getFieldValue('ADID') ? 'Save Provisional Diagnosis' : 'Update Provisional Diagnosis'} */}
-                Save Provisional Diagnosis
+              <Button type="primary" size="middle" htmlType="submit" loading={loading}>
+                {buttonTitle}
               </Button>&nbsp;&nbsp;
               <Button type="basic" size="middle" onClick={handleClear}>
                 Clear
@@ -371,7 +379,7 @@ function ProvisionalDiagnosis(Patient) {
           </Button>
         </Col>
       </Row >
-      <CustomTable columns={columns1} dataSource={tableData}
+      <CustomTable columns={columns1} dataSource={Patient.initialData.ClinicalAdvices}
         onDelete={handleDelete1} onEdit={handleEdit}
         actionColumn={true} />
     </>

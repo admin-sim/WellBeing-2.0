@@ -78,7 +78,7 @@ function PatientVitalModal({ bed, patient, Dropdown, open, handleClose }) {
     if (response.status == 200) {
       message.success('Success')
       setTableData(response.data.data)
-      setShowCaptureVitalsModal(false)
+      return true
     }
   }
 
@@ -99,9 +99,9 @@ function PatientVitalModal({ bed, patient, Dropdown, open, handleClose }) {
       key: "Weight",
     },
     {
-      title: "Temperature",
-      dataIndex: "Temperature",
-      key: "Temperature",
+      title: "Heart Rate",
+      dataIndex: "HeartRate",
+      key: "HeartRate",
     },
   ];
 

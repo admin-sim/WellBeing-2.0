@@ -37,6 +37,7 @@ function Allergy(Patient) {
     Provider: [],
     drugshis: []
   })
+  const [loading, setLoading] = useState(false)
 
   const columns = [
     {
@@ -51,10 +52,10 @@ function Allergy(Patient) {
     },
   ];
 
-  const showModal = async () => {
+  const showModal = async (params) => {
     try {
       const response = await customAxios.get(
-        `${urlGetAllergyBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&Range=${dayjs()}`
+        `${urlGetAllergyBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&RangeString=${params}`
       );
       if (response.status === 200 && response.data.data != null) {
         const detailsheader = response.data.data.NewAllergyList;
@@ -97,6 +98,7 @@ function Allergy(Patient) {
 
   const handleSaveAllergyDetails = async (values) => {
     debugger
+    setLoading(true)
     const allergy = {
       AllergyId: values.AllergyId ? values.AllergyId : 0,
       CategoryId: values.Category,
@@ -126,7 +128,9 @@ function Allergy(Patient) {
       },
     });
     if (response.status === 200) {
-      fetch()
+      // fetch()
+      setLoading(false)
+      Patient.handleAllery(response.data.data)
       handleClose()
     }
   }
@@ -228,7 +232,7 @@ function Allergy(Patient) {
           </Button>
         </Col>
         <Col span={6}>
-          <Button size="middle" onClick={showModal}>
+          <Button size="middle" onClick={() => showModal(dayjs().subtract(1, "month").format('DD-MM-YYYY'))} >
             Previous Allergy Details
             <FaHistory style={{ marginLeft: "0.5rem" }} />
           </Button>
@@ -257,7 +261,7 @@ function Allergy(Patient) {
           <Button
             key="submit"
             size="middle"
-            type="primary"
+            type="primary" loading={loading}
             onClick={() => form.submit()}
           >
             {buttonTitle}
@@ -422,7 +426,11 @@ function Allergy(Patient) {
                 <DatePicker
                   style={{ width: "100%" }}
                   format="DD-MM-YYYY"
-                  allowClear
+                  disabledDate={(current) => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    return current && current < today;
+                  }}
                 />
               </Form.Item>
             </ColWithSixSpan>
@@ -466,7 +474,11 @@ function Allergy(Patient) {
                 <DatePicker
                   style={{ width: "100%" }}
                   format="DD-MM-YYYY"
-                  allowClear
+                  disabledDate={(current) => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    return current && current < today;
+                  }}
                 />
               </Form.Item>
               <Form.Item name="AllergyId" hidden>
@@ -496,41 +508,21 @@ function Allergy(Patient) {
         <div>
           <span>Previous Deatils : </span>
           <Select
-            defaultValue={["lastOneMonth"]}
+            defaultValue={dayjs().subtract(1, "month").format('DD-MM-YYYY')}
+            onChange={(value) => showModal(value)}
             placeholder="Select Range"
             style={{
               margin: "0.5rem",
               width: "40%",
             }}
             options={[
-              {
-                value: "previousAll",
-                label: "Previous All",
-              },
-              {
-                value: "lastOneWeek",
-                label: "Last One Week",
-              },
-              {
-                value: "last15days",
-                label: "Last 15 Days",
-              },
-              {
-                value: "lastOneMonth",
-                label: "Last 1 Month",
-              },
-              {
-                value: "lastThreeMonths",
-                label: "Last 3 Months",
-              },
-              {
-                value: "lastSixMonths",
-                label: "Last 6 Months",
-              },
-              {
-                value: "lastOneYear",
-                label: "Last 1 Year",
-              },
+              { value: dayjs().subtract(6, "year").format('DD-MM-YYYY'), label: "Previous All" },
+              { value: dayjs().subtract(7, "day").format('DD-MM-YYYY'), label: "Last One Week" },
+              { value: dayjs().subtract(15, "day").format('DD-MM-YYYY'), label: "Last 15 Days" },
+              { value: dayjs().subtract(1, "month").format('DD-MM-YYYY'), label: "Last 1 Month" },
+              { value: dayjs().subtract(3, "month").format('DD-MM-YYYY'), label: "Last 3 Months" },
+              { value: dayjs().subtract(6, "month").format('DD-MM-YYYY'), label: "Last 6 Months" },
+              { value: dayjs().subtract(1, "year").format('DD-MM-YYYY'), label: "Last 1 Year" },
             ]}
           />
         </div>

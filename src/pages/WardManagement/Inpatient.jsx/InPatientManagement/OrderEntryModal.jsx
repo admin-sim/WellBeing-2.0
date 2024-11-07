@@ -419,7 +419,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                       ChargeAmount: serviceDetails.servicePrice.ChargeAmount,
                       NetAmount: serviceDetails.servicePrice.ChargeAmount,
                       PatientChargeAmount: serviceDetails.servicePrice.PatientChargeAmount,
-                      PatientTypeID: 22,
+                      PatientTypeID: patient.PatientType,
                       OrderEntry: 1
                     }
                     const response = await customAxios.post(urlAddNewCharge, service, {
@@ -609,7 +609,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                       ChargeAmount: serviceDetails.servicePrice.ChargeAmount,
                       NetAmount: serviceDetails.servicePrice.ChargeAmount,
                       PatientChargeAmount: serviceDetails.servicePrice.PatientChargeAmount,
-                      PatientTypeID: 22,
+                      PatientTypeID: patient.PatientType,
                       OrderEntry: 1
                     }
                     const response = await customAxios.post(urlAddNewCharge, service, {

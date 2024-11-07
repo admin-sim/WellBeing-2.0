@@ -361,7 +361,6 @@ const NewVisit = () => {
     try {
       await form1.validateFields();
       const values = form1.getFieldsValue();
-
       setIsVisitCreated(true);
       setIsSubmitLoader(true);
       const postData = {
@@ -396,7 +395,7 @@ const NewVisit = () => {
         if (response.data.EncounterResult != null) {
           messageApi.warning({
             type: "warning",
-            content: `Patient visit is already created as In-Patient`,
+            content: response.data.EncounterResult
           });
         } else {
           const genVisitId = response.data.GeneratedEncounterId;
