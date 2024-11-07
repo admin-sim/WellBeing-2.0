@@ -144,7 +144,8 @@ import Roles from "./pages/Security/Roles/index.jsx";
 import RoleAccess from "./pages/Security/RoleAccess/index.jsx";
 import RoleMapping from "./pages/Security/RoleMapping/index.jsx";
 import PharamcyIndex from "./pages/Pharmacy/index.jsx";
-import OtcDispense from "./pages/Pharmacy/OtcDispense.jsx";
+import OtcDispense from "./pages/Pharmacy/OtcDispense/OtcDispense.jsx";
+import OtcReturn from "./pages/Pharmacy/OtcReturn/index.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -1253,6 +1254,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <OtcDispense />
+                </ProtectedRoute>
+              }
+            />
+             <Route
+              path="OtcReturn"
+              element={
+                <ProtectedRoute>
+                  <OtcReturn />
                 </ProtectedRoute>
               }
             />

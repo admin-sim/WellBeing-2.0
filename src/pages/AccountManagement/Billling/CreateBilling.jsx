@@ -87,6 +87,7 @@ const CreateBilling = () => {
   const [blobData, setBlobData] = useState(null);
   const [billNumber, setBillNumber] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [billloading, setBillLoading] = useState(false);
   console.log("l", location.state);
 
   useEffect(() => {
@@ -668,7 +669,7 @@ const CreateBilling = () => {
       key: "BankId",
       render: (text, record, index) => (
         <Form.Item name={["BankId", record.key - 1]}>
-          <Select
+          <Select disabled
             onChange={(value) => handleInputChange(value, "BankId", record.key)}
           >
             {banks?.map((option) => (
@@ -691,7 +692,7 @@ const CreateBilling = () => {
           style={{ width: "100%" }}
           // initialValue={record.Branch}
         >
-          <Input
+          <Input disabled
             min={0}
             defaultValue={text}
             onChange={(value) =>
@@ -715,6 +716,7 @@ const CreateBilling = () => {
             min={0}
             defaultValue={text}
             onChange={(value) => handleInputChange(value, "IFSC", record)}
+            disabled
           />
         </Form.Item>
       ),
@@ -729,7 +731,7 @@ const CreateBilling = () => {
           style={{ width: "100%" }}
           //initialValue={record.AuthRefNo}
         >
-          <Input
+          <Input disabled
             min={0}
             defaultValue={text}
             onChange={(value) =>
@@ -750,7 +752,7 @@ const CreateBilling = () => {
           style={{ width: "100%" }}
           // initialValue={record.ExpiryDate}
         >
-          <Input min={0} defaultValue={text} />
+          <Input disabled min={0} defaultValue={text} />
         </Form.Item>
       ),
     },
@@ -832,28 +834,34 @@ const CreateBilling = () => {
   };
 
   const handleSaveBill = async (values) => {
-    debugger;
-
-    const formattedReceiptInsAmtData = receiptInsAmtData.map((item) => ({
-      AuthorizationReference: item.AuthorizationReference || "",
-      BankId: item.BankId ? parseInt(item.BankId, 10) : 0,
-      BranchName: item.BranchName || "",
-      CardExpiryDate: item.CardExpiryDate || "",
-      IFSC: item.IFSC || "",
-      InstrumentAmount: item.InstrumentAmount
-        ? parseFloat(item.InstrumentAmount)
-        : 0,
-      PaymentTypeId: item.PaymentTypeId,
-    }));
-    const totalInstrumentAmount = formattedReceiptInsAmtData.reduce(
-      (acc, item) => acc + item.InstrumentAmount,
-      0
-    );
-    if (!charges) {
-      message.warning("Please Add Charges To Proceed Billing....");
-      return false;
-    }
+    if (billloading) return; // Prevent multiple clicks
+  
+    setBillLoading(true); // Start loading state
+    const loadingMessage = message.loading("Please wait, bill is being processed...", 0); // Persistent loading message
     try {
+      const formattedReceiptInsAmtData = receiptInsAmtData.map((item) => ({
+        AuthorizationReference: item.AuthorizationReference || "",
+        BankId: item.BankId ? parseInt(item.BankId, 10) : 0,
+        BranchName: item.BranchName || "",
+        CardExpiryDate: item.CardExpiryDate || "",
+        IFSC: item.IFSC || "",
+        InstrumentAmount: item.InstrumentAmount
+          ? parseFloat(item.InstrumentAmount)
+          : 0,
+        PaymentTypeId: item.PaymentTypeId,
+      }));
+      const totalInstrumentAmount = formattedReceiptInsAmtData.reduce(
+        (acc, item) => acc + item.InstrumentAmount,
+        0
+      );
+  
+      if (!charges) {
+        message.warning("Please Add Charges To Proceed Billing....");
+        setBillLoading(false);
+        loadingMessage(); // Remove loading message
+        return false;
+      }
+  
       const billingData = {
         PatientAccountReceiptModel: {
           ReceiptAmount: totalInstrumentAmount,
@@ -866,15 +874,16 @@ const CreateBilling = () => {
           ActiveFlag: true,
         },
         PatientAccountReceiptInstrumentModels: formattedReceiptInsAmtData,
-        PatientAccountChargeModel: charges, // Assuming chargeDetails is an array of charge details
+        PatientAccountChargeModel: charges,
       };
-
+  
       const response = await customAxios.post(urlAddNewBill, billingData, {
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials: true, // This ensures the session cookie is sent
+        withCredentials: true,
       });
+  
       if (response.status === 200 && response.data) {
         if (
           response.data.data === "Failed To Generate Bill" ||
@@ -883,22 +892,19 @@ const CreateBilling = () => {
           message.error("Failed to generate bill");
         } else {
           message.success("Bill generated successfully!");
-          
-          
-         await GetBillReceipt(response.data);
-          //fetchData();
+          await GetBillReceipt(response.data);
           form1.resetFields();
           setReceiptInsAmtData([]);
           setReceiptInsAmtData(initialDataSource);
           setCharges([]);
           fetchDataHeader();
-          // Reset the data source
         }
       }
-
-      // ... rest of your logic
     } catch (error) {
       message.error("Something Went Wrong");
+    } finally {
+      setBillLoading(false); // End loading state
+      loadingMessage(); // Remove loading message
     }
   };
 
@@ -1279,6 +1285,8 @@ const CreateBilling = () => {
                   type="primary"
                   //loading={isSearchLoading}
                   htmlType="submit"
+                  loading={loading}
+                  disabled={loading}
                 >
                   Save
                 </Button>

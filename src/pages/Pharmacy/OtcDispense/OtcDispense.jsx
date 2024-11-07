@@ -28,8 +28,8 @@ import {
 import Layout from "antd/es/layout/layout";
 const { Text } = Typography;
 import { useNavigate } from "react-router";
-import customAxios from "../../components/customAxios/customAxios.jsx";
-import InvoiceDiscountModal from "../AccountManagement/Billling/InvoiceDiscountModal.jsx";
+import customAxios from "../../../components/customAxios/customAxios.jsx";
+import InvoiceDiscountModal from "../../AccountManagement/Billling/InvoiceDiscountModal.jsx";
 
 import {
   urlAddNewBillPharmacy,
@@ -47,10 +47,10 @@ import {
   urlPharmacyCreate,
   urlSaveChargesForPharmacyTempTable,
   urlSaveChargesForTempTable,
-} from "../../../endpoints.js";
+} from "../../../../endpoints.js";
 import Title from "antd/es/typography/Title";
 import { useLocation } from "react-router-dom";
-import PatientHeader from "../../components/PatientHeader/index.jsx";
+import PatientHeader from "../../../components/PatientHeader/index.jsx";
 import { CiDiscount1 } from "react-icons/ci";
 import dayjs from "dayjs";
 import { debounce, min } from "lodash";
@@ -98,7 +98,7 @@ const OtcDispense = () => {
   const [storeId, setStoreId] = useState([]);
   const [batchOptions, setBatchOptions] = useState([]);
   console.log("l", location.state);
-
+  const [billloading, setBillLoading] = useState(false);
   useEffect(() => {
     debugger;
 
@@ -201,7 +201,7 @@ const OtcDispense = () => {
   };
 
   const handleCreateService = async () => {
-    navigate("/Billing");
+    navigate("/PharamcyIndex");
   };
 
   const fetchProducts = async (searchText) => {
@@ -666,7 +666,7 @@ const OtcDispense = () => {
   };
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:901/api/ReportsApi/PharmacyBillReport",
+      "http://localhost:43705/api/ReportsApi/PharmacyBillReport",
       {
         method: "POST",
         headers: {
@@ -958,7 +958,10 @@ const OtcDispense = () => {
 
   const handleSaveBill = async (values) => {
     debugger;
-
+    if (billloading) return; // Prevent multiple clicks
+  
+    setBillLoading(true); // Start loading state
+    const loadingMessage = message.loading("Please wait, bill is being processed...", 0); // Persistent loading message
     const formattedReceiptInsAmtData = receiptInsAmtData.map((item) => ({
       AuthorizationReference: item.AuthorizationReference || "",
       BankId: item.BankId ? parseInt(item.BankId, 10) : 0,
@@ -976,6 +979,8 @@ const OtcDispense = () => {
     );
     if (!charges) {
       message.warning("Please Add Charges To Proceed Billing....");
+      setBillLoading(false);
+      loadingMessage(); // Remove loading message
       return false;
     }
     try {
@@ -1027,6 +1032,10 @@ const OtcDispense = () => {
       // ... rest of your logic
     } catch (error) {
       message.error("Something Went Wrong");
+    }
+    finally {
+      setBillLoading(false); // End loading state
+      loadingMessage(); // Remove loading message
     }
   };
 

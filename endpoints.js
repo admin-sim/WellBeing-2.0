@@ -441,6 +441,9 @@ export const urlUpdateReFundDetails = `${baseURL}/api/Refund/UpdateReFundDetails
 export const urlShowAllPendingBills = `${baseURL}/api/Receipt/ShowAllPendingBills`;
 export const urlGetLastBillNumber = `${baseURL}/api/Billing/GetLastBillNumber`;
 export const urlSaveChargesForTempTable = `${baseURL}/api/Billing/SaveChargesForTempTable`;
+export const urlGetAllInvoice = `${baseURL}/api/PharmacyReturn/GetAllInvoice`;
+export const urlGetPharmacyReturnList = `${baseURL}/api/PharmacyReturn/GetPharmacyReturnList`;
+export const urlAddNewPharmacyReturn = `${baseURL}/api/PharmacyReturn/AddNewPharmacyReturn`;
 
 //export const urlGetAllUsers = `${baseURL}/api/Billing/SaveChargesForTempTable`;
 

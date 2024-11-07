@@ -270,30 +270,66 @@ const NewVisit = () => {
 
   const [selectedRecord, setSelectedRecord] = useState(null); // New state variable to store selected record
 
+  // const handlevisitmodal = async (record) => {
+  //   debugger;
+  //   setSelectedRecord(record);
+
+  //   setIsVisitCreated(false);
+  //   setModalLoader(true);
+  //   const response = await customAxios.get(
+  //     `${urlGetEncounterDetails}?PatientId=${
+  //       record.PatientId
+  //     }&PatientType=${0}&AppointmentId=${0}`
+  //   );
+  //   const response1 = await customAxios.get(
+  //     `${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}`
+  //   );
+
+  //   if (response.data !== null && response1.data !== null) {
+  //     setPatientHeaderDetails(response1.data.data.EncounterModel);
+  //     setModalLoader(false);
+  //     setVisitDropdown(response.data.data);
+  //     setEncounterTypeId(response.data.data.EncounterTypeId);
+  //     form1.setFieldsValue({
+  //       EncounterType: response.data.data.EncounterTypeId,
+  //     });
+  //     setIsVisitModalVisible(true);
+  //   }
+  // };
+
   const handlevisitmodal = async (record) => {
-    debugger;
-    setSelectedRecord(record);
-
-    setIsVisitCreated(false);
-    setModalLoader(true);
-    const response = await customAxios.get(
-      `${urlGetEncounterDetails}?PatientId=${
-        record.PatientId
-      }&PatientType=${0}&AppointmentId=${0}`
-    );
-    const response1 = await customAxios.get(
-      `${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}`
-    );
-
-    if (response.data !== null && response1.data !== null) {
-      setPatientHeaderDetails(response1.data.data.EncounterModel);
-      setModalLoader(false);
-      setVisitDropdown(response.data.data);
-      setEncounterTypeId(response.data.data.EncounterTypeId);
-      form1.setFieldsValue({
-        EncounterType: response.data.data.EncounterTypeId,
-      });
-      setIsVisitModalVisible(true);
+    try {
+      setSelectedRecord(record);
+      setIsVisitCreated(false);
+      setModalLoader(true);
+  
+      // Fetch encounter details
+      const [response, response1] = await Promise.all([
+        customAxios.get(`${urlGetEncounterDetails}?PatientId=${record.PatientId}&PatientType=0&AppointmentId=0`),
+        customAxios.get(`${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}`)
+      ]);
+  
+      // Check if responses are valid before setting data
+      if (response.data && response1.data) {
+        setPatientHeaderDetails(response1.data.data.EncounterModel);
+        setVisitDropdown(response.data.data);
+        setEncounterTypeId(response.data.data.EncounterTypeId);
+        
+        // Set the form field values
+        form1.setFieldsValue({
+          EncounterType: response.data.data.EncounterTypeId,
+        });
+        
+        setIsVisitModalVisible(true); // Open modal only after data is set
+      } else {
+        message.error("Failed to fetch visit details. Please try again.");
+      }
+  
+    } catch (error) {
+      console.error("Error fetching visit modal data:", error);
+      message.error("An error occurred while loading visit details. Please try again.");
+    } finally {
+      setModalLoader(false); // Hide loader in both success and error cases
     }
   };
 

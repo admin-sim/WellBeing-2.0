@@ -286,7 +286,7 @@ const OrderDetails = (Patient) => {
             ChargeAmount: serviceDetails.servicePrice.ChargeAmount,
             NetAmount: serviceDetails.servicePrice.ChargeAmount,
             PatientChargeAmount: serviceDetails.servicePrice.PatientChargeAmount,
-            PatientTypeID: 22,
+            PatientTypeID: Patient.dropDown.LastEncounter.PatientType,
             OrderEntry: 1
           }
           const response = await customAxios.post(urlClinicalAddNewCharge, service, {

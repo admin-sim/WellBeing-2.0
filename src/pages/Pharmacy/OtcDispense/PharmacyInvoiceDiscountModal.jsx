@@ -15,9 +15,9 @@ import {
   import React, { useState } from "react";
   const { Text } = Typography;
   // import customAxios from "../../components/customAxios/customAxios";
-import { urlUpdateInvoiceDiscount } from "../../../endpoints";
+import { urlUpdateInvoiceDiscount } from "../../../../endpoints";
   import { useEffect } from "react";
-import customAxios from "../../components/customAxios/customAxios";
+import customAxios from "../../../components/customAxios/customAxios";
   function PharmacyInvoiceDiscountModal({
     options,
     open,

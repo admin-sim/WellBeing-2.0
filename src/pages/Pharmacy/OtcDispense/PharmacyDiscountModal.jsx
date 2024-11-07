@@ -14,9 +14,9 @@ import {
   } from "antd";
   import React, { useState } from "react";
   const { Text } = Typography;
-  import customAxios from "../../components/customAxios/customAxios";
+  import customAxios from "../../../components/customAxios/customAxios";
   import { useEffect } from "react";
-import { urlUpdatePharmacyDiscount } from "../../../endpoints";
+import { urlUpdatePharmacyDiscount } from "../../../../endpoints";
   function PharmacyDiscountModal({
     options,
     open,
