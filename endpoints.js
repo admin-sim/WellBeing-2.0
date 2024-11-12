@@ -444,14 +444,6 @@ export const urlSaveChargesForTempTable = `${baseURL}/api/Billing/SaveChargesFor
 export const urlGetAllInvoice = `${baseURL}/api/PharmacyReturn/GetAllInvoice`;
 export const urlGetPharmacyReturnList = `${baseURL}/api/PharmacyReturn/GetPharmacyReturnList`;
 export const urlAddNewPharmacyReturn = `${baseURL}/api/PharmacyReturn/AddNewPharmacyReturn`;
-
-//export const urlGetAllUsers = `${baseURL}/api/Billing/SaveChargesForTempTable`;
-
-
-
-
-
-
 export const urlLogin = `${baseURL}/api/User/Login`;
 export const urlGetAllUsers = `${baseURL}/api/User/GetAllUsers`;
 export const urlGetAllMenusBasedOnRoleId = `${baseURL}/api/User/GetAllMenusAccessOnRoleId`;
@@ -504,4 +496,9 @@ export const urlAddNewAVLine = `${baseURL}/api/ClinicalSetup/AddNewAVLine`;
 export const urlDeleteAllergy = `${baseURL}/api/ClinicalSetup/DeleteAllergy`;
 export const urlGetAllEncounterByPatientId = `${baseURL}/api/Encounter/GetAllEncounterByPatientId`;
 export const urlGetAllLabReportsForHealthSummary = `${baseURL}/api/ClinicalSetup/GetAllLabReportsForHealthSummary`;
+export const urlGetAllFacilities = `${baseURL}/api/Facility/GetAllFacilities`;
+export const urlGetAllDepartments = `${baseURL}/api/Department/GetAllDepartments`;
+export const urlAddOrUpdateNewDepartment = `${baseURL}/api/Department/AddOrUpdateNewDepartment`;
+export const urlEditDepartment = `${baseURL}/api/Department/EditDepartment`;
+export const urlDeleteDepartment = `${baseURL}/api/Department/DeleteDepartment`;
 

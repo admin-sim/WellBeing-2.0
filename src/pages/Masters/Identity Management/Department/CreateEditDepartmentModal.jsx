@@ -11,7 +11,10 @@ function CreateEditDepartmentModal({
 
   useEffect(() => {
     if (record) {
-      form.setFieldsValue(record);
+      form.setFieldsValue({
+        ...record,
+        ActiveFlag: record.ActiveFlag ? "Active" : "Hidden", // Set "Active" or "Hidden" based on ActiveFlag boolean
+      });
     } else {
       form.resetFields();
     }
@@ -59,14 +62,14 @@ function CreateEditDepartmentModal({
               >
                 <Input />
               </Form.Item>
+              <Form.Item name="DepartmentId" hidden></Form.Item>
             </Col>
             <Col span={24}>
-              <Form.Item
-                name="Status"
-                label="Status"
-                rules={[{ required: true, message: "Please select Status" }]}
-              >
-                <Input />
+              <Form.Item name="ActiveFlag" label="Status">
+                <Select>
+                  <Select.Option key="Active" value="Active"></Select.Option>
+                  <Select.Option key="Hidden" value="Hidden"></Select.Option>
+                </Select>
               </Form.Item>
             </Col>
           </Row>

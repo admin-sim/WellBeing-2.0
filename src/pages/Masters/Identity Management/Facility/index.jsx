@@ -1,111 +1,120 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader/index.jsx";
 import CustomTable from "../../../../components/customTable/index.jsx";
 import { useNavigate } from "react-router-dom";
 import { PlusCircleOutlined } from "@ant-design/icons";
+import { urlGetAllFacilities } from "../../../../../endpoints.js";
+import customAxios from "../../../../components/customAxios/customAxios.jsx";
+
+
+
+
 
 function Facility() {
+
+  const [columnData, setColumnData] = useState();
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await customAxios.get(`${urlGetAllFacilities}`);
+      const newColumnData = response.data.data.FacilityModel.map((obj, index) => {
+        return { ...obj, key: index + 1 };
+      });
+      setColumnData(newColumnData);
+   
+    } catch (error) {
+      console.error(error);
+    }
+    setLoading(false);
+  };
   const columns = [
     {
-      title: "Sl No",
-      dataIndex: "SlNo",
-      key: "10",
+      title: "Sl. No.",
+      dataIndex: "key",
+      key: "key",
       width: 80,
     },
     {
       title: "Facility Name",
       dataIndex: "FacilityName",
-      key: "1",
+
       width: 200,
     },
     {
       title: "Facility Code",
       dataIndex: "FacilityCode",
-      key: "11",
+ 
       width: 120,
     },
     {
       title: "Address Line 1",
       dataIndex: "AddressLine1",
-      key: "2",
+
       width: 150,
     },
     {
       title: "Address Line 2",
       dataIndex: "AddressLine2",
-      key: "3",
+ 
       width: 250,
     },
     {
       title: "State",
-      dataIndex: "State",
-      key: "4",
+      dataIndex: "StateName",
+
       width: 120,
     },
 
     {
       title: "Place",
-      dataIndex: "Place",
-      key: "5",
+      dataIndex: "PlaceName",
+
       width: 120,
     },
 
     {
       title: "Area",
-      dataIndex: "Area",
-      key: "6",
+      dataIndex: "AreaName",
+
       width: 180,
     },
 
     {
       title: "Contact Name",
       dataIndex: "ContactName",
-      key: "7",
+
       width: 150,
     },
 
     {
       title: "Contact Details",
-      key: "8",
+
       width: 250,
       render: (text, record) => (
         <div>
           <p>
-            <strong>Mobile : </strong> {record?.ContactDetails?.MobileNo}
+            <strong>Mobile : </strong> {record?.MobileNumber}
             <br />
             <strong>Phone : </strong>
-            {record?.ContactDetails?.Phone}
+            {record?.PhoneNumber}
             <br />
             <strong>Email : </strong>
-            {record?.ContactDetails?.EmailId}
+            {record?.ContactEmail}
             <br />
             <strong>Fax : </strong>
-            {record?.ContactDetails?.Fax}
+            {record?.FaxNumber}
           </p>
         </div>
       ),
     },
   ];
 
-  const tableData = [
-    {
-      SlNo: 1,
-      FacilityName: "Smiles Health Care Inc.",
-      FacilityCode: "DE",
-      AddressLine1: "R K Tower",
-      AddressLine2: "Near GT Party Hall, Basaveshwar Nagar, Bengaluru",
-      State: "Karnataka",
-      Place: "Bengaluru",
-      Area: "Basaveshwar Nagar",
-      ContactName: "Admin",
-      ContactDetails: {
-        MobileNo: 9876543210,
-        Phone: "123456",
-        EmailId: "admin@smilesinmilez.com",
-        Fax: "0000000000",
-      },
-    },
-  ];
+ 
 
   const navigate = useNavigate();
 
@@ -130,15 +139,16 @@ function Facility() {
       >
         <PageHeader
           title={"Facility"}
-          buttonLabel="Add New Facility"
-          buttonIcon={<PlusCircleOutlined />}
-          onButtonClick={handleAddNewFacility}
+          button={false}
+         // buttonLabel="Add New Facility"
+          //buttonIcon={<PlusCircleOutlined />}
+         // onButtonClick={handleAddNewFacility}
         />
         <CustomTable
           isFilter={true}
           columns={columns}
-          dataSource={tableData}
-          onEdit={handleEdit}
+          dataSource={columnData}
+          //onEdit={handleEdit}
         />
       </div>
     </>

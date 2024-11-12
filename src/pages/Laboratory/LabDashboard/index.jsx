@@ -223,142 +223,154 @@ const LabDashboard = () => {
       width: 200, // Adjust the width as needed
       render: (text, record) => (
         <Space direction="vertical">
-          {record.IsSmpPartiallyCollected === true &&
-            !record.IsAllSampleCollected && (
-              <Space align="start">
-                <Button
-                  type="link"
-                  onClick={() => handleSampleCollection(record)}
-                >
-                  Sample Collection
-                </Button>
-                {/* </Link> */}
-                <Tooltip
-                  title="Sample Partially Collected"
-                  placement="right"
-                  overlayStyle={{ fontSize: "10px" }}
-                >
-                  <PlusCircleOutlined style={{ color: "#f39c12" }} />
-                </Tooltip>
-              </Space>
-            )}
-          {record.IsAllSampleCollected && (
-            <Space align="start">
-              <label>Sample Collection</label>
-              <Tooltip
-                title="All Samples Collected"
-                placement="right"
-                overlayStyle={{ fontSize: "10px" }}
-              >
-                <CheckCircleOutlined style={{ color: "green" }} />
-              </Tooltip>
-            </Space>
+          {record.IsbillCancelled ? (
+          <Space direction="vertical" align="start">
+          <label style={{ color: "red" }}>Bill Cancelled</label>
+          <span style={{  color: "gray" }}>
+            {record.ModifiedDateTimestring}
+          </span>
+        </Space>
+        
+          ) : (
+            <>
+              {record.IsSmpPartiallyCollected === true &&
+                !record.IsAllSampleCollected && (
+                  <Space align="start">
+                    <Button
+                      type="link"
+                      onClick={() => handleSampleCollection(record)}
+                    >
+                      Sample Collection
+                    </Button>
+                    <Tooltip
+                      title="Sample Partially Collected"
+                      placement="right"
+                      overlayStyle={{ fontSize: "10px" }}
+                    >
+                      <PlusCircleOutlined style={{ color: "#f39c12" }} />
+                    </Tooltip>
+                  </Space>
+                )}
+              {record.IsAllSampleCollected && (
+                <Space align="start">
+                  <label>Sample Collection</label>
+                  <Tooltip
+                    title="All Samples Collected"
+                    placement="right"
+                    overlayStyle={{ fontSize: "10px" }}
+                  >
+                    <CheckCircleOutlined style={{ color: "green" }} />
+                  </Tooltip>
+                </Space>
+              )}
+              {!record.IsSmpPartiallyCollected && !record.IsAllSampleCollected && (
+                <Space align="start">
+                  <Button
+                    type="link"
+                    onClick={() => handleSampleCollection(record)}
+                  >
+                    Sample Collection
+                  </Button>
+                  <Tooltip
+                    title="Sample Not Collected"
+                    placement="right"
+                    overlayStyle={{ fontSize: "10px" }}
+                  >
+                    <MinusCircleOutlined style={{ color: "#b98c54" }} />
+                  </Tooltip>
+                </Space>
+              )}
+    
+              {record.IsResEntryPartiallyDone === true &&
+                !record.IsAllResEntryDone && (
+                  <Space align="start">
+                    <Button type="link" onClick={() => handleResultEntry(record)}>
+                      Result Entry
+                    </Button>
+                    <Tooltip
+                      title="Result Entry Partially Done"
+                      placement="right"
+                      overlayStyle={{ fontSize: "10px" }}
+                    >
+                      <PlusCircleOutlined style={{ color: "#f39c12" }} />
+                    </Tooltip>
+                  </Space>
+                )}
+              {record.IsAllResEntryDone && (
+                <Space align="start">
+                  <label>Result Entry</label>
+                  <Tooltip
+                    title="All Result Entry Done"
+                    placement="right"
+                    overlayStyle={{ fontSize: "10px" }}
+                  >
+                    <CheckCircleOutlined style={{ color: "green" }} />
+                  </Tooltip>
+                </Space>
+              )}
+              {!record.IsResEntryPartiallyDone && !record.IsAllResEntryDone && (
+                <Space align="start">
+                  <Button type="link" onClick={() => handleResultEntry(record)}>
+                    Result Entry
+                  </Button>
+                  <Tooltip
+                    title="Result Entry Not Done"
+                    placement="right"
+                    overlayStyle={{ fontSize: "10px" }}
+                  >
+                    <MinusCircleOutlined style={{ color: "#b98c54" }} />
+                  </Tooltip>
+                </Space>
+              )}
+    
+              {record.IsVerificationPartiallyDone === true &&
+                !record.IsAllVerificationDone && (
+                  <Space align="start">
+                    <Button type="link" onClick={() => handleVerification(record)}>
+                      Verification
+                    </Button>
+                    <Tooltip
+                      title="Verification Partially Done"
+                      placement="right"
+                      overlayStyle={{ fontSize: "10px" }}
+                    >
+                      <PlusCircleOutlined style={{ color: "#f39c12" }} />
+                    </Tooltip>
+                  </Space>
+                )}
+              {record.IsAllVerificationDone && (
+                <Space align="start">
+                  <label>Verification</label>
+                  <Tooltip
+                    title="All Verification Done"
+                    placement="right"
+                    overlayStyle={{ fontSize: "10px" }}
+                  >
+                    <CheckCircleOutlined style={{ color: "green" }} />
+                  </Tooltip>
+                </Space>
+              )}
+              {!record.IsVerificationPartiallyDone &&
+                !record.IsAllVerificationDone && (
+                  <Space align="start">
+                    <Button type="link" onClick={() => handleVerification(record)}>
+                      Verification
+                    </Button>
+                    <Tooltip
+                      title="Verification Not Done"
+                      placement="right"
+                      overlayStyle={{ fontSize: "10px" }}
+                    >
+                      <MinusCircleOutlined style={{ color: "#b98c54" }} />
+                    </Tooltip>
+                  </Space>
+                )}
+            </>
           )}
-          {!record.IsSmpPartiallyCollected && !record.IsAllSampleCollected && (
-            <Space align="start">
-              <Button
-                type="link"
-                onClick={() => handleSampleCollection(record)}
-              >
-                Sample Collection
-              </Button>
-              <Tooltip
-                title="Sample Not Collected"
-                placement="right"
-                overlayStyle={{ fontSize: "10px" }}
-              >
-                <MinusCircleOutlined style={{ color: "#b98c54" }} />
-              </Tooltip>
-            </Space>
-          )}
-
-          {record.IsResEntryPartiallyDone === true &&
-            !record.IsAllResEntryDone && (
-              <Space align="start">
-                <Button type="link" onClick={() => handleResultEntry(record)}>
-                  Result Entry
-                </Button>
-                <Tooltip
-                  title="Result Entry Partially Done"
-                  placement="right"
-                  overlayStyle={{ fontSize: "10px" }}
-                >
-                  <PlusCircleOutlined style={{ color: "#f39c12" }} />
-                </Tooltip>
-              </Space>
-            )}
-          {record.IsAllResEntryDone && (
-            <Space align="start">
-              <label>Result Entry</label>
-              <Tooltip
-                title="All Result Entry Done"
-                placement="right"
-                overlayStyle={{ fontSize: "10px" }}
-              >
-                <CheckCircleOutlined style={{ color: "green" }} />
-              </Tooltip>
-            </Space>
-          )}
-          {!record.IsResEntryPartiallyDone && !record.IsAllResEntryDone && (
-            <Space align="start">
-              <Button type="link" onClick={() => handleResultEntry(record)}>
-                Result Entry
-              </Button>
-              <Tooltip
-                title="Result Entry Not Done"
-                placement="right"
-                overlayStyle={{ fontSize: "10px" }}
-              >
-                <MinusCircleOutlined style={{ color: "#b98c54" }} />
-              </Tooltip>
-            </Space>
-          )}
-
-          {record.IsVerificationPartiallyDone === true &&
-            !record.IsAllVerificationDone && (
-              <Space align="start">
-                <Button type="link" onClick={() => handleVerification(record)}>
-                  Verification
-                </Button>
-                <Tooltip
-                  title="Verification Partially Done"
-                  placement="right"
-                  overlayStyle={{ fontSize: "10px" }}
-                >
-                  <PlusCircleOutlined style={{ color: "#f39c12" }} />
-                </Tooltip>
-              </Space>
-            )}
-          {record.IsAllVerificationDone && (
-            <Space align="start">
-              <label>Verification</label>
-              <Tooltip
-                title="All Verification  Done"
-                placement="right"
-                overlayStyle={{ fontSize: "10px" }}
-              >
-                <CheckCircleOutlined style={{ color: "green" }} />
-              </Tooltip>
-            </Space>
-          )}
-          {!record.IsVerificationPartiallyDone &&
-            !record.IsAllVerificationDone && (
-              <Space align="start">
-                <Button type="link" onClick={() => handleVerification(record)}>
-                  Verification
-                </Button>
-                <Tooltip
-                  title="Verification  Not Done"
-                  placement="right"
-                  overlayStyle={{ fontSize: "10px" }}
-                >
-                  <MinusCircleOutlined style={{ color: "#b98c54" }} />
-                </Tooltip>
-              </Space>
-            )}
         </Space>
       ),
-    },
+    }
+    
   ];
 
   return (

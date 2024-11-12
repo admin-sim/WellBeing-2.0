@@ -327,7 +327,7 @@ const ResultEntry = () => {
       const updatedRecord = {
         ...currentRecord,
         ObservedValues: templateEditorData,
-        ResId: currentRecord.ResId > 0 ? currentRecord.ResId : 1, // Assign a non-zero value if it's a new entry
+       // ResId: currentRecord.ResId > 0 ? currentRecord.ResId : 1, // Assign a non-zero value if it's a new entry
       };
       updateRecords(updatedRecord);
       setCkModalOpen(false);
@@ -639,10 +639,12 @@ const ResultEntry = () => {
   };
 
   const LoadResEntryGridBasedOnTestId = async (
+    
     testid,
     chargeid,
     labstatusid
   ) => {
+    debugger;
     try {
       const response = await customAxios.get(
         `${urlGetSelectedTestDataForResEntry}?TestId=${testid}&ChargeId=${chargeid}&ChargeId=${labstatusid}&GenderId=${patientData.Gender}`
