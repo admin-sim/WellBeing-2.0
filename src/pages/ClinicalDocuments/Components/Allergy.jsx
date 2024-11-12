@@ -6,6 +6,7 @@ import {
   DatePicker,
   Form,
   Input,
+  InputNumber,
   Modal,
   Row,
   Select,
@@ -20,7 +21,7 @@ import {
   ColWithTwelveSpan,
 } from "../../../components/customGridColumns";
 import TextArea from "antd/es/input/TextArea";
-import { urlGetAllHistoryAsync, urlSaveAllergy, urlGetAllergyBasedonRange } from "../../../../endpoints";
+import { urlGetAllHistoryAsync, urlSaveAllergy, urlGetAllergyBasedonRange, urlDeleteAllergy } from "../../../../endpoints";
 import customAxios from "../../../components/customAxios/customAxios";
 import dayjs from "dayjs";
 import CustomTable from "../../../components/customTable";
@@ -46,6 +47,11 @@ function Allergy(Patient) {
       key: "CreatedDatetimeString",
     },
     {
+      title: "Encounter",
+      dataIndex: "Encounter",
+      key: "Encounter",
+    },
+    {
       title: "Allergen Type",
       dataIndex: "CategoryName",
       key: "CategoryName",
@@ -55,7 +61,7 @@ function Allergy(Patient) {
   const showModal = async (params) => {
     try {
       const response = await customAxios.get(
-        `${urlGetAllergyBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&RangeString=${params}`
+        `${urlGetAllergyBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${0}&RangeString=${encodeURIComponent(params)}`
       );
       if (response.status === 200 && response.data.data != null) {
         const detailsheader = response.data.data.NewAllergyList;
@@ -168,21 +174,20 @@ function Allergy(Patient) {
 
   const handleDelete = async (record) => {
     debugger
-
-    // try {
-    //   const response = await customAxios.delete(urlDeleteFamily, {
-    //     params: {
-    //       Id: record.HeaderId,
-    //       PatientId: Patient.Patient.PatientId,
-    //       EncounterId: Patient.Patient.Encounter
-    //     }
-    //   });
-    //   if (response.status === 200 && response.data.data != null) {
-    //     const detailsheader = response.data.data;
-    //     GetUpdate(detailsheader)
-    //     message.success('Deleted')
-    //   }
-    // } catch (error) { }
+    try {
+      const response = await customAxios.delete(urlDeleteAllergy, {
+        params: {
+          Allergy: record.AllergyId,
+          PatientId: Patient.Patient.PatientId,
+          EncounterId: Patient.Patient.Encounter
+        }
+      });
+      if (response.status === 200 && response.data.data != null) {
+        const detailsheader = response.data.data;
+        Patient.handleUpdate(detailsheader)
+        message.success('Deleted')
+      }
+    } catch (error) { }
   }
 
   const handleEdit = async (record) => {
@@ -381,17 +386,17 @@ function Allergy(Patient) {
               <Row gutter={16}>
                 <ColWithEightSpan>
                   <Form.Item name="Day" label="Day">
-                    <Input disabled />
+                    <InputNumber min={0} />
                   </Form.Item>
                 </ColWithEightSpan>
                 <ColWithEightSpan>
                   <Form.Item name="Month" label="Month">
-                    <Input disabled />
+                    <InputNumber min={0} />
                   </Form.Item>
                 </ColWithEightSpan>
                 <ColWithEightSpan>
                   <Form.Item name="Year" label="Year">
-                    <Input disabled />
+                    <InputNumber min={0} />
                   </Form.Item>
                 </ColWithEightSpan>
               </Row>

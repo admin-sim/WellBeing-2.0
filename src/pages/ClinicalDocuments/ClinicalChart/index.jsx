@@ -21,6 +21,7 @@ import {
 } from "../../../../endpoints";
 import customAxios from "../../../components/customAxios/customAxios";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router";
 import { asyncThunkCreator } from "@reduxjs/toolkit";
 
 function ClinicalChart() {
@@ -70,13 +71,6 @@ function ClinicalChart() {
 
   const handleUpdate = (value) => {
     setInitialData(value);
-    // setInitialData((prevInitialData) => {
-    //   const updatedDropdown = {
-    //     ...prevInitialData,
-    //     prevInitialData: value,
-    //   };
-    //   return updatedDropdown;
-    // });
   };
 
   function handleAllery(params) {
@@ -189,7 +183,10 @@ function ClinicalChart() {
                 </Badge>
               ),
               key: 6,
-              children: <Allergy Patient={Patient} initialData={initialData} handleAllery={handleAllery} />,
+              children: <Allergy Patient={Patient}
+                initialData={initialData}
+                handleAllery={handleAllery}
+                handleUpdate={handleUpdate} />,
             },
           ]}
         />
@@ -276,6 +273,13 @@ function ClinicalChart() {
     // },
   ];
 
+  const navigate = useNavigate();
+
+  function EndConsultation() {
+    debugger
+    navigate("/ClinicalChartFlow");
+  }
+
   return (
     <div
       style={{
@@ -309,6 +313,7 @@ function ClinicalChart() {
             style={{ display: "flex", alignItems: "center" }}
             danger
             size="large"
+            onClick={EndConsultation}
           >
             End Consultation
             <RxExit style={{ marginLeft: "5px", fontSize: "1.3rem" }} />

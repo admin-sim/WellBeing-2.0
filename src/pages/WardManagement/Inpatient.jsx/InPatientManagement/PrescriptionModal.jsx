@@ -34,6 +34,7 @@ import dayjs from "dayjs";
 import { validate } from "uuid";
 import { render } from "react-dom";
 import { v4 as uuidv4 } from "uuid";
+import moment from "moment";
 
 function Prescription({ bed, patient, Dropdown, open, handleClose }) {
   const [form1] = Form.useForm();
@@ -61,6 +62,8 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
   const [tableData1, setTableData1] = useState(initial);
   const [tableData2, setTableData2] = useState([]);
   const [productOptions, setProductOptions] = useState([]);
+  const [fromDate, setFromDate] = useState(dayjs().subtract(1, 'day'));
+  const [toDate, setToDate] = useState(dayjs());
 
   const handleCancel = () => {
     form1.resetFields();
@@ -82,7 +85,7 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     if (key == '2') {
       try {
         const response = await customAxios.get(
-          `${urlSearchExistingPrescription}?Provider=${0}&Patientid=${patient.PatientId}&FromDateString=${null}&ToDateString=${null}`
+          `${urlSearchExistingPrescription}?Provider=${0}&Patientid=${patient.PatientId}&EncounterId=${patient.EncounterId}&FromDateString=${null}&ToDateString=${null}`
         );
         if (response.status === 200 && response.data.data !== null) {
           const newdata =
@@ -104,6 +107,7 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
         console.error("Error:", error);
       } finally {
         setLoading(false)
+        handleReset()
       }
     }
   };
@@ -159,8 +163,17 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
     }
   };
 
-  const handleReset = () => {
-    form2.resetFields();
+  function handleReset() {
+    debugger
+    form1.resetFields();
+    // form2.resetFields();
+    form3.resetFields();
+    setTableData1(initial);
+    setTableData2[[]];
+    setProductOptions([]);
+    // setDefaultActiveKey("1");
+    setButtonTitle("Save");
+    setTabName("New");
   };
 
   const handleInputChange = async (value, record, option) => {
@@ -738,8 +751,8 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                 </Col>
                 <Col span={2}>
                   <Form.Item>
-                    <Button type="default" danger onClick={handleCancel}>
-                      Cancel
+                    <Button type="default" danger onClick={buttonTitle == 'Update' ? handleReset : handleCancel}>
+                      {buttonTitle == 'Update' ? 'Reset' : 'Cancel'}
                     </Button>
                   </Form.Item>
                 </Col>
@@ -821,8 +834,8 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                 // handleCancel();
               }}
               initialValues={{
-                FromDate: dayjs().subtract(1, "day"),
-                ToDate: dayjs(),
+                FromDate: fromDate,
+                ToDate: toDate,
               }}
             >
               <Row gutter={16}>
@@ -837,7 +850,12 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                       },
                     ]}
                   >
-                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                    {/* <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" /> */}
+                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                      value={fromDate}
+                      onChange={(date) => setFromDate(date)}
+                      disabledDate={(current) => current > moment()}
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={6}>
@@ -851,7 +869,12 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                       },
                     ]}
                   >
-                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                    {/* <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" /> */}
+                    <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                      value={toDate}
+                      onChange={(date) => setToDate(date)}
+                      disabledDate={(current) => current > moment()}
+                    />
                   </Form.Item>
                   <Form.Item name="Provider" hidden>
                     <Input />
@@ -883,7 +906,7 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
                 </Col>
                 <Col span={2}>
                   <Form.Item>
-                    <Button type="default" danger onClick={handleReset}>
+                    <Button type="default" danger onClick={() => form2.resetFields()}>
                       Reset
                     </Button>
                   </Form.Item>
@@ -892,16 +915,16 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
               <Divider style={{ marginBottom: "0rem" }} />
             </Form>
             {/* <Spin spinning={loading}> */}
-              <CustomTable loading={loading}
-                columns={columns2}
-                dataSource={tableData2}
-                actionColumn={false}
-                isFilter={true}
-                scroll={{
-                  //   x: 1500,
-                  y: 110,
-                }}
-              />
+            <CustomTable loading={loading}
+              columns={columns2}
+              dataSource={tableData2}
+              actionColumn={false}
+              isFilter={true}
+              scroll={{
+                //   x: 1500,
+                y: 110,
+              }}
+            />
             {/* </Spin> */}
           </Tabs.TabPane>
         </Tabs>

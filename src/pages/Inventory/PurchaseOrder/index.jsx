@@ -280,7 +280,7 @@ const PurchaseOrder = () => {
               <DatePicker
                 value={toDate}
                 onChange={(date) => setToDate(date)}
-                disabledDate={(current) => current < fromDate} // disable dates before fromDate
+                disabledDate={(current) => current < fromDate} 
                 style={{ width: "100%" }}
                 format="DD-MM-YYYY"
               />

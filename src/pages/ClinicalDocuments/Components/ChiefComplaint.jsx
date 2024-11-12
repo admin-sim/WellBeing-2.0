@@ -132,6 +132,7 @@ function ChiefComplaint(Patient) {
                 } catch (error) { }
               } else {
                 message.warning('No Data for Save')
+                setLoading(false)
               }
             }}
             form={form}>

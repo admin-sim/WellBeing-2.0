@@ -15,6 +15,11 @@ const columnsForPreviousMedicalHistory = [
     width: 70,
   },
   {
+    title: "Encounter",
+    dataIndex: "Encounter",
+    key: "Encounter",
+  },
+  {
     title: "Date",
     dataIndex: "DateString",
     key: "DateString",
@@ -30,6 +35,7 @@ const columnsForPreviousMedicalHistory = [
     title: "Description",
     dataIndex: "Description",
     key: "Description",
+    width: 200,
   },
 ];
 
@@ -40,6 +46,7 @@ function SurgicalHistory(Patient) {
   const [previousHistory, setPreviousHistory] = useState([])
   const [loading, setLoading] = useState(false)
   const [productOptions, setProductOptions] = useState([]);
+  // const [data, setData] = useState([])
 
   const showModal = async (params) => {
     debugger
@@ -61,6 +68,7 @@ function SurgicalHistory(Patient) {
   // };
 
   const handleSearch = async (searchText) => {
+    debugger
     if (searchText) {
       const response = await customAxios.get(`${urlGetAllCpt}?Product=${searchText}`);
       const apiData = response.data.data;
@@ -69,7 +77,7 @@ function SurgicalHistory(Patient) {
         key: item.CptCode,
         Description: item.CptDescription
       }));
-      setProductOptions(newOptions);
+      setProductOptions(newOptions.filter(item1 => !data.some(item2 => item1.key === item2.code ?? item2.code)));
     }
   }
 
@@ -81,7 +89,7 @@ function SurgicalHistory(Patient) {
     setSelectedMedicalHistoryDetails((prevDetails) => {
       return [...prevDetails, cpt];
     });
-
+    setProductOptions([])
     form.resetFields()
   };
 
@@ -116,6 +124,11 @@ function SurgicalHistory(Patient) {
   const handleToSave = async () => {
     debugger
     setLoading(true)
+    if (data.length == 0) {
+      message.warning('Please Search and Pick CPT Code')
+      setLoading(false)
+      return false
+    }
     const Cpt = data.map((item) => {
       return {
         PatientId: Patient.Patient.PatientId,
@@ -131,6 +144,7 @@ function SurgicalHistory(Patient) {
     });
     if (response.status == 200) {
       setSelectedMedicalHistoryDetails([])
+      form.resetFields()
       message.success('Saved')
       GetUpdate(response.data.data)
       setLoading(false)
@@ -152,7 +166,7 @@ function SurgicalHistory(Patient) {
     {
       title: "Surgical History",
       dataIndex: "Description",
-      key: "2",
+      key: "3",
     },
   ];
 
@@ -195,6 +209,7 @@ function SurgicalHistory(Patient) {
                       setProductOptions([]);
                     }
                   }}
+                  placeholder='Please Search and Pick CPT Code'
                 // allowClear={{
                 //   clearIcon: <CloseSquareFilled />,
                 // }}

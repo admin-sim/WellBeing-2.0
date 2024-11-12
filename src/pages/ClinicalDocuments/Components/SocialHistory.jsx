@@ -18,7 +18,7 @@ function SocialHistory(Patient) {
     debugger
     try {
       const response = await customAxios.get(
-        `${urlGetSocailBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&RangeString=${params}`
+        `${urlGetSocailBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${0}&RangeString=${encodeURIComponent(params)}`
       );
       if (response.status === 200 && response.data.data != null) {
         const detailsheader = response.data.data.SocialHistoryList;
@@ -102,25 +102,30 @@ function SocialHistory(Patient) {
             onFinish={async (value) => {
               setLoading(true)
               debugger
-              const Social = {
-                Description: value.SocialHistory,
-                HeaderId: value.SHID ? value.SHID : 0,
-                PatientId: Patient.Patient.PatientId,
-                EncounterId: Patient.Patient.Encounter,
-              }
-              try {
-                const response = await customAxios.post(urlSaveSocial, Social, {
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                });
-                if (response.status === 200) {
-                  message.success('Saved Success')
-                  handleClr()
-                  GetUpdate(response.data.data)
-                  setLoading(false)
+              if (value.SocialHistory) {
+                const Social = {
+                  Description: value.SocialHistory,
+                  HeaderId: value.SHID ? value.SHID : 0,
+                  PatientId: Patient.Patient.PatientId,
+                  EncounterId: Patient.Patient.Encounter,
                 }
-              } catch (error) { }
+                try {
+                  const response = await customAxios.post(urlSaveSocial, Social, {
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                  });
+                  if (response.status === 200) {
+                    message.success('Saved Success')
+                    handleClr()
+                    GetUpdate(response.data.data)
+                    setLoading(false)
+                  }
+                } catch (error) { }
+              } else {
+                message.warning('No Data for Save')
+                setLoading(false)
+              }
             }}
             // variant="outlined"
             form={form}>

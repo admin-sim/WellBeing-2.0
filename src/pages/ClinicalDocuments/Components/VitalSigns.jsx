@@ -15,6 +15,7 @@ function VitalSigns(Patient) {
   const [formData, setFormData] = useState({})
   const [prevVitalsTable, setPrevVitalsTable] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false);
+  let handleCancelRef;
 
   const handleOkPrev = () => setIsModalOpen(false)
 
@@ -22,7 +23,7 @@ function VitalSigns(Patient) {
     debugger
     try {
       const response = await customAxios.get(
-        `${urlGetPatientVitals}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&RangeString=${params}`
+        `${urlGetPatientVitals}?PatientId=${Patient.Patient.PatientId}&EncounterId=${0}&RangeString=${encodeURIComponent(params)}`
       );
       if (response.status === 200 && response.data.data != null) {
         const detailsheader = response.data.data;
@@ -53,6 +54,29 @@ function VitalSigns(Patient) {
       dataIndex: "Temperature",
       key: "Temperature",
     },
+  ];
+
+  const columns1 = [
+    {
+      title: "Date",
+      dataIndex: "DateOfBirthstring",
+      key: "DateOfBirthstring",
+    },
+    {
+      title: "Encounter",
+      dataIndex: "Encounterstr",
+      key: "Encounterstr",
+    },
+    {
+      title: "height",
+      dataIndex: "height",
+      key: "height",
+    },
+    {
+      title: "Weight",
+      dataIndex: "Weight",
+      key: "Weight",
+    }
   ];
 
   async function handleSubmit(values) {
@@ -88,6 +112,7 @@ function VitalSigns(Patient) {
       message.success('Success')
       Patient.handleVitals(response.data.data)
       setShowCaptureVitalsModal(false)
+      return true
     }
   }
 
@@ -107,6 +132,14 @@ function VitalSigns(Patient) {
       setShowCaptureVitalsModal(true)
     }
   }
+
+  const assignHandleCancel = (cancelFunc) => {
+    handleCancelRef = cancelFunc;
+  };
+
+  const callHandleCancel = () => {
+    if (handleCancelRef) handleCancelRef();
+  };
 
   return (
     <>
@@ -173,7 +206,7 @@ function VitalSigns(Patient) {
         </div>
         <Table
           size="small"
-          columns={columns}
+          columns={columns1}
           // expandable={{
           //   expandedRowRender: (record) => (
           //     <span

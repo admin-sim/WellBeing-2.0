@@ -100,30 +100,30 @@ const CreateGRNAgainstPO = () => {
   const initialModelDataSource =
     GrnHeaderId === 0
       ? [
-          {
-            key: 1,
-            BarCode: "",
-            BatchNo: "",
-            Quantity: 0,
-            ProductId: "",
-            UomId: null,
-            BatchBonusQty: 0,
-            MFGDateString: "",
-            EXPDateString: "",
-            Rate: 0,
-            MRP: 0,
-            TaxType1: "",
-            TaxAmount1: 0,
-            TaxType2: "",
-            TaxAmount2: 0,
-            Stocklocator: "",
-            ActiveFlag: true,
-            PoLineId: 0,
-            DiscountRate: 0,
-            DiscountAmount: 0,
-            GrnBatchId: 0,
-          },
-        ]
+        {
+          key: 1,
+          BarCode: "",
+          BatchNo: "",
+          Quantity: 0,
+          ProductId: "",
+          UomId: null,
+          BatchBonusQty: 0,
+          MFGDateString: "",
+          EXPDateString: "",
+          Rate: 0,
+          MRP: 0,
+          TaxType1: "",
+          TaxAmount1: 0,
+          TaxType2: "",
+          TaxAmount2: 0,
+          Stocklocator: "",
+          ActiveFlag: true,
+          PoLineId: 0,
+          DiscountRate: 0,
+          DiscountAmount: 0,
+          GrnBatchId: 0,
+        },
+      ]
       : [];
 
   const [dataBatchModal, setdataBatchModal] = useState(initialModelDataSource);
@@ -574,7 +574,7 @@ const CreateGRNAgainstPO = () => {
       render: (text, record) => (
         <Form.Item
           name={[record.key, "Batch"]}
-          //initialValue={record.PoBalanceQty}
+        //initialValue={record.PoBalanceQty}
         >
           <Button type="link" onClick={() => BatchmodalOpen(record)}>
             Batch
@@ -779,17 +779,17 @@ const CreateGRNAgainstPO = () => {
               // : null,
               EXPDateString: values[key].GrnBatchId
                 ? values[key].EXPDateString &&
-                  values[key].EXPDateString.format("DD-MM-YYYY")
+                values[key].EXPDateString.format("DD-MM-YYYY")
                 : batchRecord.Expiry === "Month wise"
-                ? values[key].EXPDateString &&
+                  ? values[key].EXPDateString &&
                   `01-${String(values[key].EXPDateString.$M + 1).padStart(
                     2,
                     "0"
                   )}-${values[key].EXPDateString.$y}`
-                : batchRecord.Expiry === "Date wise"
-                ? values[key].EXPDateString &&
-                  values[key].EXPDateString.format("DD-MM-YYYY")
-                : null,
+                  : batchRecord.Expiry === "Date wise"
+                    ? values[key].EXPDateString &&
+                    values[key].EXPDateString.format("DD-MM-YYYY")
+                    : null,
               Rate: values[key].Rate,
               MRP: values[key].MRP,
               StockLocator: 0,
@@ -844,9 +844,9 @@ const CreateGRNAgainstPO = () => {
     };
   };
 
-  const onFinishBatchmodal = () => {};
+  const onFinishBatchmodal = () => { };
 
-  const onFinishBatchFailed = () => {};
+  const onFinishBatchFailed = () => { };
   // const handleOnFinish = async (values) => {
   //
   //   const products = [];
@@ -1013,7 +1013,7 @@ const CreateGRNAgainstPO = () => {
               Replaceable: values[i].Replaceable === true ? "Y" : "N",
               PoStatus:
                 values[i].ReceivedQty + values[i].BonusQuantity ==
-                values[i].PoBalanceQty
+                  values[i].PoBalanceQty
                   ? "Completed"
                   : "Pending",
               ActiveFlag: true,
@@ -1234,7 +1234,7 @@ const CreateGRNAgainstPO = () => {
           <InputNumber
             min={0}
             style={{ width: 70 }}
-            // disabled={!!GrnHeaderId && record.GrnBatchId}
+          // disabled={!!GrnHeaderId && record.GrnBatchId}
           />
         </Form.Item>
       ),
@@ -1322,8 +1322,8 @@ const CreateGRNAgainstPO = () => {
               batchRecord.Expiry === "Month wise"
                 ? "MMMM YYYY"
                 : batchRecord.Expiry === "Date wise"
-                ? "DD-MM-YYYY"
-                : null
+                  ? "DD-MM-YYYY"
+                  : null
             }
             disabled={
               (!!GrnHeaderId && record.GrnBatchId) ||
@@ -1663,7 +1663,13 @@ const CreateGRNAgainstPO = () => {
               </ColWithEightSpan>
               <ColWithEightSpan>
                 <Form.Item label="Invoice Date" name="InvoiceDateString">
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                    disabledDate={(current) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return current && current < today;
+                    }}
+                  />
                 </Form.Item>
               </ColWithEightSpan>
               <ColWithEightSpan>
@@ -1687,7 +1693,13 @@ const CreateGRNAgainstPO = () => {
               </ColWithEightSpan>
               <ColWithEightSpan>
                 <Form.Item label="DC Challan Date" name="DCChallanDateString">
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                    disabledDate={(current) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return current && current < today;
+                    }}
+                  />
                 </Form.Item>
               </ColWithEightSpan>
               <ColWithEightSpan>
@@ -1701,7 +1713,13 @@ const CreateGRNAgainstPO = () => {
                     },
                   ]}
                 >
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                    disabledDate={(current) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return current && current < today;
+                    }}
+                  />
                 </Form.Item>
               </ColWithEightSpan>
             </Row>
@@ -1710,7 +1728,13 @@ const CreateGRNAgainstPO = () => {
             <Row gutter={16}>
               <ColWithEightSpan>
                 <Form.Item label="GRN Date" name="GRNDatestring">
-                  <DatePicker format="DD-MM-YYYY" />
+                  <DatePicker format="DD-MM-YYYY"
+                    disabledDate={(current) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return current && current < today;
+                    }}
+                  />
                 </Form.Item>
               </ColWithEightSpan>
               <ColWithEightSpan>
@@ -2015,11 +2039,11 @@ const CreateGRNAgainstPO = () => {
               dataSource={
                 batchRecord.ProductId
                   ? dataBatchModal.filter(
-                      (item) =>
-                        (item.ProductId === batchRecord.ProductId &&
-                          item.ActiveFlag) ||
-                        (item.ProductId === "" && item.ActiveFlag)
-                    )
+                    (item) =>
+                      (item.ProductId === batchRecord.ProductId &&
+                        item.ActiveFlag) ||
+                      (item.ProductId === "" && item.ActiveFlag)
+                  )
                   : initialModelDataSource
               }
             />

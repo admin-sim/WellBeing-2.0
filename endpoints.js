@@ -501,5 +501,7 @@ export const urlClinicalAddNewCharge = `${baseURL}/api/ClinicalSetup/ClinicalAdd
 export const urlSendTestsFOrLabModule = `${baseURL}/api/ClinicalSetup/SendTestsFOrLabModule`;
 export const urlAddNewAVHeader = `${baseURL}/api/ClinicalSetup/AddNewAVHeader`;
 export const urlAddNewAVLine = `${baseURL}/api/ClinicalSetup/AddNewAVLine`;
+export const urlDeleteAllergy = `${baseURL}/api/ClinicalSetup/DeleteAllergy`;
+export const urlGetAllEncounterByPatientId = `${baseURL}/api/Encounter/GetAllEncounterByPatientId`;
 export const urlGetAllLabReportsForHealthSummary = `${baseURL}/api/ClinicalSetup/GetAllLabReportsForHealthSummary`;
 

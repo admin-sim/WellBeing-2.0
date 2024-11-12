@@ -14,10 +14,11 @@ function FamilyHistory(Patient) {
   const [loading, setLoading] = useState(false)
   const [buttonTitle, setButtonTitle] = useState('Save')
 
-  const showModal = async () => {
+  const showModal = async (params) => {
+    debugger
     try {
       const response = await customAxios.get(
-        `${urlGetFamilyBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&Range=${dayjs()}`
+        `${urlGetFamilyBasedonRange}?PatientId=${Patient.Patient.PatientId}&EncounterId=${0}&RangeString=${encodeURIComponent(params)}`
       );
       if (response.status === 200 && response.data.data != null) {
         const detailsheader = response.data.data.FamilyHistoryList;
@@ -38,6 +39,11 @@ function FamilyHistory(Patient) {
       title: "Date",
       dataIndex: "DateString",
       key: "DateString",
+    },
+    {
+      title: "Encounter",
+      dataIndex: "Encounter",
+      key: "Encounter",
     },
     {
       title: "Medical Officer",
@@ -104,25 +110,30 @@ function FamilyHistory(Patient) {
             onFinish={async (value) => {
               setLoading(true)
               debugger
-              const family = {
-                Description: value.FamilyHistory,
-                HeaderId: value.FHID ? value.FHID : 0,
-                PatientId: Patient.Patient.PatientId,
-                EncounterId: Patient.Patient.Encounter,
-              }
-              try {
-                const response = await customAxios.post(urlSaveFamily, family, {
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                });
-                if (response.status === 200) {
-                  message.success('Saved Success')
-                  handleClr()
-                  GetUpdate(response.data.data)
-                  setLoading(false)
+              if (value.FamilyHistory) {
+                const family = {
+                  Description: value.FamilyHistory,
+                  HeaderId: value.FHID ? value.FHID : 0,
+                  PatientId: Patient.Patient.PatientId,
+                  EncounterId: Patient.Patient.Encounter,
                 }
-              } catch (error) { }
+                try {
+                  const response = await customAxios.post(urlSaveFamily, family, {
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                  });
+                  if (response.status === 200) {
+                    message.success('Saved Success')
+                    handleClr()
+                    GetUpdate(response.data.data)
+                    setLoading(false)
+                  }
+                } catch (error) { }
+              } else {
+                message.warning('No Data for Save')
+                setLoading(false)
+              }
             }}
             // variant="outlined"
             form={form}>
@@ -178,7 +189,7 @@ function FamilyHistory(Patient) {
           <Button
             size="middle"
             className="d-flex allignCenter"
-            onClick={showModal}
+            onClick={() => showModal(dayjs().subtract(1, "month").format('DD-MM-YYYY'))}
           >
             Previous Family History
             <FaHistory style={{ marginLeft: "0.5rem" }} />
@@ -217,6 +228,7 @@ function FamilyHistory(Patient) {
               margin: "0.5rem",
               width: "40%",
             }}
+            onChange={(value) => showModal(value)}
             options={[
               { value: dayjs().subtract(6, "year").format('DD-MM-YYYY'), label: "Previous All" },
               { value: dayjs().subtract(7, "day").format('DD-MM-YYYY'), label: "Last One Week" },

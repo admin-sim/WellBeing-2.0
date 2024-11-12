@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Tabs, Button, Table, Layout, Card, Row, Form, Input, Col } from 'antd'
 import customAxios from "../../../components/customAxios/customAxios";
-import { urlClinicalChartFlows } from "../../../../endpoints";
+import { urlClinicalChartFlows, urlGetAllEncounterByPatientId } from "../../../../endpoints";
 import { useNavigate } from "react-router";
 import PageHeader from '../../../components/PageHeader/index'
 import UhidSelectComponet from '../../../components/UhidSelectComponent/index'
@@ -35,9 +35,10 @@ function ClinicalChartFlow() {
         }
     }
 
-    const onTabChange = (key) => {
+    const onTabChange = async (key) => {
         if (key == '1') {
-            fetch('Ambulatory Patient')
+            await form1.validateFields()
+            form1.submit()
         } else if (key == '2') {
             fetch('Ambulatory Patient')
         } else if (key == '3') {
@@ -46,7 +47,6 @@ function ClinicalChartFlow() {
             fetch('Day Care')
         } else {
             fetch('Emergency')
-
         }
         setDefaultActiveKey(key)
     };
@@ -84,6 +84,15 @@ function ClinicalChartFlow() {
         }
     ];
 
+    async function handleSelectUHID(va, op) {
+        debugger
+        if (op != undefined) {
+            form1.setFieldsValue({ 'PatientId': op.data.PatientId })
+            form1.setFieldsValue({ 'Name': op.data.PatientFirstName + ' ' + op.data.PatientLastName })
+            form1.setFieldsValue({ 'UHID': op.value })
+        }
+    }
+
     return (
         <Layout style={{ zIndex: '999999999' }}>
             <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
@@ -92,30 +101,46 @@ function ClinicalChartFlow() {
                     <Form
                         layout="vertical"
                         form={form1}
-                        onFinish={(values) => {
+                        onFinish={async (values) => {
                             debugger
+                            setLoading(true)
+                            const response = await customAxios.get(`${urlGetAllEncounterByPatientId}?PatientId=${values.PatientId}`)
+                            if (response.status == 200) {
+                                const newData = response.data.data.map((item, index) => {
+                                    return {
+                                        ...item,
+                                        key: index + 1
+                                    }
+                                })
+                                setTableData(newData)
+                                setDefaultActiveKey('1')
+                                setLoading(false)
+                            }
                         }}>
                         <Row gutter={32}>
                             <Col span={6}>
                                 <Form.Item name='UHID' label='UHID'
-                                // rules={[
-                                //     {
-                                //         required: true,
-                                //         message: "Please enter Provider",
-                                //     },
-                                // ]}
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: "Please enter UHID",
+                                        },
+                                    ]}
                                 >
-                                    <UhidSelectComponet />
+                                    <UhidSelectComponet handleSelectUHID={handleSelectUHID} />
                                 </Form.Item>
                             </Col>
                             <Col span={6}>
                                 <Form.Item name='Name' label='Name'>
                                     <Input />
                                 </Form.Item>
+                                <Form.Item name='PatientId' hidden>
+                                    <Input />
+                                </Form.Item>
                             </Col>
                             <Col span={6}>
                                 <Form.Item label="&nbsp;">
-                                    <Button type="primary" htmlType="submit">
+                                    <Button type="primary" htmlType="submit" onClick={() => form1.submit()}>
                                         Search
                                     </Button>
                                 </Form.Item>

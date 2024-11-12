@@ -17,6 +17,7 @@ import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useLocation } from "react-router-dom";
 import CustomTable from "../../components/customTable/index.jsx";
+import UhidSelectComponent from '../../components/UhidSelectComponent/index.jsx';
 
 const CreatePatientIndent = () => {
     const [DropDown, setDropDown] = useState({
@@ -32,6 +33,7 @@ const CreatePatientIndent = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const indentId = location.state.IndentId;
+    const Patient = location.state.Patient;
     const [dropDownLoad, setDropDownLoading] = useState(true);
     const [loading, setLoading] = useState(false);
     const initialDataSource =
@@ -120,6 +122,8 @@ const CreatePatientIndent = () => {
                 })
             });
             setLoading(false);
+        } else if (Patient) {
+            debugger
         }
     }
 
@@ -455,7 +459,7 @@ const CreatePatientIndent = () => {
             UHID: values.UHID === undefined ? 0 : values.UHID,
             SubmitCheck: values.SubmitCheck,
             PatientId: values.PatientId,
-            EncounterId: values.EncounterId,
+            EncounterId: values.Encounter,
             IndentCategory: 'PatientIndent',
             RequestingStoreId: 0
         }
@@ -527,6 +531,34 @@ const CreatePatientIndent = () => {
         setAutoCompleteProduct([]);
         form2.resetFields();
         setIsTableVisible(true);
+    }
+
+    function handleSelect2(value, option) {
+        debugger
+        if (value) {
+            form1.setFieldsValue({ Name: option.data.PatientFirstName + ' ' + option.data.PatientLastName });
+            form1.setFieldsValue({ UHID: value });
+            customAxios.get(`${urlGetLastEncounter}?patientId=${option.data.PatientId}`).then((response) => {
+                const apiData = response.data;
+                if (apiData.length > 0) {
+                    setEncounter(apiData);
+                    form1.setFieldsValue({ Encounter: apiData[0].EncounterId });
+                    form1.setFieldsValue({ EncounterId: apiData[0].EncounterId });
+                    form1.setFieldsValue({ PatientId: option.data.PatientId });
+                } else {
+                    setEncounter([]);
+                    form1.setFieldsValue({ EncounterId: '' });
+                    form1.setFieldsValue({ Encounter: '' });
+                    form1.setFieldsValue({ PatientId: '' });
+                }
+            });
+        } else {
+            setEncounter([]);
+            form1.setFieldsValue({ EncounterId: '' });
+            form1.setFieldsValue({ Encounter: '' });
+            form1.setFieldsValue({ PatientId: '' });
+            form1.setFieldsValue({ Name: '' });
+        }
     }
 
     return (
@@ -661,13 +693,14 @@ const CreatePatientIndent = () => {
                                         }
                                     ]}
                                 >
-                                    <AutoComplete style={{ width: '100%' }} disabled={!!indentId}
+                                    {/* <AutoComplete style={{ width: '100%' }} disabled={!!indentId}
                                         options={autoCompleteOptions}
                                         onSearch={(value) => GetUHID(value)}
                                         onSelect={(value, option) => handleSelect(value, option)}
                                         value={uhId}
                                         allowClear
-                                    />
+                                    /> */}
+                                    <UhidSelectComponent handleSelectUHID={handleSelect2} />
                                     <Button type="link" onClick={ShowModel}>Dr Note</Button>
                                 </Form.Item>
                                 <Form.Item name="PatientId" hidden>
@@ -675,13 +708,26 @@ const CreatePatientIndent = () => {
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
-                                <Form.Item label="Name" name="Name">
+                                <Form.Item label="Name" name="Name"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Please input!'
+                                        }
+                                    ]}
+                                >
                                     <Input style={{ width: '100%' }} disabled></Input>
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
                                 <Form.Item label="Encounter" name="Encounter"
-                                // initialValue={encounter.length > 0 ? encounter[0].EncounterId : undefined}
+                                    // initialValue={encounter.length > 0 ? encounter[0].EncounterId : undefined}
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: 'Please input!'
+                                        }
+                                    ]}
                                 >
                                     <Select disabled={encounter.length > 1 ? false : true}>
                                         {encounter.map((option) => (

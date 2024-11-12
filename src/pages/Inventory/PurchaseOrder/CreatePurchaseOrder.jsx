@@ -73,30 +73,30 @@ const CreatePurchaseOrder = () => {
   const initialDataSource =
     PoHeaderId === 0
       ? [
-          {
-            key: 1,
-            ProductName: "",
-            // ProductId: 0,
-            PoLineId: 0,
-            UomId: "",
-            PoQuantity: "",
-            BonusQuantity: "",
-            PoRate: "",
-            DiscountRate: "",
-            DiscountAmount: 0,
-            MrpExpected: "",
-            TaxType1: "",
-            TaxAmount1: 0,
-            TaxType2: "",
-            TaxAmount2: 0,
-            LineAmount: 0,
-            AvailableQuantity: "",
-            deliverySchedule: "",
-            LongName: "",
-            ShortName: "",
-            ActiveFlag: true,
-          },
-        ]
+        {
+          key: 1,
+          ProductName: "",
+          // ProductId: 0,
+          PoLineId: 0,
+          UomId: "",
+          PoQuantity: "",
+          BonusQuantity: "",
+          PoRate: "",
+          DiscountRate: "",
+          DiscountAmount: 0,
+          MrpExpected: "",
+          TaxType1: "",
+          TaxAmount1: 0,
+          TaxType2: "",
+          TaxAmount2: 0,
+          LineAmount: 0,
+          AvailableQuantity: "",
+          deliverySchedule: "",
+          LongName: "",
+          ShortName: "",
+          ActiveFlag: true,
+        },
+      ]
       : [];
 
   const [data, setData] = useState(initialDataSource);
@@ -104,17 +104,17 @@ const CreatePurchaseOrder = () => {
   const initialDeliveryDataSource =
     PoHeaderId === 0
       ? [
-          {
-            key: 1,
-            ProductId: "",
-            UomId: "",
-            PoDeliveryId: 0,
-            DeliveryQuantity: "",
-            DelDate: "",
-            DeliveryLocation: "",
-            ActiveFlag: true,
-          },
-        ]
+        {
+          key: 1,
+          ProductId: "",
+          UomId: "",
+          PoDeliveryId: 0,
+          DeliveryQuantity: "",
+          DelDate: "",
+          DeliveryLocation: "",
+          ActiveFlag: true,
+        },
+      ]
       : [];
 
   const [schedule, setSchedule] = useState(initialDeliveryDataSource);
@@ -182,6 +182,7 @@ const CreatePurchaseOrder = () => {
   };
 
   const handleOnFinish = async (values) => {
+    debugger
     const products = data
       .filter((item) => item !== undefined)
       .map((item) => ({
@@ -210,7 +211,7 @@ const CreatePurchaseOrder = () => {
       SupplierId: values.SupplierId,
       ProcurementStoreId: values.StoreId,
       DocumentType: values.DocumentType,
-      PoDate: values.PODate,
+      PurchaseDate: values.PODate.format('DD-MM-YYYY'),
       PoStatus: poStatus ? values.PoStatus : "Created",
       Remarks: values.Remarks,
       PoPurchaseValue: values.TotalAmount,
@@ -423,6 +424,7 @@ const CreatePurchaseOrder = () => {
     }
 
     if (["PoQuantity", "PoRate", "DiscountRate"].includes(column)) {
+      debugger
       const totalAmount = calculateTotalAmount(newData);
       form1.setFieldsValue({
         TotalAmount: totalAmount,
@@ -471,7 +473,7 @@ const CreatePurchaseOrder = () => {
     });
   };
 
-  const onFinishModel = async (values) => {};
+  const onFinishModel = async (values) => { };
 
   const handleOpenModal = async (record) => {
     await form1.validateFields([
@@ -873,7 +875,7 @@ const CreatePurchaseOrder = () => {
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "TaxType1"]}
-          // name={["TaxType1", record.key]}
+        // name={["TaxType1", record.key]}
         >
           <Select
             defaultValue={text}
@@ -1028,7 +1030,6 @@ const CreatePurchaseOrder = () => {
         buttonLabel={"Back"}
         onButtonClick={handleToPurchaseOrder}
       />
-
       <Form
         layout="vertical"
         onFinish={handleOnFinish}
@@ -1199,11 +1200,9 @@ const CreatePurchaseOrder = () => {
             }}
           />
         </Spin>
-
         <Row justify={"end"}>
           <ColWithEightSpan>
             <Form.Item
-              label=""
               name="TotalAmount"
               style={{ marginRight: "16px" }}
             >
@@ -1217,7 +1216,6 @@ const CreatePurchaseOrder = () => {
               </Row>
             </Form.Item>
             <Form.Item
-              label=""
               name="TaxAmount1"
               style={{ marginRight: "16px" }}
             >
@@ -1230,7 +1228,7 @@ const CreatePurchaseOrder = () => {
                 </Col>
               </Row>
             </Form.Item>
-            <Form.Item label="" name="TotalPoAmount">
+            <Form.Item name="TotalPoAmount">
               <Row>
                 <Col span={12}>
                   <span>Total PO Amount :</span>
@@ -1243,7 +1241,6 @@ const CreatePurchaseOrder = () => {
           </ColWithEightSpan>
         </Row>
       </Form>
-
       <Modal
         width={"60rem"}
         maskClosable={false}
@@ -1284,11 +1281,11 @@ const CreatePurchaseOrder = () => {
               dataSource={
                 deliveryRecord.ProductId
                   ? schedule.filter(
-                      (item) =>
-                        (item.ProductId === deliveryRecord.ProductId &&
-                          item.ActiveFlag) ||
-                        (item.ProductId === "" && item.ActiveFlag)
-                    )
+                    (item) =>
+                      (item.ProductId === deliveryRecord.ProductId &&
+                        item.ActiveFlag) ||
+                      (item.ProductId === "" && item.ActiveFlag)
+                  )
                   : initialDeliveryDataSource
               }
             />

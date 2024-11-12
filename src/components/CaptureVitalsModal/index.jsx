@@ -18,7 +18,7 @@ import TextArea from "antd/es/input/TextArea";
 import { ColWithSixSpan, ColWithThreeSpan } from "../customGridColumns";
 import { IoCalendarOutline } from "react-icons/io5";
 
-function CaptureVitalsModal({ open, close, onSubmit, onSet }) {
+function CaptureVitalsModal({ open, close, onSubmit, onSet, handleCancelProp }) {
   const [form] = useForm();
   const currentDate = new Date();
   const [loading, setLoading] = useState(false)
@@ -62,6 +62,12 @@ function CaptureVitalsModal({ open, close, onSubmit, onSet }) {
       onSystolicBPChange({ target: { value: onSet.SystolicBP } });
     }
   }, [onSet])
+
+  useEffect(() => {
+    if (handleCancelProp) {
+      handleCancelProp(handleCancel);
+    }
+  }, [handleCancelProp]);
 
   const [MAPValues, setMAPValues] = useState({
     SystolicBP: "",

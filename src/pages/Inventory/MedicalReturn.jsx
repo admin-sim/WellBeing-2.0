@@ -30,16 +30,13 @@ import { urlSearchUHID, urlGetLastEncounter, urlGetPatientHeaderDetails, urlGetC
 import customAxios from "../../components/customAxios/customAxios";
 import PatientHeader from "../../components/PatientHeader";
 import { render } from "react-dom";
+import AdvancedPatientSearch from "../../components/AdvancedPatientSearch/index.jsx";
+import PageHeader from "../../components/PageHeader/index.jsx";
 //import { useLocation } from 'react-router-dom';
 
 const MedicalReturn = () => {
-  const [MedicalReturnDropdown, setMedicalReturnDropDown] = useState({
-    DocumentType: [],
-    StoreDetails: [],
-    SupplierList: [],
-    DateFormat: []
-  });
-  const [paginationSize, setPaginationSize] = useState(5);
+
+  const [loading, setLoading] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
   const [page, setPage] = useState(1);
   const [form] = Form.useForm();
@@ -221,225 +218,372 @@ const MedicalReturn = () => {
     } catch (error) {
       console.error("Error:", error);
     }
+  }
 
+  async function handleOnSubmit(value) {
+    debugger
+    try {
+      const response = await customAxios.get(
+        `${urlGetPatientHeaderDetails}?PatientId=${value.patientId}&EncounterId=${value.Encounter}`
+      );
+      if (response.status === 200 && response.data.data != null) {
+        const detailsheader = response.data.data.EncounterModel;
+        setPatientData(detailsheader);
+        setIsTable(true)
+      }
+    } catch (error) { }
+    try {
+      setLoading(true)
+      const response = await customAxios.get(
+        `${urlGetConsumptionReturnList}?PatientId=${value.patientId}&EncounterId=${value.Encounter}&Encounter=${null}`
+      );
+      if (response.status === 200 && response.data.data != null) {
+        const detailsheader = response.data.data.EncounterModel;
+        setFilteredData(detailsheader);
+        setLoading(false)
+      }
+    } catch (error) { }
   }
 
   return (
-    <Layout style={{ zIndex: '999999999' }}>
-      <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-        <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
-          <Col span={16}>
-            <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
-              Medical Return
-            </Title>
-          </Col>
-        </Row>
+    <Layout
+      style={{
+        width: "100%",
+        backgroundColor: "white",
+        minHeight: "max-content",
+        borderRadius: "10px",
+      }}
+    >
+      <PageHeader title={"Medical Return"} button={false} />
+      <AdvancedPatientSearch handleOnSubmit={handleOnSubmit} />
+      {isTable && (
         <Card>
-          <Form
-            form={form}
-            name="control-hooks"
-            layout="vertical"
-            variant="outlined"
-            // size="Default"
-            style={{
-              maxWidth: 1500,
-            }}
-            onFinish={onFinish}
-          >
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col className="gutter-row" span={4}>
-                <Form.Item label="UHID" name="UHID"
-                  rules={[
-                    {
-                      required: true,
-                    },
-                  ]}
-                >
-                  {/* <AutoComplete
-                    options={autoCompleteOptions}
-                    // options={autoCompleteOptions[record.key]}
-                    onSearch={getPanelValue}
-                    onSelect={(value, option) => handleSelect(value, option)}
-                    placeholder="Search for a Uhid"
-                    allowClear
-                  /> */}
-                  <AutoComplete
-                    options={autoCompleteOptions}
-                    onSearch={(value) => getPanelValue(value)}
-                    onSelect={(value, option) => handleSelect(value, option)}
-                    // value={uhId}
-                    placeholder="Search for a Uhid"
-                    allowClear
-                  />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={4}>
-                <Form.Item name="Name" label="Name"
-                  rules={[
-                    {
-                      required: true,
-                    },
-                  ]}
-                >
-                  <Input style={{ width: '100%' }} allowClear />
-                </Form.Item>
-                <Form.Item name="PatientId" hidden>
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={4}>
-                <Form.Item name="EncounterId" label="EncounterId"
-                  rules={[
-                    {
-                      required: true,
-                    },
-                  ]}
-                >
-                  <Select disabled={encounter.length <= 1}
-                    onChange={(value, option) => {
-                      form.setFieldsValue({ Encounter: option.children });
+          <div style={{ margin: "0 2rem 1rem 2rem" }}>
+            <PatientHeader patient={patientData} />
+          </div>
+          {/* <Table
+                    dataSource={filteredData}
+                    columns={columns}
+                    pagination={{
+                      showTotal: (total, range) =>
+                        `Showing ${range[0]} to ${range[1]} of ${total} entries`,
                     }}
-                  >
-                    {encounter.map((option) => (
-                      <Select.Option key={option.EncounterId} value={option.EncounterId}>
-                        {option.GeneratedEncounterId}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-                <Form.Item name="Encounter" hidden>
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={1} style={{ marginTop: 30 }}>
-                <Form.Item>
-                  <Button type="primary" onClick={SelectPatient}>
-                    Select
-                  </Button>
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={2} style={{ marginTop: 30 }}>
-                <Form.Item>
-                  <Button type="primary" onClick={onReset}>
-                    Reset
-                  </Button>
-                </Form.Item>
-              </Col>
-            </Row>
-            {isTable && (
-              <>
-                <div style={{ margin: "0 2rem 1rem 2rem" }}>
-                  <PatientHeader patient={patientData} />
-                </div>
-                {/* <Table
-                  dataSource={filteredData}
-                  columns={columns}
-                  pagination={{
-                    showTotal: (total, range) =>
-                      `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                  }}
-                  rowKey={(row) => row.ChargeID} // Specify the custom id property here
-                  locale={{
-                    emptyText: <span style={{ color: "" }}>No data available</span>,
-                  }}
-                  // size="small"
-                  bordered
-                /> */}
-                <Table
-                  dataSource={filteredData}
-                  columns={columns}
-                  rowKey={(row) => row.ChargeID}
-                  locale={{
-                    emptyText: <span style={{ color: "" }}>No data available</span>,
-                  }}
-                  bordered
-                  pagination={{
-                    showTotal: (total, range) =>
-                      `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-                  }}
-                  scroll={{ x: 1400 }}
-                  summary={(pageData) => {
-                    let netamt = 0;
-                    let rate = 0;
-                    let returnqty = 0;
-                    pageData.forEach(
-                      ({
-                        ReturnQty,
-                        Rate
-                      }) => {
-                        returnqty += ReturnQty;
-                        rate += Rate;
-                      }
-                    );
-                    return (
-                      <>
-                        <Table.Summary.Row>
-                          <Table.Summary.Cell
-                            index={0}
-                            colSpan={8}
-                          ></Table.Summary.Cell>
-                          <Table.Summary.Cell index={3}>
-                            <Text type="danger">Total</Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell index={2}>
-                            <Text type="danger">{returnqty * rate}</Text>
-                          </Table.Summary.Cell>
-                          {/* <Table.Summary.Cell index={2}>
-                            <Text type="danger">{insamt}</Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell index={2}>
-                            <Text type="danger">{taxamt}</Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell index={2}>
-                            <Text type="danger">{netinsamt}</Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell index={2}>
-                            <Text type="danger">Total</Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell index={2}>
-                            <Text type="danger">{discamt.toFixed(2)}</Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell index={2}>
-                            <Text type="danger">{taxrate}</Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell index={2}>
-                            <Text type="danger">{patientnetamt}</Text>
-                          </Table.Summary.Cell>
-                          <Table.Summary.Cell index={2}>
-                            <Text type="danger">{adjamt}</Text>
-                          </Table.Summary.Cell> */}
-                          <Table.Summary.Cell
-                            index={2}
-                            colSpan={9}
-                          ></Table.Summary.Cell>
-                        </Table.Summary.Row>
-                      </>
-                    );
-                  }}
-                />
-              </>
-            )}
-            <Row justify="end">
-              <Col>
-                <Form.Item>
-                  <Button type="primary" htmlType="submit">
-                    Save
-                  </Button>
-                </Form.Item>
-              </Col>
-              {/* <Col>
-                <Form.Item>
-                  <Button type="default" onClick={onReset}>
-                    Reset
-                  </Button>
-                </Form.Item>
-              </Col> */}
-            </Row>
-          </Form>
+                    rowKey={(row) => row.ChargeID} // Specify the custom id property here
+                    locale={{
+                      emptyText: <span style={{ color: "" }}>No data available</span>,
+                    }}
+                    // size="small"
+                    bordered
+                  /> */}
+          <Table loading={loading}
+            dataSource={filteredData}
+            columns={columns}
+            rowKey={(row) => row.ChargeID}
+            locale={{
+              emptyText: <span style={{ color: "" }}>No data available</span>,
+            }}
+            bordered
+            pagination={{
+              showTotal: (total, range) =>
+                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+            }}
+            scroll={{ x: 1400 }}
+            summary={(pageData) => {
+              let netamt = 0;
+              let rate = 0;
+              let returnqty = 0;
+              pageData.forEach(
+                ({
+                  ReturnQty,
+                  Rate
+                }) => {
+                  returnqty += ReturnQty;
+                  rate += Rate;
+                }
+              );
+              return (
+                <>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell
+                      index={0}
+                      colSpan={8}
+                    ></Table.Summary.Cell>
+                    <Table.Summary.Cell index={3}>
+                      <Text type="danger">Total</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2}>
+                      <Text type="danger">{returnqty * rate}</Text>
+                    </Table.Summary.Cell>
+                    {/* <Table.Summary.Cell index={2}>
+                              <Text type="danger">{insamt}</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell index={2}>
+                              <Text type="danger">{taxamt}</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell index={2}>
+                              <Text type="danger">{netinsamt}</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell index={2}>
+                              <Text type="danger">Total</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell index={2}>
+                              <Text type="danger">{discamt.toFixed(2)}</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell index={2}>
+                              <Text type="danger">{taxrate}</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell index={2}>
+                              <Text type="danger">{patientnetamt}</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell index={2}>
+                              <Text type="danger">{adjamt}</Text>
+                            </Table.Summary.Cell> */}
+                    <Table.Summary.Cell
+                      index={2}
+                      colSpan={9}
+                    ></Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </>
+              );
+            }}
+          />
+          <Row justify="end">
+            <Col>
+              <Form.Item>
+                <Button type="primary" htmlType="submit">
+                  Save
+                </Button>
+              </Form.Item>
+            </Col>
+            {/* <Col>
+                  <Form.Item>
+                    <Button type="default" onClick={onReset}>
+                      Reset
+                    </Button>
+                  </Form.Item>
+                </Col> */}
+          </Row>
         </Card>
-      </div>
+      )}
     </Layout>
   );
+
+  //   return (
+  //     <Layout style={{ zIndex: '999999999' }}>
+  //       <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
+  //         <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
+  //           <Col span={16}>
+  //             <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
+  //               Medical Return
+  //             </Title>
+  //           </Col>
+  //         </Row>
+  //         <Card>
+  //           <Form
+  //             form={form}
+  //             name="control-hooks"
+  //             layout="vertical"
+  //             variant="outlined"
+  //             // size="Default"
+  //             style={{
+  //               maxWidth: 1500,
+  //             }}
+  //             onFinish={onFinish}
+  //           >
+  //             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+  //               <Col className="gutter-row" span={4}>
+  //                 <Form.Item label="UHID" name="UHID"
+  //                   rules={[
+  //                     {
+  //                       required: true,
+  //                     },
+  //                   ]}
+  //                 >
+  //                   {/* <AutoComplete
+  //                     options={autoCompleteOptions}
+  //                     // options={autoCompleteOptions[record.key]}
+  //                     onSearch={getPanelValue}
+  //                     onSelect={(value, option) => handleSelect(value, option)}
+  //                     placeholder="Search for a Uhid"
+  //                     allowClear
+  //                   /> */}
+  //                   <AutoComplete
+  //                     options={autoCompleteOptions}
+  //                     onSearch={(value) => getPanelValue(value)}
+  //                     onSelect={(value, option) => handleSelect(value, option)}
+  //                     // value={uhId}
+  //                     placeholder="Search for a Uhid"
+  //                     allowClear
+  //                   />
+  //                 </Form.Item>
+  //               </Col>
+  //               <Col className="gutter-row" span={4}>
+  //                 <Form.Item name="Name" label="Name"
+  //                   rules={[
+  //                     {
+  //                       required: true,
+  //                     },
+  //                   ]}
+  //                 >
+  //                   <Input style={{ width: '100%' }} allowClear />
+  //                 </Form.Item>
+  //                 <Form.Item name="PatientId" hidden>
+  //                   <Input />
+  //                 </Form.Item>
+  //               </Col>
+  //               <Col className="gutter-row" span={4}>
+  //                 <Form.Item name="EncounterId" label="EncounterId"
+  //                   rules={[
+  //                     {
+  //                       required: true,
+  //                     },
+  //                   ]}
+  //                 >
+  //                   <Select disabled={encounter.length <= 1}
+  //                     onChange={(value, option) => {
+  //                       form.setFieldsValue({ Encounter: option.children });
+  //                     }}
+  //                   >
+  //                     {encounter.map((option) => (
+  //                       <Select.Option key={option.EncounterId} value={option.EncounterId}>
+  //                         {option.GeneratedEncounterId}
+  //                       </Select.Option>
+  //                     ))}
+  //                   </Select>
+  //                 </Form.Item>
+  //                 <Form.Item name="Encounter" hidden>
+  //                   <Input />
+  //                 </Form.Item>
+  //               </Col>
+  //               <Col className="gutter-row" span={1} style={{ marginTop: 30 }}>
+  //                 <Form.Item>
+  //                   <Button type="primary" onClick={SelectPatient}>
+  //                     Select
+  //                   </Button>
+  //                 </Form.Item>
+  //               </Col>
+  //               <Col className="gutter-row" span={2} style={{ marginTop: 30 }}>
+  //                 <Form.Item>
+  //                   <Button type="primary" onClick={onReset}>
+  //                     Reset
+  //                   </Button>
+  //                 </Form.Item>
+  //               </Col>
+  //             </Row>
+  //             {isTable && (
+  //               <>
+  //                 <div style={{ margin: "0 2rem 1rem 2rem" }}>
+  //                   <PatientHeader patient={patientData} />
+  //                 </div>
+  //                 {/* <Table
+  //                   dataSource={filteredData}
+  //                   columns={columns}
+  //                   pagination={{
+  //                     showTotal: (total, range) =>
+  //                       `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+  //                   }}
+  //                   rowKey={(row) => row.ChargeID} // Specify the custom id property here
+  //                   locale={{
+  //                     emptyText: <span style={{ color: "" }}>No data available</span>,
+  //                   }}
+  //                   // size="small"
+  //                   bordered
+  //                 /> */}
+  //                 <Table
+  //                   dataSource={filteredData}
+  //                   columns={columns}
+  //                   rowKey={(row) => row.ChargeID}
+  //                   locale={{
+  //                     emptyText: <span style={{ color: "" }}>No data available</span>,
+  //                   }}
+  //                   bordered
+  //                   pagination={{
+  //                     showTotal: (total, range) =>
+  //                       `Showing ${range[0]} to ${range[1]} of ${total} entries`,
+  //                   }}
+  //                   scroll={{ x: 1400 }}
+  //                   summary={(pageData) => {
+  //                     let netamt = 0;
+  //                     let rate = 0;
+  //                     let returnqty = 0;
+  //                     pageData.forEach(
+  //                       ({
+  //                         ReturnQty,
+  //                         Rate
+  //                       }) => {
+  //                         returnqty += ReturnQty;
+  //                         rate += Rate;
+  //                       }
+  //                     );
+  //                     return (
+  //                       <>
+  //                         <Table.Summary.Row>
+  //                           <Table.Summary.Cell
+  //                             index={0}
+  //                             colSpan={8}
+  //                           ></Table.Summary.Cell>
+  //                           <Table.Summary.Cell index={3}>
+  //                             <Text type="danger">Total</Text>
+  //                           </Table.Summary.Cell>
+  //                           <Table.Summary.Cell index={2}>
+  //                             <Text type="danger">{returnqty * rate}</Text>
+  //                           </Table.Summary.Cell>
+  //                           {/* <Table.Summary.Cell index={2}>
+  //                             <Text type="danger">{insamt}</Text>
+  //                           </Table.Summary.Cell>
+  //                           <Table.Summary.Cell index={2}>
+  //                             <Text type="danger">{taxamt}</Text>
+  //                           </Table.Summary.Cell>
+  //                           <Table.Summary.Cell index={2}>
+  //                             <Text type="danger">{netinsamt}</Text>
+  //                           </Table.Summary.Cell>
+  //                           <Table.Summary.Cell index={2}>
+  //                             <Text type="danger">Total</Text>
+  //                           </Table.Summary.Cell>
+  //                           <Table.Summary.Cell index={2}>
+  //                             <Text type="danger">{discamt.toFixed(2)}</Text>
+  //                           </Table.Summary.Cell>
+  //                           <Table.Summary.Cell index={2}>
+  //                             <Text type="danger">{taxrate}</Text>
+  //                           </Table.Summary.Cell>
+  //                           <Table.Summary.Cell index={2}>
+  //                             <Text type="danger">{patientnetamt}</Text>
+  //                           </Table.Summary.Cell>
+  //                           <Table.Summary.Cell index={2}>
+  //                             <Text type="danger">{adjamt}</Text>
+  //                           </Table.Summary.Cell> */}
+  //                           <Table.Summary.Cell
+  //                             index={2}
+  //                             colSpan={9}
+  //                           ></Table.Summary.Cell>
+  //                         </Table.Summary.Row>
+  //                       </>
+  //                     );
+  //                   }}
+  //                 />
+  //               </>
+  //             )}
+  //             <Row justify="end">
+  //               <Col>
+  //                 <Form.Item>
+  //                   <Button type="primary" htmlType="submit">
+  //                     Save
+  //                   </Button>
+  //                 </Form.Item>
+  //               </Col>
+  //               {/* <Col>
+  //                 <Form.Item>
+  //                   <Button type="default" onClick={onReset}>
+  //                     Reset
+  //                   </Button>
+  //                 </Form.Item>
+  //               </Col> */}
+  //             </Row>
+  //           </Form>
+  //         </Card>
+  //       </div>
+  //     </Layout>
+  //   );
 };
 
 export default MedicalReturn;

@@ -198,6 +198,7 @@ const PatientIndent = () => {
   ];
 
   const onFinish = async (values) => {
+    debugger
     setLoading(true);
     try {
       const postData1 = {

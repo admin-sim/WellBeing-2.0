@@ -72,7 +72,17 @@ function Prescription(Patient) {
     form2.resetFields();
   };
 
+  function handleClear() {
+    setButtonTitle('Save')
+    setTabName('New')
+    form1.resetFields()
+    setDataSource(initial)
+  }
+
   const onTabChange = (key) => {
+    if (key == '2') {
+      handleClear()
+    }
     setDefaultActiveKey(key)
     form2.submit()
   };
@@ -426,7 +436,7 @@ function Prescription(Patient) {
       title: "Order Id",
       dataIndex: "PrescriptionId",
       render: (text, record, index) => {
-        if (record.IndentStatus === "Pending") {
+        if (record.IndentStatus === "Pending" || !record.IndentStatus) {
           return (
             <Button type="link" onClick={() => EditPrescription(record)}>
               {record.PrescriptionId}
@@ -775,11 +785,11 @@ function Prescription(Patient) {
               const urlIndent = !!obj.PriscptionHedderId ? urlUpdateIndent : urlAddNewPatientIndent
               const urlPres = !!obj.PriscptionHedderId ? urlUpdateRequest : urlAddNewNewRequest
               if (dropDown.LastEncounter != null && dropDown.LastEncounter.PatientType == 22) {
-                // const PrescriptionViewModel = {
-                //   Prescription: Drugss,
-                //   PrescriptionHeader: obj
-                // }
-                const response1 = await customAxios.post(urlPres, Drugss, {
+                const PrescriptionViewModel = {
+                  PrescriptionModel: obj,
+                  PrescriptionDetails: Drugss
+                }
+                const response1 = await customAxios.post(urlPres, urlPres == urlUpdateRequest ? PrescriptionViewModel : Drugss, {
                   headers: {
                     "Content-Type": "application/json",
                   },
@@ -914,7 +924,7 @@ function Prescription(Patient) {
                 </Button>
               </Col>
               <Col>
-                <Button danger size="middle" onClick={() => { setButtonTitle('Save'), setTabName('New'), form1.resetFields(), setDataSource(initial) }}>
+                <Button danger size="middle" onClick={handleClear}>
                   Reset
                 </Button>
               </Col>
@@ -971,7 +981,7 @@ function Prescription(Patient) {
               };
               try {
                 const response = await customAxios.get(
-                  `${urlSearchExistingPrescription}?Provider=${0}&Patientid=${Patient.Patient.PatientId}&FromDateString=${Pre.FromDateString}&ToDateString=${Pre.ToDateString}`
+                  `${urlSearchExistingPrescription}?Provider=${0}&Patientid=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&FromDateString=${Pre.FromDateString}&ToDateString=${Pre.ToDateString}`
                 );
                 if (response.status === 200 && response.data.data !== null) {
                   const newdata =
@@ -1088,7 +1098,7 @@ function Prescription(Patient) {
             />
           </Spin>
         </Tabs.TabPane>
-      </Tabs>
+      </Tabs >
     </>
   );
 }

@@ -89,7 +89,7 @@ function MedicalHistory(Patient) {
         key: item.IcdCode,
         Description: item.IcdDescription
       }));
-      setProductOptions(newOptions);
+      setProductOptions(newOptions.filter(item1 => !data.some(item2 => item1.key === item2.code ?? item2.code)));
     }
   }
 
@@ -108,6 +108,7 @@ function MedicalHistory(Patient) {
       return [...prevDetails, icd];
     });
     form.resetFields()
+    setProductOptions([])
   };
 
   const data = selectedMedicalHistoryDetails.map((value, index) => ({
@@ -133,7 +134,13 @@ function MedicalHistory(Patient) {
   ];
 
   const handleToSave = async () => {
+    debugger
     setLoading(true)
+    if (data.length == 0) {
+      message.warning('Please Search and Pick ICD Code')
+      setLoading(false)
+      return false
+    }
     const Icd = data.map((item) => {
       return {
         PatientId: Patient.Patient.PatientId,
@@ -213,6 +220,7 @@ function MedicalHistory(Patient) {
                       setProductOptions([]);
                     }
                   }}
+                  placeholder='Please Search and Pick ICD Code'
                 // allowClear={{
                 //   clearIcon: <CloseSquareFilled />,
                 // }}

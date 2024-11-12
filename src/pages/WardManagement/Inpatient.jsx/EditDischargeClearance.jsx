@@ -222,6 +222,8 @@ function EditDischargeClearance() {
         });
         if (response.status == 200 && response.data.data == 'Patient Bill Not Settled') {
             message.warning('Patient Bill Not Settled')
+        } else if (response.status == 200 && response.data.data == 'Patient Pharmacy Bill Not Settled') {
+            message.warning('Patient Pharmacy Bill Not Settled')
         } else {
             navigate("/DischargeClearance")
         }
