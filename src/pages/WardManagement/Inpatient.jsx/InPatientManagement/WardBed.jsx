@@ -47,6 +47,7 @@ import {
 } from "../../../../../endpoints.js";
 import { values } from "lodash";
 import AntenatalVitalsModal from "./AntenatalVitalsModal.jsx";
+import { useNavigate } from "react-router";
 
 function WardBed({ bed, ReLoad }) {
   const [blockBedModalOpen, setBlockBedModalOpen] = useState(false);
@@ -92,6 +93,7 @@ function WardBed({ bed, ReLoad }) {
     MovementDetails: {},
   });
   const [aVitals, setAVitals] = useState(true)
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDataHeader = async () => {
@@ -360,7 +362,7 @@ function WardBed({ bed, ReLoad }) {
       label: "Patient Indent",
       key: "25",
       onClick: () => {
-        setIsBlockBedModalOpen(true);
+        navigate("/CreatePatientIndent", { state: { bed } });
       },
     },
     {

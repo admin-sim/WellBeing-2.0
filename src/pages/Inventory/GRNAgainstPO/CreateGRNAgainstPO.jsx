@@ -38,6 +38,7 @@ import { useLocation } from "react-router-dom";
 import CustomTable from "../../../components/customTable/index.jsx";
 import moment from "moment";
 import PageHeader from "../../../components/PageHeader/index.jsx";
+import { v4 as uuidv4 } from "uuid";
 import { FaAnglesLeft } from "react-icons/fa6";
 import {
   ColWithEightSpan,
@@ -88,8 +89,10 @@ const CreateGRNAgainstPO = () => {
   const [batchRecord, setBatchRecord] = useState([]);
 
   const [dropDownLoad, setDropDownLoading] = useState(true);
+  const [poAmount, setPoAmount] = useState()
 
   useEffect(() => {
+    debugger
     customAxios.get(urlCreatePurchaseOrder).then((response) => {
       const apiData = response.data.data;
       setDropDown(apiData);
@@ -126,7 +129,7 @@ const CreateGRNAgainstPO = () => {
       ]
       : [];
 
-  const [dataBatchModal, setdataBatchModal] = useState(initialModelDataSource);
+  const [dataBatchModal, setdataBatchModal] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -150,6 +153,7 @@ const CreateGRNAgainstPO = () => {
           );
           setData(products);
           const formdata = editeddata.newGRNAgainstPOModel;
+          setPoAmount(formdata.TotalPoAmount)
           form1.setFieldsValue({
             SupplierId: formdata.SupplierId,
             StoreId: formdata.StoreId,
@@ -185,7 +189,7 @@ const CreateGRNAgainstPO = () => {
             key: index + 1,
           }));
           setdataBatchModal(batch);
-          setCounter(editeddata.BatchDetails.length + 1);
+          // setCounter(editeddata.BatchDetails.length + 1);
         }
         setLoading(false);
       } catch (error) {
@@ -319,6 +323,7 @@ const CreateGRNAgainstPO = () => {
   };
 
   const handlePoNumber = (record) => {
+    debugger
     setLoading(true);
 
     form1.resetFields();
@@ -346,6 +351,7 @@ const CreateGRNAgainstPO = () => {
           }));
           setData(products);
           const formdata = apiData.POProducts;
+          setPoAmount(formdata.PoTotalAmount)
           form1.setFieldsValue({
             SupplierId: record.SupplierId,
             StoreId: formdata.ProcurementStoreId,
@@ -1122,7 +1128,7 @@ const CreateGRNAgainstPO = () => {
     setdataBatchModal([
       ...dataBatchModal,
       {
-        key: counter,
+        key: uuidv4(),
         BarCode: "",
         BatchNo: "",
         Quantity: 0,
@@ -1145,14 +1151,14 @@ const CreateGRNAgainstPO = () => {
         GrnBatchId: 0,
       },
     ]);
-    setCounter(counter + 1);
+    // setCounter(counter + 1);
   };
 
   const Batchmodal = [
     {
       title: "Bar Code",
       dataIndex: "BarCode",
-      key: "BarCode",
+      key: uuidv4(),
       render: (_, record) => (
         <>
           <Form.Item
@@ -1185,7 +1191,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Batch Number",
       dataIndex: "BatchNo",
-      key: "BatchNo",
+      key: uuidv4(),
       render: (text, record) => {
         return (
           <Form.Item
@@ -1209,7 +1215,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Quantity",
       dataIndex: "Quantity",
-      key: "Quantity",
+      key: uuidv4(),
       render: (text, record) => (
         <Form.Item
           name={[record.key, "Quantity"]}
@@ -1242,7 +1248,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Bonus Qty",
       dataIndex: "BatchBonusQty",
-      key: "BatchBonusQty",
+      key: uuidv4(),
       render: (text, record) => (
         <Form.Item
           name={[record.key, "BatchBonusQty"]}
@@ -1261,7 +1267,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Uom",
       dataIndex: "UomId",
-      key: "UomId",
+      key: uuidv4(),
       render: (text, record) => (
         <Form.Item name={[record.key, "UomId"]}>
           <Tag color="#7C00FE">{batchRecord.ShortName}</Tag>
@@ -1271,7 +1277,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "MFG Date",
       dataIndex: "MFGDateString",
-      key: "MFGDateString",
+      key: uuidv4(),
       render: (text, record) => (
         <Form.Item
           name={[record.key, "MFGDateString"]}
@@ -1297,7 +1303,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Exp Date",
       dataIndex: "EXPDateString",
-      key: "EXPDateString",
+      key: uuidv4(),
       width: 150,
       render: (text, record) => (
         <Form.Item
@@ -1343,7 +1349,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Rate",
       dataIndex: "Rate",
-      key: "Rate",
+      key: uuidv4(),
       render: (text, record) => (
         <Form.Item
           name={[record.key, "Rate"]}
@@ -1361,7 +1367,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "MRP",
       dataIndex: "MRP",
-      key: "MRP",
+      key: uuidv4(),
       render: (text, record) => (
         <Form.Item
           name={[record.key, "MRP"]}
@@ -1400,7 +1406,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Discount",
       dataIndex: "DiscountRate",
-      key: "DiscountRate",
+      key: uuidv4(),
       render: (text, record) => (
         <Form.Item
           name={[record.key, "DiscountRate"]}
@@ -1413,7 +1419,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Discount Amt",
       dataIndex: "DiscountAmount",
-      key: "DiscountAmount",
+      key: uuidv4(),
       render: (text, record) => (
         <Form.Item
           name={[record.key, "DiscountAmount"]}
@@ -1426,7 +1432,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "CGST",
       dataIndex: "TaxType1",
-      key: "TaxType1",
+      key: uuidv4(),
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxType1"]}>
           <Select disabled={!!GrnHeaderId} style={{ width: 70 }}></Select>
@@ -1436,7 +1442,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "CGST Amount",
       dataIndex: "TaxAmount1",
-      key: "TaxAmount1",
+      key: uuidv4(),
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxAmount1"]}>
           <InputNumber min={0} style={{ width: 70 }} disabled />
@@ -1446,7 +1452,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "SGST",
       dataIndex: "TaxType2",
-      key: "TaxType2",
+      key: uuidv4(),
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxType2"]}>
           <Select disabled={!!GrnHeaderId} style={{ width: 70 }}></Select>
@@ -1456,7 +1462,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "SGST Amount",
       dataIndex: "TaxAmount2",
-      key: "TaxAmount2",
+      key: uuidv4(),
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxAmount2"]}>
           <InputNumber min={0} style={{ width: 70 }} disabled />
@@ -1466,7 +1472,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Stock Locator",
       dataIndex: "StockLocator",
-      key: "StockLocator",
+      key: uuidv4(),
       render: (text, record) => (
         <Form.Item name={[record.key, "StockLocator"]} initialValue={"Manual"}>
           <Input style={{ width: 70 }} disabled={!!GrnHeaderId} />
@@ -1523,7 +1529,6 @@ const CreateGRNAgainstPO = () => {
         buttonLabel={"Back"}
         onButtonClick={handleCancel}
       />
-
       <Form
         layout="vertical"
         onFinish={handleOnFinish}
@@ -1790,95 +1795,100 @@ const CreateGRNAgainstPO = () => {
           </Col>
         </Row>
         <Divider style={{ margin: "0" }} />
-        <div>
-          <Spin spinning={loading}>
-            <CustomTable
-              dataSource={data}
-              columns={columns}
-              isFilter={false}
-              actionColumn={false}
-              // scroll={{ x: 2000 }}
-              bordered
-            />
-          </Spin>
-          {/* <Spin spinning={loading}>
-                <Table
-                  //loading={loading}
-                  columns={columns}
-                  dataSource={data}
-                  scroll={{ x: 0 }}
-                />
-              </Spin> */}
-          <Col style={{ float: "right" }}>
+        <Spin spinning={loading}>
+          <CustomTable
+            dataSource={data}
+            columns={columns}
+            isFilter={false}
+            actionColumn={false}
+            // scroll={{ x: 2000 }}
+            bordered
+          />
+        </Spin>
+        <Row justify={"end"}>
+          <ColWithEightSpan>
             <Form.Item
-              label="Amount"
               name="TotalAmount"
-              style={{ marginRight: "16px", width: 100 }}
+              style={{ marginRight: "16px" }}
             >
-              <InputNumber min={0} disabled />
+              <Row gutter={16}>
+                <Col span={12}>
+                  <span>Amount : </span>
+                </Col>
+                <Col span={12}>
+                  <InputNumber style={{ width: "100%" }} min={0} value={poAmount} disabled />
+                </Col>
+              </Row>
             </Form.Item>
             <Form.Item
-              label="Tax"
               name="TaxAmount"
-              style={{ marginRight: "16px", width: 100 }}
+              style={{ marginRight: "16px" }}
             >
-              <InputNumber min={0} disabled />
+              <Row gutter={16}>
+                <Col span={12}>
+                  <span>Tax : </span>
+                </Col>
+                <Col span={12}>
+                  <InputNumber style={{ width: "100%" }} min={0} disabled />
+                </Col>
+              </Row>
             </Form.Item>
             <Form.Item
-              label="Round Off"
               name="RoundOff"
-              style={{ marginRight: "16px", width: 100 }}
+              style={{ marginRight: "16px" }}
             >
-              <InputNumber min={0} disabled />
+              <Row gutter={16}>
+                <Col span={12}>
+                  <span>Round Off : </span>
+                </Col>
+                <Col span={12}>
+                  <InputNumber style={{ width: "100%" }} min={0} disabled />
+                </Col>
+              </Row>
             </Form.Item>
-            <Form.Item
-              label="Total PO Amount"
-              name="TotalPoAmount"
-              style={{ width: 150 }}
-            >
-              <InputNumber min={0} disabled />
+            <Form.Item name="TotalPoAmount">
+              <Row>
+                <Col span={12}>
+                  <span>Total PO Amount :</span>
+                </Col>
+                <Col span={12}>
+                  <InputNumber style={{ width: "93%" }} min={0} disabled value={poAmount} />
+                </Col>
+              </Row>
             </Form.Item>
-          </Col>
-          {/* <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  marginBottom: "16px",
-                  float: "right",
-                }}
-              >
-                <Form.Item
-                  label="Amount"
-                  name="TotalAmount"
-                  style={{ marginRight: "16px", width: 100 }}
-                >
-                  <InputNumber min={0} disabled />
-                </Form.Item>
-                <Form.Item
-                  label="Tax"
-                  name="TaxAmount"
-                  style={{ marginRight: "16px", width: 100 }}
-                >
-                  <InputNumber min={0} disabled />
-                </Form.Item>
-                <Form.Item
-                  label="Round Off"
-                  name="RoundOff"
-                  style={{ marginRight: "16px", width: 100 }}
-                >
-                  <InputNumber min={0} disabled />
-                </Form.Item>
-                <Form.Item
-                  label="Total PO Amount"
-                  name="TotalPoAmount"
-                  style={{ width: 150 }}
-                >
-                  <InputNumber min={0} disabled />
-                </Form.Item>
-              </div> */}
-        </div>
+          </ColWithEightSpan>
+        </Row>
+        {/* <Col style={{ float: "right" }}>
+          <Form.Item
+            label="Amount"
+            name="TotalAmount"
+            style={{ marginRight: "16px", width: 100 }}
+          >
+            <InputNumber min={0} disabled />
+          </Form.Item>
+          <Form.Item
+            label="Tax"
+            name="TaxAmount"
+            style={{ marginRight: "16px", width: 100 }}
+          >
+            <InputNumber min={0} disabled />
+          </Form.Item>
+          <Form.Item
+            label="Round Off"
+            name="RoundOff"
+            style={{ marginRight: "16px", width: 100 }}
+          >
+            <InputNumber min={0} disabled />
+          </Form.Item>
+          <Form.Item
+            label="Total PO Amount"
+            name="TotalPoAmount"
+            style={{ width: 150 }}
+          >
+            <InputNumber min={0} disabled />
+          </Form.Item>
+        </Col> */}
       </Form>
-
       <Modal
         title="Search for PO"
         onOk={onOkModal}
@@ -1977,7 +1987,6 @@ const CreateGRNAgainstPO = () => {
               </Form.Item>
             </Col>
           </Row>
-
           <CustomTable
             loading={poloading}
             isFilter={true}
@@ -1986,15 +1995,8 @@ const CreateGRNAgainstPO = () => {
             scroll={{ x: 800 }}
             actionColumn={false}
           />
-
-          {/* {isPoSearchTable && poloading ? (
-                                <Skeleton active />
-                            ) : (
-                                <Table columns={columnsmodal} dataSource={dataModal} />
-                            )} */}
         </Form>
       </Modal>
-
       <Modal
         title="Product Batch Details"
         onOk={onOkBatchModal}

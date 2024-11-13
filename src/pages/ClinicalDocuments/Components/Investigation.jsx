@@ -13,6 +13,7 @@ import {
   Table,
   Tabs,
   Tooltip,
+  Dropdown,
 } from "antd";
 import { debounce } from "lodash";
 import { useForm } from "antd/es/form/Form";
@@ -366,6 +367,7 @@ const OrderDetails = (Patient) => {
             <Button size="large" type="link" icon={<PlusCircleOutlined />} htmlType="submit" />
           </Col>
         </Row>
+        {/* hidden={Patient.Patient.patientData?.PatientType == 22 ? true : false} */}
         <Row gutter={32}>
           <Col>
             <Button type="primary" size="middle" onClick={handleSendtoLab} loading={Patient.loading}>
@@ -378,7 +380,7 @@ const OrderDetails = (Patient) => {
             </Form.Item>
           </Col>
         </Row>
-      </Form>
+      </Form >
       <Table loading={Patient.loading}
         columns={columns}
         dataSource={Patient.dropDown.PatientAccountCharges.filter((item) => item.ServiceGroupID == 1042)}

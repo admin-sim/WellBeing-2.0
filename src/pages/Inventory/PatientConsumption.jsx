@@ -26,6 +26,7 @@ import CustomTable from "../../components/customTable/index.jsx";
 import { urlGetPurshaseOrderDetails, urlSearchPatientConsumption, urlSearchUHID, urlGetLastEncounter } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
 import { render } from "react-dom";
+import UhidSelectComponent from "../../components/UhidSelectComponent/index.jsx";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -227,25 +228,35 @@ const PatientConsumption = () => {
     }
   }
 
-  const handleSelect = (value, option) => {
-    form.setFieldsValue({ PatientName: option.Name })
-    form.setFieldsValue({ PatientId: option.PatientId })
-    // setPatientName(option.Name);
-    try {
-      customAxios.get(`${urlGetLastEncounter}?Uhid=${option.key}`).then((response) => {
-        const apiData = response.data.data;
-        if (apiData.length > 0) {
-          setEncounter(apiData);
-          form.setFieldsValue({ Encounter: apiData[0].EncounterId });
-          form.setFieldsValue({ PatientId: option.PatientId });
-        } else {
-          setEncounter([]);
-          form.setFieldsValue({ Encounter: '' });
-          form.setFieldsValue({ PatientId: '' });
-        }
-      });
-    } catch (error) {
-      //console.error("Error fetching purchase order details:", error);        
+  function handleSelect2(value, option) {
+    debugger
+    if (value) {
+      form.setFieldsValue({ PatientName: option.data.PatientFirstName + ' ' + option.data.PatientLastName })
+      form.setFieldsValue({ PatientId: option.data.PatientId })
+      try {
+        customAxios.get(`${urlGetLastEncounter}?patientId=${option.data.PatientId}`).then((response) => {
+          const apiData = response.data;
+          if (apiData.length > 0) {
+            setEncounter(apiData);
+            form.setFieldsValue({ Encounter: apiData[0].EncounterId });
+            form.setFieldsValue({ EncounterId: apiData[0].EncounterId });
+            form.setFieldsValue({ PatientId: option.data.PatientId });
+          } else {
+            setEncounter([]);
+            form.setFieldsValue({ Encounter: '' });
+            form.setFieldsValue({ EncounterId: '' });
+            form.setFieldsValue({ PatientId: '' });
+          }
+        });
+      } catch (error) {
+        //console.error("Error fetching purchase order details:", error);        
+      }
+    } else {
+      setEncounter([]);
+      form.setFieldsValue({ EncounterId: '' });
+      form.setFieldsValue({ Encounter: '' });
+      form.setFieldsValue({ PatientId: '' });
+      form.setFieldsValue({ PatientName: '' });
     }
   }
 
@@ -262,18 +273,6 @@ const PatientConsumption = () => {
   return (
     <Layout style={{ zIndex: '999999999' }}>
       <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-        {/* <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
-          <Col span={16}>
-            <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
-              Patient Consumption
-            </Title>
-          </Col>
-          <Col offset={4} span={2}>
-            <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={() => handleIssueNumber(0)}>
-              Add Patient Consumption
-            </Button>
-          </Col>
-        </Row> */}
         <PageHeader
           title={"Patient Consumption"}
           buttonLabel="Add Patient Consumption"
@@ -344,7 +343,7 @@ const PatientConsumption = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="UHID" label="UHID">
-                  <AutoComplete
+                  {/* <AutoComplete
                     options={autoCompleteOptions}
                     // options={autoCompleteOptions[record.key]}
                     onSearch={getPanelValue}
@@ -352,16 +351,16 @@ const PatientConsumption = () => {
                     onChange={handleUHId}
                     placeholder="Search for a Uhid"
                     allowClear
-                  />
+                  /> */}
+                  <UhidSelectComponent handleSelectUHID={handleSelect2} />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item
                   name="PatientName"
                   label="Patient Name"
-                  rules={[{ required: false }]}
                 >
-                  <Input disabled={!!form.getFieldValue('PatientId')} style={{ width: '100%' }} allowClear />
+                  <Input disabled style={{ width: '100%' }} />
                 </Form.Item>
                 <Form.Item name="PatientId" hidden>
                   <Input />

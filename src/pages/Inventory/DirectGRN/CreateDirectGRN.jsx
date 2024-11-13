@@ -9,6 +9,7 @@ import {
   urlUpdateGRNDirect,
 } from "../../../../endpoints";
 import CustomTable from "../../../components/customTable/index.jsx";
+import { v4 as uuidv4 } from "uuid";
 import Select from "antd/es/select";
 import {
   ConfigProvider,
@@ -63,54 +64,55 @@ const CreateDirectGRN = () => {
   const location = useLocation();
   const grnHeaderId = location.state.GRNHeaderId;
   const [batchRecord, setBatchRecord] = useState([]);
+  const [poAmount, setPoAmount] = useState()
   const initialDataSource =
     grnHeaderId === 0
       ? [
-          {
-            key: 1,
-            ProductName: "",
-            UomId: "",
-            GrnLineId: 0,
-            ReceivedQty: 0,
-            BonusQuantity: 0,
-            PoRate: 0,
-            DiscountRate: 0,
-            DiscountAmount: 0,
-            Batch: "",
-            LineAmount: 0,
-            TaxAmount: 0,
-            TotalAmount: 0,
-            Replaceable: true,
-            ActiveFlag: true,
-          },
-        ]
+        {
+          key: uuidv4(),
+          ProductName: "",
+          UomId: "",
+          GrnLineId: 0,
+          ReceivedQty: 0,
+          BonusQuantity: 0,
+          PoRate: 0,
+          DiscountRate: 0,
+          DiscountAmount: 0,
+          Batch: "",
+          LineAmount: 0,
+          TaxAmount: 0,
+          TotalAmount: 0,
+          Replaceable: true,
+          ActiveFlag: true,
+        },
+      ]
       : [];
 
   const initialModelDataSource =
     grnHeaderId === 0
       ? [
-          {
-            key: 1,
-            BarCode: "",
-            BatchNo: "",
-            BatchQty: 0,
-            UomId: null,
-            BatchBonusQty: 0,
-            MFGDateString: "",
-            EXPDateString: "",
-            rate: 0,
-            BatchMrp: 0,
-            DiscountRate: 0,
-            BatchTaxType1: "",
+        {
+          key: uuidv4(),
+          BarCode: "",
+          BatchNo: "",
+          BatchQty: 0,
+          UomId: null,
+          BatchBonusQty: 0,
+          MFGDateString: "",
+          EXPDateString: "",
+          rate: 0,
+          BatchMrp: 0,
+          DiscountRate: 0,
+          BatchTaxType1: "",
 
-            BatchTaxType2: "",
-            BatchTaxAmount1: 0,
-            BatchStockLocator: "",
-            ProductId: "",
-            GrnBatchId: 0,
-            ActiveFlag: true,
-          },
-        ]
+          BatchTaxType2: "",
+          BatchTaxAmount1: 0,
+          BatchStockLocator: "",
+          ProductId: "",
+          GrnBatchId: 0,
+          ActiveFlag: true,
+        },
+      ]
       : [];
 
   const [form1] = Form.useForm();
@@ -159,7 +161,7 @@ const CreateDirectGRN = () => {
           );
           setData(products);
           const formdata = editeddata.newGRNAgainstPOModel;
-
+          setPoAmount(formdata.TotalPoAmount)
           form1.setFieldsValue({
             SupplierId: formdata.SupplierId,
             StoreId: formdata.StoreId,
@@ -267,6 +269,7 @@ const CreateDirectGRN = () => {
         TotalAmount: totalAmount,
         TotalPoAmount: totalAmount,
       });
+      setPoAmount(totalAmount)
     }
     setData(newData);
   };
@@ -318,17 +321,17 @@ const CreateDirectGRN = () => {
               BatchNo: values[key].BatchNo,
               EXPDateString: values[key].GrnBatchId
                 ? values[key].EXPDateString &&
-                  values[key].EXPDateString.format("DD-MM-YYYY")
+                values[key].EXPDateString.format("DD-MM-YYYY")
                 : batchRecord.Expiry === "Month wise"
-                ? values[key].EXPDateString &&
+                  ? values[key].EXPDateString &&
                   `01-${String(values[key].EXPDateString.$M + 1).padStart(
                     2,
                     "0"
                   )}-${values[key].EXPDateString.$y}`
-                : batchRecord.Expiry === "Date wise"
-                ? values[key].EXPDateString &&
-                  values[key].EXPDateString.format("DD-MM-YYYY")
-                : null,
+                  : batchRecord.Expiry === "Date wise"
+                    ? values[key].EXPDateString &&
+                    values[key].EXPDateString.format("DD-MM-YYYY")
+                    : null,
               rate: values[key].rate,
               MRP: values[key].MRP,
               DiscountRate:
@@ -485,6 +488,7 @@ const CreateDirectGRN = () => {
     const result = checkActiveBatches(activeProducts, dataModel);
     if (!result.allActiveProductsHaveActiveBatch) {
       message.warning("Please Add BatchDeatils");
+      setLoading(false);
       return false;
     }
 
@@ -544,10 +548,10 @@ const CreateDirectGRN = () => {
         grnHeaderId === 0
           ? activeProducts
           : products.filter(
-              (product) =>
-                product.GrnLineId > 0 ||
-                (product.GrnLineId === 0 && product.ActiveFlag === true)
-            ),
+            (product) =>
+              product.GrnLineId > 0 ||
+              (product.GrnLineId === 0 && product.ActiveFlag === true)
+          ),
       BatchDetails: grnHeaderId === 0 ? filteredBatchwithactive : filteredBatch,
     };
 
@@ -608,7 +612,7 @@ const CreateDirectGRN = () => {
     setData([
       ...data,
       {
-        key: idCounter,
+        key: uuidv4(),
         ProductName: "",
         UomId: "",
         GrnLineId: 0,
@@ -625,7 +629,7 @@ const CreateDirectGRN = () => {
         ActiveFlag: true,
       },
     ]);
-    setCounter(idCounter + 1);
+    // setCounter(idCounter + 1);
   };
 
   const handleSearch = async (searchText) => {
@@ -681,7 +685,7 @@ const CreateDirectGRN = () => {
       title: "Product",
       dataIndex: "ProductName",
       fixed: "left",
-      key: "ProductName",
+      key: 'ProductName',
       width: isMobile ? 200 : 300,
       render: (text, record, index) => (
         <>
@@ -734,7 +738,7 @@ const CreateDirectGRN = () => {
     {
       title: "UOM",
       dataIndex: "UomId",
-      key: "UomId",
+      key: 'UomId',
       width: 150,
       render: (text, record, index) => (
         <Form.Item
@@ -764,7 +768,7 @@ const CreateDirectGRN = () => {
       title: "Recieved Qty",
       dataIndex: "ReceivedQty",
       width: 110,
-      key: "ReceivedQty",
+      key: 'ReceivedQty',
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "ReceivedQty"]}
@@ -795,7 +799,7 @@ const CreateDirectGRN = () => {
       title: "Bonus Qty",
       dataIndex: "BonusQuantity",
       width: 100,
-      key: "BonusQuantity",
+      key: 'BonusQuantity',
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "BonusQuantity"]}
@@ -827,7 +831,7 @@ const CreateDirectGRN = () => {
       title: "PO Rate",
       dataIndex: "PoRate",
       width: 100,
-      key: "PoRate",
+      key: 'PoRate',
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "PoRate"]}
@@ -852,7 +856,7 @@ const CreateDirectGRN = () => {
       title: "Discount%",
       dataIndex: "DiscountRate",
       width: 100,
-      key: "DiscountRate",
+      key: 'DiscountRate',
       render: (text, record, index) => (
         <Form.Item name={[record.key, "DiscountRate"]} initialValue={text}>
           <InputNumber
@@ -875,7 +879,7 @@ const CreateDirectGRN = () => {
       title: "Discount Amount",
       dataIndex: "DiscountAmount",
       width: 120,
-      key: "DiscountAmount",
+      key: 'DiscountAmount',
       render: (text, record) => (
         <Form.Item name={[record.key, "DiscountAmount"]} initialValue={text}>
           <InputNumber disabled style={{ width: "100%" }} defaultValue={text} />
@@ -886,7 +890,7 @@ const CreateDirectGRN = () => {
       title: "Batch",
       dataIndex: "Batch",
       width: 100,
-      key: "Batch",
+      key: 'Batch',
       render: (value, record) => (
         <Button
           style={{ marginBottom: "24px" }}
@@ -901,7 +905,7 @@ const CreateDirectGRN = () => {
       title: "Amount",
       dataIndex: "LineAmount",
       width: 100,
-      key: "LineAmount",
+      key: 'LineAmount',
       render: (text, record) => (
         <Form.Item
           name={[record.key, "LineAmount"]}
@@ -920,7 +924,7 @@ const CreateDirectGRN = () => {
       title: "Tax Amount",
       dataIndex: "TaxAmount1",
       width: 100,
-      key: "TaxAmount1",
+      key: 'TaxAmount1',
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxAmount1"]} initialValue={text}>
           <InputNumber
@@ -936,7 +940,7 @@ const CreateDirectGRN = () => {
       title: "Total Amount",
       dataIndex: "TotalAmount",
       width: 100,
-      key: "TotalAmount",
+      key: 'TotalAmount',
       render: (text, record) => (
         <Form.Item
           name={[record.key, "TotalAmount"]}
@@ -954,7 +958,7 @@ const CreateDirectGRN = () => {
       title: "Replaceable",
       dataIndex: "Replaceable",
       width: 100,
-      key: "Replaceable",
+      key: 'Replaceable',
       render: (text, record) => (
         <Form.Item
           name={[record.key, "Replaceable"]}
@@ -974,7 +978,7 @@ const CreateDirectGRN = () => {
     setDataModel([
       ...dataModel,
       {
-        key: idCounterModel,
+        key: uuidv4(),
         BarCode: "",
         BatchNo: "",
         BatchQty: 0,
@@ -995,14 +999,14 @@ const CreateDirectGRN = () => {
         ActiveFlag: true,
       },
     ]);
-    setCounterModel(idCounterModel + 1);
+    // setCounterModel(idCounterModel + 1);
   };
 
   const columnsModel = [
     {
       title: "Bar Code",
       dataIndex: "BarCode",
-      key: "BarCode",
+      key: 'BarCode',
       render: (_, record) => (
         <>
           <Form.Item
@@ -1035,7 +1039,7 @@ const CreateDirectGRN = () => {
     {
       title: "Batch Number",
       dataIndex: "BatchNo",
-      key: "BatchNo",
+      key: 'BatchNo',
       render: (text, record) => {
         return (
           <Form.Item
@@ -1060,7 +1064,7 @@ const CreateDirectGRN = () => {
     {
       title: "Quantity",
       dataIndex: "Quantity",
-      key: "Quantity",
+      key: 'Quantity',
       render: (text, record) => (
         <Form.Item
           initialValue={record.Quantity}
@@ -1079,7 +1083,7 @@ const CreateDirectGRN = () => {
     {
       title: "Bonus Qty",
       dataIndex: "BatchBonusQty",
-      key: "BatchBonusQty",
+      key: 'BatchBonusQty',
       render: (text, record) => (
         <Form.Item
           name={[record.key, "BatchBonusQty"]}
@@ -1087,8 +1091,8 @@ const CreateDirectGRN = () => {
         >
           <InputNumber
             min={0}
-            //  defaultValue={batchRecord.BonusQty}
-            // disabled
+          //  defaultValue={batchRecord.BonusQty}
+          // disabled
           />
         </Form.Item>
       ),
@@ -1097,7 +1101,7 @@ const CreateDirectGRN = () => {
     {
       title: "UOM",
       dataIndex: "UomId",
-      key: "UomId",
+      key: 'UomId',
       render: (text, record) => (
         <Form.Item name={[record.key, "UomId"]}>
           <Tag color="#7C00FE">{batchRecord.Uom}</Tag>
@@ -1108,7 +1112,7 @@ const CreateDirectGRN = () => {
     {
       title: "MFG Date",
       dataIndex: "MFGDateString",
-      key: "MFGDateString",
+      key: 'MFGDateString',
       render: (text, record) => (
         <Form.Item
           name={[record.key, "MFGDateString"]}
@@ -1132,7 +1136,7 @@ const CreateDirectGRN = () => {
     {
       title: "Exp Date",
       dataIndex: "EXPDateString",
-      key: "EXPDateString",
+      key: 'EXPDateString',
       render: (text, record) => (
         <Form.Item
           initialValue={
@@ -1155,8 +1159,8 @@ const CreateDirectGRN = () => {
               batchRecord.Expiry === "Month wise"
                 ? "MMMM YYYY"
                 : batchRecord.Expiry === "Date wise"
-                ? "DD-MM-YYYY"
-                : null
+                  ? "DD-MM-YYYY"
+                  : null
             }
             disabled={
               (!!grnHeaderId && record.GrnBatchId) ||
@@ -1175,7 +1179,7 @@ const CreateDirectGRN = () => {
     {
       title: "Rate",
       dataIndex: "rate",
-      key: "rate",
+      key: 'rate',
       render: (text, record) => (
         <Form.Item
           name={[record.key, "rate"]}
@@ -1188,7 +1192,7 @@ const CreateDirectGRN = () => {
     {
       title: "MRP",
       dataIndex: "MRP",
-      key: "MRP",
+      key: 'MRP',
       render: (text, record) => (
         <Form.Item
           name={[record.key, "MRP"]}
@@ -1227,7 +1231,7 @@ const CreateDirectGRN = () => {
     {
       title: "Discount",
       dataIndex: "DiscountRate",
-      key: "DiscountRate",
+      key: 'DiscountRate',
       render: (text, record) => (
         <Form.Item
           name={[record.key, "DiscountRate"]}
@@ -1244,7 +1248,7 @@ const CreateDirectGRN = () => {
     {
       title: "Discount Amt",
       dataIndex: "DiscountAmount",
-      key: "DiscountAmount",
+      key: 'DiscountAmount',
       render: (text, record) => (
         <Form.Item
           name={[record.key, "DiscountAmount"]}
@@ -1261,7 +1265,7 @@ const CreateDirectGRN = () => {
     {
       title: "CGST",
       dataIndex: "TaxType1",
-      key: "TaxType1",
+      key: 'TaxType1',
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxType1"]}>
           <Select disabled></Select>
@@ -1271,7 +1275,7 @@ const CreateDirectGRN = () => {
     {
       title: "CGST Amount",
       dataIndex: "TaxAmount1",
-      key: "TaxAmount1",
+      key: 'TaxAmount1',
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxAmount1"]}>
           <InputNumber min={0} disabled />
@@ -1281,7 +1285,7 @@ const CreateDirectGRN = () => {
     {
       title: "SGST",
       dataIndex: "TaxType2",
-      key: "TaxType2",
+      key: 'TaxType2',
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxType2"]}>
           <Select disabled></Select>
@@ -1291,7 +1295,7 @@ const CreateDirectGRN = () => {
     {
       title: "SGST Amount",
       dataIndex: "TaxAmount2",
-      key: "TaxAmount2",
+      key: 'TaxAmount2',
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxAmount2"]}>
           <InputNumber min={0} disabled />
@@ -1301,7 +1305,7 @@ const CreateDirectGRN = () => {
     {
       title: "Stock Locator",
       dataIndex: "StockLocator",
-      key: "StockLocator",
+      key: 'StockLocator',
       render: (text, record) => (
         <Form.Item name={[record.key, "StockLocator"]} initialValue="Manual">
           <Input disabled={!!grnHeaderId && record.GrnBatchId} />
@@ -1477,6 +1481,11 @@ const CreateDirectGRN = () => {
                     style={{ width: "100%" }}
                     format="DD-MM-YYYY"
                     allowClear
+                    disabledDate={(current) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return current && current < today;
+                    }}
                   />
                 </Form.Item>
               </ColWithEightSpan>
@@ -1508,6 +1517,11 @@ const CreateDirectGRN = () => {
                     style={{ width: "100%" }}
                     format="DD-MM-YYYY"
                     allowClear
+                    disabledDate={(current) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return current && current < today;
+                    }}
                   />
                 </Form.Item>
               </ColWithEightSpan>
@@ -1522,12 +1536,17 @@ const CreateDirectGRN = () => {
                     },
                   ]}
                 >
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                    disabledDate={(current) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return current && current < today;
+                    }}
+                  />
                 </Form.Item>
               </ColWithEightSpan>
             </Row>
           </ColWithSixteenSpan>
-
           <ColWithEightSpan>
             <Row gutter={16}>
               <ColWithEightSpan>
@@ -1541,7 +1560,13 @@ const CreateDirectGRN = () => {
                   label="GRN Date"
                   name="GRNDatestring"
                 >
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                    disabledDate={(current) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return current && current < today;
+                    }}
+                  />
                 </Form.Item>
               </ColWithEightSpan>
               <ColWithEightSpan>
@@ -1622,7 +1647,6 @@ const CreateDirectGRN = () => {
             onDelete={() => handleDelete(record)}
           />
         </Spin>
-
         <Row justify={"end"}>
           <ColWithEightSpan>
             <Form.Item
@@ -1635,7 +1659,7 @@ const CreateDirectGRN = () => {
                   <span>Amount : </span>
                 </Col>
                 <Col span={12}>
-                  <InputNumber style={{ width: "100%" }} min={0} disabled />
+                  <InputNumber style={{ width: "100%" }} min={0} disabled value={poAmount} />
                 </Col>
               </Row>
             </Form.Item>
@@ -1669,14 +1693,13 @@ const CreateDirectGRN = () => {
                   <span>Total PO Amount :</span>
                 </Col>
                 <Col span={12}>
-                  <InputNumber style={{ width: "93%" }} min={0} disabled />
+                  <InputNumber style={{ width: "93%" }} min={0} disabled value={poAmount} />
                 </Col>
               </Row>
             </Form.Item>
           </ColWithEightSpan>
         </Row>
       </Form>
-
       <Modal
         title="Product Batch Details"
         onOk={onOkModal}
@@ -1726,11 +1749,11 @@ const CreateDirectGRN = () => {
               dataSource={
                 batchRecord.ProductId
                   ? dataModel.filter(
-                      (item) =>
-                        (item.ProductId == batchRecord.ProductId &&
-                          item.ActiveFlag) ||
-                        (item.ProductId == "" && item.ActiveFlag)
-                    )
+                    (item) =>
+                      (item.ProductId == batchRecord.ProductId &&
+                        item.ActiveFlag) ||
+                      (item.ProductId == "" && item.ActiveFlag)
+                  )
                   : initialModelDataSource
               }
               actionColumnName={

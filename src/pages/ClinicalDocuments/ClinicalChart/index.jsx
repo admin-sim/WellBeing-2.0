@@ -239,7 +239,7 @@ function ClinicalChart() {
             {
               label: `Investigation`,
               key: 11,
-              children: <Investigation Patient={Patient} />,
+              children: <Investigation Patient={Patient} patientData={patientData} />,
             },
           ]}
         />

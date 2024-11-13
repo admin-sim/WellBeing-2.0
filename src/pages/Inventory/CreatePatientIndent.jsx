@@ -33,7 +33,7 @@ const CreatePatientIndent = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const indentId = location.state.IndentId;
-    const Patient = location.state.Patient;
+    const Patient = location.state.bed;
     const [dropDownLoad, setDropDownLoading] = useState(true);
     const [loading, setLoading] = useState(false);
     const initialDataSource =
@@ -44,7 +44,7 @@ const CreatePatientIndent = () => {
                     ProductName: '',
                     ProductId: '',
                     UomId: '',
-                    RequestQty: '',
+                    RequestQty: 0,
                     RequestingStoreStock: '',
                     IssuingStoreStock: '',
                     Favourite: false,
@@ -69,7 +69,6 @@ const CreatePatientIndent = () => {
     const fields = form1.getFieldsValue();
     const [buttonTitle, setButtonTitle] = useState('Save');
     const [isTableVisible, setIsTableVisible] = useState(false);
-    const [uhId, setUhId] = useState();
     const [indentStatus, setIndentStatus] = useState(false);
     const [isProductAvailable, setIsProductAvailable] = useState(false)
     const [uhid, setUhid] = useState()
@@ -83,11 +82,11 @@ const CreatePatientIndent = () => {
     }, []);
 
     useEffect(() => {
-        debugger;
         fetchData();
     }, []);
 
     const fetchData = async () => {
+        debugger
         if (indentId > 0) {
             setLoading(true);
             setButtonTitle('Update');
@@ -106,7 +105,7 @@ const CreatePatientIndent = () => {
                 setCounter(products.length)
                 setIsTableVisible(true)
                 const formdata = apiData.newIndentModel
-                setUhId(formdata.UhId)
+                setUhid(formdata.UhId)
                 form1.setFieldsValue({
                     IssuingStore: formdata.IssueingStoreId,
                     IndentType: formdata.IndentType,
@@ -124,6 +123,14 @@ const CreatePatientIndent = () => {
             setLoading(false);
         } else if (Patient) {
             debugger
+            setUhid(Patient.UhId)
+            form1.setFieldsValue({
+                UHID: Patient.UhId,
+                Name: Patient.PatientName,
+                Encounter: Patient.EncounterId,
+                EncounterId: Patient.EncounterId,
+                PatientId: Patient.PatientId,
+            })
         }
     }
 
@@ -173,7 +180,7 @@ const CreatePatientIndent = () => {
                 ProductName: '',
                 ProductId: '',
                 UomId: '',
-                RequestQty: '',
+                RequestQty: 0,
                 RequestingStoreStock: '',
                 IssuingStoreStock: '',
                 Favourite: false,
@@ -187,9 +194,9 @@ const CreatePatientIndent = () => {
     const getPanelValue1 = (value, key) => {
         if (value === "") {
             form2.setFieldsValue({ [key]: { uom: '' } });
-            form2.setFieldsValue({ [key]: { RequestQty: '' } });
+            form2.setFieldsValue({ [key]: { RequestQty: 0 } });
             form2.setFieldsValue({ [key]: { Favourite: false } });
-            form2.setFieldsValue({ [key]: { IssuingStoreStock: '' } });
+            form2.setFieldsValue({ [key]: { IssuingStoreStock: 0 } });
         }
         try {
             customAxios.get(`${urlAutocompleteProduct}?Product=${value}`).then((response) => {
@@ -322,8 +329,17 @@ const CreatePatientIndent = () => {
             dataIndex: 'IssuingStoreStock',
             key: 'IssuingStoreStock',
             render: (text, record) => (
-                <Form.Item name={[record.key, 'IssuingStoreStock']} initialValue={record.IssuingStoreStock}>
-                    <Input disabled />
+                <Form.Item name={[record.key, 'IssuingStoreStock']} initialValue={record.IssuingStoreStock}
+                    rules={[
+                        {
+                            required: true,
+                            type: "number",
+                            min: 1,
+                            message: 'value must greater than 0!'
+                        }
+                    ]}
+                >
+                    <InputNumber disabled style={{ width: '100%' }} />
                 </Form.Item>
             )
         },
@@ -410,10 +426,10 @@ const CreatePatientIndent = () => {
 
     const handleOnFinish = async (values) => {
         debugger;
-        if (!values.EncounterId) {
-            message.warning("Selected Patient Encounter Is Not Created");
-            return false;
-        }
+        // if (!values.EncounterId) {
+        //     message.warning("Selected Patient Encounter Is Not Created");
+        //     return false;
+        // }
         await form2.validateFields()
         const products = [];
         if (data.length == 0) {
@@ -564,18 +580,6 @@ const CreatePatientIndent = () => {
     return (
         <Layout style={{ zIndex: '999999999' }}>
             <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-                {/* <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
-                    <Col span={16}>
-                        <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
-                            Create Patient Indent
-                        </Title>
-                    </Col>
-                    <Col offset={6} span={2}>
-                        <Button icon={<LeftOutlined />} style={{ marginBottom: 0 }} onClick={handleCancel}>
-                            Back
-                        </Button>
-                    </Col>
-                </Row> */}
                 <PageHeader
                     title={"Create Patient Indent"}
                     buttonLabel="Back"
@@ -610,6 +614,11 @@ const CreatePatientIndent = () => {
                                     <DatePicker
                                         style={{ width: "100%" }}
                                         format="DD-MM-YYYY"
+                                        disabledDate={(current) => {
+                                            const today = new Date();
+                                            today.setHours(0, 0, 0, 0);
+                                            return current && current < today;
+                                        }}
                                     />
                                 </Form.Item>
                                 <Form.Item name="IndentId" hidden>
@@ -685,7 +694,7 @@ const CreatePatientIndent = () => {
                                 </Form.Item>
                             </Col>
                             <Col className="gutter-row" span={6}>
-                                <Form.Item label="UHID" name="UHID" initialValue={uhid}
+                                <Form.Item label="UHID" name="UHID"
                                     rules={[
                                         {
                                             required: true,
@@ -693,14 +702,7 @@ const CreatePatientIndent = () => {
                                         }
                                     ]}
                                 >
-                                    {/* <AutoComplete style={{ width: '100%' }} disabled={!!indentId}
-                                        options={autoCompleteOptions}
-                                        onSearch={(value) => GetUHID(value)}
-                                        onSelect={(value, option) => handleSelect(value, option)}
-                                        value={uhId}
-                                        allowClear
-                                    /> */}
-                                    <UhidSelectComponent handleSelectUHID={handleSelect2} />
+                                    <UhidSelectComponent selectedUhId={uhid} handleSelectUHID={handleSelect2} />
                                     <Button type="link" onClick={ShowModel}>Dr Note</Button>
                                 </Form.Item>
                                 <Form.Item name="PatientId" hidden>
@@ -721,7 +723,6 @@ const CreatePatientIndent = () => {
                             </Col>
                             <Col className="gutter-row" span={6}>
                                 <Form.Item label="Encounter" name="Encounter"
-                                    // initialValue={encounter.length > 0 ? encounter[0].EncounterId : undefined}
                                     rules={[
                                         {
                                             required: true,
@@ -735,9 +736,7 @@ const CreatePatientIndent = () => {
                                         ))}
                                     </Select>
                                 </Form.Item>
-                                <Form.Item name="EncounterId" hidden
-                                // initialValue={encounter.length > 0 ? encounter[0].EncounterId : undefined}
-                                >
+                                <Form.Item name="EncounterId" hidden>
                                     <Input></Input>
                                 </Form.Item>
                             </Col>

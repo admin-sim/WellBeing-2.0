@@ -212,7 +212,6 @@ const Indent = () => {
 
   const onReset = () => {
     setFilteredData([]);
-    // setIsTable(false);
     form.resetFields();
   };
 
@@ -225,37 +224,7 @@ const Indent = () => {
           minHeight: "max-content",
           borderRadius: "10px",
         }}
-      >
-        {/* <Row
-          style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
-          }}
-        >
-          <Col span={16}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              Indent
-            </Title>
-          </Col>
-          <Col offset={6} span={2}>
-            <Button
-              icon={<PlusCircleOutlined />}
-              style={{ marginRight: 0 }}
-              onClick={() => GetIndentById(0)}
-            >
-              Add Indent
-            </Button>
-          </Col>
-        </Row> */}
+      >       
         <PageHeader
           title={"Indent"}
           buttonLabel="Add Indent"

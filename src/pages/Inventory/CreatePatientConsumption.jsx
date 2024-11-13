@@ -27,6 +27,7 @@ import { useNavigate } from "react-router";
 import { Table, InputNumber } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { v4 as uuidv4 } from "uuid";
 import { useLocation } from "react-router-dom";
 import {
   urlCreatePurchaseOrder,
@@ -39,7 +40,7 @@ import {
   urlPatientConsuptionShowBatchDetails,
 } from "../../../endpoints.js";
 import { find } from "lodash";
-import { v4 as uuidv4 } from "uuid";
+import UhidSelectComponent from "../../components/UhidSelectComponent/index.jsx";
 
 const PatientConsumption = () => {
   const [DropDown, setDropDown] = useState({
@@ -123,6 +124,7 @@ const PatientConsumption = () => {
             setData(products);
             setCounter(products.length);
             const formdata = apiData.newPatientIssueModel;
+            setUhId(formdata.UhId)
             form1.setFieldsValue({
               IssueingStoreId: formdata.IssueingStoreId,
               // IndentType: formdata.IndentType,
@@ -153,26 +155,34 @@ const PatientConsumption = () => {
     }
   }, []);
 
-  const handleSelect = (value, option) => {
+  function handleSelect(value, option) {
     debugger;
-    form1.setFieldsValue({ Name: option.PatientName });
-    form1.setFieldsValue({ UHID: option.value });
-    customAxios
-      .get(`${urlGetLastEncounter}?Uhid=${option.key}`)
-      .then((response) => {
-        const apiData = response.data.data;
-        if (apiData.length > 0) {
-          setEncounter(apiData);
-          form1.setFieldsValue({ Encounter: apiData[0].GeneratedEncounterId });
-          form1.setFieldsValue({ EncounterId: apiData[0].EncounterId });
-          form1.setFieldsValue({ PatientId: option.PatientId });
-        } else {
-          setEncounter([]);
-          form1.setFieldsValue({ Encounter: "" });
-          form1.setFieldsValue({ EncounterId: "" });
-          form1.setFieldsValue({ PatientId: "" });
-        }
-      });
+    if (value) {
+      form1.setFieldsValue({ Name: option.data.PatientFirstName + ' ' + option.data.PatientLastName });
+      form1.setFieldsValue({ UHID: value });
+      customAxios
+        .get(`${urlGetLastEncounter}?patientId=${option.data.PatientId}`)
+        .then((response) => {
+          const apiData = response.data;
+          if (apiData.length > 0) {
+            setEncounter(apiData);
+            form1.setFieldsValue({ Encounter: apiData[0].GeneratedEncounterId });
+            form1.setFieldsValue({ EncounterId: apiData[0].EncounterId });
+            form1.setFieldsValue({ PatientId: option.data.PatientId });
+          } else {
+            setEncounter([]);
+            form1.setFieldsValue({ Encounter: "" });
+            form1.setFieldsValue({ EncounterId: "" });
+            form1.setFieldsValue({ PatientId: "" });
+          }
+        });
+    } else {
+      setEncounter([]);
+      form1.setFieldsValue({ Encounter: "" });
+      form1.setFieldsValue({ EncounterId: "" });
+      form1.setFieldsValue({ PatientId: "" });
+      form1.setFieldsValue({ Name: "" });
+    }
   };
 
   const onOkModal = () => {
@@ -338,7 +348,7 @@ const PatientConsumption = () => {
     setData([
       ...data,
       {
-        key: counter,
+        key: uuidv4(),
         ProductName: "",
         ProductId: "",
         UomId: "",
@@ -349,7 +359,7 @@ const PatientConsumption = () => {
         ActiveFlag: true,
       },
     ]);
-    setCounter(counter + 1);
+    // setCounter(counter + 1);
   };
 
   const OpenBatch = async (record) => {
@@ -781,6 +791,14 @@ const PatientConsumption = () => {
         <Form.Item
           name={[record.key, "AvlQtyAtIssue"]}
           initialValue={record.AvlQtyAtIssue}
+          rules={[
+            {
+              required: true,
+              type: "number",
+              min: 1,
+              message: 'value must greater than 0!'
+            }
+          ]}
         >
           <InputNumber min={0} style={{ width: "100%" }} disabled />
         </Form.Item>
@@ -859,7 +877,7 @@ const PatientConsumption = () => {
         ActiveFlag: true,
       },
     ]);
-    setCounterModal((prevCounter) => prevCounter + 1);
+    // setCounterModal((prevCounter) => prevCounter + 1);
   };
 
   const calculateAmount = (key, quantity, rate) => {
@@ -999,7 +1017,7 @@ const PatientConsumption = () => {
         return (
           <Form.Item name={[record.key, "Uom"]} style={{ width: 110 }}>
             {/* {record.Uom} */}
-            <Tag color="#7C00FE">{record.Uom}</Tag>
+            <Tag color="#7C00FE">{record.Uom ? record.Uom : productDetails.Uom}</Tag>
           </Form.Item>
         );
       },
@@ -1128,36 +1146,6 @@ const PatientConsumption = () => {
           borderRadius: "10px",
         }}
       >
-        {/* <Row
-          style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
-          }}
-        >
-          <Col span={16}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              Create Patient Consumption
-            </Title>
-          </Col>
-          <Col offset={6} span={2}>
-            <Button
-              icon={<LeftOutlined />}
-              style={{ marginBottom: 0 }}
-              onClick={handleToPurchaseOrder}
-            >
-              Back
-            </Button>
-          </Col>
-        </Row> */}
         <PageHeader
           title={"Create Patient Consumption"}
           buttonLabel="Back"
@@ -1216,6 +1204,11 @@ const PatientConsumption = () => {
                     disabled
                     style={{ width: "100%" }}
                     format="DD-MM-YYYY"
+                    disabledDate={(current) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return current && current < today;
+                    }}
                   />
                 </Form.Item>
               </Col>
@@ -1271,7 +1264,7 @@ const PatientConsumption = () => {
                       },
                     ]}
                   >
-                    <AutoComplete
+                    {/* <AutoComplete
                       style={{ width: "100%" }}
                       disabled={!!issueId}
                       options={autoCompleteOptions}
@@ -1279,7 +1272,8 @@ const PatientConsumption = () => {
                       onSelect={(value, option) => handleSelect(value, option)}
                       value={uhId}
                       allowClear
-                    />
+                    /> */}
+                    <UhidSelectComponent selectedUhId={uhId} handleSelectUHID={handleSelect} />
                   </Form.Item>
                 </div>
               </Col>
@@ -1292,13 +1286,19 @@ const PatientConsumption = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <div>
-                  <Form.Item label="Encounter" name="Encounter">
-                    {/* <Select disabled={isDisabled}>
-                    {encounter.map((option) => (
-                      <Select.Option key={option.EncounterId} value={option.EncounterId}>{option.GeneratedEncounterId}</Select.Option>
-                    ))}
-                  </Select> */}
-                    <Input style={{ width: "100%" }} disabled />
+                  <Form.Item label="Encounter" name="Encounter"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input!",
+                      },
+                    ]}
+                  >
+                    <Select disabled={encounter.length > 1 ? false : true}>
+                      {encounter.map((option) => (
+                        <Select.Option key={option.EncounterId} value={option.EncounterId}>{option.GeneratedEncounterId}</Select.Option>
+                      ))}
+                    </Select>
                   </Form.Item>
                   <Form.Item name="EncounterId" hidden>
                     <Input></Input>
@@ -1368,7 +1368,7 @@ const PatientConsumption = () => {
             title="Product Batch Details"
             onOk={onOkModal}
             onCancel={onCancelModel}
-            width={1000}
+            width={1300}
             open={isModalOpen}
             okText="Save"
           >

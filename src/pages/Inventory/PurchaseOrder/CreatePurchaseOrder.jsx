@@ -37,6 +37,7 @@ import {
   ColWithSixSpan,
 } from "../../../components/customGridColumns/index.jsx";
 import { isMobile } from "react-device-detect";
+import { v4 as uuidv4 } from "uuid";
 import { FaAnglesLeft } from "react-icons/fa6";
 
 const CreatePurchaseOrder = () => {
@@ -69,12 +70,14 @@ const CreatePurchaseOrder = () => {
   const [deliveryRecord, setDeliveryRecord] = useState([]);
   const [poStatus, setPoStatus] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [Amount, setAmount] = useState()
+  const [poAmount, setPoAmount] = useState()
 
   const initialDataSource =
     PoHeaderId === 0
       ? [
         {
-          key: 1,
+          key: uuidv4(),
           ProductName: "",
           // ProductId: 0,
           PoLineId: 0,
@@ -105,7 +108,7 @@ const CreatePurchaseOrder = () => {
     PoHeaderId === 0
       ? [
         {
-          key: 1,
+          key: uuidv4(),
           ProductId: "",
           UomId: "",
           PoDeliveryId: 0,
@@ -149,7 +152,7 @@ const CreatePurchaseOrder = () => {
           );
           setData(products);
           const formdata = editeddata.newPurchaseOrderModel;
-
+          setPoAmount(formdata.PoPurchaseValue)
           form1.setFieldsValue({
             SupplierId: formdata.VendorId,
             StoreId: formdata.ProcurementStoreId,
@@ -273,7 +276,7 @@ const CreatePurchaseOrder = () => {
     setData([
       ...data,
       {
-        key: counter,
+        key: uuidv4(),
         ProductName: "",
         // ProductId: 0,
         PoLineId: 0,
@@ -294,7 +297,7 @@ const CreatePurchaseOrder = () => {
         ActiveFlag: true,
       },
     ]);
-    setCounter(counter + 1);
+    // setCounter(counter + 1);
   };
 
   const handleAddDelivery = async () => {
@@ -302,7 +305,7 @@ const CreatePurchaseOrder = () => {
     setSchedule([
       ...schedule,
       {
-        key: counterDelivery,
+        key: uuidv4(),
         ProductId: "",
         UomId: "",
         PoDeliveryId: 0,
@@ -312,7 +315,7 @@ const CreatePurchaseOrder = () => {
         ActiveFlag: true,
       },
     ]);
-    setCounterDelivery(counterDelivery + 1);
+    // setCounterDelivery(counterDelivery + 1);
   };
 
   const handleSearch = async (searchText) => {
@@ -375,6 +378,7 @@ const CreatePurchaseOrder = () => {
         });
         setData(newData);
         form1.setFieldsValue({ [record.key]: { UomId: option.UomId } });
+        form1.setFieldsValue({ [record.key]: { PoRate: newData.PoRate } });
       });
   };
 
@@ -430,6 +434,7 @@ const CreatePurchaseOrder = () => {
         TotalAmount: totalAmount,
         TotalPoAmount: totalAmount,
       });
+      setPoAmount(totalAmount)
     }
     setData(newData);
   };
@@ -565,7 +570,7 @@ const CreatePurchaseOrder = () => {
       title: "Quantity",
       dataIndex: "DeliveryQuantity",
       width: 100,
-      key: "DeliveryQuantity",
+      key: 'DeliveryQuantity',
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "DeliveryQuantity"]}
@@ -580,7 +585,7 @@ const CreatePurchaseOrder = () => {
     {
       title: "UOM",
       dataIndex: "UomId",
-      key: "UomId",
+      key: 'UomId',
       width: 100,
       render: (text, record, index) => (
         <Form.Item name={[record.key, "UomId"]}>
@@ -595,7 +600,7 @@ const CreatePurchaseOrder = () => {
     {
       title: "Date of Delivery",
       dataIndex: "DelDate",
-      key: "DelDate",
+      key: 'DelDate',
       width: 250,
       render: (text, record, index) => (
         <Form.Item
@@ -617,7 +622,7 @@ const CreatePurchaseOrder = () => {
     {
       title: "Delivery Location",
       dataIndex: "DeliveryLocation",
-      key: "DeliveryLocation",
+      key: 'DeliveryLocation',
       width: 250,
       render: (text, record, index) => (
         <Form.Item
@@ -635,7 +640,7 @@ const CreatePurchaseOrder = () => {
       title: "Product",
       dataIndex: "ProductName",
       fixed: "left",
-      key: "ProductName",
+      key: 'ProductName',
       width: isMobile ? 200 : 300,
       render: (text, record, index) => (
         <>
@@ -685,7 +690,7 @@ const CreatePurchaseOrder = () => {
     {
       title: "UOM",
       dataIndex: "UomId",
-      key: "UomId",
+      key: 'UomId',
       width: 150,
       render: (text, record, index) => (
         <Form.Item
@@ -714,7 +719,7 @@ const CreatePurchaseOrder = () => {
       title: "PO Qty",
       dataIndex: "PoQuantity",
       width: 100,
-      key: "PoQuantity",
+      key: 'PoQuantity',
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "PoQuantity"]}
@@ -746,7 +751,7 @@ const CreatePurchaseOrder = () => {
       title: "Bonus Qty",
       dataIndex: "BonusQuantity",
       width: 100,
-      key: "BonusQuantity",
+      key: 'BonusQuantity',
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "BonusQuantity"]}
@@ -773,7 +778,7 @@ const CreatePurchaseOrder = () => {
       title: "Po Rate",
       dataIndex: "PoRate",
       width: 100,
-      key: "PoRate",
+      key: 'PoRate',
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "PoRate"]}
@@ -800,7 +805,7 @@ const CreatePurchaseOrder = () => {
       title: "Discount %",
       dataIndex: "DiscountRate",
       width: 100,
-      key: "DiscountRate",
+      key: 'DiscountRate',
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "DiscountRate"]}
@@ -827,7 +832,7 @@ const CreatePurchaseOrder = () => {
       title: "Discount Amount",
       dataIndex: "DiscountAmount",
       width: 100,
-      key: "DiscountAmount",
+      key: 'DiscountAmount',
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "DiscountAmount"]}
@@ -844,7 +849,7 @@ const CreatePurchaseOrder = () => {
       title: "Expected MRP",
       dataIndex: "MrpExpected",
       width: 100,
-      key: "MrpExpected",
+      key: 'MrpExpected',
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "MrpExpected"]}
@@ -870,7 +875,7 @@ const CreatePurchaseOrder = () => {
     {
       title: "CGST",
       dataIndex: "TaxType1",
-      key: "TaxType1",
+      key: 'TaxType1',
       width: 100,
       render: (text, record, index) => (
         <Form.Item
@@ -903,7 +908,7 @@ const CreatePurchaseOrder = () => {
       title: "CGST Amount",
       dataIndex: "TaxAmount1",
       width: 100,
-      key: "TaxAmount1",
+      key: 'TaxAmount1',
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "TaxAmount1"]}
@@ -917,7 +922,7 @@ const CreatePurchaseOrder = () => {
     {
       title: "SGST",
       dataIndex: "TaxType2",
-      key: "TaxType2",
+      key: 'TaxType2',
       width: 100,
       render: (text, record, index) => (
         <Form.Item name={[record.key, "TaxType2"]}>
@@ -937,7 +942,7 @@ const CreatePurchaseOrder = () => {
       title: "SGST Amount",
       dataIndex: "TaxAmount2",
       width: 100,
-      key: "TaxAmount2",
+      key: 'TaxAmount2',
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "TaxAmount2"]}
@@ -952,7 +957,7 @@ const CreatePurchaseOrder = () => {
       title: "Amount",
       dataIndex: "LineAmount",
       width: 100,
-      key: "LineAmount",
+      key: 'LineAmount',
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "LineAmount"]}
@@ -967,7 +972,7 @@ const CreatePurchaseOrder = () => {
       title: "Total Amount",
       dataIndex: "LineAmount",
       width: 100,
-      key: "LineAmount",
+      key: 'LineAmount',
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "LineAmount"]}
@@ -982,7 +987,7 @@ const CreatePurchaseOrder = () => {
       title: "Avl Qty",
       dataIndex: "AvailableQuantity",
       width: 100,
-      key: "AvailableQuantity",
+      key: 'AvailableQuantity',
       render: (text, record, index) => (
         <Form.Item
           // name={["AvailableQuantity", record.key]}
@@ -997,7 +1002,7 @@ const CreatePurchaseOrder = () => {
     {
       title: "Delivery Schedule",
       dataIndex: "deliverySchedule",
-      key: "deliverySchedule",
+      key: 'deliverySchedule',
       width: 100,
       render: (text, record, index) => (
         <Button
@@ -1211,7 +1216,7 @@ const CreatePurchaseOrder = () => {
                   <span>Amount : </span>
                 </Col>
                 <Col span={12}>
-                  <InputNumber style={{ width: "100%" }} min={0} disabled />
+                  <InputNumber style={{ width: "100%" }} min={0} value={poAmount} disabled />
                 </Col>
               </Row>
             </Form.Item>
@@ -1234,7 +1239,7 @@ const CreatePurchaseOrder = () => {
                   <span>Total PO Amount :</span>
                 </Col>
                 <Col span={12}>
-                  <InputNumber style={{ width: "93%" }} min={0} disabled />
+                  <InputNumber style={{ width: "93%" }} min={0} disabled value={poAmount} />
                 </Col>
               </Row>
             </Form.Item>

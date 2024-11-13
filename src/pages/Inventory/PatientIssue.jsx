@@ -33,6 +33,7 @@ import {
   urlGetLastEncounter,
 } from "../../../endpoints.js";
 import customAxios from "../../components/customAxios/customAxios";
+import UhidSelectComponent from "../../components/UhidSelectComponent/index.jsx";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -227,28 +228,39 @@ const PatientIssue = () => {
     }
   };
 
-  const handleSelect = (value, option) => {
-    form.setFieldsValue({ PatientName: option.Name });
-    form.setFieldsValue({ PatientId: option.PatientId });
-    setPatientName(option.Name);
-    try {
-      customAxios
-        .get(`${urlGetLastEncounter}?Uhid=${option.key}`)
-        .then((response) => {
-          const apiData = response.data.data;
-          if (apiData.length > 0) {
-            setEncounter(apiData);
-            form.setFieldsValue({ Encounter: apiData[0].EncounterId });
-            form.setFieldsValue({ PatientId: option.PatientId });
-          } else {
-            setEncounter([]);
-            form.setFieldsValue({ Encounter: "" });
-            form.setFieldsValue({ PatientId: "" });
-          }
-        });
-    } catch (error) {
-      //console.error("Error fetching purchase order details:", error);
+  const handleSelectUHID = (value, option) => {
+    debugger
+    if (value) {
+      form.setFieldsValue({ PatientName: option.data.PatientFirstName + '' + option.data.PatientLastName })
+      form.setFieldsValue({ PatientId: option.data.PatientId });
+      try {
+        customAxios
+          .get(`${urlGetLastEncounter}?patientId=${option.data.PatientId}`)
+          .then((response) => {
+            const apiData = response.data;
+            if (apiData.length > 0) {
+              setEncounter(apiData);
+              form.setFieldsValue({ Encounter: apiData[0].EncounterId });
+              form.setFieldsValue({ PatientId: option.data.PatientId });
+              form.setFieldsValue({ EncounterId: apiData[0].EncounterId });
+            } else {
+              setEncounter([]);
+              form.setFieldsValue({ Encounter: '' });
+              form.setFieldsValue({ PatientId: '' });
+              form.setFieldsValue({ EncounterId: '' });
+            }
+          });
+      } catch (error) {
+        //console.error("Error fetching purchase order details:", error);
+      }
+    } else {
+      setEncounter([]);
+      form.setFieldsValue({ Encounter: '' });
+      form.setFieldsValue({ PatientId: '' });
+      form.setFieldsValue({ EncounterId: '' });
+      form.setFieldsValue({ PatientName: '' });
     }
+
   };
 
   const handleUHId = (value) => {
@@ -392,14 +404,15 @@ const PatientIssue = () => {
               </Col>
               <Col className="gutter-row" span={4}>
                 <Form.Item name="UHID" label="UHID">
-                  <AutoComplete
+                  {/* <AutoComplete
                     options={autoCompleteOptions}
                     onSearch={getPanelValue}
                     onSelect={(value, option) => handleSelect(value, option)}
                     onChange={handleUHId}
                     placeholder="Search for a Uhid"
                     allowClear
-                  />
+                  /> */}
+                  <UhidSelectComponent handleSelectUHID={handleSelectUHID} />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={4}>

@@ -10,6 +10,7 @@ import {
   urlEditIndent,
   urlUpdateIndent,
 } from "../../../endpoints.js";
+import { v4 as uuidv4 } from "uuid";
 import Select from "antd/es/select";
 import CustomTable from "../../components/customTable/index.jsx";
 import {
@@ -39,9 +40,11 @@ import {
   CloseSquareFilled,
   DeleteOutlined,
   PlusOutlined,
+  PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 import dayjs from "dayjs";
+import PageHeader from "../../components/PageHeader/index.jsx";
 
 const CreateIndent = () => {
   const [DropDown, setDropDown] = useState({
@@ -78,7 +81,7 @@ const CreateIndent = () => {
     indentId === 0
       ? [
         {
-          key: 0,
+          key: uuidv4(),
           ProductName: "",
           // ProductId: '',
           UomId: "",
@@ -148,14 +151,10 @@ const CreateIndent = () => {
     }
   }
 
-
-
   const handleToIndent = () => {
     const url = "/Indent";
     navigate(url);
   };
-
-
 
   const handleDelete = (record) => {
     debugger;
@@ -280,7 +279,7 @@ const CreateIndent = () => {
     setData([
       ...data,
       {
-        key: productCount,
+        key: uuidv4(),
         ProductName: "",
         // ProductId: '',
         UomId: "",
@@ -291,15 +290,15 @@ const CreateIndent = () => {
         ActiveFlag: true,
       },
     ]);
-    setProductcount(productCount + 1);
+    // setProductcount(productCount + 1);
   };
 
   const validateEqualValue = (record, value) => {
-    const va = form1.getFieldsValue();
+    debugger
     if (value <= record.IssuingStoreStock) {
       const newdata = data.map((item) => {
         if (item.ProductId === record.ProductId) {
-          const updated = { ...item, RequestingQty: value };
+          const updated = { ...item, RequestingQty: value == null ? undefined : value };
           return updated;
         }
         return item;
@@ -307,7 +306,7 @@ const CreateIndent = () => {
       setData(newdata);
       return Promise.resolve();
     }
-    return Promise.reject(new Error("Must less than Store Stock Qty!"));
+    return Promise.reject(new Error("not Greater than Issue Store Stock!"));
   };
 
   const columns = [
@@ -315,7 +314,7 @@ const CreateIndent = () => {
       title: "Product",
       dataIndex: "ProductName",
       fixed: "left",
-      key: "ProductName",
+      key: 'ProductName',
       width: 250,
       render: (text, record, index) => (
         <>
@@ -362,7 +361,7 @@ const CreateIndent = () => {
     {
       title: "UOM",
       dataIndex: "UomId",
-      key: "UomId",
+      key: 'UomId',
       width: 100,
       render: (text, record, index) => (
         <>
@@ -391,7 +390,7 @@ const CreateIndent = () => {
     {
       title: "Requesting Qty",
       dataIndex: "RequestingQty",
-      key: "RequestingQty",
+      key: 'RequestingQty',
       width: 100,
       render: (text, record) => (
         <Form.Item
@@ -414,7 +413,7 @@ const CreateIndent = () => {
     {
       title: "Requesting Store Stock",
       dataIndex: "RequestingStoreStock",
-      key: "RequestingStoreStock",
+      key: 'RequestingStoreStock',
       width: 100,
       render: (text, record) => (
         <Form.Item
@@ -433,18 +432,25 @@ const CreateIndent = () => {
     {
       title: "Issuing Store Stock",
       dataIndex: "IssuingStoreStock",
-      key: "IssuingStoreStock",
+      key: 'IssuingStoreStock',
       width: 100,
       render: (text, record) => (
         <Form.Item
           name={[record.key, "IssuingStoreStock"]}
           initialValue={record.IssuingStoreStock}
+          rules={[
+            {
+              required: true,
+              type: "number",
+              min: 1,
+              message: 'value must greater than 0!'
+            }
+          ]}
         >
           <InputNumber
             min={0}
             disabled
             style={{ width: "100%" }}
-            defaultValue={text}
           />
         </Form.Item>
       ),
@@ -453,7 +459,7 @@ const CreateIndent = () => {
       title: "Fav",
       dataIndex: "Favourite",
       width: 50,
-      key: "Favourite",
+      key: 'Favourite',
       render: (text, record) => (
         <Form.Item
           initialValue={record.Favourite}
@@ -475,7 +481,7 @@ const CreateIndent = () => {
         ></Button>
       ),
       dataIndex: "add",
-      key: "add",
+      key: 'add',
       width: 50,
       render: (text, record) => (
         <Popconfirm
@@ -632,36 +638,12 @@ const CreateIndent = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
-          style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
-          }}
-        >
-          <Col span={16}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              Create Indent
-            </Title>
-          </Col>
-          <Col offset={6} span={2}>
-            <Button
-              icon={<LeftOutlined />}
-              style={{ marginBottom: 0 }}
-              onClick={handleToIndent}
-            >
-              Back
-            </Button>
-          </Col>
-        </Row>
+        <PageHeader
+          title={"Create Indent"}
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleToIndent}
+        />
         <Card>
           <Form
             layout="vertical"
@@ -696,6 +678,11 @@ const CreateIndent = () => {
                     style={{ width: "100%" }}
                     format="DD-MM-YYYY"
                     disabled={!!form1.getFieldValue("IndentId")}
+                    disabledDate={(current) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return current && current < today;
+                    }}
                   />
                 </Form.Item>
                 <Form.Item name="IndentId" hidden>
@@ -846,15 +833,6 @@ const CreateIndent = () => {
             <Divider style={{ marginTop: "0" }}></Divider>
             <Spin spinning={loading}>
               {istablevisible ? (
-                // <div>
-                //   <Table
-                //     columns={columns}
-                //     dataSource={data.filter((item) => item.ActiveFlag !== false)}
-                //     scroll={{ x: 0 }}
-                //     bordered
-                //   />
-                // </div>
-                // <Spin spinning={loading}>
                 <CustomTable
                   dataSource={data.filter((item) => item.ActiveFlag !== false)}
                   columns={columns}
@@ -862,7 +840,6 @@ const CreateIndent = () => {
                   actionColumn={false}
                   bordered
                 />
-                // </Spin>
               ) : null}
             </Spin>
           </Form>

@@ -259,37 +259,7 @@ const PatientIndent = () => {
           minHeight: "max-content",
           borderRadius: "10px",
         }}
-      >
-        {/* <Row
-          style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
-          }}
-        >
-          <Col span={16}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              Patient Indent
-            </Title>
-          </Col>
-          <Col offset={5} span={2}>
-            <Button
-              icon={<PlusCircleOutlined />}
-              style={{ marginRight: 0 }}
-              onClick={() => GetIndentById(0)}
-            >
-              Add Patient Indent
-            </Button>
-          </Col>
-        </Row> */}
+      >        
         <PageHeader
           title={"Patient Indent"}
           buttonLabel="Add Patient Indent"
