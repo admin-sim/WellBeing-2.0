@@ -501,4 +501,5 @@ export const urlGetAllDepartments = `${baseURL}/api/Department/GetAllDepartments
 export const urlAddOrUpdateNewDepartment = `${baseURL}/api/Department/AddOrUpdateNewDepartment`;
 export const urlEditDepartment = `${baseURL}/api/Department/EditDepartment`;
 export const urlDeleteDepartment = `${baseURL}/api/Department/DeleteDepartment`;
+export const urlSearchAppoinmtmentRecord = `${baseURL}/api/ScheduleProviderAppointment/SearchAppoinmtmentRecord`;
 
