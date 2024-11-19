@@ -502,4 +502,10 @@ export const urlAddOrUpdateNewDepartment = `${baseURL}/api/Department/AddOrUpdat
 export const urlEditDepartment = `${baseURL}/api/Department/EditDepartment`;
 export const urlDeleteDepartment = `${baseURL}/api/Department/DeleteDepartment`;
 export const urlSearchAppoinmtmentRecord = `${baseURL}/api/ScheduleProviderAppointment/SearchAppoinmtmentRecord`;
+export const urlGetAllServiceLocation = `${baseURL}/api/ServiceLoaction/GetAllServiceLocation`;
+export const urlSaveNewServiceLocation = `${baseURL}/api/ServiceLoaction/SaveNewServiceLocation`;
+export const urlUpdateServiceLocation = `${baseURL}/api/ServiceLoaction/UpdateServiceLocation`;
+export const urlDeleteSelectedServiceLocation = `${baseURL}/api/ServiceLoaction/DeleteSelectedServiceLocation`;
+export const urlGetAllDepartmentsForFacilities = `${baseURL}/api/FacilityDepartment/GetAllDepartmentsForFacility`;
+export const urlSaveNewFacilityDepartment = `${baseURL}/api/FacilityDepartment/SaveNewFacilityDepartment`;
 

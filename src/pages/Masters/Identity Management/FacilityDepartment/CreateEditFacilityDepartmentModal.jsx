@@ -6,6 +6,7 @@ function CreateEditFacilityDepartmentModal({
   handleClose,
   handleSubmit,
   record,
+  options
 }) {
   const [form] = Form.useForm();
 
@@ -36,12 +37,15 @@ function CreateEditFacilityDepartmentModal({
           layout="vertical"
           form={form}
           onFinish={handleSubmit}
+          initialValues={{
+            ActiveFlag: "Active", // Default value for the "ActiveFlag" field
+          }}
         >
           <Row gutter={32}>
             {!record && (
               <Col span={24}>
                 <Form.Item
-                  name="DepartmentName"
+                  name="DepartmentId"
                   label="Department"
                   rules={[
                     {
@@ -50,17 +54,29 @@ function CreateEditFacilityDepartmentModal({
                     },
                   ]}
                 >
-                  <Input />
+                     <Select
+                  placeholder="Select ServiceLocationType "
+                  allowClear
+                 // loading={isloading}
+                >
+                  {options?.map((option) => (
+                    <Select.Option
+                      key={option.DepartmentId}
+                      value={option.DepartmentId}
+                    >
+                      {option.DepartmentName}
+                    </Select.Option>
+                  ))}
+                </Select>
                 </Form.Item>
               </Col>
             )}
             <Col span={24}>
-              <Form.Item
-                name="Status"
-                label="Status"
-                rules={[{ required: true, message: "Please select Status" }]}
-              >
-                <Input />
+            <Form.Item name="ActiveFlag" label="Status">
+                <Select >
+                  <Select.Option key="Active" value="Active"></Select.Option>
+                  <Select.Option key="Hidden" value="Hidden"></Select.Option>
+                </Select>
               </Form.Item>
             </Col>
           </Row>

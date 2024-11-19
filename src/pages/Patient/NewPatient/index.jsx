@@ -412,7 +412,7 @@ const NewPatient = () => {
 
     values.dob = selecteddob;
     const patientDetails = {
-      PatientId: selectedRow ? selectedRow.PatientId : 0,
+   
       PatientTitle: values.title === undefined ? null : values.title,
       PatientFirstName:
         values.PatientFirstName === undefined || values.PatientFirstName === ""

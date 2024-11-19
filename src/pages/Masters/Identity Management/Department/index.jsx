@@ -100,9 +100,6 @@ record.ActiveFlag = record.ActiveFlag === "Active";
       message.warning("Department already exists");
       setDepartmentModal(false);
     }
-
-
-   
   };
 
   return (

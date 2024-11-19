@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader/index.jsx";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import { Col, Form, Row, Select } from "antd";
@@ -6,22 +6,74 @@ import Title from "antd/es/typography/Title.js";
 import CustomTable from "../../../../components/customTable/index.jsx";
 import CreateEditFacilityDepartmentModal from "./CreateEditFacilityDepartmentModal.jsx";
 import { ColWithTwelveSpan } from "../../../../components/customGridColumns/index.jsx";
+import { urlGetAllDepartmentsForFacilities, urlGetAllFacilities, urlSaveNewFacilityDepartment } from "../../../../../endpoints.js";
+import customAxios from "../../../../components/customAxios/customAxios.jsx";
 
 function FacilityDepartment() {
   const [form] = Form.useForm();
   const [departmentModal, setDepartmentModal] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
+  const [facilities, setfacilities] = useState([]);
+  const [facilityDept, setfacilityDept] = useState([]);
+  const [departments, setDepartments] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await customAxios.get(
+        `${urlGetAllFacilities}`
+      );
+
+      if (response.data != null) {
+     
+     
+        setfacilities(
+          response.data.data.FacilityModel.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          })
+        );
+      }
+    } catch (error) {
+    
+      console.error(error);
+    }
+  };
+
+  const handleFacility =async(value)=>{
+
+    const response = await customAxios.get(
+      `${urlGetAllDepartmentsForFacilities}?id=${value}`
+    );
+
+    if (response.data != null) {
+   
+   
+      setfacilityDept(
+        response.data.data.FacilityDepartment.map((obj, index) => {
+          return { ...obj, key: index + 1 };
+        })
+      );
+      setDepartments(
+        response.data.data.Departments.map((obj, index) => {
+          return { ...obj, key: index + 1 };
+        })
+      );
+    }
+
+  }
+
   const columns = [
     {
       title: "Sl No",
-      dataIndex: "SlNo",
-      key: "1",
+      dataIndex: "key",
       width: 80,
     },
     {
       title: "Department Name",
       dataIndex: "DepartmentName",
-      key: "2",
       width: 250,
     },
     {
@@ -32,32 +84,14 @@ function FacilityDepartment() {
     },
     {
       title: "Status",
-      dataIndex: "Status",
-      key: "4",
+      dataIndex: "ActiveFlag",
       width: 100,
-    },
+      render: (text) => text ? "Active" : "Hidden"
+    }
+    
   ];
 
-  const tableData = [
-    {
-      SlNo: 1,
-      DepartmentName: "Accident & Emergency (A&E)",
-      DepartmentCode: "AE",
-      Status: "Active",
-    },
-    {
-      SlNo: 2,
-      DepartmentName: "Accounting & Finance",
-      DepartmentCode: "AF",
-      Status: "Active",
-    },
-    {
-      SlNo: 3,
-      DepartmentName: "Blood Bank",
-      DepartmentCode: "BLB",
-      Status: "Active",
-    },
-  ];
+ 
 
   const handleEdit = (record) => {
     setCurrentRecord(record);
@@ -72,9 +106,28 @@ function FacilityDepartment() {
   const handleDelete = (record) => {
     console.log(record);
   };
-  const handleSubmit = (record) => {
+  const handleSubmit = async(record) => {
+    debugger;
     console.log(record);
-    setDepartmentModal(false);
+// Check the value of ActiveFlag and set it to true or false
+const formValues = form.getFieldsValue(); // Get all the field values from the form
+
+    record.FacilityId = formValues.ServiceLocationTypeId;
+
+
+    const response = await customAxios.post(urlSaveNewFacilityDepartment, record, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if(response.data.data==true){
+      setDepartmentModal(false);
+      message.success("Saved Successfully");
+      fetchData();
+    }else{
+      message.warning("Department already exists");
+      setDepartmentModal(false);
+    }
   };
   return (
     <>
@@ -95,9 +148,30 @@ function FacilityDepartment() {
           }}
         >
           <Row gutter={16}>
-            <ColWithTwelveSpan>
-              <Form.Item name="FacilityName" label="Facility Name" required>
-                <Select />
+          <ColWithTwelveSpan>
+              <Form.Item
+                style={{ marginBottom: "0.5rem" }}
+                name="ServiceLocationTypeId"
+                label="Service Location Type"
+                rules={[
+                  { required: true, message: "Please enter ServiceLocationType " },
+                ]}
+              >
+                <Select
+                  placeholder="Select ServiceLocationType "
+                  allowClear
+                  onChange={handleFacility}
+                 // loading={isloading}
+                >
+                  {facilities?.map((option) => (
+                    <Select.Option
+                      key={option.FacilityId}
+                      value={option.FacilityId}
+                    >
+                      {option.FacilityName}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </ColWithTwelveSpan>
           </Row>
@@ -112,9 +186,9 @@ function FacilityDepartment() {
           <CustomTable
             isFilter={true}
             columns={columns}
-            dataSource={tableData}
+            dataSource={facilityDept}
             onEdit={handleEdit}
-            onDelete={handleDelete}
+            //onDelete={handleDelete}
           />
           <CreateEditFacilityDepartmentModal
             open={departmentModal}
@@ -123,6 +197,7 @@ function FacilityDepartment() {
             }}
             handleSubmit={handleSubmit}
             record={currentRecord}
+            options={departments}
           />
         </div>
       </div>
