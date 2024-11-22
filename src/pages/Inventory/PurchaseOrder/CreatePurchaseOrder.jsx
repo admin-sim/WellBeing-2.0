@@ -460,23 +460,27 @@ const CreatePurchaseOrder = () => {
         default:
           break;
       }
+      let taxA1 = record.TaxAmount1
+      let taxA2 = record.TaxAmount2
       if (Id == 1) {
+        taxA1 = taxAmount
         form1.setFieldsValue({ [record.key]: { TaxAmount1: taxAmount } })
       } else {
+        taxA2 = taxAmount
         form1.setFieldsValue({ [record.key]: { TaxAmount2: taxAmount } })
       }
       if (temp == 1) {
         // lineAmount = amount
-        lineAmount = parseFloat(amount - taxAmount - record.TaxAmount2)
+        lineAmount = parseFloat(amount - taxAmount - taxA1 + taxA2)
         totalAmount = amount
-        form1.setFieldsValue({ [record.key]: { LineAmount: parseFloat(amount - taxAmount - record.TaxAmount2) } })
+        form1.setFieldsValue({ [record.key]: { LineAmount: parseFloat(amount - taxA1 - taxA2) } })
         form1.setFieldsValue({ [record.key]: { TotalAmount: amount } })
       }
       else {
         lineAmount = amount
-        totalAmount = parseFloat(amount) + parseFloat(taxAmount) + parseFloat(record.TaxAmount2)
+        totalAmount = parseFloat(amount) + parseFloat(taxA1) + parseFloat(taxA2)
         form1.setFieldsValue({ [record.key]: { LineAmount: amount } })
-        form1.setFieldsValue({ [record.key]: { TotalAmount: parseFloat(amount) + parseFloat(taxAmount) + parseFloat(record.TaxAmount2) } })
+        form1.setFieldsValue({ [record.key]: { TotalAmount: parseFloat(amount) + parseFloat(taxA1) + parseFloat(taxA2) } })
       }
     }
     const newData = data.map((item) => {
@@ -489,6 +493,7 @@ const CreatePurchaseOrder = () => {
           TaxAmount2: Id == 2 ? taxAmount : record.TaxAmount2,
           LineAmount: lineAmount,
           TotalAmount: totalAmount,
+          Temp: temp
         }
       }
       return item
@@ -498,15 +503,20 @@ const CreatePurchaseOrder = () => {
   }
 
   function ReCalculate(taxType, record, Id) {
-    let taxAmount = 0
+    let taxAmount1 = Id == 1 ? 0 : record.TaxAmount1
+    let taxAmount2 = Id == 2 ? 0 : record.TaxAmount2
+    let lineAmount = record.Temp == 0 ? record.LineAmount + taxAmount1 + taxAmount1 : record.LineAmount
+    let totalAmount = record.Temp == 1 ? record.LineAmount - taxAmount1 - taxAmount1 : record.LineAmount
     const newData = data.map((item) => {
       if (record.key == item.key) {
         return {
           ...item,
-          TaxType1: Id == 1 ? taxType : record.TaxType1,
-          TaxType2: Id == 2 ? taxType : record.TaxType2,
-          TaxAmount1: Id == 1 ? taxAmount : record.TaxAmount1,
-          TaxAmount2: Id == 2 ? taxAmount : record.TaxAmount2
+          // TaxType1: Id == 1 ? taxType : record.TaxType1,
+          // TaxType2: Id == 2 ? taxType : record.TaxType2,
+          TaxAmount1: taxAmount1,
+          TaxAmount2: taxAmount2,
+          LineAmount: lineAmount,
+          TotalAmount: totalAmount
         }
       }
       return item
@@ -570,19 +580,17 @@ const CreatePurchaseOrder = () => {
           }
 
           updatedItem.DiscountAmount = discountAmount;
-          updatedItem.LineAmount = amount
-          updatedItem.LineAmount = amount - taxAmount1 - taxAmount2;
-          updatedItem.TotalAmount = amount;
+          updatedItem.LineAmount = item.TaxType1 || item.TaxType2 ? item.LineAmount : amount
+          // updatedItem.LineAmount = amount - taxAmount1 - taxAmount2;
+          updatedItem.TotalAmount = item.TaxType1 || item.TaxType2 ? item.TotalAmount : amount;
           updatedItem.TaxAmount1 = taxAmount1;
           updatedItem.TaxAmount2 = taxAmount2;
 
           form1.setFieldsValue({
             [record.key]: { DiscountAmount: discountAmount },
           });
-          form1.setFieldsValue({ [record.key]: { LineAmount: amount } });
-
-          form1.setFieldsValue({ [record.key]: { LineAmount: amount - taxAmount1 - taxAmount2 } });
-          form1.setFieldsValue({ [record.key]: { TotalAmount: amount } });
+          form1.setFieldsValue({ [record.key]: { LineAmount: item.TaxType1 || item.TaxType2 ? item.LineAmount : amount } });
+          form1.setFieldsValue({ [record.key]: { TotalAmount: item.TaxType1 || item.TaxType2 ? item.TotalAmount : amount } });
           form1.setFieldsValue({ [record.key]: { TaxAmount1: taxAmount1 } });
           form1.setFieldsValue({ [record.key]: { TaxAmount2: taxAmount2 } });
 
@@ -1149,7 +1157,7 @@ const CreatePurchaseOrder = () => {
           style={{ width: "100%" }}
           initialValue={record.LineAmount}
         >
-          <InputNumber disabled min={0} defaultValue={text} precision={4} />
+          <InputNumber disabled min={0} precision={4} />
         </Form.Item>
       ),
     },
@@ -1164,7 +1172,7 @@ const CreatePurchaseOrder = () => {
           style={{ width: "100%" }}
           initialValue={record.TotalAmount}
         >
-          <InputNumber disabled min={0} defaultValue={text} precision={2} />
+          <InputNumber disabled min={0} precision={4} />
         </Form.Item>
       ),
     },
@@ -1180,7 +1188,7 @@ const CreatePurchaseOrder = () => {
           style={{ width: "100%" }}
           initialValue={record.AvailableQuantity}
         >
-          <InputNumber disabled min={0} defaultValue={text} />
+          <InputNumber disabled min={0} />
         </Form.Item>
       ),
     },
