@@ -111,10 +111,13 @@ function CancelBill() {
   // ];
 
   const rowSelection = {
-    onChange: (rowkey, selectedRows) => {
+    onChange: (rowKey, selectedRows) => {
       setSelectedRows(selectedRows);
-      setRowKeys(rowkey);
+      setRowKeys(rowKey);
     },
+    getCheckboxProps: (record) => ({
+      disabled: record.IsPharmacyBill, // Disable checkbox if IsPharmacyBill is true
+    }),
   };
 
   const handleSelectUHID = (value, option) => {
@@ -612,11 +615,45 @@ function CancelBill() {
       case "Refunds":
         return [
           { title: "Cancel Date", render: () => dayjs().format("DD-MM-YYYY") },
-          { title: "Document Ref. Id", dataIndex: "RecieptNumber" },
-          //{ title: "Patient/Payer", dataIndex: "PatientFullName" },
-          // { title: "Provider", dataIndex: "PatientFullName" },
+          { title: "Document Ref. Id", dataIndex: "ReciptNumber" },
+          { title: "Patient/Payer", dataIndex: "PatientFullName" },
+          { title: "Provider", dataIndex: "PatientFullName" },
           { title: "Document Amount", dataIndex: "ReFundAmount" },
           { title: "Outstanding Amount", dataIndex: "" },
+          {
+            title: "Cancellation Reason",
+            render: (text, record) => (
+              <Form.Item name={`CancelReason_${record.key}`}>
+                <Select>
+                  {cancelReason && cancelReason.length > 0 ? (
+                    cancelReason.map((option) => (
+                      <Select.Option
+                        key={option.LookupID}
+                        value={option.LookupID}
+                      >
+                        {option.LookupDescription}
+                      </Select.Option>
+                    ))
+                  ) : (
+                    <Select.Option value="">Loading...</Select.Option>
+                  )}
+                </Select>
+              </Form.Item>
+            ),
+          },
+          {
+            title: "Cancellation Action",
+            render: (text, record) => (
+              <Form.Item name={`CancelAction_${record.key}`}>
+                <Select>
+                  {/* Display "Cancel" in the dropdown but submit value as 1 */}
+                  <Select.Option key="Cancel" value="1">
+                    Cancel
+                  </Select.Option>
+                </Select>
+              </Form.Item>
+            ),
+          },
         ];
       default:
         return [];
