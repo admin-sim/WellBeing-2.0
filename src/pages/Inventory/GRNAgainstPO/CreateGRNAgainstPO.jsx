@@ -8,6 +8,7 @@ import {
   urlSearchPendingPO,
   urlEditGRNAgainstPO,
   urlUpdateGRNAgainstPO,
+  urlGetTaxDetails,
 } from "../../../../endpoints.js";
 import Select from "antd/es/select";
 import {
@@ -68,7 +69,6 @@ const CreateGRNAgainstPO = () => {
   const { TextArea } = Input;
   const { Option } = Select;
   const GrnHeaderId = location.state.GrnHeaderId;
-  console.log("headerid", GrnHeaderId);
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
@@ -90,9 +90,12 @@ const CreateGRNAgainstPO = () => {
 
   const [dropDownLoad, setDropDownLoading] = useState(true);
   const [poAmount, setPoAmount] = useState()
+  const [Amount, setAmount] = useState()
+  const [tax, setTax] = useState()
+  const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
+  const [toDate, setToDate] = useState(dayjs());
 
   useEffect(() => {
-    debugger
     customAxios.get(urlCreatePurchaseOrder).then((response) => {
       const apiData = response.data.data;
       setDropDown(apiData);
@@ -104,7 +107,7 @@ const CreateGRNAgainstPO = () => {
     GrnHeaderId === 0
       ? [
         {
-          key: 1,
+          key: uuidv4(),
           BarCode: "",
           BatchNo: "",
           Quantity: 0,
@@ -119,24 +122,39 @@ const CreateGRNAgainstPO = () => {
           TaxAmount1: 0,
           TaxType2: "",
           TaxAmount2: 0,
-          Stocklocator: "",
+          StockLocator: "",
           ActiveFlag: true,
           PoLineId: 0,
           DiscountRate: 0,
           DiscountAmount: 0,
-          GrnBatchId: 0,
+          GrnBatchId: 0
         },
       ]
       : [];
 
-  const [dataBatchModal, setdataBatchModal] = useState([]);
+  const [dataBatchModal, setdataBatchModal] = useState(initialModelDataSource);
 
   useEffect(() => {
     fetchData();
   }, []);
 
+  const disableFromDate = (current) => {
+    // Disable dates that are after today
+    return current && current.isAfter(dayjs().endOf("day"));
+  };
+
+  const disableToDate = (current) => {
+    // Disable dates that are before the selected fromDate or after today
+    return (
+      current &&
+      (current.isBefore(fromDate, "day") ||
+        current.isAfter(dayjs().endOf("day")))
+    );
+  };
+
   const fetchData = async () => {
     if (GrnHeaderId > 0) {
+      debugger
       setButtonTitle("Update");
       setLoading(true);
       try {
@@ -148,23 +166,26 @@ const CreateGRNAgainstPO = () => {
           const products = editeddata.GRNAgainstPODetails.map(
             (item, index) => ({
               ...item,
-              key: index + 1,
+              key: uuidv4(),
             })
           );
           setData(products);
           const formdata = editeddata.newGRNAgainstPOModel;
           setPoAmount(formdata.TotalPoAmount)
+          setTax(formdata.TaxAmount1)
+          setAmount(formdata.TotalAmount)
+          setPoAmount(formdata.TotalPoAmount)
           form1.setFieldsValue({
             SupplierId: formdata.SupplierId,
             StoreId: formdata.StoreId,
             DocumentType: formdata.DocumentType,
-            TotalAmount: formdata.TotalPoAmount,
+            TotalAmount: formdata.TotalAmount,
             TotalPoAmount: formdata.TotalPoAmount,
             PoHeaderId: formdata.PoHeaderId,
             GRNHeaderId: formdata.GRNHeaderId,
             InvoiceNumber: formdata.InvoiceNumber,
             InvoiceAmount: formdata.InvoiceAmount,
-
+            TaxAmount1: formdata.TaxAmount,
             InvoiceDateString: formdata.InvoiceDateString
               ? dayjs(formdata.InvoiceDateString, "DD-MM-YYYY")
               : null,
@@ -186,7 +207,7 @@ const CreateGRNAgainstPO = () => {
 
           const batch = editeddata.BatchDetails.map((item, index) => ({
             ...item,
-            key: index + 1,
+            key: uuidv4(),
           }));
           setdataBatchModal(batch);
           // setCounter(editeddata.BatchDetails.length + 1);
@@ -274,6 +295,7 @@ const CreateGRNAgainstPO = () => {
         TotalAmount: totalAmount,
         TotalPoAmount: totalAmount,
       });
+      setPoAmount(totalAmount)
     }
     setData(newData);
   };
@@ -285,9 +307,9 @@ const CreateGRNAgainstPO = () => {
     const postData = {
       Supplier: va.SupplierId,
       ReceivingStore: va.StoreId,
-      POStatus: values.POStatus ? values.POStatus : "",
-      FromDate: values.PODateFrom ? values.PODateFrom.format("DD-MM-YYYY") : "",
-      ToDate: values.PODateTo ? values.PODateTo.format("DD-MM-YYYY") : "",
+      POStatus: values.POStatus ? values.POStatus : "ALL",
+      FromDate: fromDate.format("DD-MM-YYYY"),
+      ToDate: toDate.format("DD-MM-YYYY")
     };
     try {
       customAxios
@@ -323,13 +345,11 @@ const CreateGRNAgainstPO = () => {
   };
 
   const handlePoNumber = (record) => {
-    debugger
     setLoading(true);
-
     form1.resetFields();
     form3.resetFields();
     setBatchRecord([]);
-    setdataBatchModal([]);
+    // setdataBatchModal([]);
     setData([]);
 
     console.log("olddataproduct", data);
@@ -347,11 +367,14 @@ const CreateGRNAgainstPO = () => {
           const apiData = response.data.data;
           const products = apiData.ProductDetails.map((item, index) => ({
             ...item,
-            key: index + 1,
+            key: uuidv4(),
+            // TaxAmount1: item.TaxAmount1 + item.TaxAmount2
           }));
           setData(products);
+          // const totalTaxAmount1 = products.reduce((sum, item) => sum + (item.TaxAmount1 || 0), 0);
+          // setTax(totalTaxAmount1);
           const formdata = apiData.POProducts;
-          setPoAmount(formdata.PoTotalAmount)
+          // setPoAmount(formdata.PoTotalAmount)
           form1.setFieldsValue({
             SupplierId: record.SupplierId,
             StoreId: formdata.ProcurementStoreId,
@@ -532,7 +555,7 @@ const CreateGRNAgainstPO = () => {
             },
           ]}
         >
-          <InputNumber min={0} disabled />
+          <InputNumber min={0} disabled precision={4} />
         </Form.Item>
       ),
     },
@@ -545,20 +568,20 @@ const CreateGRNAgainstPO = () => {
           name={[record.key, "DiscountRate"]}
           initialValue={record.DiscountRate}
         >
-          <InputNumber min={0} disabled />
+          <InputNumber min={0} disabled precision={4} />
         </Form.Item>
       ),
     },
     {
       title: "Discount Amount",
-      dataIndex: "DiscountAmont",
-      key: "DiscountAmont",
+      dataIndex: "DiscountAmount",
+      key: "DiscountAmount",
       render: (text, record) => (
         <Form.Item
-          name={[record.key, "DiscountAmont"]}
-          initialValue={record.DiscountAmont}
+          name={[record.key, "DiscountAmount"]}
+          initialValue={record.DiscountAmount}
         >
-          <InputNumber disabled />
+          <InputNumber disabled precision={4} />
         </Form.Item>
       ),
     },
@@ -597,7 +620,7 @@ const CreateGRNAgainstPO = () => {
           name={[record.key, "LineAmount"]}
           initialValue={record.LineAmount}
         >
-          <InputNumber disabled />
+          <InputNumber disabled precision={4} />
         </Form.Item>
       ),
     },
@@ -606,21 +629,21 @@ const CreateGRNAgainstPO = () => {
       dataIndex: "TaxAmount1",
       key: "TaxAmount1",
       render: (text, record) => (
-        <Form.Item name={[record.key, "TaxAmount1"]}>
-          <InputNumber disabled />
+        <Form.Item name={[record.key, "TaxAmount1"]} initialValue={record.TaxAmount1}>
+          <InputNumber disabled precision={4} />
         </Form.Item>
       ),
     },
     {
       title: "Total Amount",
-      dataIndex: "LineAmount",
-      key: "LineAmount",
+      dataIndex: "TotalAmount",
+      key: "TotalAmount",
       render: (text, record) => (
         <Form.Item
-          name={[record.key, "LineAmount"]}
-          initialValue={record.LineAmount}
+          name={[record.key, "TotalAmount"]}
+          initialValue={record.TotalAmount}
         >
-          <InputNumber disabled />
+          <InputNumber disabled precision={4} />
         </Form.Item>
       ),
     },
@@ -704,8 +727,8 @@ const CreateGRNAgainstPO = () => {
 
   const Searchmodal = (value, record) => {
     setData([]);
-    setdataBatchModal([]);
-    //setdataBatchModal(initialModelDataSource);
+    // setdataBatchModal([]);
+    // setdataBatchModal(initialModelDataSource);
     const fieldsToValidate = ["SupplierId", "StoreId"];
     form1
       .validateFields(fieldsToValidate)
@@ -724,12 +747,12 @@ const CreateGRNAgainstPO = () => {
           setSelectedSupplier(selectedOptionStore.LongName);
           setSelectedStore(selectedOptionSupplier.LongName);
         }
+        form2.submit();
         setIsModalOpen(true);
       })
       .catch((error) => {
         console.log("Validation error:", error);
       });
-    form2.submit();
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -763,7 +786,7 @@ const CreateGRNAgainstPO = () => {
           if (
             values[key].Quantity ||
             values[key].EXPDateString ||
-            values[key].mrp
+            values[key].MRP
           ) {
             return {
               ...item,
@@ -800,6 +823,10 @@ const CreateGRNAgainstPO = () => {
               MRP: values[key].MRP,
               StockLocator: 0,
               PoLineId: batchRecord.PoLineId,
+              TaxType1: values[key].TaxType1,
+              TaxType2: values[key].TaxType2,
+              TaxAmount1: values[key].TaxAmount1,
+              TaxAmount2: values[key].TaxAmount2
             };
           }
           return item;
@@ -807,6 +834,31 @@ const CreateGRNAgainstPO = () => {
         return item;
       });
       setdataBatchModal(updatedBatch);
+
+      // Update Product Line
+      const form3d = form3.getFieldsValue()
+      const form3do = Object.values(form3d)
+      const totalTaxAmount1 = form3do.reduce((sum, item) => sum + (item.TaxAmount1 + item.TaxAmount2 || 0), 0);
+
+      const newdata = data.map((item => {
+        if (item.ProductId === batchRecord.ProductId) {
+          return {
+            ...item,
+            TaxAmount1: totalTaxAmount1,
+            LineAmount: item.TotalAmount - totalTaxAmount1
+          }
+        }
+        return item
+      }))
+
+      form1.setFieldsValue({ [batchRecord.key]: { LineAmount: poAmount - totalTaxAmount1 } })
+      form1.setFieldsValue({ 'TotalAmount': poAmount - totalTaxAmount1 })
+      form1.setFieldsValue({ 'TaxAmount': totalTaxAmount1 })
+      form1.setFieldsValue({ [batchRecord.key]: { TaxAmount1: totalTaxAmount1 } })
+
+      setData(newdata)
+      setTax(totalTaxAmount1)
+      setAmount(poAmount - totalTaxAmount1)
       setIsBatchModalOpen(false);
     } else {
       message.warning("Quantity shold be equal to Recieved Quantity");
@@ -995,31 +1047,31 @@ const CreateGRNAgainstPO = () => {
       return false;
     }
     const products = [];
-    for (let i = 0; i <= data.length; i++) {
+    data.forEach((i) => {
       if (values.TotalPoAmount == values.InvoiceAmount) {
-        if (values[i] !== undefined) {
+        if (values[i.key] !== undefined) {
           if (
-            values[i].ReceivedQty + values[i].BonusQuantity <=
-            values[i].PoBalanceQty
+            values[i.key].ReceivedQty + values[i.key].BonusQuantity <=
+            values[i.key].PoBalanceQty
           ) {
             const product = {
-              ProductId: values[i].ProductId,
-              UomId: values[i].UomId,
-              ReceivedQty: values[i].ReceivedQty,
-              PoQuantity: values[i].PoBalanceQty,
-              BonusQuantity: values[i].BonusQuantity || 0,
-              PoLineId: values[i].PoLineId || 0,
-              GrnLineId: values[i].GrnLineId || 0,
-              PoRate: values[i].PoRate,
-              DiscountRate: values[i].DiscountRate || 0,
-              DiscountAmount: values[i].DiscountAmount ?? 0,
-              LineAmount: values[i].LineAmount,
-              TaxAmount1: values[i].TaxAmount1 ?? 0,
-              TotalAmount: values[i].LineAmount,
-              Replaceable: values[i].Replaceable === true ? "Y" : "N",
+              ProductId: values[i.key].ProductId,
+              UomId: values[i.key].UomId,
+              ReceivedQty: values[i.key].ReceivedQty,
+              PoQuantity: values[i.key].PoBalanceQty,
+              BonusQuantity: values[i.key].BonusQuantity || 0,
+              PoLineId: values[i.key].PoLineId || 0,
+              GrnLineId: values[i.key].GrnLineId || 0,
+              PoRate: values[i.key].PoRate,
+              DiscountRate: values[i.key].DiscountRate || 0,
+              DiscountAmount: values[i.key].DiscountAmount ?? 0,
+              LineAmount: values[i.key].LineAmount,
+              TaxAmount1: values[i.key].TaxAmount1 ?? 0,
+              TotalAmount: values[i.key].TotalAmount,
+              Replaceable: values[i.key].Replaceable === true ? "Y" : "N",
               PoStatus:
-                values[i].ReceivedQty + values[i].BonusQuantity ==
-                  values[i].PoBalanceQty
+                values[i.key].ReceivedQty + values[i.key].BonusQuantity ==
+                  values[i.key].PoBalanceQty
                   ? "Completed"
                   : "Pending",
               ActiveFlag: true,
@@ -1034,7 +1086,7 @@ const CreateGRNAgainstPO = () => {
         message.warning("Invoice Amount Must be equals to Total Po Amount");
         return false;
       }
-    }
+    })
 
     const activeProducts = products.filter((product) => product.ActiveFlag);
 
@@ -1102,9 +1154,6 @@ const CreateGRNAgainstPO = () => {
       BatchDetails: GrnHeaderId === 0 ? filteredBatchwithactive : filteredBatch,
     };
 
-    console.log("input", postData);
-    //alert("successss call goes to api");
-
     const url = GrnHeaderId > 0 ? urlUpdateGRNAgainstPO : urlAddNewGRNAgainstPO;
     const response = await customAxios.post(url, postData, {
       headers: {
@@ -1143,7 +1192,7 @@ const CreateGRNAgainstPO = () => {
         TaxAmount1: 0,
         TaxType2: 0,
         TaxAmount2: 0,
-        Stocklocator: 0,
+        StockLocator: 0,
         StockLocatorName: "",
         ActiveFlag: true,
         DiscountRate: 0,
@@ -1158,7 +1207,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Bar Code",
       dataIndex: "BarCode",
-      key: uuidv4(),
+      key: 'BarCode',
       render: (_, record) => (
         <>
           <Form.Item
@@ -1191,7 +1240,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Batch Number",
       dataIndex: "BatchNo",
-      key: uuidv4(),
+      key: 'BatchNo',
       render: (text, record) => {
         return (
           <Form.Item
@@ -1215,8 +1264,8 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Quantity",
       dataIndex: "Quantity",
-      key: uuidv4(),
-      render: (text, record) => (
+      key: 'Quantity',
+      render: (text, record, index) => (
         <Form.Item
           name={[record.key, "Quantity"]}
           initialValue={record.Quantity}
@@ -1240,6 +1289,9 @@ const CreateGRNAgainstPO = () => {
           <InputNumber
             min={0}
             style={{ width: 70 }}
+            onChange={(value) => {
+              handleInputChangeModal({ target: { value } }, "Quantity", index, record);
+            }}
           // disabled={!!GrnHeaderId && record.GrnBatchId}
           />
         </Form.Item>
@@ -1248,8 +1300,8 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Bonus Qty",
       dataIndex: "BatchBonusQty",
-      key: uuidv4(),
-      render: (text, record) => (
+      key: 'BatchBonusQty',
+      render: (text, record, index) => (
         <Form.Item
           name={[record.key, "BatchBonusQty"]}
           initialValue={record.BatchBonusQty}
@@ -1260,14 +1312,16 @@ const CreateGRNAgainstPO = () => {
             },
           ]}
         >
-          <InputNumber min={0} style={{ width: 70 }} />
+          <InputNumber min={0} style={{ width: 70 }} onChange={(value) => {
+            handleInputChangeModal({ target: { value } }, "BatchBonusQty", index, record);
+          }} />
         </Form.Item>
       ),
     },
     {
       title: "Uom",
       dataIndex: "UomId",
-      key: uuidv4(),
+      key: 'UomId',
       render: (text, record) => (
         <Form.Item name={[record.key, "UomId"]}>
           <Tag color="#7C00FE">{batchRecord.ShortName}</Tag>
@@ -1277,7 +1331,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "MFG Date",
       dataIndex: "MFGDateString",
-      key: uuidv4(),
+      key: 'MFGDateString',
       render: (text, record) => (
         <Form.Item
           name={[record.key, "MFGDateString"]}
@@ -1303,7 +1357,7 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Exp Date",
       dataIndex: "EXPDateString",
-      key: uuidv4(),
+      key: 'EXPDateString',
       width: 150,
       render: (text, record) => (
         <Form.Item
@@ -1349,13 +1403,13 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Rate",
       dataIndex: "Rate",
-      key: uuidv4(),
+      key: 'Rate',
       render: (text, record) => (
         <Form.Item
           name={[record.key, "Rate"]}
           initialValue={batchRecord.PoRate}
         >
-          <InputNumber
+          <InputNumber precision={4}
             min={0}
             style={{ width: 70 }}
             defaultValue={batchRecord.PoRate}
@@ -1367,8 +1421,8 @@ const CreateGRNAgainstPO = () => {
     {
       title: "MRP",
       dataIndex: "MRP",
-      key: uuidv4(),
-      render: (text, record) => (
+      key: 'MRP',
+      render: (text, record, index) => (
         <Form.Item
           name={[record.key, "MRP"]}
           initialValue={record.MRP}
@@ -1399,6 +1453,9 @@ const CreateGRNAgainstPO = () => {
             style={{ width: 70 }}
             allowClear
             disabled={!!GrnHeaderId && record.GrnBatchId}
+            onChange={(value) => {
+              handleInputChangeModal({ target: { value } }, "MRP", index, record);
+            }}
           />
         </Form.Item>
       ),
@@ -1406,20 +1463,20 @@ const CreateGRNAgainstPO = () => {
     {
       title: "Discount",
       dataIndex: "DiscountRate",
-      key: uuidv4(),
+      key: 'DiscountRate',
       render: (text, record) => (
         <Form.Item
           name={[record.key, "DiscountRate"]}
           initialValue={batchRecord.DiscountRate}
         >
-          <InputNumber min={0} style={{ width: 70 }} disabled />
+          <InputNumber min={0} style={{ width: 70 }} precision={2} disabled />
         </Form.Item>
       ),
     },
     {
       title: "Discount Amt",
       dataIndex: "DiscountAmount",
-      key: uuidv4(),
+      key: 'DiscountAmount',
       render: (text, record) => (
         <Form.Item
           name={[record.key, "DiscountAmount"]}
@@ -1432,47 +1489,59 @@ const CreateGRNAgainstPO = () => {
     {
       title: "CGST",
       dataIndex: "TaxType1",
-      key: uuidv4(),
+      key: 'TaxType1',
       render: (text, record) => (
-        <Form.Item name={[record.key, "TaxType1"]}>
-          <Select disabled={!!GrnHeaderId} style={{ width: 70 }}></Select>
+        <Form.Item name={[record.key, "TaxType1"]} initialValue={batchRecord.TaxType2}>
+          <Select style={{ width: 70 }} disabled>
+            {DropDown.TaxType.map((option) => (
+              <Option key={option.TaxType1} value={option.TaxType1}>
+                {option.TaxTypeName}
+              </Option>
+            ))}
+          </Select>
         </Form.Item>
       ),
     },
     {
       title: "CGST Amount",
       dataIndex: "TaxAmount1",
-      key: uuidv4(),
+      key: 'TaxAmount1',
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxAmount1"]}>
-          <InputNumber min={0} style={{ width: 70 }} disabled />
+          <InputNumber min={0} style={{ width: 90 }} precision={4} disabled />
         </Form.Item>
       ),
     },
     {
       title: "SGST",
       dataIndex: "TaxType2",
-      key: uuidv4(),
+      key: 'TaxType2',
       render: (text, record) => (
-        <Form.Item name={[record.key, "TaxType2"]}>
-          <Select disabled={!!GrnHeaderId} style={{ width: 70 }}></Select>
+        <Form.Item name={[record.key, "TaxType2"]} initialValue={batchRecord.TaxType2}>
+          <Select style={{ width: 70 }} disabled>
+            {DropDown.TaxType.map((option) => (
+              <Option key={option.TaxType1} value={option.TaxType1}>
+                {option.TaxTypeName}
+              </Option>
+            ))}
+          </Select>
         </Form.Item>
       ),
     },
     {
       title: "SGST Amount",
       dataIndex: "TaxAmount2",
-      key: uuidv4(),
+      key: 'TaxAmount2',
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxAmount2"]}>
-          <InputNumber min={0} style={{ width: 70 }} disabled />
+          <InputNumber min={0} style={{ width: 90 }} precision={4} disabled />
         </Form.Item>
       ),
     },
     {
       title: "Stock Locator",
       dataIndex: "StockLocator",
-      key: uuidv4(),
+      key: 'StockLocator',
       render: (text, record) => (
         <Form.Item name={[record.key, "StockLocator"]} initialValue={"Manual"}>
           <Input style={{ width: 70 }} disabled={!!GrnHeaderId} />
@@ -1500,6 +1569,145 @@ const CreateGRNAgainstPO = () => {
       ),
     },
   ];
+
+  const handleInputChangeModal = async (e, column, index, record) => {
+    let newData;
+    const form3data = form3.getFieldsValue()
+    let newRecord = await CalculateTax(form3data, record)
+
+    if (["Quantity", "BatchBonusQty", "MRP"].includes(column)) {
+      newData = newRecord.map((item) => {
+        if (item.key === record.key) {
+          const updatedItem = { ...item, [column]: e.target.value };
+
+          const Quantity = column === "Quantity" ? e.target.value : item.Quantity;
+          const bonusQty = column === "BatchBonusQty" ? e.target.value : item.BatchBonusQty;
+          const mrp = column === "MRP" ? e.target.value : item.MRP;
+          const taxAmount1 = column ? item.TaxAmount1 : record.TaxAmount1;
+          const taxAmount2 = column ? item.TaxAmount2 : record.TaxAmount2;
+
+          let discountAmount = 0;
+          let amount = 0;
+          if (bonusQty != null && Quantity != null) {
+            const discount = mrp != null ? mrp : 0;
+            discountAmount = (bonusQty * Quantity * discount) / 100;
+            amount = bonusQty * Quantity - discountAmount;
+          }
+
+          updatedItem.TaxAmount1 = taxAmount1;
+          updatedItem.TaxAmount2 = taxAmount2
+
+          form1.setFieldsValue({ [record.key]: { DiscountAmount: taxAmount1 } });
+          form1.setFieldsValue({ [record.key]: { LineAmount: taxAmount2 } });
+
+          return updatedItem;
+        }
+        return item;
+      });
+      setdataBatchModal(newData)
+    }
+
+    // if (["PoQuantity", "PoRate", "DiscountRate", 'TaxType1', 'TaxType2'].includes(column)) {
+    //   const totalAmount = calculateTotalAmount(newData);
+    //   form1.setFieldsValue({
+    //     TotalAmount: totalAmount.TotalAmount,
+    //     TotalPoAmount: totalAmount.LineAmount,
+    //     TaxAmount1: totalAmount.GstTax,
+    //   });
+    //   setPoAmount(totalAmount.LineAmount)
+    //   setAmount(totalAmount.TotalAmount)
+    //   setGSTTax(totalAmount.GstTax)
+    // }
+    // setData(newData);
+  };
+
+  async function CalculateTax(data, record) {
+    const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${data[record.key].TaxType1}`);
+    const taxDetails = response.data.data[0];
+
+    let Quantity = parseInt(data[record.key].Quantity || 0) + parseInt(data[record.key].BatchBonusQty || 0);
+    let amount = Quantity * (data[record.key].Rate || 0) - (data[record.key].DiscountAmount || 0);
+    let discountAmount = data[record.key].DiscountAmount
+    let mrp = data[record.key].MRP
+    let taxAmount = 0;
+    let temp = 0;
+    if (taxDetails.IncludeBonusQuantity) {
+      switch (taxDetails.ChargeType) {
+        case "Percentage":
+          if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
+            if (taxDetails.AdditionalChargeIndicator == "Gross") {
+              taxAmount = (parseInt(amount) + parseInt(discountAmount)) * taxDetails.ChargeValue / 100;
+            } else if (taxDetails.AdditionalChargeIndicator == "Net") {
+              taxAmount = amount * taxDetails.ChargeValue / 100;
+            } else {
+              taxAmount = (parseInt(mrp) * parseInt(Quantity)) * taxDetails.ChargeValue / 100;
+            }
+          } else {
+            if (taxDetails.AdditionalChargeIndicator == "Gross") {
+              taxAmount = (parseInt(amount) + parseInt(discountAmount)) - ((parseInt(amount) + parseInt(discountAmount)) / (1 + taxDetails.ChargeValue / 100));
+              temp = 1;
+            } else if (taxDetails.AdditionalChargeIndicator == "Net") {
+              taxAmount = amount - (amount / (1 + taxDetails.ChargeValue / 100));
+              temp = 1;
+            } else {
+              taxAmount = (mrp * Quantity) - ((mrp * POQty) / (1 + taxDetails.ChargeValue / 100));
+              temp = 1;
+            }
+          }
+          break;
+
+        case "Amount":
+          if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
+            if (taxDetails.AdditionalChargeIndicator == "Gross") {
+              taxAmount = (parseInt(amount) + parseInt(record.DiscountAmount)) + parseInt(taxDetails.ChargeValue);
+            } else if (taxDetails.AdditionalChargeIndicator == "Net") {
+              taxAmount = parseInt(amount) + parseInt(taxDetails.ChargeValue);
+            } else {
+              taxAmount = (mrp * Quantity) + parseInt(taxDetails.ChargeValue);
+            }
+          } else {
+            if (taxDetails.AdditionalChargeIndicator == "Gross") {
+              taxAmount = (parseInt(amount) + parseInt(discountAmount)) - taxDetails.ChargeValue;
+              temp = 1;
+            } else if (taxDetails.AdditionalChargeIndicator == "Net") {
+              taxAmount = amount - taxDetails.ChargeValue;
+              temp = 1;
+            } else {
+              taxAmount = parseInt(mrp * Quantity) - taxDetails.ChargeValue;
+              temp = 1;
+            }
+          }
+          break;
+
+        default:
+          break;
+      }
+
+      if (temp == 1) {
+        form3.setFieldsValue({ [record.key]: { TaxAmount1: parseFloat(taxAmount) } })
+        form3.setFieldsValue({ [record.key]: { TaxAmount2: parseFloat(taxAmount) } })
+      }
+      else {
+        form3.setFieldsValue({ [record.key]: { TaxAmount1: parseFloat(taxAmount) } })
+        form3.setFieldsValue({ [record.key]: { TaxAmount2: parseFloat(taxAmount) } })
+      }
+    }
+
+    const newData = dataBatchModal.map((item) => {
+      if (record.key == item.key) {
+        return {
+          ...item,
+          TaxType1: data[record.key].TaxType1,
+          TaxType2: data[record.key].TaxType2,
+          TaxAmount1: taxAmount,
+          TaxAmount2: taxAmount,
+        }
+      }
+      return item
+    })
+    setdataBatchModal(newData)
+    return newData
+  }
 
   const BatchDelete = (record) => {
     const newData = dataBatchModal.map((item) => {
@@ -1816,7 +2024,7 @@ const CreateGRNAgainstPO = () => {
                   <span>Amount : </span>
                 </Col>
                 <Col span={12}>
-                  <InputNumber style={{ width: "100%" }} min={0} value={poAmount} disabled />
+                  <InputNumber style={{ width: "100%" }} min={0} value={Amount} precision={4} disabled />
                 </Col>
               </Row>
             </Form.Item>
@@ -1829,7 +2037,7 @@ const CreateGRNAgainstPO = () => {
                   <span>Tax : </span>
                 </Col>
                 <Col span={12}>
-                  <InputNumber style={{ width: "100%" }} min={0} disabled />
+                  <InputNumber style={{ width: "100%" }} min={0} disabled value={tax} precision={4} />
                 </Col>
               </Row>
             </Form.Item>
@@ -1852,42 +2060,12 @@ const CreateGRNAgainstPO = () => {
                   <span>Total PO Amount :</span>
                 </Col>
                 <Col span={12}>
-                  <InputNumber style={{ width: "93%" }} min={0} disabled value={poAmount} />
+                  <InputNumber style={{ width: "93%" }} min={0} disabled precision={4} value={poAmount} />
                 </Col>
               </Row>
             </Form.Item>
           </ColWithEightSpan>
         </Row>
-        {/* <Col style={{ float: "right" }}>
-          <Form.Item
-            label="Amount"
-            name="TotalAmount"
-            style={{ marginRight: "16px", width: 100 }}
-          >
-            <InputNumber min={0} disabled />
-          </Form.Item>
-          <Form.Item
-            label="Tax"
-            name="TaxAmount"
-            style={{ marginRight: "16px", width: 100 }}
-          >
-            <InputNumber min={0} disabled />
-          </Form.Item>
-          <Form.Item
-            label="Round Off"
-            name="RoundOff"
-            style={{ marginRight: "16px", width: 100 }}
-          >
-            <InputNumber min={0} disabled />
-          </Form.Item>
-          <Form.Item
-            label="Total PO Amount"
-            name="TotalPoAmount"
-            style={{ width: 150 }}
-          >
-            <InputNumber min={0} disabled />
-          </Form.Item>
-        </Col> */}
       </Form>
       <Modal
         title="Search for PO"
@@ -1908,8 +2086,8 @@ const CreateGRNAgainstPO = () => {
           form={form2}
           initialValues={{
             POStatus: "ALL",
-            PODateFrom: dayjs().subtract(1, "day"),
-            PODateTo: dayjs(),
+            PODateFrom: fromDate,
+            PODateTo: toDate
           }}
         >
           <Row gutter={16}>
@@ -1952,7 +2130,13 @@ const CreateGRNAgainstPO = () => {
                     },
                   ]}
                 >
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker
+                    value={fromDate}
+                    onChange={(date) => setFromDate(date)}
+                    disabledDate={disableFromDate}
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                  />
                 </Form.Item>
               </>
             </ColWithEightSpan>
@@ -1967,7 +2151,13 @@ const CreateGRNAgainstPO = () => {
                   },
                 ]}
               >
-                <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                <DatePicker
+                  value={toDate}
+                  onChange={(date) => setToDate(date)}
+                  disabledDate={disableToDate}
+                  style={{ width: "100%" }}
+                  format="DD-MM-YYYY"
+                />
               </Form.Item>
             </ColWithEightSpan>
           </Row>
@@ -2036,7 +2226,7 @@ const CreateGRNAgainstPO = () => {
             </Col>
           </Row>
           <Spin spinning={loading}>
-            <Table
+            <Table scroll={{ x: 900 }}
               columns={Batchmodal}
               dataSource={
                 batchRecord.ProductId
@@ -2046,7 +2236,7 @@ const CreateGRNAgainstPO = () => {
                         item.ActiveFlag) ||
                       (item.ProductId === "" && item.ActiveFlag)
                   )
-                  : initialModelDataSource
+                  : []
               }
             />
           </Spin>

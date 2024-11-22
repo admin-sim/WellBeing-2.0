@@ -45,30 +45,30 @@ import DirectGRN from "./pages/Inventory/DirectGRN/index.jsx";
 import CreateDirectGRN from "./pages/Inventory/DirectGRN/CreateDirectGRN.jsx";
 import GRNAgainstPO from "./pages/Inventory/GRNAgainstPO/index.jsx";
 import CreateGRNAgainstPO from "./pages/Inventory/GRNAgainstPO/CreateGRNAgainstPO.jsx";
-import InventoryIndent from "./pages/Inventory/Indent";
-import CreateIndent from "./pages/Inventory/CreateIndent";
+import Indent from "./pages/Inventory/Indent";
+import CreateIndent from "./pages/Inventory/Indent/CreateIndent";
 import PatientIndent from "./pages/Inventory/PatientIndent";
-import CreatePatientIndent from "./pages/Inventory/CreatePatientIndent";
+import CreatePatientIndent from "./pages/Inventory/PatientIndent/CreatePatientIndent";
 import IndentIssue from "./pages/Inventory/IndentIssue";
 import UrgentIssue from "./pages/Inventory/UrgentIssue";
-import CreateUrgentIssue from "./pages/Inventory/CreateUrgentIssue";
+import CreateUrgentIssue from "./pages/Inventory/UrgentIssue/CreateUrgentIssue";
 import PatientIssue from "./pages/Inventory/PatientIssue";
 import PatientConsumption from "./pages/Inventory/PatientConsumption";
-import CreatePatientConsumption from "./pages/Inventory/CreatePatientConsumption";
+import CreatePatientConsumption from "./pages/Inventory/PatientConsumption/CreatePatientConsumption";
 import ItemReceipt from "./pages/Inventory/ItemReceipt";
-import StoreConsumption from "./pages/Inventory/StoreConsumption";
-import CreateStoreConsumption from "./pages/Inventory/CreateStoreConsumption";
+import StoreConsumption from "./pages/Inventory/StoreConsumption/index.jsx";
+import CreateStoreConsumption from "./pages/Inventory/StoreConsumption/CreateStoreConsumption.jsx";
 import OpeningStock from "./pages/Inventory/OpeningStock";
-import CreateOpeningStock from "./pages/Inventory/CreateOpeningStock";
+import CreateOpeningStock from "./pages/Inventory/OpeningStock/CreateOpeningStock.jsx";
 import VendorReturn from "./pages/Inventory/VendorReturn";
-import CreateVendorReturn from "./pages/Inventory/CreateVendorReturn";
+import CreateVendorReturn from "./pages/Inventory/VendorReturn/CreateVendorReturn";
 import StoreReturn from "./pages/Inventory/StoreReturn";
-import CreateStoreReturn from "./pages/Inventory/CreateStoreReturn";
+import CreateStoreReturn from "./pages/Inventory/StoreReturn/CreateStoreReturn";
 import AcknowledgeReturn from "./pages/Inventory/AcknowledgeReturn";
-import CreateAcknowledageReturn from "./pages/Inventory/CreateAcknowledageReturn";
+import CreateAcknowledageReturn from "./pages/Inventory/AcknowledgeReturn/CreateAcknowledageReturn";
 import MedicalReturn from "./pages/Inventory/MedicalReturn";
-import StockExpiry from "./pages/Inventory/StockExpiry";
-import UpdateIndentIssue from "./pages/Inventory/UpdateIndentIssue";
+import StockExpiry from "./pages/Inventory/StockExpiry/index.jsx";
+import UpdateIndentIssue from "./pages/Inventory/IndentIssue/UpdateIndentIssue";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import ManageAppointment from "./pages/ResourceScheduling/ManageAppointment/index.jsx";
 import ProviderAppointment from "./pages/ResourceScheduling/ProviderAppointment";
@@ -106,8 +106,8 @@ import AutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/AutoCha
 import CreateAutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAutoCharge";
 import BillAggrement from "./pages/Masters/GeneralMasters/AccountManagement/BillAggrement";
 import CreateBillAgrement from "./pages/Masters/GeneralMasters/AccountManagement/CreateBillAgrement";
-import UpdateItemReceipt from "./pages/Inventory/UpdateItemReceipt";
-import UpdatePatientIssue from "./pages/Inventory/UpdatePatientIssue";
+import UpdateItemReceipt from "./pages/Inventory/ItemReceipt/UpdateItemReceipt.jsx";
+import UpdatePatientIssue from "./pages/Inventory/PatientIssue/UpdatePatientIssue";
 import ShowCreateEditDefinition from "./pages/Masters/InventoryManagement/ProductDefinition/ShowCreateEditDefinition";
 import Templates from "./pages/Masters/GeneralMasters/TemplateMaster";
 import ShowAddNewTemplate from "./pages/Masters/GeneralMasters/TemplateMaster/ShowAddNewTemplate";
@@ -334,7 +334,7 @@ function App() {
               path="/Indent"
               element={
                 <ProtectedRoute>
-                  <InventoryIndent />
+                  <Indent />
                 </ProtectedRoute>
               }
             />

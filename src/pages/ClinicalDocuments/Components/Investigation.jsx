@@ -367,8 +367,7 @@ const OrderDetails = (Patient) => {
             <Button size="large" type="link" icon={<PlusCircleOutlined />} htmlType="submit" />
           </Col>
         </Row>
-        {/* hidden={Patient.Patient.patientData?.PatientType == 22 ? true : false} */}
-        <Row gutter={32}>
+        <Row gutter={32} hidden={Patient.Patient.patientData?.PatientType == 22 ? true : false}>
           <Col>
             <Button type="primary" size="middle" onClick={handleSendtoLab} loading={Patient.loading}>
               Send To Lab
