@@ -295,6 +295,7 @@ const CreateGRNAgainstPO = () => {
         TotalAmount: totalAmount,
         TotalPoAmount: totalAmount,
       });
+      setAmount(totalAmount)
       setPoAmount(totalAmount)
     }
     setData(newData);
@@ -369,6 +370,9 @@ const CreateGRNAgainstPO = () => {
             ...item,
             key: uuidv4(),
             // TaxAmount1: item.TaxAmount1 + item.TaxAmount2
+            LineAmount: 0,
+            TaxAmount1: 0,
+            TotalAmount: 0
           }));
           setData(products);
           // const totalTaxAmount1 = products.reduce((sum, item) => sum + (item.TaxAmount1 || 0), 0);

@@ -607,8 +607,8 @@ const CreatePurchaseOrder = () => {
         TotalPoAmount: totalAmount.LineAmount,
         TaxAmount1: totalAmount.GstTax,
       });
-      setPoAmount(totalAmount.LineAmount)
-      setAmount(totalAmount.TotalAmount)
+      setPoAmount(totalAmount.TotalAmount)
+      setAmount(totalAmount.LineAmount)
       setGSTTax(totalAmount.GstTax)
     }
     setData(newData);
@@ -652,8 +652,8 @@ const CreatePurchaseOrder = () => {
       TotalPoAmount: totalAmount.LineAmount,
       TaxAmount1: totalAmount.GstTax,
     });
-    setAmount(totalAmount.TotalAmount)
-    setPoAmount(totalAmount.LineAmount)
+    setAmount(totalAmount.LineAmount)
+    setPoAmount(totalAmount.TotalAmount)
     setGSTTax(totalAmount.GstTax)
   };
 
