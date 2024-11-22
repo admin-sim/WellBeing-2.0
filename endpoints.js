@@ -519,4 +519,7 @@ export const urlUpdateFacilityDepartmentServiceLocation = `${baseURL}/api/Facili
 export const urlUpdateFacilityDepartmentPatientType = `${baseURL}/api/FacilityDepartmentServiceLocation/UpdateFacilityDepartmentPatientType`;
 export const urlUpdateFacilityDepartmentProvider = `${baseURL}/api/FacilityDepartmentServiceLocation/UpdateFacilityDepartmentProvider`;
 export const urlCreatePharmacyReFund = `${baseURL}/api/Refund/CreatePharmacyReFund`;
+export const urlStoreReturnShowBatch = `${baseURL}/api/StoreReturn/StoreReturnShowBatch`;
+export const urlShowReceiptList = `${baseURL}/api/StoreReturn/ShowReceiptList`;
+
 
