@@ -39,6 +39,9 @@ function CreateEditDepartmentModal({
           layout="vertical"
           form={form}
           onFinish={handleSubmit}
+          initialValues={{
+            ActiveFlag: "Active", // Default value for the "ActiveFlag" field
+          }}
         >
           <Row gutter={32}>
             <Col span={24}>
@@ -65,8 +68,8 @@ function CreateEditDepartmentModal({
               <Form.Item name="DepartmentId" hidden></Form.Item>
             </Col>
             <Col span={24}>
-              <Form.Item name="ActiveFlag" label="Status">
-                <Select>
+              <Form.Item name="ActiveFlag" label="Status" >
+                <Select >
                   <Select.Option key="Active" value="Active"></Select.Option>
                   <Select.Option key="Hidden" value="Hidden"></Select.Option>
                 </Select>

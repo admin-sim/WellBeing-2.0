@@ -74,13 +74,7 @@ const NewPatient = () => {
   const [filteredCities, setFilteredCities] = useState([]);
   const [filteredAreas, setFilteredAreas] = useState([]);
 
-  // const [departments, setDepartments] = useState([]);
-  // const [providers, setProviders] = useState([]);
-  // const [serviceLocations, setServiceLocations] = useState([]);
-  // const [selectedPatientType, setSelectedPatientType] = useState("");
-  // const [selectedDepartment, setSelectedDepartment] = useState("");
-  // const [selectedProvider, setSelectedProvider] = useState("");
-  // const [selectedServiceLocation, setSelectedServiceLocation] = useState("");
+
   const [loadings, setLoadings] = useState(false);
   const [isloading, setLoading] = useState(true);
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -128,9 +122,10 @@ const NewPatient = () => {
         setFilteredStates(response.data.data.States);
         setFilteredCities(response.data.data.Places);
         setFilteredAreas(response.data.data.Areas);
+        const dateOfBirth = dayjs(patientData.DateOfBirthstring, "DD-MM-YYYY");
         setDob(patientData.DateOfBirthstring);
         handleDateChange(
-          dayjs(patientData.DateOfBirthstring),
+          dateOfBirth,
           patientData.DateOfBirthstring
         );
         setLoading(false);
@@ -462,6 +457,7 @@ const NewPatient = () => {
 
     values.dob = selecteddob;
     const patient = {
+      UhId:patientDetails.UhId,
       PatientId: patientDetails.PatientId,
       PatientTitle: values.title === undefined ? null : values.title,
       PatientFirstName:
@@ -566,6 +562,7 @@ const NewPatient = () => {
         values.birthIdentification2 === ""
           ? null
           : values.birthIdentification2,
+          ActiveFlag:patientDetails.ActiveFlag
     };
 
     const postData = {

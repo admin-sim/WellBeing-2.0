@@ -15,6 +15,7 @@ import Login from "./pages/Login";
 import Patient from "./pages/Patient";
 import NewPatient from "./pages/Patient/NewPatient";
 import NewVisit from "./pages/Patient/NewVisit";
+import AppointmentSearch from "./pages/Patient/AppointmentSearch/index.jsx";
 import PatientEdit from "./pages/Patient/EditPatientReg";
 import LabDashboard from "./pages/Laboratory/LabDashboard";
 import SampleCollection from "./pages/Laboratory/LabDashboard/SampleCollection";
@@ -222,6 +223,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <NewVisit />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="patient/AppointmentSearch"
+              element={
+                <ProtectedRoute>
+                  <AppointmentSearch />
                 </ProtectedRoute>
               }
             />

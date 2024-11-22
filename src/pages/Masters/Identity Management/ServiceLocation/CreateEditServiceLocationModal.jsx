@@ -6,12 +6,16 @@ function CreateEditServiceLocationModal({
   handleClose,
   handleSubmit,
   record,
+  options,
 }) {
   const [form] = Form.useForm();
 
   useEffect(() => {
     if (record) {
-      form.setFieldsValue(record);
+      form.setFieldsValue({
+        ...record,
+        ActiveFlag: record.ActiveFlag ? "Active" : "Hidden", // Set "Active" or "Hidden" based on ActiveFlag boolean
+      });
     } else {
       form.resetFields();
     }
@@ -36,18 +40,34 @@ function CreateEditServiceLocationModal({
           layout="vertical"
           form={form}
           onFinish={handleSubmit}
+          initialValues={{
+            ActiveFlag: "Active", // Default value for the "ActiveFlag" field
+          }}
         >
           <Row gutter={32}>
             <Col span={24}>
               <Form.Item
                 style={{ marginBottom: "0.5rem" }}
-                name="ServiceLocationType"
+                name="ServiceLocationTypeId"
                 label="Service Location Type"
                 rules={[
-                  { required: true, message: "Please enter Department Code " },
+                  { required: true, message: "Please enter ServiceLocationType " },
                 ]}
               >
-                <Select />
+                <Select
+                  placeholder="Select ServiceLocationType "
+                  allowClear
+                 // loading={isloading}
+                >
+                  {options?.map((option) => (
+                    <Select.Option
+                      key={option.LookupID}
+                      value={option.LookupID}
+                    >
+                      {option.LookupDescription}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
             <Col span={24}>
@@ -61,6 +81,7 @@ function CreateEditServiceLocationModal({
               >
                 <Input />
               </Form.Item>
+              <Form.Item name="ServiceLocationId" hidden></Form.Item>
             </Col>
             <Col span={24}>
               <Form.Item
@@ -73,12 +94,11 @@ function CreateEditServiceLocationModal({
               </Form.Item>
             </Col>
             <Col span={24}>
-              <Form.Item
-                name="Status"
-                label="Status"
-                rules={[{ required: true, message: "Please select Status" }]}
-              >
-                <Select />
+            <Form.Item name="ActiveFlag" label="Status">
+                <Select >
+                  <Select.Option key="Active" value="Active"></Select.Option>
+                  <Select.Option key="Hidden" value="Hidden"></Select.Option>
+                </Select>
               </Form.Item>
             </Col>
           </Row>

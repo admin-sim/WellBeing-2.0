@@ -1,25 +1,61 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader/index.jsx";
 import CustomTable from "../../../../components/customTable/index.jsx";
 
 import { PlusCircleOutlined } from "@ant-design/icons";
 import CreateEditServiceLocationModal from "./CreateEditServiceLocationModal.jsx";
+import { urlDeleteSelectedServiceLocation, urlGetAllServiceLocation, urlSaveNewServiceLocation, urlUpdateServiceLocation } from "../../../../../endpoints.js";
+import customAxios from "../../../../components/customAxios/customAxios.jsx";
+import { message, notification } from "antd";
 
 function ServiceLocation() {
-  const [departmentModal, setDepartmentModal] = useState(false);
+  const [serviceLocationModel, setServiceLocationModel] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [currentRecord, setCurrentRecord] = useState(null);
+
+  const [departmentModal, setDepartmentModal] = useState(false);
+
+
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await customAxios.get(
+        `${urlGetAllServiceLocation}`
+      );
+
+      if (response.data != null) {
+     
+        setServiceLocationModel(
+          response.data.data.ServiceLocationModel.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          })
+        );
+        setLocations(
+          response.data.data.ServiceLocations.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          })
+        );
+      }
+    } catch (error) {
+    
+      console.error(error);
+    }
+  };
 
   const columns = [
     {
       title: "Sl No",
-      dataIndex: "SlNo",
-      key: "1",
+      dataIndex: "key",
       width: 80,
     },
     {
       title: "Service Location Name",
       dataIndex: "ServiceLocationName",
-      key: "2",
+   
       width: 200,
     },
     {
@@ -32,39 +68,14 @@ function ServiceLocation() {
     {
       title: "Service Location Type",
       dataIndex: "ServiceLocationType",
-      key: "4",
       width: 200,
     },
   ];
 
-  const tableData = [
-    {
-      SlNo: 1,
-      ServiceLocationName: "X-Ray",
-      ServiceLocationCode: "X-Ray",
-      ServiceLocationType: "Clinic",
-    },
-    {
-      SlNo: 2,
-      ServiceLocationName: "Radiology & Ultrasound Scan",
-      ServiceLocationCode: "RAD&U",
-      ServiceLocationType: "Ward",
-    },
-    {
-      SlNo: 3,
-      ServiceLocationName: "Laboratory",
-      ServiceLocationCode: "LAB",
-      ServiceLocationType: "Clinic",
-    },
-    {
-      SlNo: 4,
-      ServiceLocationName: "Antenatal Clinic(ANC)",
-      ServiceLocationCode: "ANC",
-      ServiceLocationType: "Clinic",
-    },
-  ];
+
 
   const handleEdit = (record) => {
+    debugger;
     setCurrentRecord(record);
     setDepartmentModal(true);
   };
@@ -75,11 +86,47 @@ function ServiceLocation() {
   };
 
   const handleDelete = (record) => {
+    debugger;
     console.log(record);
+    try {
+      customAxios
+        .delete(`${urlDeleteSelectedServiceLocation}?ServiceLocationId=${record.ServiceLocationId}`)
+        .then((response) => {
+          if (response.data.data == true) {
+               fetchData();
+            notification.success({
+              message: "Deleted Successfully",
+            });
+          }
+        });
+    } catch (error) {
+      notification.error({
+        message: "Deleting UnSuccessful",
+      });
+    }
   };
-  const handleSubmit = (record) => {
+  const handleSubmit = async(record) => {
+    debugger;
     console.log(record);
-    setDepartmentModal(false);
+// Check the value of ActiveFlag and set it to true or false
+    record.ActiveFlag = record.ActiveFlag === "Active";
+    const apiUrl = record.ServiceLocationId
+    ? urlUpdateServiceLocation // Update endpoint if ServiceLocationId exists
+    : urlSaveNewServiceLocation; // Save endpoint otherwise
+
+    const response = await customAxios.post(apiUrl, record, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if(response.data.data==true){
+      setDepartmentModal(false);
+      message.success("Saved Successfully");
+      fetchData();
+    }else{
+      message.warning("Department already exists");
+      setDepartmentModal(false);
+    }
   };
 
   return (
@@ -101,7 +148,7 @@ function ServiceLocation() {
         <CustomTable
           isFilter={true}
           columns={columns}
-          dataSource={tableData}
+          dataSource={serviceLocationModel}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
@@ -112,6 +159,7 @@ function ServiceLocation() {
           }}
           handleSubmit={handleSubmit}
           record={currentRecord}
+          options={locations}
         />
       </div>
     </>

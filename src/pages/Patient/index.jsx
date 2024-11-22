@@ -104,6 +104,11 @@ const Patient = () => {
     // Navigate to the new URL
     navigate(url);
   };
+  const navigateToAppointmentsearch = () => {
+    const url = `AppointmentSearch`;
+    // Navigate to the new URL
+    navigate(url);
+  };
 
   const navigateToNewVisit = () => {
     const url = `NewVisit`;
@@ -496,7 +501,7 @@ const Patient = () => {
                 </Button>
               </Col>
               <Col>
-                <Button type="default" size="middle" className="dfja">
+                <Button    onClick={navigateToAppointmentsearch} type="default" size="middle" className="dfja">
                   <LuCalendarSearch
                     style={{ fontSize: "1.2rem", marginRight: "0.3rem" }}
                   />

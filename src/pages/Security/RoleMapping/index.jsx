@@ -10,6 +10,7 @@ import {
   Table,
   AutoComplete,
   Popconfirm,
+  Select,
 } from "antd";
 import {
   EditOutlined,
@@ -56,7 +57,8 @@ const ColWithThreeSpanButton = ({ children, ...props }) => (
 export default function RoleMapping() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [options, setOptions] = useState([]);
+  const [providersData, setProvidersData] = useState(null);
+  const [providerLoading, setProviderLoading] = useState(false);
   const [roleoptions, setRoleOptions] = useState([]);
   const [data, setData] = useState(null);
   const [AppUserRoleID, setAppUserRoleID] = useState(null);
@@ -67,32 +69,23 @@ export default function RoleMapping() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setProviderLoading(true);
         // Fetch data for users
         const usersResponse = await customAxios.get(urlGetAllUsers);
-        setOptions(
-          usersResponse.data.data.map((user, index) => ({
-            value: user.ProviderFirstName,
-            id: user.ProviderId,
-            key: `${user.ProviderId}-${index}`,
-          }))
-        );
-
+        setProvidersData(usersResponse.data.data);
+  
         // Fetch data for roles
         const rolesResponse = await customAxios.get(urlGetAllRoles);
-        setRoleOptions(
-          rolesResponse.data.data.map((role, index) => ({
-            value: role.RoleName,
-            id: role.Role_Id,
-            key: `${role.Role_Id}-${index}`,
-          }))
-        );
+        setRoleOptions(rolesResponse.data.data);
+        setProviderLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-
+  
     fetchData();
-  }, []);
+  }, []); // Dependency array remains empty for initial load only
+  
 
   useEffect(() => {
     // Initial data fetch
@@ -115,28 +108,14 @@ export default function RoleMapping() {
     }
   };
 
-  const handleSelect = (value, option) => {
-    //
-    // Find the user with the selected FirstName and set selectedUserId
-    const selectedUser = options.find((user) => user.value === value);
-    if (selectedUser) {
-      setSelectedUser(selectedUser.id);
-    }
-  };
-  const handleRoleSelect = (value, option) => {
-    //
-    // Find the user with the selected FirstName and set selectedUserId
-    const selectedUser = roleoptions.find((role) => role.value === value);
-    if (selectedUser) {
-      setSelectedRole(selectedUser.id);
-    }
-  };
+
 
   const onFinish = async (values) => {
     //
 debugger;
-    values.Role_Id = selectedRole;
-    values.AppUserID = selectedUser;
+// values.Role_Id = selectedRole;
+// values.AppUserID = selectedUser;
+
     values.AppUserRole_Id = AppUserRoleID;
 
     try {
@@ -158,9 +137,9 @@ debugger;
         form.resetFields();
         setAppUserRoleID(null);
       } else {
-        notification.error({
-          message: "Error",
-          description: "Something Went Wrong.....",
+        notification.warning({
+          message: "Warning",
+          description: "One User Only Have One Role.....",
         });
       }
     } catch (error) {}
@@ -176,13 +155,12 @@ debugger;
   };
 
   const handleEditClick = async (record) => {
-    //
+    debugger;
     setAppUserRoleID(record.AppUserRole_Id);
-    setSelectedUser(record.AppUserID);
-    setSelectedRole(record.AppUserRole_Id);
+
     form.setFieldsValue({
-      AppUserName: record.AppUserName,
-      AppRoleName: record.AppRoleName,
+      AppUserID: record.AppUserID, // Assuming `ProviderId` in record matches `AppUserID` in form
+      Role_Id: record.Role_Id, // Assuming `Role_Id` in record matches `Role_Id` in form
     });
   };
 
@@ -259,60 +237,78 @@ debugger;
           scrollToFirstError
         >
           <Row gutter={32} style={{ margin: "1rem" }}>
-            <ColWithSixSpan>
-              <Form.Item
-                name="AppUserName"
-                label="User Name"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select UserName.",
-                  },
-                ]}
-              >
-                <AutoComplete
-                  style={{ width: "100%" }}
-                  options={options}
-                  placeholder="Type to search for a user"
-                  // filterOption={(inputValue, option) =>
-                  //   option.value
-                  //     .toUpperCase()
-                  //     .indexOf(inputValue.toUpperCase()) !== -1
-                  // }
-                  onSelect={handleSelect}
-                  allowClear={{
-                    clearIcon: <CloseSquareFilled />,
-                  }}
-                />
-              </Form.Item>
-            </ColWithSixSpan>
-            <ColWithSixSpan>
-              <Form.Item
-                name="AppRoleName"
-                label="Role Name"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select RoleName.",
-                  },
-                ]}
-              >
-                <AutoComplete
-                  style={{ width: "100%" }}
-                  options={roleoptions}
-                  placeholder="Type to search for a Role"
-                  filterOption={(inputValue, option) =>
-                    option.value
-                      .toUpperCase()
-                      .indexOf(inputValue.toUpperCase()) !== -1
-                  }
-                  onSelect={handleRoleSelect}
-                  allowClear={{
-                    clearIcon: <CloseSquareFilled />,
-                  }}
-                />
-              </Form.Item>
-            </ColWithSixSpan>
+          <ColWithSixSpan>
+                <Form.Item
+                  name="AppUserID"
+                  label="User"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Provider is Required.",
+                    },
+                  ]}
+                >
+                  <Select
+                    loading={providerLoading}
+                    showSearch
+                    placeholder="Select the provider"
+                    style={{ width: "100%" }}
+                    onChange={(value) => console.log(value)}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                 
+                  >
+                    {providersData?.map((response) => (
+                      <Select.Option
+                        key={response.ProviderId}
+                        value={response.ProviderId}
+                      >
+                        {response.ProviderName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
+                <Form.Item
+                  name="Role_Id"
+                  label="Role Name"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Provider is Required.",
+                    },
+                  ]}
+                >
+                  <Select
+                    loading={providerLoading}
+                    showSearch
+                    placeholder="Select the provider"
+                    style={{ width: "100%" }}
+                    onChange={(value) => console.log(value)}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                  
+                  >
+                    {roleoptions?.map((response) => (
+                      <Select.Option
+                        key={response.Role_Id}
+                        value={response.Role_Id}
+                      >
+                        {response.RoleName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </ColWithSixSpan>
           </Row>
           <Row gutter={10} justify={"end"} style={{ marginRight: "1rem" }}>
             <ColWithThreeSpanButton>
