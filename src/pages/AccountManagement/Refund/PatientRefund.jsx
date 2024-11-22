@@ -23,6 +23,7 @@ import { v4 as uuidv4 } from "uuid";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 import {
+  urlCreatePharmacyReFund,
   urlCreateReFund,
   urlGetPatientHeaderDetails,
   urlUpdateReFundDetails,
@@ -36,17 +37,23 @@ function PatientRefund() {
 
   const [counter, setCounter] = useState(2);
   const location = useLocation();
-  const { selectedRow } = location.state || {}; // Get selected row data
+  const { selectedRow, source } = location.state || {};
   const [patientData, setPatientData] = useState(null);
   const [banks, setBanks] = useState(null);
   const [paymentTypes, setPaymentTypes] = useState(null);
   const [totalInstrumentAmount, setTotalInstrumentAmount] = useState(0);
+
   useEffect(() => {
     debugger;
     const fetchDataHeader = async () => {
       try {
         const response = await customAxios.get(
-          `${urlGetPatientHeaderDetails}?PatientId=${selectedRow?.PatientId}&EncounterId=${selectedRow?.ReceiptEncounterId}`
+          `${urlGetPatientHeaderDetails}?PatientId=${
+            selectedRow?.PatientId
+          }&EncounterId=${
+            selectedRow?.ReceiptEncounterId ?? selectedRow?.EncounterId
+          }
+`
         );
         if (response.status === 200 && response.data != null) {
           const detailsheader = response.data.data.EncounterModel;
@@ -65,9 +72,9 @@ function PatientRefund() {
   const fetchData = async () => {
     // setTableLoading(true);
     debugger;
-    try {
+    if (source === "Pharmacy") {
       const response = await customAxios.get(
-        `${urlCreateReFund}?Patient=${selectedRow?.PatientId}&EncounterId=${selectedRow?.ReceiptEncounterId}&RemainingAmount=${selectedRow?.RemainingAmount}&ReceiptId=${selectedRow?.ReceiptId}&ReceiptNumber=${selectedRow?.ReceiptNumber}`
+        `${urlCreatePharmacyReFund}?Patient=${selectedRow?.PatientId}&EncounterId=${selectedRow?.EncounterId}&BalanceAmount=${selectedRow?.BalanceAmount}&DocType=${source}&PharmacyReturnHeaderId=${selectedRow?.PharmacyReturnHeaderId}&BillNumber=${selectedRow?.BillNumber}`
       );
       if (response.status === 200 && response.data != null) {
         // setTableLoading(false);
@@ -78,14 +85,41 @@ function PatientRefund() {
           RefundTo: data.LastEncounter.PatientName
             ? data.LastEncounter.PatientName
             : "",
-          RefundAmount: selectedRow?.RemainingAmount,
+          RefundAmount: response.data.data.RemainingAmount,
+          AmountRefund: response.data.data.RemainingAmount,
           BalanceAmount: 0,
         });
       } else {
         //setTableLoading(false);
       }
-    } catch (error) {
-      // setTableLoading(false);
+    } else {
+      try {
+        const response = await customAxios.get(
+          `${urlCreateReFund}?Patient=${selectedRow?.PatientId}&EncounterId=${
+            selectedRow?.ReceiptEncounterId ?? selectedRow?.EncounterId
+          }&RemainingAmount=${selectedRow?.RemainingAmount}&ReceiptId=${
+            selectedRow?.ReceiptId
+          }&ReceiptNumber=${selectedRow?.ReceiptNumber}`
+        );
+        if (response.status === 200 && response.data != null) {
+          // setTableLoading(false);
+          const data = response.data.data;
+          setBanks(data.Bank);
+          setPaymentTypes(data.PaymentType);
+          form.setFieldsValue({
+            RefundTo: data.LastEncounter.PatientName
+              ? data.LastEncounter.PatientName
+              : "",
+            RefundAmount: response.data.data.RemainingAmount,
+            AmountRefund: response.data.data.RemainingAmount,
+            BalanceAmount: 0,
+          });
+        } else {
+          //setTableLoading(false);
+        }
+      } catch (error) {
+        // setTableLoading(false);
+      }
     }
   };
 
@@ -344,9 +378,7 @@ function PatientRefund() {
     // Check if totalInstrumentAmount exceeds RefundAmount
     if (totalInstrumentAmount > values.RefundAmount) {
       // Show error message or handle the validation
-      message.warning(
-        `Total Instrument Amount  should be equal Refund Amount`
-      );
+      message.warning(`Total Instrument Amount  should be equal Refund Amount`);
       return; // Stop further execution if the condition is not met
     }
     if (totalInstrumentAmount < values.RefundAmount) {
@@ -356,33 +388,53 @@ function PatientRefund() {
       );
       return; // Stop further execution if the condition is not met
     }
-    const RefundDetails = {
-      PatientAccountReFundModel: {
-        PatientId: selectedRow?.PatientId,
-        EncounterId: selectedRow?.ReceiptEncounterId,
-        ReFundTo: values.RefundTo,
-        CashReFundDate: values.RefundDate
-          ? values.RefundDate.format("DD-MM-YYYY")
-          : "",
-        ReFundAmount: values.RefundAmount,
-        BalanceAmt: values.BalanceAmount,
-        ReceiptId: selectedRow?.ReceiptId,
-        ReceiptNumber: selectedRow?.ReceiptNumber,
-      },
-      ReFundToPatientInstrumentList: formattedReceiptInsAmtData,
-    };
 
-    const response = await customAxios.post(
-      urlUpdateReFundDetails,
-      RefundDetails,
-      {
-        headers: {
-          "Content-Type": "application/json",
+    let refundDetails;
+
+    if (source === "Pharmacy") {
+      // If source is Pharmacy, assign RefundPhamacyDetails
+      refundDetails = {
+        PatientAccountReFundModel: {
+          PatientId: selectedRow?.PatientId,
+          ReFundTo: values.RefundTo,
+          CashReFundDate: values.RefundDate
+            ? values.RefundDate.format("DD-MM-YYYY")
+            : "",
+          ReFundAmount: values.RefundAmount,
+          BalanceAmt: values.BalanceAmount,
+          PharmacyReturnHeaderId: selectedRow?.PharmacyReturnHeaderId,
+          EncounterId: selectedRow?.EncounterId,
+          BillNumber: selectedRow?.BillNumber,
         },
-      }
-    );
+        ReFundToPatientInstrumentList: formattedReceiptInsAmtData,
+      };
+    } else {
+      // If source is not Pharmacy, assign RefundDetails
+      refundDetails = {
+        PatientAccountReFundModel: {
+          PatientId: selectedRow?.PatientId,
+          EncounterId: selectedRow?.ReceiptEncounterId ?? selectedRow?.EncounterId,
+          ReFundTo: values.RefundTo,
+          CashReFundDate: values.RefundDate
+            ? values.RefundDate.format("DD-MM-YYYY")
+            : "",
+          ReFundAmount: values.RefundAmount,
+          BalanceAmt: values.BalanceAmount,
+          ReceiptId: selectedRow?.ReceiptId,
+          ReciptNumber: selectedRow?.ReceiptNumber,
+        },
+        ReFundToPatientInstrumentList: formattedReceiptInsAmtData,
+      };
+    }
+    
+    // Now use the assigned refundDetails object for the axios call
+    const response = await customAxios.post(urlUpdateReFundDetails, refundDetails, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     if (response.status === 200 && response.data != null) {
-      if (response.data.data === true) {
+      if (response.data!=null) {
         message.success("ReFund Details Saved Successfully.");
         navigate("/Refund");
       } else {
@@ -446,6 +498,7 @@ function PatientRefund() {
                     // onChange={handleServiceDate}
                   />
                 </Form.Item>
+                <Form.Item name="AmountRefund" hidden></Form.Item>
               </ColWithSixSpan>
               <ColWithSixSpan>
                 <Form.Item
@@ -453,12 +506,16 @@ function PatientRefund() {
                   label="Refund Amount"
                   rules={[
                     {
-                      validator: (_, value) =>
-                        value > selectedRow?.RemainingAmount
-                          ? Promise.reject(
-                              `Refund Amount cannot exceed ${selectedRow?.RemainingAmount}`
-                            )
-                          : Promise.resolve(),
+                      validator: (_, value) => {
+                        const amountRefund =
+                          form.getFieldValue("AmountRefund") || 0; // Get AmountRefund value from the form
+                        if (value > amountRefund) {
+                          return Promise.reject(
+                            `Refund Amount cannot exceed ${amountRefund}`
+                          );
+                        }
+                        return Promise.resolve();
+                      },
                     },
                   ]}
                 >
@@ -471,16 +528,25 @@ function PatientRefund() {
                       }
                     }}
                     onChange={(e) => {
-                      const refundAmount = Number(e.target.value);
+                      const refundAmount = Number(e.target.value); // Get the entered RefundAmount
+
+                      // Access the current AmountRefund from the form
+                      const totalRefundAmount =
+                        form.getFieldValue("AmountRefund") || 0;
+
+                      // Calculate the balance as the difference between AmountRefund and refundAmount
                       const balanceAmount =
-                        selectedRow?.RemainingAmount - refundAmount >= 0
-                          ? selectedRow?.RemainingAmount - refundAmount
+                        totalRefundAmount - refundAmount >= 0
+                          ? totalRefundAmount - refundAmount
                           : 0;
+
+                      // Update BalanceAmount in the form
                       form.setFieldsValue({ BalanceAmount: balanceAmount });
                     }}
                   />
                 </Form.Item>
               </ColWithSixSpan>
+
               <ColWithSixSpan>
                 <Form.Item name="BalanceAmount" label="Balance Amount">
                   <Input type="number" disabled />

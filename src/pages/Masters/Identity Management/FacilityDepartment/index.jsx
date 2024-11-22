@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader/index.jsx";
 import { PlusCircleOutlined } from "@ant-design/icons";
-import { Col, Form, Row, Select } from "antd";
+import { Col, Form, message, Row, Select } from "antd";
 import Title from "antd/es/typography/Title.js";
 import CustomTable from "../../../../components/customTable/index.jsx";
 import CreateEditFacilityDepartmentModal from "./CreateEditFacilityDepartmentModal.jsx";
@@ -113,7 +113,7 @@ function FacilityDepartment() {
 const formValues = form.getFieldsValue(); // Get all the field values from the form
 
     record.FacilityId = formValues.ServiceLocationTypeId;
-
+    record.ActiveFlag = record.ActiveFlag === "Active";
 
     const response = await customAxios.post(urlSaveNewFacilityDepartment, record, {
       headers: {
@@ -121,12 +121,13 @@ const formValues = form.getFieldsValue(); // Get all the field values from the f
       },
     });
     if(response.data.data==true){
-      setDepartmentModal(false);
-      message.success("Saved Successfully");
-      fetchData();
-    }else{
       message.warning("Department already exists");
       setDepartmentModal(false);
+  
+    }else{
+      message.success("Saved Successfully");
+      setDepartmentModal(false);
+      fetchData();
     }
   };
   return (
@@ -187,7 +188,8 @@ const formValues = form.getFieldsValue(); // Get all the field values from the f
             isFilter={true}
             columns={columns}
             dataSource={facilityDept}
-            onEdit={handleEdit}
+            actionColumn={false}
+           // onEdit={handleEdit}
             //onDelete={handleDelete}
           />
           <CreateEditFacilityDepartmentModal

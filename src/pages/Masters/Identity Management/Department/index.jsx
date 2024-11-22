@@ -95,6 +95,7 @@ record.ActiveFlag = record.ActiveFlag === "Active";
     });
     if(response.data.data==true){
       setDepartmentModal(false);
+      message.success("Saved Successfully");
       fetchData();
     }else{
       message.warning("Department already exists");

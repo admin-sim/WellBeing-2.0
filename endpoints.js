@@ -508,4 +508,15 @@ export const urlUpdateServiceLocation = `${baseURL}/api/ServiceLoaction/UpdateSe
 export const urlDeleteSelectedServiceLocation = `${baseURL}/api/ServiceLoaction/DeleteSelectedServiceLocation`;
 export const urlGetAllDepartmentsForFacilities = `${baseURL}/api/FacilityDepartment/GetAllDepartmentsForFacility`;
 export const urlSaveNewFacilityDepartment = `${baseURL}/api/FacilityDepartment/SaveNewFacilityDepartment`;
+export const urlGetAllFacilityDepartmentServiceLocation = `${baseURL}/api/FacilityDepartmentServiceLocation/GetAllFacilityDepartmentServiceLocation`;
+export const urlGetParticularProvider = `${baseURL}/api/FacilityDepartmentServiceLocation/GetParticularProvider`;
+export const urlGetParticularPatientType = `${baseURL}/api/FacilityDepartmentServiceLocation/GetParticularPatientType`;
+export const urlGetParticularServiceLocation = `${baseURL}/api/FacilityDepartmentServiceLocation/GetParticularServiceLocation`;
+export const urlSaveNewFacilityDepartmentServiceLocation = `${baseURL}/api/FacilityDepartmentServiceLocation/SaveNewFacilityDepartmentServiceLocation`;
+export const urlSaveNewFacilityDepartmentProvider = `${baseURL}/api/FacilityDepartmentServiceLocation/SaveNewFacilityDepartmentProvider`;
+export const urlSaveNewFacilityDepartmentPatientType = `${baseURL}/api/FacilityDepartmentServiceLocation/SaveNewFacilityDepartmentPatientType`;
+export const urlUpdateFacilityDepartmentServiceLocation = `${baseURL}/api/FacilityDepartmentServiceLocation/UpdateFacilityDepartmentServiceLocation`;
+export const urlUpdateFacilityDepartmentPatientType = `${baseURL}/api/FacilityDepartmentServiceLocation/UpdateFacilityDepartmentPatientType`;
+export const urlUpdateFacilityDepartmentProvider = `${baseURL}/api/FacilityDepartmentServiceLocation/UpdateFacilityDepartmentProvider`;
+export const urlCreatePharmacyReFund = `${baseURL}/api/Refund/CreatePharmacyReFund`;
 

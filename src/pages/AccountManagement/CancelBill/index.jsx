@@ -415,7 +415,7 @@ function CancelBill() {
             CancelType: cancelReasonAction, // Use CancelAction
             CancelReason: cancelReason,
             ReFundAmount: row.ReFundAmount,
-            ReciptNumber: ReciptNumber,
+            ReciptNumber: row.RecieptNumber,
           };
         });
 

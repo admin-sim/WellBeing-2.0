@@ -1,12 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader/index.jsx";
-import { Col, Form, Row, Select } from "antd";
+import { Col, Form, message, Row, Select } from "antd";
 import CustomTable from "../../../../components/customTable/index.jsx";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import ServiceLocationModal from "./ServiceLocationModal.jsx";
 import ProviderModal from "./ProviderModal.jsx";
 import PatientTypeModal from "./PatientTypeModal.jsx";
 import { ColWithEightSpan } from "../../../../components/customGridColumns/index.jsx";
+import {
+  urlGetAllDepartmentsForFacilities,
+  urlGetAllFacilityDepartmentServiceLocation,
+  urlGetParticularPatientType,
+  urlGetParticularProvider,
+  urlGetParticularServiceLocation,
+  urlSaveNewFacilityDepartmentPatientType,
+  urlSaveNewFacilityDepartmentProvider,
+  urlSaveNewFacilityDepartmentServiceLocation,
+  urlUpdateFacilityDepartmentPatientType,
+  urlUpdateFacilityDepartmentProvider,
+  urlUpdateFacilityDepartmentServiceLocation,
+} from "../../../../../endpoints.js";
+import customAxios from "../../../../components/customAxios/customAxios.jsx";
 
 function FacilityDepartmentServiceLocation() {
   const [form] = Form.useForm();
@@ -15,41 +29,116 @@ function FacilityDepartmentServiceLocation() {
   const [serviceLocationModal, setserviceLocationModal] = useState(false);
   const [providerModal, setproviderModal] = useState(false);
   const [patientTypeModal, setpatientTypeModal] = useState(false);
+  const [patientTypes, setPatientTypes] = useState([]);
+  const [providers, setProviders] = useState([]);
+  const [serviceLocations, setServiceLocations] = useState([]);
+  const [deptpatientTypes, setDeptPatientTypes] = useState([]);
+  const [deptproviders, setDeptProviders] = useState([]);
+  const [deptserviceLocations, setDeptServiceLocations] = useState([]);
+  const [facilities, setFacilities] = useState([]);
+  const [facilitydepartments, setfacilityDepts] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await customAxios.get(
+        `${urlGetAllFacilityDepartmentServiceLocation}`
+      );
+
+      if (response.data != null) {
+        setFacilities(
+          response.data.data.Facilities.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          })
+        );
+        setPatientTypes(
+          response.data.data.PatientTypes.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          })
+        );
+        setServiceLocations(
+          response.data.data.ServiceLocations.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          })
+        );
+        setProviders(
+          response.data.data.Providers.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          })
+        );
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleFacility = async (value) => {
+    const response = await customAxios.get(
+      `${urlGetAllDepartmentsForFacilities}?id=${value}`
+    );
+    if (response.data != null) {
+      setfacilityDepts(
+        response.data.data.FacilityDepartment.map((obj, index) => {
+          return { ...obj, key: index + 1 };
+        })
+      );
+    }
+  };
+
+  const handleDepartmentChange = async (value) => {
+    debugger;
+    const response = await customAxios.get(
+      `${urlGetParticularProvider}?id=${value}`
+    );
+    if (response.data != null) {
+      setDeptProviders(
+        response.data.data?.map((obj, index) => {
+          return { ...obj, key: index + 1 };
+        })
+      );
+    }
+    const response1 = await customAxios.get(
+      `${urlGetParticularPatientType}?id=${value}`
+    );
+    if (response1.data != null) {
+      setDeptPatientTypes(
+        response1.data.data?.map((obj, index) => {
+          return { ...obj, key: index + 1 };
+        })
+      );
+    }
+    const response2 = await customAxios.get(
+      `${urlGetParticularServiceLocation}?id=${value}`
+    );
+    if (response2.data != null) {
+      setDeptServiceLocations(
+        response2.data.data?.map((obj, index) => {
+          return { ...obj, key: index + 1 };
+        })
+      );
+    }
+  };
 
   const columns1 = [
     {
       title: "SL Code",
-      dataIndex: "SlCode",
-      key: "1",
+      dataIndex: "ServiceLocationCode",
     },
     {
       title: "SL Name",
-      dataIndex: "SlName",
-      key: "2",
+      dataIndex: "ServiceLocationName",
     },
     {
-      title: "SL Type",
-      dataIndex: "SlType",
-      key: "3",
+      title: "SLType",
+      dataIndex: "ServiceLocationTypeName",
     },
     {
       title: "Status",
-      dataIndex: "Status",
-      key: "4",
-    },
-  ];
-  const tableData1 = [
-    {
-      SlCode: "GF",
-      SlName: "Ground Floor",
-      SlType: "Ward",
-      Status: "Active",
-    },
-    {
-      SlCode: "Emr",
-      SlName: "Emergency",
-      SlType: "Clinic",
-      Status: "Hidden",
+      dataIndex: "ActiveFlag",
+      render: (text) => (text ? "Active" : "Hidden"),
     },
   ];
 
@@ -57,26 +146,11 @@ function FacilityDepartmentServiceLocation() {
     {
       title: "Provider Name",
       dataIndex: "ProviderName",
-      key: "1",
     },
     {
       title: "Status",
-      dataIndex: "Status",
-      key: "2",
-    },
-  ];
-  const tableData2 = [
-    {
-      ProviderName: "OVENSERI IYEKEORETIN",
-      Status: "Active",
-    },
-    {
-      ProviderName: "CLEMENT IYAMU",
-      Status: "Active",
-    },
-    {
-      ProviderName: "OFURE OKHIALU",
-      Status: "Active",
+      dataIndex: "ActiveFlag",
+      render: (text) => (text ? "Active" : "Hidden"),
     },
   ];
 
@@ -84,30 +158,11 @@ function FacilityDepartmentServiceLocation() {
     {
       title: "Patient Type",
       dataIndex: "PatientType",
-      key: "1",
     },
     {
       title: "Status",
-      dataIndex: "Status",
-      key: "2",
-    },
-  ];
-  const tableData3 = [
-    {
-      PatientType: "Ambulatory Patient",
-      Status: "Active",
-    },
-    {
-      PatientType: "InPatient",
-      Status: "Active",
-    },
-    {
-      PatientType: "Day Care",
-      Status: "Active",
-    },
-    {
-      PatientType: "Emergency",
-      Status: "Active",
+      dataIndex: "ActiveFlag",
+      render: (text) => (text ? "Active" : "Hidden"),
     },
   ];
 
@@ -121,10 +176,7 @@ function FacilityDepartmentServiceLocation() {
     setCurrentRecord(null);
     setserviceLocationModal(true);
   };
-  const handleServiceLocationSubmit = (record) => {
-    console.log(record);
-    setserviceLocationModal(false);
-  };
+
 
   //Provider Modal Controls
   const handleProviderEdit = (record) => {
@@ -136,9 +188,132 @@ function FacilityDepartmentServiceLocation() {
     setCurrentRecord(null);
     setproviderModal(true);
   };
-  const handleProviderSubmit = (record) => {
+
+  const handleServiceLocationSubmit =async (record) => {
+    debugger;
+
+    const formValues = form.getFieldsValue(); 
+    if (!formValues.FacilityDepartmentId) {
+      // Show warning message if FacilityDepartmentId is not provided
+      message.warning('Please fill  Department Name  ');
+      return;  // Stop execution if FacilityDepartmentId is missing
+    }
+
+    const apiUrl = record.FacilityDepartmentServiceLocationId
+    ? urlUpdateFacilityDepartmentServiceLocation // Update endpoint if ServiceLocationId exists
+    : urlSaveNewFacilityDepartmentServiceLocation;
+
+    record.ActiveFlag = record.ActiveFlag === "Active";
+    record.FacilityDepartmentId=formValues.FacilityDepartmentId;
+    if(record.FacilityDepartmentServiceLocationId){
+      record.FacilityDepartmentServiceLocationId=record.FacilityDepartmentServiceLocationId;
+    }else{
+      record.ServiceLocationId=record.ServiceLocationId;
+    }
+    const response = await customAxios.post(apiUrl, record, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if(response.data.data==true){
+      message.warning("ServiceLocation already exists");
+      //setserviceLocationModal(false);
+  
+    }else{
+
+      setDeptServiceLocations(response.data.data);
+      message.success("Saved Successfully");
+      setserviceLocationModal(false);
+    }
+  
+  };
+
+  const handleProviderSubmit =async (record) => {
+    debugger;
+    // console.log(record);
+
+    // const formValues = form.getFieldsValue(); 
+    // record.ActiveFlag = record.ActiveFlag === "Active";
+    // record.FacilityDepartmentId=formValues.FacilityDepartmentId;
+    const formValues = form.getFieldsValue(); 
+    if (!formValues.FacilityDepartmentId) {
+      // Show warning message if FacilityDepartmentId is not provided
+      message.warning('Please fill  Department Name  ');
+      return;  // Stop execution if FacilityDepartmentId is missing
+    }
+
+    const apiUrl = record.FacilityDepartmentProviderId
+    ? urlUpdateFacilityDepartmentProvider // Update endpoint if ServiceLocationId exists
+    : urlSaveNewFacilityDepartmentProvider;
+
+    record.ActiveFlag = record.ActiveFlag === "Active";
+    record.FacilityDepartmentId=formValues.FacilityDepartmentId;
+    if(record.FacilityDepartmentProviderId){
+      record.FacilityDepartmentProviderId=record.FacilityDepartmentProviderId;
+    }else{
+      record.ProviderId=record.ProviderId;
+    }
+
+    const response = await customAxios.post(apiUrl, record, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if(response.data.data==true){
+      message.warning("Provider already exists");
+      setproviderModal(false);
+  
+    }else{
+      setDeptProviders(response.data.data);
+      message.success("Saved Successfully");
+      setproviderModal(false);
+      
+    }
+  };
+
+
+
+  const handlePatientTypeSubmit =async (record) => {
     console.log(record);
-    setproviderModal(false);
+  
+    // const formValues = form.getFieldsValue(); 
+    // record.ActiveFlag = record.ActiveFlag === "Active";
+    // record.FacilityDepartmentId=formValues.FacilityDepartmentId;
+
+    const formValues = form.getFieldsValue(); 
+    if (!formValues.FacilityDepartmentId) {
+      // Show warning message if FacilityDepartmentId is not provided
+      message.warning('Please fill  Department Name  ');
+      return;  // Stop execution if FacilityDepartmentId is missing
+    }
+
+    const apiUrl = record.FacilityDepartmentPatientTypeId
+    ? urlUpdateFacilityDepartmentPatientType // Update endpoint if ServiceLocationId exists
+    : urlSaveNewFacilityDepartmentPatientType;
+
+    record.ActiveFlag = record.ActiveFlag === "Active";
+    record.FacilityDepartmentId=formValues.FacilityDepartmentId;
+    if(record.FacilityDepartmentPatientTypeId){
+      record.FacilityDepartmentPatientTypeId=record.FacilityDepartmentPatientTypeId;
+    }else{
+      record.PatientTypeId=record.PatientTypeId;
+    }
+
+    const response = await customAxios.post(apiUrl, record, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if(response.data.data==true){
+      message.warning("PatientType already exists");
+      setpatientTypeModal(false);
+  
+    }else{
+      setDeptPatientTypes(response.data.data);
+      message.success("Saved Successfully");
+      setpatientTypeModal(false);
+      
+    }
   };
 
   //Patient Type Modal Controls
@@ -151,10 +326,7 @@ function FacilityDepartmentServiceLocation() {
     setCurrentRecord(null);
     setpatientTypeModal(true);
   };
-  const handlePatientTypeSubmit = (record) => {
-    console.log(record);
-    setpatientTypeModal(false);
-  };
+
 
   return (
     <>
@@ -179,12 +351,40 @@ function FacilityDepartmentServiceLocation() {
           <Row gutter={16}>
             <ColWithEightSpan>
               <Form.Item name="FacilityName" label="Facility Name" required>
-                <Select />
+                <Select
+                  placeholder="Select ServiceLocationType "
+                  allowClear
+                  onChange={handleFacility}
+                  // loading={isloading}
+                >
+                  {facilities?.map((option) => (
+                    <Select.Option
+                      key={option.FacilityId}
+                      value={option.FacilityId}
+                    >
+                      {option.FacilityName}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </ColWithEightSpan>
             <ColWithEightSpan>
-              <Form.Item name="DepartmentName" label="Department Name" required>
-                <Select />
+              <Form.Item name="FacilityDepartmentId" label="Department Name" required>
+                <Select
+                  placeholder="Select ServiceLocationType "
+                  allowClear
+                  // loading={isloading}
+                  onChange={handleDepartmentChange}
+                >
+                  {facilitydepartments?.map((option) => (
+                    <Select.Option
+                      key={option.FacilityDepartmentId}
+                      value={option.FacilityDepartmentId}
+                    >
+                      {option.DepartmentName}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </ColWithEightSpan>
           </Row>
@@ -205,7 +405,7 @@ function FacilityDepartmentServiceLocation() {
               />
               <CustomTable
                 columns={columns1}
-                dataSource={tableData1}
+                dataSource={deptserviceLocations}
                 onEdit={handleServiceLocationEdit}
               />
             </div>
@@ -225,7 +425,7 @@ function FacilityDepartmentServiceLocation() {
               />
               <CustomTable
                 columns={columns2}
-                dataSource={tableData2}
+                dataSource={deptproviders}
                 onEdit={handleProviderEdit}
               />
             </div>
@@ -245,7 +445,7 @@ function FacilityDepartmentServiceLocation() {
               />
               <CustomTable
                 columns={columns3}
-                dataSource={tableData3}
+                dataSource={deptpatientTypes}
                 onEdit={handlePatientTypeEdit}
               />
             </div>
@@ -258,6 +458,7 @@ function FacilityDepartmentServiceLocation() {
           }}
           handleSubmit={handleServiceLocationSubmit}
           record={currentRecord}
+          serviceLocations={serviceLocations}
         />
         <ProviderModal
           open={providerModal}
@@ -266,6 +467,7 @@ function FacilityDepartmentServiceLocation() {
           }}
           handleSubmit={handleProviderSubmit}
           record={currentRecord}
+          providers={providers}
         />
         <PatientTypeModal
           open={patientTypeModal}
@@ -274,6 +476,7 @@ function FacilityDepartmentServiceLocation() {
           }}
           handleSubmit={handlePatientTypeSubmit}
           record={currentRecord}
+          patietTypes={patientTypes}
         />
       </div>
     </>

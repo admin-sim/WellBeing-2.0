@@ -25,6 +25,15 @@ function CreateEditServiceLocationModal({
     form.resetFields();
     handleClose();
   };
+
+  const onFormSubmit = async (values) => {
+    // Call handleSubmit passed as prop to process the form data
+    await handleSubmit(values);
+
+    // After submitting the form, reset the form and close the modal
+    form.resetFields();
+    handleClose(); // Close the modal
+  };
   return (
     <div>
       <Modal
@@ -39,7 +48,7 @@ function CreateEditServiceLocationModal({
           style={{ margin: "1rem 0" }}
           layout="vertical"
           form={form}
-          onFinish={handleSubmit}
+          onFinish={onFormSubmit}
           initialValues={{
             ActiveFlag: "Active", // Default value for the "ActiveFlag" field
           }}

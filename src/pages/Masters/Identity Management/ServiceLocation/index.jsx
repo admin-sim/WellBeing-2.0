@@ -120,8 +120,8 @@ function ServiceLocation() {
       },
     });
     if(response.data.data==true){
-      setDepartmentModal(false);
       message.success("Saved Successfully");
+      setDepartmentModal(false);
       fetchData();
     }else{
       message.warning("Department already exists");

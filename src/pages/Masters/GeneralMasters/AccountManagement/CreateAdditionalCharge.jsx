@@ -984,12 +984,12 @@ function CreateAdditionalCharge() {
                                             <Form.Item
                                                 name="Description"
                                                 label="Description"
-                                                rules={[
-                                                    {
-                                                        required: true,
-                                                        message: "Required.",
-                                                    },
-                                                ]}
+                                                // rules={[
+                                                //     {
+                                                //         required: true,
+                                                //         message: "Required.",
+                                                //     },
+                                                // ]}
                                             >
                                                 <Input />
                                             </Form.Item>

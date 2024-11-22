@@ -34,14 +34,22 @@ function Refund() {
     onChange: (selectedKey, row) => {
       debugger;
       setSelectedRowKey(selectedKey[0]);
-
-      // Navigate to PatientRefund with row data
+  
+      // Navigate to PatientRefund with row data and formvalues.Source
       if (row && row.length > 0) {
+        const formvalues = form.getFieldsValue();
+  
         const selectedRow = row[0]; // Get the selected row data
-        navigate("/PatientRefund", { state: { selectedRow } });
+        navigate("/PatientRefund", { 
+          state: { 
+            selectedRow,
+            source: formvalues.Source // Include Source from formvalues
+          } 
+        });
       }
     },
   };
+  
 
   const handleSelectUHID = (value, option) => {
     debugger;

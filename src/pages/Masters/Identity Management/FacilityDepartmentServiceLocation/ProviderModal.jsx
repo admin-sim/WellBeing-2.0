@@ -1,12 +1,15 @@
 import { Button, Col, Form, Input, Modal, Row, Select } from "antd";
 import React, { useEffect } from "react";
 
-function ProviderModal({ open, handleClose, handleSubmit, record }) {
+function ProviderModal({ open, handleClose, handleSubmit, record ,providers}) {
   const [form] = Form.useForm();
 
   useEffect(() => {
     if (record) {
-      form.setFieldsValue(record);
+      form.setFieldsValue({
+        ...record,
+        ActiveFlag: record.ActiveFlag ? "Active" : "Hidden", // Set "Active" or "Hidden" based on ActiveFlag boolean
+      });
     } else {
       form.resetFields();
     }
@@ -16,6 +19,16 @@ function ProviderModal({ open, handleClose, handleSubmit, record }) {
     form.resetFields();
     handleClose();
   };
+
+  const onFormSubmit = async (values) => {
+    // Call handleSubmit passed as prop to process the form data
+    await handleSubmit(values);
+
+    // After submitting the form, reset the form and close the modal
+    form.resetFields();
+    handleClose(); // Close the modal
+  };
+
   return (
     <div>
       <Modal
@@ -30,13 +43,16 @@ function ProviderModal({ open, handleClose, handleSubmit, record }) {
           style={{ margin: "1rem 0" }}
           layout="vertical"
           form={form}
-          onFinish={handleSubmit}
+          onFinish={onFormSubmit}
+          initialValues={{
+            ActiveFlag: "Active", // Default value for the "ActiveFlag" field
+          }}
         >
           <Row gutter={32}>
             {!record && (
               <Col span={24}>
                 <Form.Item
-                  name="Provider"
+                  name="ProviderId"
                   label="Provider"
                   rules={[
                     {
@@ -45,18 +61,35 @@ function ProviderModal({ open, handleClose, handleSubmit, record }) {
                     },
                   ]}
                 >
-                  <Select />
+                  <Select
+                    placeholder="Select Provider"
+                    allowClear
+                    // loading={isloading}
+                  >
+                    {providers?.map((option) => (
+                      <Select.Option
+                        key={option.ProviderId}
+                        value={option.ProviderId}
+                      >
+                        {option.ProviderFirstName + "" + option.ProviderLastName}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </Col>
             )}
             <Col span={24}>
-              <Form.Item
-                name="Status"
+            <Form.Item
+                name="ActiveFlag"
                 label="Status"
                 rules={[{ required: true, message: "Please select Status" }]}
               >
-                <Select />
+               <Select>
+                  <Select.Option key="Active" value="Active"></Select.Option>
+                  <Select.Option key="Hidden" value="Hidden"></Select.Option>
+                </Select>
               </Form.Item>
+              <Form.Item name="FacilityDepartmentProviderId" hidden></Form.Item>
             </Col>
           </Row>
           <Row gutter={32} justify="end" style={{ marginBottom: "-2rem" }}>

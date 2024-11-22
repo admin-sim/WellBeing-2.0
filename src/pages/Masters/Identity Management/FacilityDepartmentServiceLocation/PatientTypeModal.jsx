@@ -1,12 +1,15 @@
 import { Button, Col, Form, Input, Modal, Row, Select } from "antd";
 import React, { useEffect } from "react";
 
-function PatientTypeModal({ open, handleClose, handleSubmit, record }) {
+function PatientTypeModal({ open, handleClose, handleSubmit, record,patietTypes }) {
   const [form] = Form.useForm();
 
   useEffect(() => {
     if (record) {
-      form.setFieldsValue(record);
+      form.setFieldsValue({
+        ...record,
+        ActiveFlag: record.ActiveFlag ? "Active" : "Hidden", // Set "Active" or "Hidden" based on ActiveFlag boolean
+      });
     } else {
       form.resetFields();
     }
@@ -16,6 +19,15 @@ function PatientTypeModal({ open, handleClose, handleSubmit, record }) {
     form.resetFields();
     handleClose();
   };
+  const onFormSubmit = async (values) => {
+    // Call handleSubmit passed as prop to process the form data
+    await handleSubmit(values);
+
+    // After submitting the form, reset the form and close the modal
+    form.resetFields();
+    handleClose(); // Close the modal
+  };
+
   return (
     <div>
       <Modal
@@ -30,13 +42,16 @@ function PatientTypeModal({ open, handleClose, handleSubmit, record }) {
           style={{ margin: "1rem 0" }}
           layout="vertical"
           form={form}
-          onFinish={handleSubmit}
+          onFinish={onFormSubmit}
+          initialValues={{
+            ActiveFlag: "Active", // Default value for the "ActiveFlag" field
+          }}
         >
           <Row gutter={32}>
             {!record && (
               <Col span={24}>
                 <Form.Item
-                  name="PatientType"
+                  name="PatientTypeId"
                   label="Patient Type"
                   rules={[
                     {
@@ -45,19 +60,36 @@ function PatientTypeModal({ open, handleClose, handleSubmit, record }) {
                     },
                   ]}
                 >
-                  <Select />
+               <Select
+                    placeholder="Select PatientType"
+                    allowClear
+                    // loading={isloading}
+                  >
+                    {patietTypes?.map((option) => (
+                      <Select.Option
+                        key={option.LookupID}
+                        value={option.LookupID}
+                      >
+                        {option.LookupDescription}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </Col>
             )}
             <Col span={24}>
-              <Form.Item
-                name="Status"
+            <Form.Item
+                name="ActiveFlag"
                 label="Status"
                 rules={[{ required: true, message: "Please select Status" }]}
               >
-                <Select />
+               <Select>
+                  <Select.Option key="Active" value="Active"></Select.Option>
+                  <Select.Option key="Hidden" value="Hidden"></Select.Option>
+                </Select>
               </Form.Item>
             </Col>
+            <Form.Item name="FacilityDepartmentPatientTypeId" hidden></Form.Item>
           </Row>
           <Row gutter={32} justify="end" style={{ marginBottom: "-2rem" }}>
             <Col>
