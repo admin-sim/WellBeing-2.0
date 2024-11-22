@@ -350,10 +350,8 @@ const CreateGRNAgainstPO = () => {
     form1.resetFields();
     form3.resetFields();
     setBatchRecord([]);
-    // setdataBatchModal([]);
     setData([]);
 
-    console.log("olddataproduct", data);
     const postData = {
       PoHeaderId: record.PoHeaderId,
       Supplier: record.SupplierId,
@@ -369,22 +367,16 @@ const CreateGRNAgainstPO = () => {
           const products = apiData.ProductDetails.map((item, index) => ({
             ...item,
             key: uuidv4(),
-            // TaxAmount1: item.TaxAmount1 + item.TaxAmount2
             LineAmount: 0,
             TaxAmount1: 0,
             TotalAmount: 0
           }));
           setData(products);
-          // const totalTaxAmount1 = products.reduce((sum, item) => sum + (item.TaxAmount1 || 0), 0);
-          // setTax(totalTaxAmount1);
           const formdata = apiData.POProducts;
-          // setPoAmount(formdata.PoTotalAmount)
           form1.setFieldsValue({
             SupplierId: record.SupplierId,
             StoreId: formdata.ProcurementStoreId,
             DocumentType: formdata.DocumentType,
-            // GRNDate: DateBindtoDatepicker(formdata.PoDate),
-            // GRNStatus: formdata.PoStatus,
             PoHeaderId: formdata.PoHeaderId,
           });
 
