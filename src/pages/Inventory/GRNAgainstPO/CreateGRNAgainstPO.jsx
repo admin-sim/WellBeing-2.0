@@ -118,9 +118,9 @@ const CreateGRNAgainstPO = () => {
           EXPDateString: "",
           Rate: 0,
           MRP: 0,
-          TaxType1: "",
+          TaxType1: 0,
           TaxAmount1: 0,
-          TaxType2: "",
+          TaxType2: 0,
           TaxAmount2: 0,
           StockLocator: "",
           ActiveFlag: true,
@@ -154,7 +154,6 @@ const CreateGRNAgainstPO = () => {
 
   const fetchData = async () => {
     if (GrnHeaderId > 0) {
-      debugger
       setButtonTitle("Update");
       setLoading(true);
       try {
@@ -328,6 +327,7 @@ const CreateGRNAgainstPO = () => {
   };
 
   const BatchmodalOpen = async (record) => {
+    debugger
     const fieldsToValidate = [[record.key, "ReceivedQty"]];
     const va = form1.getFieldsValue();
     await form1.validateFields(fieldsToValidate);
@@ -346,6 +346,7 @@ const CreateGRNAgainstPO = () => {
   };
 
   const handlePoNumber = (record) => {
+    debugger
     setLoading(true);
     form1.resetFields();
     form3.resetFields();
@@ -369,7 +370,8 @@ const CreateGRNAgainstPO = () => {
             key: uuidv4(),
             LineAmount: 0,
             TaxAmount1: 0,
-            TotalAmount: 0
+            TotalAmount: 0,
+            Uom: item.ShortName
           }));
           setData(products);
           const formdata = apiData.POProducts;
@@ -1320,7 +1322,7 @@ const CreateGRNAgainstPO = () => {
       key: 'UomId',
       render: (text, record) => (
         <Form.Item name={[record.key, "UomId"]}>
-          <Tag color="#7C00FE">{batchRecord.ShortName}</Tag>
+          <Tag color="#7C00FE">{batchRecord.Uom}</Tag>
         </Form.Item>
       ),
     },
@@ -1349,7 +1351,6 @@ const CreateGRNAgainstPO = () => {
         </Form.Item>
       ),
     },
-
     {
       title: "Exp Date",
       dataIndex: "EXPDateString",
@@ -1487,7 +1488,7 @@ const CreateGRNAgainstPO = () => {
       dataIndex: "TaxType1",
       key: 'TaxType1',
       render: (text, record) => (
-        <Form.Item name={[record.key, "TaxType1"]} initialValue={batchRecord.TaxType2}>
+        <Form.Item name={[record.key, "TaxType1"]} initialValue={batchRecord.TaxType1 ? batchRecord.TaxType1 : text}>
           <Select style={{ width: 70 }} disabled>
             {DropDown.TaxType.map((option) => (
               <Option key={option.TaxType1} value={option.TaxType1}>
@@ -1503,7 +1504,7 @@ const CreateGRNAgainstPO = () => {
       dataIndex: "TaxAmount1",
       key: 'TaxAmount1',
       render: (text, record) => (
-        <Form.Item name={[record.key, "TaxAmount1"]}>
+        <Form.Item name={[record.key, "TaxAmount1"]} initialValue={text}>
           <InputNumber min={0} style={{ width: 90 }} precision={4} disabled />
         </Form.Item>
       ),
@@ -1513,7 +1514,7 @@ const CreateGRNAgainstPO = () => {
       dataIndex: "TaxType2",
       key: 'TaxType2',
       render: (text, record) => (
-        <Form.Item name={[record.key, "TaxType2"]} initialValue={batchRecord.TaxType2}>
+        <Form.Item name={[record.key, "TaxType2"]} initialValue={batchRecord.TaxType2 ? batchRecord.TaxType2 : text}>
           <Select style={{ width: 70 }} disabled>
             {DropDown.TaxType.map((option) => (
               <Option key={option.TaxType1} value={option.TaxType1}>
@@ -1529,7 +1530,7 @@ const CreateGRNAgainstPO = () => {
       dataIndex: "TaxAmount2",
       key: 'TaxAmount2',
       render: (text, record) => (
-        <Form.Item name={[record.key, "TaxAmount2"]}>
+        <Form.Item name={[record.key, "TaxAmount2"]} initialValue={text}>
           <InputNumber min={0} style={{ width: 90 }} precision={4} disabled />
         </Form.Item>
       ),
@@ -1618,16 +1619,21 @@ const CreateGRNAgainstPO = () => {
   };
 
   async function CalculateTax(data, record) {
+    debugger
     const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${data[record.key].TaxType1}`);
     const taxDetails = response.data.data[0];
 
-    let Quantity = parseInt(data[record.key].Quantity || 0) + parseInt(data[record.key].BatchBonusQty || 0);
+    let Quantity = parseInt(data[record.key].Quantity || 0);
     let amount = Quantity * (data[record.key].Rate || 0) - (data[record.key].DiscountAmount || 0);
     let discountAmount = data[record.key].DiscountAmount
     let mrp = data[record.key].MRP
     let taxAmount = 0;
     let temp = 0;
     if (taxDetails.IncludeBonusQuantity) {
+      Quantity = parseInt(record.PoQuantity || 0) + parseInt(record.BonusQuantity || 0);
+      amount = Quantity * (record.PoRate || 0) - (record.DiscountAmount || 0);
+    }
+    if (true) {
       switch (taxDetails.ChargeType) {
         case "Percentage":
           if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
@@ -1646,7 +1652,7 @@ const CreateGRNAgainstPO = () => {
               taxAmount = amount - (amount / (1 + taxDetails.ChargeValue / 100));
               temp = 1;
             } else {
-              taxAmount = (mrp * Quantity) - ((mrp * POQty) / (1 + taxDetails.ChargeValue / 100));
+              taxAmount = (mrp * Quantity) - ((mrp * Quantity) / (1 + taxDetails.ChargeValue / 100));
               temp = 1;
             }
           }
@@ -1679,14 +1685,14 @@ const CreateGRNAgainstPO = () => {
           break;
       }
 
-      if (temp == 1) {
-        form3.setFieldsValue({ [record.key]: { TaxAmount1: parseFloat(taxAmount) } })
-        form3.setFieldsValue({ [record.key]: { TaxAmount2: parseFloat(taxAmount) } })
-      }
-      else {
-        form3.setFieldsValue({ [record.key]: { TaxAmount1: parseFloat(taxAmount) } })
-        form3.setFieldsValue({ [record.key]: { TaxAmount2: parseFloat(taxAmount) } })
-      }
+      // if (temp == 1) {
+      form3.setFieldsValue({ [record.key]: { TaxAmount1: parseFloat(taxAmount) } })
+      form3.setFieldsValue({ [record.key]: { TaxAmount2: parseFloat(taxAmount) } })
+      // }
+      // else {
+      //   form3.setFieldsValue({ [record.key]: { TaxAmount1: parseFloat(taxAmount) } })
+      //   form3.setFieldsValue({ [record.key]: { TaxAmount2: parseFloat(taxAmount) } })
+      // }
     }
 
     const newData = dataBatchModal.map((item) => {
