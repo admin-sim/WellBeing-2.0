@@ -18,6 +18,7 @@ import {
   Divider,
   AutoComplete,
   Table,
+  Modal,
 } from "antd";
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
@@ -43,7 +44,6 @@ const PatientConsumption = () => {
     DateFormat: []
   });
 
-  const [paginationSize, setPaginationSize] = useState(5);
   const [filteredData, setFilteredData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
@@ -56,6 +56,9 @@ const PatientConsumption = () => {
   const [toDate, setToDate] = useState(dayjs());
   const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
   const [encounter, setEncounter] = useState([])
+  const [error, setError] = useState(null);
+  const [reportUrl, setReportUrl] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     try {
@@ -176,13 +179,54 @@ const PatientConsumption = () => {
       sortDirections: ["descend", "ascend"],
     },
     {
-      render: (_, row) => (
-        <Button type="link">Report</Button>
+      render: (_, record) => (
+        <Button type="link" onClick={(value) => handleReport(value, record)}>
+          Report
+        </Button>
       ),
     },
   ];
 
+  const handleReport = async (value, record) => {
+    setLoading(true)
+    try {
+      const request = {
+        PONO: record.IssueNumber,
+        use: 'admin',
+        FileType: "pdf", // or 'excel'
+      };
+      const { url, blob } = await fetchReport(request);
+      setReportUrl(url);
+      // setBlobData(blob);
+      setIsModalVisible(true);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
 
+  async function fetchReport(request) {
+    const response = await fetch(
+      "http://localhost:43705/api/ReportsApi/GetPatientConsumptionRpt",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+    console.log("respo", response);
+
+    if (!response.ok) {
+      setLoading(false)
+      throw new Error("Failed to fetch report");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    setLoading(false)
+    return { url, blob };
+  }
 
 
   const onFinish = async (values) => {
@@ -388,7 +432,7 @@ const PatientConsumption = () => {
                 <Form.Item>
                   <Button
                     type="primary"
-                    loading={isSearchLoading}
+                    loading={loading}
                     htmlType="submit"
                   >
                     Search
@@ -404,16 +448,38 @@ const PatientConsumption = () => {
               </Col>
             </Row>
           </Form>
-          <Spin spinning={loading}>
-            <CustomTable
-              dataSource={filteredData}
-              columns={columns}
-              isFilter={true}
-              size="small"
-              bordered
-            />
-          </Spin>
+          <CustomTable loading={loading}
+            dataSource={filteredData}
+            columns={columns}
+            isFilter={true}
+            size="small"
+            actionColumn={false}
+            bordered
+          />
         </Card>
+      </div>
+      <div>
+        {error && <div>Error: {error}</div>}
+
+        <Modal
+          title="Report"
+          visible={isModalVisible}
+          onCancel={() => setIsModalVisible(false)}
+          footer={[
+            <Button key="close" onClick={() => setIsModalVisible(false)}>
+              Close
+            </Button>,
+          ]}
+          width={"60rem"} // You can adjust the width as needed
+        >
+          {reportUrl && (
+            <iframe
+              src={reportUrl}
+              style={{ width: "100%", height: "500px", border: "none" }}
+              title="Report"
+            />
+          )}
+        </Modal>
       </div>
     </Layout>
   );

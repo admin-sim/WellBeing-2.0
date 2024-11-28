@@ -522,4 +522,3 @@ export const urlCreatePharmacyReFund = `${baseURL}/api/Refund/CreatePharmacyReFu
 export const urlStoreReturnShowBatch = `${baseURL}/api/StoreReturn/StoreReturnShowBatch`;
 export const urlShowReceiptList = `${baseURL}/api/StoreReturn/ShowReceiptList`;
 
-

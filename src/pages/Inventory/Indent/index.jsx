@@ -22,6 +22,7 @@ import {
   Divider,
   Tooltip,
   Table,
+  Modal,
 } from "antd";
 
 import { useNavigate } from "react-router";
@@ -49,6 +50,9 @@ const Indent = () => {
   const { Title } = Typography;
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
   const [toDate, setToDate] = useState(dayjs());
+  const [reportUrl, setReportUrl] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     try {
@@ -170,7 +174,7 @@ const Indent = () => {
       },
     },
     {
-      render: (_, row) => <Button type="link">Report</Button>,
+      render: (_, record) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
     },
   ];
 
@@ -210,6 +214,45 @@ const Indent = () => {
     }
   };
 
+  const handleReport = async (value, record) => {
+    setLoading(true)
+    try {
+      const request = {
+        IndentNumber: record.IndentNumber,
+        FileType: "pdf", // or 'excel'
+      };
+      const { url, blob } = await fetchReport(request);
+      setReportUrl(url);
+      // setBlobData(blob);
+      setIsModalVisible(true);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  async function fetchReport(request) {
+    const response = await fetch(
+      "http://localhost:43705/api/ReportsApi/GetIndentReport",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+    console.log("respo", response);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch report");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    setLoading(false)
+    return { url, blob };
+  }
+
   const onReset = () => {
     setFilteredData([]);
     form.resetFields();
@@ -224,7 +267,7 @@ const Indent = () => {
           minHeight: "max-content",
           borderRadius: "10px",
         }}
-      >       
+      >
         <PageHeader
           title={"Indent"}
           buttonLabel="Add Indent"
@@ -362,7 +405,7 @@ const Indent = () => {
             <Row justify="end">
               <Col>
                 <Form.Item>
-                  <Button type="primary" htmlType="submit">
+                  <Button type="primary" htmlType="submit" loading={loading}>
                     Search
                   </Button>
                 </Form.Item>
@@ -376,10 +419,37 @@ const Indent = () => {
               </Col>
             </Row>
           </Form>
-          <Spin spinning={loading}>
-            <CustomTable actionColumn={false} isFilter={true} dataSource={filteredData} columns={columns} />
-          </Spin>
+          <CustomTable actionColumn={false}
+            isFilter={true}
+            dataSource={filteredData}
+            columns={columns}
+            loading={loading}
+          />
         </Card>
+      </div>
+      <div>
+        {error && <div>Error: {error}</div>}
+
+
+        <Modal
+          title="Report"
+          visible={isModalVisible}
+          onCancel={() => setIsModalVisible(false)}
+          footer={[
+            <Button key="close" onClick={() => setIsModalVisible(false)}>
+              Close
+            </Button>,
+          ]}
+          width={"60rem"} // You can adjust the width as needed
+        >
+          {reportUrl && (
+            <iframe
+              src={reportUrl}
+              style={{ width: "100%", height: "500px", border: "none" }}
+              title="Report"
+            />
+          )}
+        </Modal>
       </div>
     </Layout>
   );

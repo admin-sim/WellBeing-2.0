@@ -402,180 +402,28 @@ const CreatePurchaseOrder = () => {
 
   }
 
-  function ReCalculate(taxType, record, Id) {
-    let taxAmount1 = Id == 1 ? 0 : record.TaxAmount1
-    let taxAmount2 = Id == 2 ? 0 : record.TaxAmount2
-    let lineAmount = record.Temp == 0 ? record.LineAmount + taxAmount1 + taxAmount1 : record.LineAmount
-    let totalAmount = record.Temp == 1 ? record.LineAmount - taxAmount1 - taxAmount1 : record.LineAmount
-    const newData = data.map((item) => {
-      if (record.key == item.key) {
-        return {
-          ...item,
-          // TaxType1: Id == 1 ? taxType : record.TaxType1,
-          // TaxType2: Id == 2 ? taxType : record.TaxType2,
-          TaxAmount1: taxAmount1,
-          TaxAmount2: taxAmount2,
-          LineAmount: lineAmount,
-          TotalAmount: totalAmount
-        }
-      }
-      return item
-    })
-    setData(newData)
-    return newData
-  }
-
-  // const handleInputChange = async (e, column, index, record) => {
-  //   debugger
-  //   let newData;
-  //   if (["PoQuantity", "PoRate", "DiscountRate", 'TaxType1', 'TaxType2'].includes(column)) {
-  //     newData = data.map(async (item) => {
-  //       if (item.key === record.key) {
-  //         const updatedItem = { ...item, [column]: e.target.value };
-
-  //         const poQuantity = column === "PoQuantity" ? e.target.value : item.PoQuantity;
-  //         const poRate = column === "PoRate" ? e.target.value : item.PoRate;
-  //         const discountRate = column === "DiscountRate" ? e.target.value : item.DiscountRate;
-  //         const mrp = column === "MRP" ? e.target.value : item.MRP;
-  //         const taxAmount1 = column === "TaxType1" ? item.TaxAmount1 : record.TaxAmount1;
-  //         const taxAmount2 = column === "TaxType2" ? item.TaxAmount2 : record.TaxAmount2;
-
-  //         let discountAmount = 0;
-  //         let amount = 0;
-  //         if (poRate != null && poQuantity != null) {
-  //           const discount = discountRate != null ? discountRate : 0;
-  //           discountAmount = (poRate * poQuantity * discount) / 100;
-  //           amount = poRate * poQuantity - discountAmount;
-  //         }
-
-  //         if (column == 'TaxType1') {
-  //           const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${e.target.value}`);
-  //           const taxDetails = response.data.data[0];
-  //           let taxAmount = 0;
-  //           let lineAmount = 0;
-  //           let totalAmount = 0;
-  //           let temp = 0;
-  //           if (taxDetails.IncludeBonusQuantity) {
-  //             poQuantity = parseInt(poQuantity || 0) + parseInt(discountAmount || 0);
-  //             amount = poQuantity * (poRate || 0) - (discountAmount || 0);
-  //           }
-  //           if (true) {
-  //             switch (taxDetails.ChargeType) {
-  //               case "Percentage":
-  //                 if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
-  //                   if (taxDetails.AdditionalChargeIndicator == "Gross") {
-  //                     taxAmount = (parseInt(amount) + parseInt(discountAmount)) * taxDetails.ChargeValue / 100;
-  //                   } else if (taxDetails.AdditionalChargeIndicator == "Net") {
-  //                     taxAmount = amount * taxDetails.ChargeValue / 100;
-  //                   } else {
-  //                     taxAmount = (parseInt(mrp) * parseInt(poQuantity)) * taxDetails.ChargeValue / 100;
-  //                   }
-  //                 } else {
-  //                   if (taxDetails.AdditionalChargeIndicator == "Gross") {
-  //                     taxAmount = (parseInt(amount) + parseInt(discountAmount)) - ((parseInt(amount) + parseInt(discountAmount)) / (1 + taxDetails.ChargeValue / 100));
-  //                     temp = 1;
-  //                   } else if (taxDetails.AdditionalChargeIndicator == "Net") {
-  //                     taxAmount = amount - (amount / (1 + taxDetails.ChargeValue / 100));
-  //                     temp = 1;
-  //                   } else {
-  //                     taxAmount = (mrp * poQuantity) - ((mrp * POQty) / (1 + taxDetails.ChargeValue / 100));
-  //                     temp = 1;
-  //                   }
-  //                 }
-  //                 break;
-
-  //               case "Amount":
-  //                 if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
-  //                   if (taxDetails.AdditionalChargeIndicator == "Gross") {
-  //                     taxAmount = (parseInt(amount) + parseInt(discountAmount)) + parseInt(taxDetails.ChargeValue);
-  //                   } else if (taxDetails.AdditionalChargeIndicator == "Net") {
-  //                     taxAmount = parseInt(amount) + parseInt(taxDetails.ChargeValue);
-  //                   } else {
-  //                     taxAmount = (mrp * poQuantity) + parseInt(taxDetails.ChargeValue);
-  //                   }
-  //                 } else {
-  //                   if (taxDetails.AdditionalChargeIndicator == "Gross") {
-  //                     taxAmount = (parseInt(amount) + parseInt(discountAmount)) - taxDetails.ChargeValue;
-  //                     temp = 1;
-  //                   } else if (taxDetails.AdditionalChargeIndicator == "Net") {
-  //                     taxAmount = amount - taxDetails.ChargeValue;
-  //                     temp = 1;
-  //                   } else {
-  //                     taxAmount = parseInt(mrp * poQuantity) - taxDetails.ChargeValue;
-  //                     temp = 1;
-  //                   }
-  //                 }
-  //                 break;
-
-  //               default:
-  //                 break;
-  //             }
-  //             let taxA1 = record.TaxAmount1
-  //             let taxA2 = record.TaxAmount2
-  //             if (Id == 1) {
-  //               taxA1 = taxAmount
-  //               form1.setFieldsValue({ [record.key]: { TaxAmount1: taxAmount } })
-  //             } else {
-  //               taxA2 = taxAmount
-  //               form1.setFieldsValue({ [record.key]: { TaxAmount2: taxAmount } })
-  //             }
-  //             if (temp == 1) {
-  //               // lineAmount = amount
-  //               lineAmount = parseFloat(amount - taxAmount - taxA1 + taxA2)
-  //               totalAmount = amount
-  //               form1.setFieldsValue({ [record.key]: { LineAmount: parseFloat(amount - taxA1 - taxA2) } })
-  //               form1.setFieldsValue({ [record.key]: { TotalAmount: amount } })
-  //             }
-  //             else {
-  //               lineAmount = amount
-  //               totalAmount = parseFloat(amount) + parseFloat(taxA1) + parseFloat(taxA2)
-  //               form1.setFieldsValue({ [record.key]: { LineAmount: amount } })
-  //               form1.setFieldsValue({ [record.key]: { TotalAmount: parseFloat(amount) + parseFloat(taxA1) + parseFloat(taxA2) } })
-  //             }
-  //           }
-  //         }
-
-  //         updatedItem.DiscountAmount = discountAmount;
-  //         updatedItem.LineAmount = item.TaxType1 || item.TaxType2 ? item.LineAmount : amount
-  //         updatedItem.TotalAmount = item.TaxType1 || item.TaxType2 ? item.TotalAmount : amount;
-  //         updatedItem.TaxAmount1 = taxAmount1;
-  //         updatedItem.TaxAmount2 = taxAmount2;
-
-  //         form1.setFieldsValue({
-  //           [record.key]: { DiscountAmount: discountAmount },
-  //         });
-  //         form1.setFieldsValue({ [record.key]: { LineAmount: item.TaxType1 || item.TaxType2 ? item.LineAmount : amount } });
-  //         form1.setFieldsValue({ [record.key]: { TotalAmount: item.TaxType1 || item.TaxType2 ? item.TotalAmount : amount } });
-  //         form1.setFieldsValue({ [record.key]: { TaxAmount1: taxAmount1 } });
-  //         form1.setFieldsValue({ [record.key]: { TaxAmount2: taxAmount2 } });
-
-  //         return updatedItem;
+  // function ReCalculate(taxType, record, Id) {
+  //   let taxAmount1 = Id == 1 ? 0 : record.TaxAmount1
+  //   let taxAmount2 = Id == 2 ? 0 : record.TaxAmount2
+  //   let lineAmount = record.Temp == 0 ? record.LineAmount + taxAmount1 + taxAmount1 : record.LineAmount
+  //   let totalAmount = record.Temp == 1 ? record.LineAmount - taxAmount1 - taxAmount1 : record.LineAmount
+  //   const newData = data.map((item) => {
+  //     if (record.key == item.key) {
+  //       return {
+  //         ...item,
+  //         // TaxType1: Id == 1 ? taxType : record.TaxType1,
+  //         // TaxType2: Id == 2 ? taxType : record.TaxType2,
+  //         TaxAmount1: taxAmount1,
+  //         TaxAmount2: taxAmount2,
+  //         LineAmount: lineAmount,
+  //         TotalAmount: totalAmount
   //       }
-  //       return item;
-  //     });
-  //   } else {
-  //     newData = data.map((item) => {
-  //       if (item.key === record.key) {
-  //         const updatedItem = { ...item, [column]: e.target.value };
-  //         return updatedItem;
-  //       }
-  //       return item;
-  //     });
-  //   }
-
-  //   if (["PoQuantity", "PoRate", "DiscountRate", 'TaxType1', 'TaxType2'].includes(column)) {
-  //     const totalAmount = calculateTotalAmount(newData);
-  //     form1.setFieldsValue({
-  //       TotalAmount: totalAmount.TotalAmount,
-  //       TotalPoAmount: totalAmount.LineAmount,
-  //       TaxAmount1: totalAmount.GstTax,
-  //     });
-  //     setPoAmount(totalAmount.TotalAmount)
-  //     setAmount(totalAmount.LineAmount)
-  //     setGSTTax(totalAmount.GstTax)
-  //   }
-  //   setData(newData);
-  // };
+  //     }
+  //     return item
+  //   })
+  //   setData(newData)
+  //   return newData
+  // }
 
   const handleInputChange = async (e, column, index, record) => {
     debugger

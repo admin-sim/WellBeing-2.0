@@ -243,7 +243,6 @@ const PatientConsumption = () => {
   };
 
   const handleOnFinish = async (values) => {
-    debugger;
     if (!values.EncounterId) {
       message.warning("Selected Patient Encounter Is Not Created");
       return false;
@@ -358,7 +357,6 @@ const PatientConsumption = () => {
   };
 
   const OpenBatch = async (record) => {
-    debugger;
     try {
       // Validate and get form values
       await form1.validateFields();
@@ -500,15 +498,15 @@ const PatientConsumption = () => {
 
   const BatchSelect = (selectedStockId, recordKey) => {
     debugger;
-
+    batchDetails
     // Check if selectedStockId already exists in dataModel with ActiveFlag true
     const existingBatch = dataModal.find(
-      (item) => item.StockId === selectedStockId && item.ActiveFlag === true
+      (item) => item.StockId === selectedStockId && item.ActiveFlag === true && item.key != recordKey
     );
 
     if (existingBatch) {
       message.warning("Same Batch Number should not be selected.");
-      //  return;
+       return;
     }
     const selectedBatch = batchDetails.find(
       (batch) => batch.StockId === selectedStockId
@@ -558,7 +556,6 @@ const PatientConsumption = () => {
   };
 
   const onFinishModel = async () => {
-    debugger;
     await form2.validateFields();
     const values = form2.getFieldsValue();
     // Extract the values from the object as an array
@@ -640,7 +637,6 @@ const PatientConsumption = () => {
   };
 
   const handleSelect1 = (value, option, key) => {
-    debugger;
     form1.setFieldsValue({ [key]: { UomId: option.UomId } });
     form1.setFieldsValue({ [key]: { ProductId: option.key } });
     customAxios

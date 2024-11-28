@@ -53,10 +53,12 @@ const AcknowledageReturn = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true)
     try {
       customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
         const apiData = response.data.data;
         setDropDown(apiData);
+        setLoading(false)
       });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
@@ -396,15 +398,13 @@ const AcknowledageReturn = () => {
               </Col>
             </Row>
           </Form>
-          <Spin spinning={isSearchLoading}>
-            <CustomTable loading={loading}
-              dataSource={filteredData}
-              columns={columns}
-              isFilter={true}
-              actionColumn={false}
-              bordered
-            />
-          </Spin>
+          <CustomTable loading={loading}
+            dataSource={filteredData}
+            columns={columns}
+            isFilter={true}
+            actionColumn={false}
+            bordered
+          />
         </Card>
       </div>
     </Layout>

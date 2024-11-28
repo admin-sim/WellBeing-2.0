@@ -22,6 +22,7 @@ import {
   Divider,
   Tooltip,
   Table,
+  Modal,
 } from "antd";
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
@@ -34,6 +35,7 @@ import { render } from "react-dom";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import CustomTable from "../../../components/customTable/index.jsx";
+import { set } from "lodash";
 //import { useLocation } from 'react-router-dom';
 
 const UrgentIssue = () => {
@@ -50,6 +52,9 @@ const UrgentIssue = () => {
   const { Title } = Typography;
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
   const [toDate, setToDate] = useState(dayjs());
+  const [error, setError] = useState(null);
+  const [reportUrl, setReportUrl] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     try {
@@ -143,9 +148,50 @@ const UrgentIssue = () => {
       },
     },
     {
-      render: (_, row) => <Button type="link">Report</Button>,
+      render: (_, record) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
     },
   ];
+
+  const handleReport = async (value, record) => {
+    setLoading(true)
+    try {
+      const request = {
+        PONO: record.IndentNumber,
+        use: 'admin',
+        FileType: "pdf", // or 'excel'
+      };
+      const { url, blob } = await fetchReport(request);
+      setReportUrl(url);
+      // setBlobData(blob);
+      setIsModalVisible(true);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  async function fetchReport(request) {
+    const response = await fetch(
+      "http://localhost:43705/api/ReportsApi/GetPatientIndentRpt",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+    console.log("respo", response);
+
+    if (!response.ok) {
+      setLoading(false)
+      throw new Error("Failed to fetch report");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob); s
+    setLoading(false)
+    return { url, blob };
+  }
 
   const onFinish = async (values) => {
     setLoading(true);
@@ -340,7 +386,7 @@ const UrgentIssue = () => {
             <Row justify="end">
               <Col>
                 <Form.Item>
-                  <Button type="primary" htmlType="submit">
+                  <Button type="primary" htmlType="submit" loading={loading}>
                     Search
                   </Button>
                 </Form.Item>
@@ -354,16 +400,39 @@ const UrgentIssue = () => {
               </Col>
             </Row>
           </Form>
-          <Spin spinning={loading}>
-            <CustomTable
-              dataSource={filteredData}
-              columns={columns}
-              isFilter={true}
-              size="small"
-              bordered
-            />
-          </Spin>
+          <CustomTable
+            dataSource={filteredData}
+            columns={columns}
+            isFilter={true}
+            size="small"
+            actionColumn={false}
+            bordered
+            loading={loading}
+          />
         </Card>
+      </div>
+      <div>
+        {error && <div>Error: {error}</div>}
+
+        <Modal
+          title="Report"
+          visible={isModalVisible}
+          onCancel={() => setIsModalVisible(false)}
+          footer={[
+            <Button key="close" onClick={() => setIsModalVisible(false)}>
+              Close
+            </Button>,
+          ]}
+          width={"60rem"} // You can adjust the width as needed
+        >
+          {reportUrl && (
+            <iframe
+              src={reportUrl}
+              style={{ width: "100%", height: "500px", border: "none" }}
+              title="Report"
+            />
+          )}
+        </Modal>
       </div>
     </Layout>
   );

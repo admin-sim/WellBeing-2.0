@@ -14,6 +14,7 @@ import {
   Col,
   DatePicker,
   Card,
+  Modal,
 } from "antd";
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
@@ -41,6 +42,9 @@ const PurchaseOrder = () => {
   const { Title } = Typography;
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
+  const [error, setError] = useState(null);
+  const [reportUrl, setReportUrl] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     try {
@@ -130,9 +134,9 @@ const PurchaseOrder = () => {
     },
     {
       title: "PO Auth By",
-      dataIndex: "PORaisedBy",
-      key: "PORaisedBy",
-      sorter: (a, b) => a.PurchaseOrderId.localeCompare(b.PurchaseOrderId),
+      dataIndex: "CreatedBy",
+      key: "CreatedBy",
+      sorter: (a, b) => a.CreatedBy.localeCompare(b.CreatedBy),
       sortDirections: ["descend", "ascend"],
     },
     {
@@ -150,7 +154,7 @@ const PurchaseOrder = () => {
       },
     },
     {
-      render: (_, row) => <Button type="link">Report</Button>,
+      render: (_, record) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
     },
   ];
 
@@ -200,6 +204,46 @@ const PurchaseOrder = () => {
   const onReset = () => {
     form.resetFields();
   };
+
+  const handleReport = async (value, record) => {
+    setLoading(true)
+    try {
+      const request = {
+        PONO: record.PONumber,
+        use: 'admin',
+        FileType: "pdf", // or 'excel'
+      };
+      const { url, blob } = await fetchReport(request);
+      setReportUrl(url);
+      // setBlobData(blob);
+      setIsModalVisible(true);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  async function fetchReport(request) {
+    const response = await fetch(
+      "http://localhost:43705/api/ReportsApi/GetPORpt",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+    console.log("respo", response);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch report");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    setLoading(false)
+    return { url, blob };
+  }
 
   return (
     <Layout
@@ -280,7 +324,7 @@ const PurchaseOrder = () => {
               <DatePicker
                 value={toDate}
                 onChange={(date) => setToDate(date)}
-                disabledDate={(current) => current < fromDate} 
+                disabledDate={(current) => current < fromDate}
                 style={{ width: "100%" }}
                 format="DD-MM-YYYY"
               />
@@ -333,7 +377,7 @@ const PurchaseOrder = () => {
         <Row justify="end" gutter={16}>
           <Col>
             <Form.Item>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" loading={loading}>
                 Search
               </Button>
             </Form.Item>
@@ -347,15 +391,37 @@ const PurchaseOrder = () => {
           </Col>
         </Row>
       </Form>
-      <Spin spinning={loading}>
-        <CustomTable
-          dataSource={filteredData}
-          columns={columns}
-          actionColumn={false}
-          isFilter={true}
-          scroll={{ x: 1000 }}
-        />
-      </Spin>
+      <CustomTable loading={loading}
+        dataSource={filteredData}
+        columns={columns}
+        actionColumn={false}
+        isFilter={true}
+        scroll={{ x: 1000 }}
+      />
+      <div>
+        {error && <div>Error: {error}</div>}
+
+
+        <Modal
+          title="Report"
+          visible={isModalVisible}
+          onCancel={() => setIsModalVisible(false)}
+          footer={[
+            <Button key="close" onClick={() => setIsModalVisible(false)}>
+              Close
+            </Button>,
+          ]}
+          width={"60rem"} // You can adjust the width as needed
+        >
+          {reportUrl && (
+            <iframe
+              src={reportUrl}
+              style={{ width: "100%", height: "500px", border: "none" }}
+              title="Report"
+            />
+          )}
+        </Modal>
+      </div>
     </Layout>
   );
 };

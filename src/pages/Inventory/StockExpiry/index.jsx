@@ -27,6 +27,7 @@ import {
   urlStockExpiryBasedOnExpiryCondition
 } from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
+import CustomTable from "../../../components/customTable/index.jsx";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -71,11 +72,12 @@ const StockExpiry = () => {
     debugger;
     console.log("welcome");
   };
+
   const columns = [
     {
       title: "Sl No",
-      key: "index",
-      render: (text, record, index) => index + 1,
+      key: "SlNo",
+      dataIndex: "SlNo",
     },
     {
       title: "Product Name",
@@ -97,9 +99,6 @@ const StockExpiry = () => {
       key: "EXPDateString",
       sorter: (a, b) => new Date(a.EXPDateString) - new Date(b.EXPDateString),
       sortDirections: ["descend", "ascend"],
-      render: (text) => {
-        return text;
-      },
     },
     {
       title: "Quantity",
@@ -144,18 +143,26 @@ const StockExpiry = () => {
   }
 
   const onFinish = async (values) => {
-    debugger;
+    setLoading(true)
     const temp = values.StoreLocation
     const temp1 = parseInt(values.StockExpiryIn)
     try {
       customAxios.get(`${urlStockExpiryBasedOnExpiryCondition}?StoreLocation=${temp}&StockExpireIn=${temp1}`).then((response) => {
         debugger;
-        const apiData = response.data.data;
-        setFilteredData(apiData.IndentDetails)
+        const apiData = response.data.data.IndentDetails.map((item, index) => {
+          return {
+            ...item,
+            SlNo: index + 1
+          }
+        });
+        setFilteredData(apiData)
+        setLoading(false)
         setShowTable(true)
       });
     } catch (error) {
       //console.error("Error fetching purchase order details:", error);        
+    } finally {
+      // setLoading(false)
     }
   };
 
@@ -210,7 +217,7 @@ const StockExpiry = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="StockExpiryIn" label="Stock Expiry In">
-                  <Select allowClear>
+                  <Select>
                     <Select.Option key='0' value='0'>All</Select.Option>
                     <Select.Option key='1' value='1'>Expired</Select.Option>
                     <Select.Option key='7' value='7'>Expiring in a Week</Select.Option>
@@ -240,7 +247,14 @@ const StockExpiry = () => {
               </Col>
             </Row>
           </Form>
-          {showTable && (
+          <CustomTable loading={loading}
+            dataSource={filteredData}
+            columns={columns}
+            isFilter={true}
+            actionColumn={false}
+            bordered
+          />
+          {/* {showTable && (
             <Table
               dataSource={filteredData}
               columns={columns}
@@ -259,7 +273,7 @@ const StockExpiry = () => {
               size="small"
               bordered
             />
-          )}
+          )} */}
         </Card>
       </div>
     </Layout>

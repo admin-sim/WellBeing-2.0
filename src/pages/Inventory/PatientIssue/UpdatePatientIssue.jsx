@@ -829,14 +829,23 @@ const UpdatePatientIssue = () => {
           rules={[
             {
               validator: (_, value) => {
-                if (!value || !value.$isDayjsObject) {
-                  return Promise.reject(new Error("Invalid date format!"));
-                }
+                // if (!record.EXPDate || !record.EXPDate.$isDayjsObject) {
+                //   record
+                //   return Promise.reject(new Error("Invalid date format!"));
+                // }
                 const today = dayjs();
-                if (value.isBefore(today, "day")) {
+                const expDate = dayjs(record.EXPDate); 
+
+                if (expDate.isBefore(today, "day")) {
                   return Promise.reject(new Error("Date is expired!"));
                 }
+
                 return Promise.resolve();
+                // const today = dayjs();
+                // if (record.EXPDate.isBefore(today, "day")) {
+                //   return Promise.reject(new Error("Date is expired!"));
+                // }
+                // return Promise.resolve();
               },
             },
           ]}

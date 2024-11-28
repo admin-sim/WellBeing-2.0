@@ -268,7 +268,11 @@ function EditDischargeClearance() {
                     initialValues={{
                         Date: dayjs()
                     }}>
-                    <CustomTable columns={columns} dataSource={dataSource} actionColumn={false} loading={loading} />
+                    <CustomTable columns={columns}
+                        dataSource={dataSource}
+                        actionColumn={false}
+                        loading={loading}                        
+                    />
                     <Row justify="end">
                         <Col>
                             <Form.Item>

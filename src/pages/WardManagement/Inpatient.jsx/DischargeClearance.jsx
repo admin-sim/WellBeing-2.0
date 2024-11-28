@@ -231,6 +231,7 @@ function DischargeClearance() {
             columns={columns}
             dataSource={tableData1}
             onEdit={handleEdit}
+            isFilter={true}
           />
         </Spin>
         <Modal

@@ -89,18 +89,10 @@ const StoreReturn = () => {
     },
     {
       title: "Returned Date",
-      dataIndex: "ReturnDate",
-      key: "ReturnDate",
-      sorter: (a, b) => a.ReturnDate.localeCompare(b.ReturnDate),
+      dataIndex: "ReturnDatestring",
+      key: "ReturnDatestring",
+      sorter: (a, b) => a.ReturnDatestring.localeCompare(b.ReturnDatestring),
       sortDirections: ["descend", "ascend"],
-      render: (text) => {
-        const dateParts = text.split('T')[0].split('-');
-        const year = dateParts[0];
-        const month = dateParts[1];
-        const day = dateParts[2];
-
-        return `${day}-${month}-${year}`;
-      },
     },
     {
       title: "Returning Location",
@@ -110,9 +102,11 @@ const StoreReturn = () => {
       sortDirections: ["descend", "ascend"],
     },
     {
-      title: "Returned to Vendor",
+      title: "Returned to Location",
       dataIndex: "ReturnStoreName",
       key: "ReturnStoreName",
+      sorter: (a, b) => new Date(a.ReturnStoreName) - new Date(b.ReturnStoreName),
+      sortDirections: ["descend", "ascend"],
     },
     {
       title: "Status",
@@ -144,7 +138,7 @@ const StoreReturn = () => {
       const postData1 = {
         Store: values.ReturningStore ? values.ReturningStore : 0,
         ReturnedToStore: values.ReturnedToLocation ? values.ReturnedToLocation : 0,
-        Status: values.Status ? values.Status : "",
+        Status: values.Status == 'All' ? '' : values.Status,
         FromDateString: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : null,
         ToDateString: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : null
       };
@@ -194,7 +188,7 @@ const StoreReturn = () => {
             initialValues={{
               FromDate: dayjs().subtract(1, 'day'),
               ToDate: dayjs(),
-              Status: '',
+              Status: 'All',
             }}
             onFinish={onFinish}
           >
@@ -234,7 +228,7 @@ const StoreReturn = () => {
               <Col className="gutter-row" span={6}>
                 <Form.Item name="Status" label="Status">
                   <Select>
-                    <Select.Option key='' value='All'></Select.Option>
+                    <Select.Option key='All' value='All'></Select.Option>
                     <Select.Option key='Create' value='Create'></Select.Option>
                     <Select.Option key='Draft' value='Draft'></Select.Option>
                     <Select.Option key='Finalize' value='Finalize'></Select.Option>
