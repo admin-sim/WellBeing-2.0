@@ -557,7 +557,7 @@ const CreateBilling = () => {
   };
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:901/api/ReportsApi/BillReport",
+      "https://192.168.29.254:808/api/ReportsApi/BillReport",
       {
         method: "POST",
         headers: {

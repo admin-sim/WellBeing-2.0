@@ -22,6 +22,7 @@ import {
   Divider,
   Tooltip,
   Table,
+  Modal,
 } from "antd";
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
@@ -54,6 +55,9 @@ const PatientIndent = () => {
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
   const [toDate, setToDate] = useState(dayjs());
   const [dropDownLoad, setDropDownLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [reportUrl, setReportUrl] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     debugger
@@ -193,9 +197,49 @@ const PatientIndent = () => {
       },
     },
     {
-      render: (_, row) => <Button type="link">Report</Button>,
+      render: (_, record) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
     },
   ];
+
+  const handleReport = async (value, record) => {
+    setLoading(true)
+    try {
+      const request = {
+        PONO: record.IndentNumber,
+        use: 'admin',
+        FileType: "pdf", // or 'excel'
+      };
+      const { url, blob } = await fetchReport(request);
+      setReportUrl(url);
+      // setBlobData(blob);
+      setIsModalVisible(true);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  async function fetchReport(request) {
+    const response = await fetch(
+      "http://localhost:43705/api/ReportsApi/GetPatientIndentRpt",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+    console.log("respo", response);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch report");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    setLoading(false)
+    return { url, blob };
+  }
 
   const onFinish = async (values) => {
     debugger
@@ -259,7 +303,7 @@ const PatientIndent = () => {
           minHeight: "max-content",
           borderRadius: "10px",
         }}
-      >        
+      >
         <PageHeader
           title={"Patient Indent"}
           buttonLabel="Add Patient Indent"
@@ -377,10 +421,10 @@ const PatientIndent = () => {
             <Row justify="end">
               <Col>
                 <Form.Item>
-                  <Button
+                  <Button 
                     type="primary"
-                    loading={isSearchLoading}
-                    htmlType="submit"
+                    loading={loading}
+                    htmlType="submit" 
                   >
                     Search
                   </Button>
@@ -395,16 +439,38 @@ const PatientIndent = () => {
               </Col>
             </Row>
           </Form>
-          <Spin spinning={loading}>
-            <CustomTable
-              dataSource={filteredData}
-              columns={columns}
-              isFilter={true}
-              size="small"
-              bordered
-            />
-          </Spin>
+          <CustomTable loading={loading}
+            dataSource={filteredData}
+            columns={columns}
+            isFilter={true}
+            size="small"
+            bordered
+            actionColumn={false}
+          />
         </Card>
+      </div>
+      <div>
+        {error && <div>Error: {error}</div>}
+
+        <Modal
+          title="Report"
+          visible={isModalVisible}
+          onCancel={() => setIsModalVisible(false)}
+          footer={[
+            <Button key="close" onClick={() => setIsModalVisible(false)}>
+              Close
+            </Button>,
+          ]}
+          width={"60rem"} // You can adjust the width as needed
+        >
+          {reportUrl && (
+            <iframe
+              src={reportUrl}
+              style={{ width: "100%", height: "500px", border: "none" }}
+              title="Report"
+            />
+          )}
+        </Modal>
       </div>
     </Layout>
   );

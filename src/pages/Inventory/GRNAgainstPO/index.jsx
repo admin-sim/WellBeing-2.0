@@ -10,6 +10,7 @@ import {
   Row,
   Col,
   DatePicker,
+  Modal,
 } from "antd";
 import { useNavigate } from "react-router";
 import dayjs from "dayjs";
@@ -36,6 +37,9 @@ const GRNAgainstPO = () => {
   const [dropDownLoad, setDropDownLoading] = useState(true);
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
   const [toDate, setToDate] = useState(dayjs());
+  const [error, setError] = useState(null);
+  const [reportUrl, setReportUrl] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     try {
@@ -168,7 +172,7 @@ const GRNAgainstPO = () => {
       title: "Actions",
       dataIndex: "actions",
       key: "actions",
-      render: (text, record, index) => <Button type="link">Report</Button>,
+      render: (text, record, index) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
     },
   ];
 
@@ -217,6 +221,46 @@ const GRNAgainstPO = () => {
     form.resetFields();
   };
 
+  const handleReport = async (value, record) => {
+    setLoading(true)
+    try {
+      const request = {
+        PONO: record.GRNNumber,
+        use: 'admin',
+        FileType: "pdf", // or 'excel'
+      };
+      const { url, blob } = await fetchReport(request);
+      setReportUrl(url);
+      // setBlobData(blob);
+      setIsModalVisible(true);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  async function fetchReport(request) {
+    const response = await fetch(
+      "http://localhost:43705/api/ReportsApi/GetGRNRpt",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+    console.log("respo", response);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch report");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    setLoading(false)
+    return { url, blob };
+  }
+
   return (
     <Layout
       style={{
@@ -229,7 +273,7 @@ const GRNAgainstPO = () => {
       <PageHeader
         title={"GRN Against PO"}
         buttonIcon={<PlusCircleOutlined style={{ fontSize: "1rem" }} />}
-        buttonLabel={"Add GRN Against PO"}
+        buttonLabel={"Craate GRN Against PO"}
         onButtonClick={() => handleGRN(0)}
       />
 
@@ -345,7 +389,7 @@ const GRNAgainstPO = () => {
         <Row justify="end" gutter={16}>
           <Col>
             <Form.Item>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" loading={loading}>
                 Search
               </Button>
             </Form.Item>
@@ -359,15 +403,36 @@ const GRNAgainstPO = () => {
           </Col>
         </Row>
       </Form>
-      <Spin spinning={loading}>
-        <CustomTable
-          dataSource={filteredData}
-          columns={columns}
-          isFilter={true}
-          actionColumn={false}
-          scroll={{ x: 1200 }}
-        />
-      </Spin>
+      <CustomTable loading={loading}
+        dataSource={filteredData}
+        columns={columns}
+        isFilter={true}
+        actionColumn={false}
+        scroll={{ x: 1200 }}
+      />
+      <div>
+        {error && <div>Error: {error}</div>}
+
+        <Modal
+          title="Report"
+          visible={isModalVisible}
+          onCancel={() => setIsModalVisible(false)}
+          footer={[
+            <Button key="close" onClick={() => setIsModalVisible(false)}>
+              Close
+            </Button>,
+          ]}
+          width={"60rem"} // You can adjust the width as needed
+        >
+          {reportUrl && (
+            <iframe
+              src={reportUrl}
+              style={{ width: "100%", height: "500px", border: "none" }}
+              title="Report"
+            />
+          )}
+        </Modal>
+      </div>
     </Layout>
   );
 };

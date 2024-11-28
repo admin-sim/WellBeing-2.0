@@ -71,6 +71,8 @@ const CreateStoreReturn = () => {
   const [rfromDate, setRFromDate] = useState(dayjs().subtract(1, "day"));
   const [rtoDate, setRToDate] = useState(dayjs());
   const [recieptDetails, setRecieptDetails] = useState();
+  const [buttonTitle, setButtonTitle] = useState('Save');
+
 
   useEffect(() => {
     customAxios.get(urlCreateStoreReturn).then((response) => {
@@ -105,6 +107,7 @@ const CreateStoreReturn = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      debugger
       if (ReturnHeaderId > 0) {
         setButtonTitle("Update");
         try {
@@ -125,9 +128,8 @@ const CreateStoreReturn = () => {
 
             const formdata = editeddata.newReturnModel;
             form1.setFieldsValue({
-
               ReturningStore: formdata.StoreId,
-              ReturnedLocation: formdata.SupplierId,
+              ReturningLocation: formdata.SupplierId,
               // ReturnHeaderId: formdata.ReturnHeaderId
             });
           }
@@ -482,6 +484,10 @@ const CreateStoreReturn = () => {
     },
   ];
 
+  function handleStore() {
+    setData([])
+  }
+
   return (
     <Layout style={{ zIndex: "999999999" }}>
       <div
@@ -525,7 +531,7 @@ const CreateStoreReturn = () => {
                       }
                     ]}
                   >
-                    <Select allowClear placeholder='Select Value'>
+                    <Select allowClear placeholder='Select Value' onChange={handleStore}>
                       {DropDown.StoreDetails.map((option) => (
                         <Select.Option key={option.StoreId} value={option.StoreId}>
                           {option.StoreType}
@@ -545,7 +551,7 @@ const CreateStoreReturn = () => {
                       }
                     ]}
                   >
-                    <Select allowClear placeholder='Select Value'>
+                    <Select allowClear placeholder='Select Value' onChange={handleStore}>
                       {DropDown.StoreDetails.map((option) => (
                         <Select.Option key={option.StoreId} value={option.StoreId}>
                           {option.StoreType}
@@ -571,7 +577,20 @@ const CreateStoreReturn = () => {
               </Col>
               <Col className="gutter-row" span={4}>
                 <div>
-                  <Form.Item label="Status" name="Status">
+                  <Form.Item label="Status" name="Status"
+                    rules={[
+                      {
+                        required: issueStatus,
+                        message: 'Please input!'
+                      }
+                    ]}
+                  >
+                    <Select allowClear placeholder='Select Value'>
+                      <Select.Option key='Draft' value='Draft'></Select.Option>
+                      <Select.Option key='Finalize' value='Finalize'></Select.Option>
+                    </Select>
+                  </Form.Item>
+                  {/* <Form.Item label="Status" name="Status">
                     <Select allowClear placeholder='Select Value'>
                       {DropDown.StoreDetails.map((option) => (
                         <Select.Option key={option.StoreId} value={option.StoreId}>
@@ -579,13 +598,13 @@ const CreateStoreReturn = () => {
                         </Select.Option>
                       ))}
                     </Select>
-                  </Form.Item>
+                  </Form.Item> */}
                 </div>
               </Col>
               <Col className="gutter-row" span={6}>
                 <div>
-                  <Form.Item name="Remarks" style={{ marginTop: '30px' }}>
-                    <Checkbox>Submit</Checkbox>
+                  <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }} valuePropName='checked'>
+                    <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
                   </Form.Item>
                 </div>
               </Col>
@@ -601,7 +620,7 @@ const CreateStoreReturn = () => {
               <Col style={{ marginRight: '10px' }}>
                 <Form.Item>
                   <Button type="primary" htmlType="submit">
-                    Submit
+                    {buttonTitle}
                   </Button>
                 </Form.Item>
               </Col>
