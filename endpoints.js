@@ -521,5 +521,9 @@ export const urlUpdateFacilityDepartmentProvider = `${baseURL}/api/FacilityDepar
 export const urlCreatePharmacyReFund = `${baseURL}/api/Refund/CreatePharmacyReFund`;
 export const urlStoreReturnShowBatch = `${baseURL}/api/StoreReturn/StoreReturnShowBatch`;
 export const urlShowReceiptList = `${baseURL}/api/StoreReturn/ShowReceiptList`;
+export const urlPharmacyPrescription = `${baseURL}/api/Pharmacy/PharmacyPrescription`;
+export const url = `${baseURL}/api/Pharmacy/PharmacyPrescription`;
+export const urlGetExistingPrescription = `${baseURL}/api/ClinicalSetup/GetExistingPrescription`;
+export const urlGetPrescriptionHedderIdPhar = `${baseURL}/api/ClinicalSetup/GetPrescriptionHedderIdPhar`;
 
 

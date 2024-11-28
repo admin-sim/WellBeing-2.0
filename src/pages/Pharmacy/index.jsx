@@ -12,8 +12,9 @@ function PharamcyIndex() {
     const url = `/OtcDispense`;
     navigate(url, {
       state: {
-        patientId: values.patientId,
-        encounterId: values.Encounter,
+        PatientId: values.patientId,
+        EncounterId: values.Encounter,
+        flag:""
       },
     });
   };

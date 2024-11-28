@@ -38,9 +38,11 @@ import {
   urlEditPharmacyDiscount,
   urlGetAllAutocompleteProviders,
   urlGetAllProviders,
+  urlGetExistingPrescription,
   urlGetLastBillNumber,
   urlGetPatientHeaderDetails,
   urlGetPharmacyServiceCharge,
+  urlGetPrescriptionHedderIdPhar,
   urlGetProductBatchDetails,
   urlGetStoreProductDetails,
   urlInvoiceDiscount,
@@ -56,15 +58,17 @@ import dayjs from "dayjs";
 import { debounce, min } from "lodash";
 import PharmacyDiscountModal from "./PharmacyDiscountModal.jsx";
 import PharmacyInvoiceDiscountModal from "./PharmacyInvoiceDiscountModal.jsx";
-
+import PrescriptionListModal from "../PrescriptioList/index.jsx";
 const OtcDispense = () => {
   const location = useLocation();
-  const PatientId = location.state.patientId;
-  const EncounterId = location.state.encounterId;
-  const Encounter = location.state.encounter;
-  const [services, setServices] = useState(null);
+  // const PatientId = location.state.patientId;
+  // const EncounterId = location.state.encounterId;
+  const { PatientId, EncounterId, flag } = location.state || {};
+  //const Encounter = location.state.encounter;
+  //const [services, setServices] = useState(null);
 
   const [charges, setCharges] = useState([]);
+  const [store, setStore] = useState([]);
   const [totalInstrumentAmount, setTotalInstrumentAmount] = useState(0);
   const [serviceId, setSelectedServiceId] = useState(null);
   const [providerId, setSelectedProviderId] = useState(null);
@@ -94,9 +98,12 @@ const OtcDispense = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [options, setOptions] = useState([]);
   const [providers, setProviders] = useState([]);
-
+  const [prescriptionModalOpen, setPrecsriptionModalOpen] = useState(false);
+  const [prescriptionLists, setPrescriptionLists] = useState([]);
+  const [prescriptionlistPharmacy, setPrescriptionlistPharmacy] = useState([]);
   const [storeId, setStoreId] = useState([]);
   const [batchOptions, setBatchOptions] = useState([]);
+  const [billflag, setBillFlag] = useState(null);
   console.log("l", location.state);
   const [billloading, setBillLoading] = useState(false);
   useEffect(() => {
@@ -129,7 +136,7 @@ const OtcDispense = () => {
     debugger;
     try {
       const storeId = "";
-      const flag = "";
+      
       const response = await customAxios.get(
         `${urlPharmacyCreate}?PatientId=${PatientId}&EncounterId=${EncounterId}&StoreId=${storeId}&flag=${flag} `
       );
@@ -140,6 +147,11 @@ const OtcDispense = () => {
         setBanks(details?.Bank);
         setPaymentTypes(details?.PaymentType);
         setCharges(details?.PatientAccountCharges);
+        setStore(details.StoreModel);
+        setBillFlag(details.PFlag);
+        form.setFieldsValue({
+          Store: details.StoreId,
+        });
       } else {
         setTableLoading(false);
       }
@@ -959,9 +971,12 @@ const OtcDispense = () => {
   const handleSaveBill = async (values) => {
     debugger;
     if (billloading) return; // Prevent multiple clicks
-  
+
     setBillLoading(true); // Start loading state
-    const loadingMessage = message.loading("Please wait, bill is being processed...", 0); // Persistent loading message
+    const loadingMessage = message.loading(
+      "Please wait, bill is being processed...",
+      0
+    ); // Persistent loading message
     const formattedReceiptInsAmtData = receiptInsAmtData.map((item) => ({
       AuthorizationReference: item.AuthorizationReference || "",
       BankId: item.BankId ? parseInt(item.BankId, 10) : 0,
@@ -1032,8 +1047,7 @@ const OtcDispense = () => {
       // ... rest of your logic
     } catch (error) {
       message.error("Something Went Wrong");
-    }
-    finally {
+    } finally {
       setBillLoading(false); // End loading state
       loadingMessage(); // Remove loading message
     }
@@ -1048,6 +1062,48 @@ const OtcDispense = () => {
     } else {
       message.warning("Something Went Wrong While Saving Data to TempTable");
     }
+  }
+
+  const handlePrescriptionTypeSubmit = (values) => {
+    
+
+
+  };
+  const hanldePrescription = async () => {
+    debugger;
+    try {
+      const response = await customAxios.get(
+        `${urlGetExistingPrescription}?EncounterId=${EncounterId}&PatientId=${PatientId}`
+      );
+      if (response.status === 200 && response.data != null) {
+        const existingprescription =
+          response.data.data.ExistingPrescriptionModel.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          });
+        setPrescriptionLists(existingprescription);
+        setPrecsriptionModalOpen(true);
+      } else {
+      }
+    } catch (error) {}
+  };
+
+  const handleShowPrescriptions =async(record)=>{
+        debugger
+      try {
+        const response = await customAxios.get(
+          `${urlGetPrescriptionHedderIdPhar}?EncounterId=${EncounterId}&PatientId=${PatientId}&PriscptionHedderId=${record.PriscptionHedderId}`
+        );
+        if (response.status === 200 && response.data != null) {
+          const existingprescription =
+          response.data.data.PrescriptionModel.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          });
+              setPrescriptionlistPharmacy(existingprescription);
+                   
+        } else {
+        }
+      } catch (error) {}
+  
   }
 
   return (
@@ -1094,6 +1150,41 @@ const OtcDispense = () => {
             Qty: 1,
           }}
         >
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item name="Store" label="Store">
+                <Select
+                  placeholder="Select Provider"
+                  allowClear
+                  disabled
+                  // loading={isloading}
+                >
+                  {store?.map((option) => (
+                    <Select.Option key={option.StoreId} value={option.StoreId}>
+                      {option.LongName}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col
+              span={8}
+              offset={6}
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+              }}
+            >
+              <Button
+                onClick={hanldePrescription}
+                type="primary"
+                style={{ marginRight: "8px" }}
+              >
+                Prescription
+              </Button>
+            </Col>
+          </Row>
           <Row gutter={16}>
             <Col className="gutter-row" span={2}>
               <div>
@@ -1357,14 +1448,15 @@ const OtcDispense = () => {
                     <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}></Text>
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2} >
+                    <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}>
                         {totalUnitAmt.toFixed(2)}
                       </Text>
                     </Table.Summary.Cell>
-                     <Table.Summary.Cell index={2}>
+                    <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}></Text>
-                    </Table.Summary.Cell>    <Table.Summary.Cell index={2}>
+                    </Table.Summary.Cell>{" "}
+                    <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}></Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2} colSpan={1}>
@@ -1390,7 +1482,8 @@ const OtcDispense = () => {
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}></Text>
-                    </Table.Summary.Cell>    <Table.Summary.Cell index={2}>
+                    </Table.Summary.Cell>{" "}
+                    <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}></Text>
                     </Table.Summary.Cell>
                     {/* <Table.Summary.Cell index={2}>
@@ -1429,6 +1522,17 @@ const OtcDispense = () => {
           handleClose={() => setIsModalOpen(false)}
           discountDetails={discountDetails}
           setCharges={setCharges}
+        />
+        <PrescriptionListModal
+          open={prescriptionModalOpen}
+          handleClose={() => {
+            setPrecsriptionModalOpen(false);
+            setPrescriptionlistPharmacy([]);
+          }}
+          handleSubmit={handlePrescriptionTypeSubmit}
+          prescriptionlist={prescriptionLists}
+          prescriptionlistPharmacy={prescriptionlistPharmacy}
+          ShowPrescriptions={handleShowPrescriptions}
         />
         {/* <Divider orientation="left"></Divider> */}
         <Form
@@ -1471,52 +1575,56 @@ const OtcDispense = () => {
             </Col>
           </Row>
 
-          <ConfigProvider
-            theme={{
-              components: {
-                Table: {
-                  headerBg: "#E6E6FA",
-                },
-              },
-            }}
-          >
-            <Table
-              dataSource={receiptInsAmtData}
-              columns={receiptInscolumns}
-              // rowKey={(row) => row.ServiceId} // Specify the custom id property here
-              size="small"
-              bordered
-              pagination={false}
-            />
-          </ConfigProvider>
+          {billflag !== 1 && (
+            <>
+              <ConfigProvider
+                theme={{
+                  components: {
+                    Table: {
+                      headerBg: "#E6E6FA",
+                    },
+                  },
+                }}
+              >
+                <Table
+                  dataSource={receiptInsAmtData}
+                  columns={receiptInscolumns}
+                  // rowKey={(row) => row.ServiceId} // Specify the custom id property here
+                  size="small"
+                  bordered
+                  pagination={false}
+                />
+              </ConfigProvider>
 
-          <Row justify="end" style={{ padding: "0rem 1rem" }}>
-            <Col style={{ marginRight: "20px", marginTop: "1rem" }}>
-              <Form.Item>
-                <Button
-                  type="primary"
-                  //loading={isSearchLoading}
-                  htmlType="submit"
-                >
-                  Save
-                </Button>
-              </Form.Item>
-            </Col>
-            <Col style={{ marginRight: "20px", marginTop: "1rem" }}>
-              <Form.Item>
-                <Button type="primary" onClick={() => handleProvisional()}>
-                  Provisional
-                </Button>
-              </Form.Item>
-            </Col>
-            <Col style={{ marginRight: "20px", marginTop: "1rem" }}>
-              <Form.Item>
-                <Button type="primary" onClick={() => handlePrintBill()}>
-                  PrintBill
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
+              <Row justify="end" style={{ padding: "0rem 1rem" }}>
+                <Col style={{ marginRight: "20px", marginTop: "1rem" }}>
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      // loading={isSearchLoading}
+                      htmlType="submit"
+                    >
+                      Save
+                    </Button>
+                  </Form.Item>
+                </Col>
+                <Col style={{ marginRight: "20px", marginTop: "1rem" }}>
+                  <Form.Item>
+                    <Button type="primary" onClick={() => handleProvisional()}>
+                      Provisional
+                    </Button>
+                  </Form.Item>
+                </Col>
+                <Col style={{ marginRight: "20px", marginTop: "1rem" }}>
+                  <Form.Item>
+                    <Button type="primary" onClick={() => handlePrintBill()}>
+                      PrintBill
+                    </Button>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </>
+          )}
           <div>
             {error && <div>Error: {error}</div>}
 

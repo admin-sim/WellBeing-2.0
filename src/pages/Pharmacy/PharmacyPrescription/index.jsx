@@ -30,73 +30,145 @@ const { Text } = Typography;
 import { Tabs } from "antd";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
 import CustomTable from "../../../components/customTable/index.jsx";
+import customAxios from "../../../components/customAxios/customAxios.jsx";
+import { urlPharmacyPrescription } from "../../../../endpoints.js";
+import { Link, useNavigate } from "react-router-dom";
 
 const PharamcyPrescriptionIndex = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [prescriptionDetails, setPrescriptionDetails] = [];
+  const [prescriptionDetails, setPrescriptionDetails] = useState([]);
+  const [PatientAccountCharges, setPatientAccountCharges] = useState([]);
 
   const handleOnFinish = () => {};
   const handlePatientTrackingSearch = () => {};
   const { TabPane } = Tabs;
 
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  // useEffect(() => {
-  //   fetchData();
-  // }, []);
+  const fetchData = async () => {
+    debugger;
+    try {
+      const response = await customAxios.get(`${urlPharmacyPrescription}`);
 
-  // const fetchData = async () => {
-  //   try {
-  //     const response = await customAxios.get(
-  //       `${urlGetAllFacilityDepartmentServiceLocation}`
-  //     );
+      if (response.data != null) {
+        const newColumnData = response.data.data.PatientAccountCharges.map(
+          (obj, index) => {
+            return { ...obj, key: index + 1 };
+          }
+        );
+        setPatientAccountCharges(newColumnData);
 
-  //     if (response.data != null) {
-  
-  //     }
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
+        const existingprescription =
+          response.data.data.ExistingPrescriptionModel.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          });
+        setPrescriptionDetails(existingprescription);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
+  const navigate = useNavigate();
+
+  const handleNavigate = (values) => {
+    debugger;
+    const url = `/OtcDispense`;
+    navigate(url, {
+      state: {
+        PatientId: values.PatientId,
+        EncounterId: values.EncounterId,
+        flag : 1
+      },
+    });
+  };
+  const handleNavigateTopharmacy = (values) => {
+    debugger;
+    const url = `/OtcDispense`;
+    navigate(url, {
+      state: {
+        PatientId: values.PatientId,
+        EncounterId: values.EncounterId,
+        flag : 2
+      },
+    });
+  };
 
   const columns = [
-    {
-      title: "Order ID",
-      dataIndex: "PrescriptionId",
-    
+      {
+        title: "Order ID",
+        dataIndex: "PrescriptionId",
+        render: (text, record) => (
+            <a onClick={() => handleNavigate(record)}  style={{ color: 'blue' }}>
+                {text}
+            </a>
+        ),
     },
+ 
     {
       title: "Order Date",
-      dataIndex: "Createddate",
-   
+      dataIndex: "OrderDateString",
     },
     {
       title: "UHID",
       dataIndex: "Uhid",
-    
     },
     {
       title: "Encounter ID",
       dataIndex: "Encounter",
-   
     },
     {
       title: "Patient Name",
       dataIndex: "Patientname",
-
     },
     {
       title: "Department",
       dataIndex: "DeptName",
-
     },
     {
       title: "Ordering Physician",
       dataIndex: "ProviderName",
-
     },
-  ]
+  ];
+
+  const Chargescolumns = [
+    {
+      title: "Order ID",
+      dataIndex: "key",
+      render: (text, record) => (
+        <a onClick={() => handleNavigateTopharmacy(record)}  style={{ color: 'blue' }}>
+            {text}
+        </a>
+    ),
+    },
+    {
+      title: "Order Date",
+      dataIndex: "StrServiceDate",
+    },
+    {
+      title: "UHID",
+      dataIndex: "Uhid",
+    },
+    {
+      title: "Encounter ID",
+      dataIndex: "Encounter",
+    },
+    {
+      title: "Patient Name",
+      dataIndex: "PatientName",
+    },
+    {
+      title: "Department",
+      dataIndex: "DepartmentName",
+    },
+    {
+      title: "Ordering Physician",
+      dataIndex: "ProviderName",
+    },
+  ];
 
   return (
     <Layout style={{ zIndex: "999999999" }}>
@@ -123,45 +195,48 @@ const PharamcyPrescriptionIndex = () => {
           form={form}
           initialValues={{}}
         >
-       
-            <div style={{ margin: "20px" }}>
-              <Tabs type="card" defaultActiveKey="1">
-                <TabPane tab="Prescription" key="1">
-                  {/* Your prescription content goes here */}
-                  <p>This is the Prescription tab content.</p>
-                  <Form
-                    form={form}
-                    onFinish={handlePatientTrackingSearch}
-                    layout="vertical"
-                  >
+          <div style={{ margin: "20px" }}>
+            <Tabs type="card" defaultActiveKey="1">
+              <TabPane tab="Prescription" key="1">
+                {/* Your prescription content goes here */}
+                <p>This is the Prescription tab content.</p>
+                <Form
+                  form={form}
+                  onFinish={handlePatientTrackingSearch}
+                  layout="vertical"
+                >
+                  <Spin spinning={loading}>
                     <Row gutter={16}>
-                      <ColWithSixSpan>
-                        <Form.Item name="UHID" label="UHID">
-                          <Input style={{ width: "100%" }} />
-                        </Form.Item>
-                      </ColWithSixSpan>
-                      <Spin spinning={loading}>
-                        <Row gutter={16}>
-                          <Col span={24} style={{ padding: "0" }}>
-                            <CustomTable
-                              dataSource={prescriptionDetails}
-                              columns={columns}
-                              actionColumn={false}
-                              isFilter={true}
-                            />
-                          </Col>
-                        </Row>
-                      </Spin>
+                      <Col span={24} style={{ padding: "0" }}>
+                        <CustomTable
+                          dataSource={prescriptionDetails}
+                          columns={columns}
+                          actionColumn={false}
+                          isFilter={true}
+                        />
+                      </Col>
                     </Row>
-                  </Form>
-                </TabPane>
-                <TabPane tab="Billing" key="2">
-                  {/* Your billing content goes here */}
-                  <p>This is the Billing tab content.</p>
-                </TabPane>
-              </Tabs>
-            </div>
-    
+                  </Spin>
+                </Form>
+              </TabPane>
+              <TabPane tab="Billing" key="2">
+                {/* Your billing content goes here */}
+                <p>This is the Billing tab content.</p>
+                <Spin spinning={loading}>
+                  <Row gutter={16}>
+                    <Col span={24} style={{ padding: "0" }}>
+                      <CustomTable
+                        dataSource={PatientAccountCharges}
+                        columns={Chargescolumns}
+                        actionColumn={false}
+                        isFilter={true}
+                      />
+                    </Col>
+                  </Row>
+                </Spin>
+              </TabPane>
+            </Tabs>
+          </div>
         </Form>
       </div>
     </Layout>
