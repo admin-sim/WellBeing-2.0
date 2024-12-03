@@ -56,6 +56,7 @@ const Login = () => {
   }, []);
 
   const onFinish = async (values) => {
+    debugger;
     setLoading(true);
     try {
       const response = await axios.post(urlLogin, values, {
@@ -77,8 +78,13 @@ const Login = () => {
           dispatch(updateUserContext(response.data.data.userContext));
 
           dispatch(update(response.data.data.MenuAccesData));
+          if(response.data.data.userContext.LandingPage!=null || undefined){
+            navigate(response.data.data.userContext.LandingPage);
+          }else{
+            navigate("/");
+          }
 
-          navigate("/");
+        
         } else {
           notification.error({
             message: "Invalid UserId Or Password",

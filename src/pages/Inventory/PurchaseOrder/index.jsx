@@ -206,11 +206,11 @@ const PurchaseOrder = () => {
   };
 
   const handleReport = async (value, record) => {
+    debugger;
     setLoading(true)
     try {
       const request = {
-        PONO: record.PONumber,
-        use: 'admin',
+        PONo: record.PONumber,
         FileType: "pdf", // or 'excel'
       };
       const { url, blob } = await fetchReport(request);

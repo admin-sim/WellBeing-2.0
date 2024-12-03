@@ -177,6 +177,7 @@ export const urlSearchPatientsForLab = `${baseURL}/api/Laboratory/SearchPatients
 export const urlGetLabNumbers = `${baseURL}/api/Laboratory/GetLabNumbers`;
 export const urlSampleCollectionIndex = `${baseURL}/api/Laboratory/SampleCollectionIndex`;
 export const urlSaveSampleColResult = `${baseURL}/api/Laboratory/SaveSampleColResult`;
+export const urlGetAllTemplateTestForPatient = `${baseURL}/api/Laboratory/GetAllTemplateTestForPatient`;
 export const urlLoadTestReferenceForResEntry = `${baseURL}/api/LabTestMaster/LoadTestReferenceForResEntry`;
 export const urlResultEntryIndex = `${baseURL}/api/Laboratory/ResultEntryIndex`;
 export const urlGetSelectedTestDataForResEntry = `${baseURL}/api/Laboratory/GetSelectedTestDataForResEntry`;

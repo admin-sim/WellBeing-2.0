@@ -683,39 +683,10 @@ const Verification = () => {
     // Navigate to the desired page and pass the record object as a parameter
     navigate("/ResultEntry", { state: { record } });
   };
-  const handleReport = async () => {
-    const request = {
-      //  EncounterId: 1,
-
-      ChargeId: selectedRow.ChargeId,
-      PatientId: selectedRow.PatientId, // or 'excel'
-      EncounterId: selectedRow.EncounterId,
-    };
-    const { url, blob } = await fetchReport(request);
-    setReportUrl(url);
-    setBlobData(blob);
-    setIsModalVisible(true);
+  const handleReport = () => {
+    navigate("/Report", { state: { record } });
   };
-  async function fetchReport(request) {
-    const response = await fetch(
-      "http://localhost:901/api/ReportsApi/GetLabReport",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(request),
-      }
-    );
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch report");
-    }
-
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    return { url, blob };
-  }
 
   return (
     <Layout style={{ width: "100%" }}>
@@ -807,11 +778,6 @@ const Verification = () => {
                   >
                     Unverify
                   </Button>
-                </Form.Item>
-              </Col>
-              <Col>
-                <Form.Item>
-                  <Button onClick={() => handleReport()}>Report</Button>
                 </Form.Item>
               </Col>
             </Row>

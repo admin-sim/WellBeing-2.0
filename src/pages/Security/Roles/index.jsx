@@ -8,6 +8,7 @@ import {
   notification,
   Spin,
   ConfigProvider,
+  Select,
 } from "antd";
 import React, { useState, useEffect } from "react";
 //import "../../css/antdtable.css";
@@ -111,10 +112,11 @@ export default function Roles() {
       );
       if (response.status === 200) {
         const data = response.data.data.userrolemodal;
-       
+
         form.setFieldsValue({
           RoleName: data.RoleName,
           RoleDescription: data.RoleDescription,
+          LandingPage:data.LandingPage
         });
       } else {
         console.error("Failed to fetch user data");
@@ -141,6 +143,12 @@ export default function Roles() {
       title: "Role Description",
       dataIndex: "RoleDescription",
       key: "RoleDescription",
+      // width: 100,
+    },
+    {
+      title: "Landing Page",
+      dataIndex: "LandingPage",
+      key: "LandingPage",
       // width: 100,
     },
   ];
@@ -208,7 +216,7 @@ export default function Roles() {
                   },
                 ]}
               >
-                <Input placeholder="RoleName" size="medium" />
+                <Input placeholder="RoleName"  />
               </Form.Item>
             </ColWithSixSpan>
             <ColWithSixSpan>
@@ -222,7 +230,22 @@ export default function Roles() {
                   },
                 ]}
               >
-                <Input placeholder="RoleDescription" size="medium" />
+                <Input placeholder="RoleDescription"  />
+              </Form.Item>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
+              <Form.Item
+                name="LandingPage"
+                label="Landing Page"
+              >
+                <Select>
+                  <option value="/ClinicalChartFlow">Clinical Chart</option>
+                  <option value="/Laboratory/LabDashboard">Lab Dashboard</option>
+                  <option value="/Patient">Admin Dashboard</option>
+                  <option value="/Queue">Front Desk</option>
+                  <option value="/WardManagement">Nurse Station</option>
+                  <option value="/PharamcyPrescriptionIndex">Pharmacy Dashboard</option>
+                </Select>
               </Form.Item>
             </ColWithSixSpan>
           </Row>
@@ -276,7 +299,7 @@ export default function Roles() {
               }}
             >
               <CustomTable
-              printTitle={"Roles Report"}
+                printTitle={"Roles Report"}
                 //rowClassName={(record) => (record.Role_Id === RoleID ? 'selected-row' : '')}
                 columns={columns}
                 dataSource={data}

@@ -187,7 +187,9 @@ const SampleCollection = () => {
   const handleVerification = () => {
     navigate("/Verification", { state: { record } });
   };
-  const handleReport = () => {};
+  const handleReport = () => {
+    navigate("/Report", { state: { record } });
+  };
 
   return (
     <Layout style={{ width: "100%" }}>

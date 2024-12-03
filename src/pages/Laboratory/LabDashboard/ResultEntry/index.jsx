@@ -715,6 +715,10 @@ const ResultEntry = () => {
   const handleVerification = () => {
     navigate("/Verification", { state: { record } });
   };
+  
+  const handleReport = () => {
+    navigate("/Report", { state: { record } });
+  };
 
   return (
     <Layout style={{ width: "100%" }}>
@@ -734,7 +738,7 @@ const ResultEntry = () => {
             </Button>
             <Button type="primary">Result Entry</Button>
             <Button onClick={() => handleVerification()}>Verification</Button>
-            <Button>Report</Button>
+            <Button onClick={() => handleReport()}>Report</Button>
           </Space>
           <Divider />
           <div style={{ margin: "0 1rem 1rem 1rem" }}>
