@@ -289,32 +289,32 @@ function OrderEntry({
     },
   ];
 
-  const columns4 = [
-    {
-      title: "Test Name",
-      dataIndex: "TestName",
-      width: 150,
-    },
-    {
-      title: "Template Name",
-      render: (text, record) => {
-        console.log("IsTemplateTest:", record.IsTemplateTest); // Debugging step to see value
-        if (record.IsTemplateTest === true) {
-          return (
-            <span
-              style={{ color: "#1890ff", cursor: "pointer" }}
-              onClick={() => handleTemplateClick(record)}
-            >
-              Template
-            </span>
-          );
-        } else {
-          return null; // Handle the case when IsTemplateTest is false, if needed
-        }
-      },
-      width: 120,
-    },
-  ];
+  // const columns4 = [
+  //   {
+  //     title: "Test Name",
+  //     dataIndex: "TestName",
+  //     width: 150,
+  //   },
+  //   {
+  //     title: "Template Name",
+  //     render: (text, record) => {
+  //       console.log("IsTemplateTest:", record.IsTemplateTest); // Debugging step to see value
+  //       if (record.IsTemplateTest === true) {
+  //         return (
+  //           <span
+  //             style={{ color: "#1890ff", cursor: "pointer" }}
+  //             onClick={() => handleTemplateClick(record)}
+  //           >
+  //             Template
+  //           </span>
+  //         );
+  //       } else {
+  //         return null; // Handle the case when IsTemplateTest is false, if needed
+  //       }
+  //     },
+  //     width: 120,
+  //   },
+  // ];
 
   const fetchDataForSelectedService = async (ServiceId) => {
     debugger;
