@@ -403,6 +403,75 @@ function OrderEntry({
     }
   }
 
+
+  
+  const handleReport = async () => {
+    // Initialize the array to hold ChargeIds
+    debugger;
+    setReportLoading(true); 
+    let ListOfSmplColResult = [];
+  
+    // Assuming selectedRow is an array of selected rows
+    selectedRow.forEach((row) => {
+      // Check if IsResultEntryDone is true and IsTemplate is not true for each selected row
+      if (row.IsResultEntryDone === true && row.IsTemplate !== true) {
+        // Push the ChargeId of the row into ListOfSmplColResult
+        ListOfSmplColResult.push(row.ChargeId);
+      }
+    });
+  
+    // If there are ChargeIds in ListOfSmplColResult, proceed
+    if (ListOfSmplColResult.length > 0) {
+      // Join the ChargeIds into a comma-separated string
+      const chargeIdStr = ListOfSmplColResult.join(",");
+  
+      // Create the request object
+      const request = {
+        ChargeId: chargeIdStr,  // Use the comma-separated ChargeIds string
+        PatientId: selectedRow[0].PatientId, // Assuming PatientId is the same across selected rows
+        EncounterId: selectedRow[0].EncounterId, // Assuming EncounterId is the same across selected rows
+      };
+  
+      try {
+        // Call the fetchReport function with the request
+        const { url, blob } = await fetchReport(request);
+  
+        // Handle the response (e.g., displaying the report URL or downloading the file)
+        setReportUrl(url);
+        setBlobData(blob);
+        setIsModalVisible(true); // Display the modal with the report
+      } catch (error) {
+        console.error("Error fetching report:", error);
+      }finally {
+        setReportLoading(false); // End loading
+      }
+    } else {
+      console.log("No valid ChargeIds selected.");
+      message.warning('Please select  Tests ');
+      setReportLoading(false); 
+    }
+  };
+
+  async function fetchReport(request) {
+    const response = await fetch(
+      "https://192.168.29.254:808/api/ReportsApi/GetLabReport",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch report");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    return { url, blob };
+  }
   return (
     <div>
       <Modal
