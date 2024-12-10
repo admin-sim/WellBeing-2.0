@@ -30,6 +30,7 @@ function DirectTransferModal({
   patient,
   Dropdown,
   open,
+  flag,
   handleClose,
   handleDropdown,
 }) {
@@ -43,6 +44,10 @@ function DirectTransferModal({
     setLoading(false)
     handleClose();
   };
+
+  useEffect(() => {
+
+  }, [Dropdown])
 
   const Block = (event) => {
     setBlockChecked(event.target.checked);
@@ -62,8 +67,8 @@ function DirectTransferModal({
       FromBedId: values.FromBed,
       ReasonforTransfer: values.Reason,
       PatientID: values.PatientId,
-      AdtType: "Direct",
-      AdtStatus: "Direct",
+      AdtType: flag == 0 ? "Direct" : 'Request',
+      AdtStatus: flag == 0 ? "Direct" : 'Requested',
       RetainBed: blockChecked ? "Y" : "N",
       dateTransfer: values.DateTimeTransfer
         ? values.DateTimeTransfer.format("DD-MM-YYYY")
@@ -163,7 +168,7 @@ function DirectTransferModal({
         centered
         title={
           <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>
-            Direct Transfer
+            {flag = 1 ? 'Request For Transfer' : 'Direct Transfer'}
           </span>
         }
         open={open}

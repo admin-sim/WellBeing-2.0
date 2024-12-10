@@ -177,11 +177,11 @@ const OrderDetails = (Patient) => {
       dataIndex: "ProviderName",
       width: 180,
     },
-    {
-      title: "Charge Amount",
-      dataIndex: "ChargeAmount", //Rate
-      width: 150,
-    },
+    // {
+    //   title: "Charge Amount",
+    //   dataIndex: "ChargeAmount", //Rate
+    //   width: 150,
+    // },
     {
       title: "Action",
       width: 70,
@@ -249,6 +249,7 @@ const OrderDetails = (Patient) => {
 
   async function handleSendtoLab() {
     debugger
+    await form1.validateFields()
     Patient.handleLoading(true)
     const investigations = Patient.dropDown.PatientAccountCharges.filter(f => f.ServiceGroupID == 1042)
     const listnotsentToLab = investigations.filter(f => f.SamplColHeaderId == null || f.SamplColHeaderId == 0);
@@ -327,7 +328,9 @@ const OrderDetails = (Patient) => {
       >
         <Row gutter={32}>
           <Col span={6}>
-            <Form.Item name="Service" label="Service">
+            <Form.Item name="Service" label="Service"
+              rules={[{ required: true, message: "Please input" }]}
+            >
               <AutoComplete
                 options={services}
                 //onSearch={handleAutoCompleteChange}
@@ -354,15 +357,20 @@ const OrderDetails = (Patient) => {
             </Form.Item>
           </Col>
           <Col span={5}>
-            <Form.Item name="Provider" label="Provider">
+            <Form.Item name="Provider" label="Provider" rules={[{ required: true, message: "Please input" }]}>
               <Input disabled />
             </Form.Item>
           </Col>
-          <Col span={4}>
+          {/* <Col span={2}>
+            <Form.Item name="stat" valuePropName="checked">
+              <Checkbox style={{marginTop:30}}>STAT</Checkbox>
+            </Form.Item>
+          </Col> */}
+          {/* <Col span={4}>
             <Form.Item name="Amount" label="Amount">
               <Input style={{ width: "100%" }} disabled />
             </Form.Item>
-          </Col>
+          </Col> */}
           <Col span={3} style={{ display: "flex", alignItems: "center" }}>
             <Button size="large" type="link" icon={<PlusCircleOutlined />} htmlType="submit" />
           </Col>

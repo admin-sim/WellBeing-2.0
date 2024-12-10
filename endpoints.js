@@ -525,4 +525,6 @@ export const urlPharmacyPrescription = `${baseURL}/api/Pharmacy/PharmacyPrescrip
 export const url = `${baseURL}/api/Pharmacy/PharmacyPrescription`;
 export const urlGetExistingPrescription = `${baseURL}/api/ClinicalSetup/GetExistingPrescription`;
 export const urlGetPrescriptionHedderIdPhar = `${baseURL}/api/ClinicalSetup/GetPrescriptionHedderIdPhar`;
+export const urlShowAcceptOrReject = `${baseURL}/api/WardManagement/ShowAcceptOrReject`;
+export const urlSaveAcceptOrReject = `${baseURL}/api/WardManagement/SaveAcceptOrReject`;
 

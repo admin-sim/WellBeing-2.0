@@ -100,6 +100,7 @@ const DirectGRN = () => {
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
+      setLoading(false)
       setError(error.message);
     }
   };
@@ -118,6 +119,7 @@ const DirectGRN = () => {
     console.log("respo", response);
 
     if (!response.ok) {
+      setLoading(false)
       throw new Error("Failed to fetch report");
     }
 

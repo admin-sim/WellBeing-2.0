@@ -13,7 +13,10 @@ import {
   Select,
   Table,
   Tabs,
-  message
+  message,
+  Space,
+  Tooltip,
+  Badge
 } from "antd";
 import React, { useEffect, useState } from "react";
 import {
@@ -28,7 +31,7 @@ import CustomTable from "../../../../components/customTable";
 import Title from "antd/es/typography/Title";
 import { TfiReload } from "react-icons/tfi";
 import customAxios from '../../../../components/customAxios/customAxios.jsx'
-import { urlGetAllAutocompleteServicesAsync, urlGetServiceCharge, urlAddNewCharge, urlPackageDescriptionServiceforclincal, urlPackageDescriptionServicewithoutDiagServc, urlLoadSampleCollectionGrid } from "../../../../../endpoints.js";
+import { urlGetAllAutocompleteServicesAsync, urlGetServiceCharge, urlAddNewCharge, urlPackageDescriptionServiceforclincal, urlPackageDescriptionServicewithoutDiagServc, urlLoadSampleCollectionGrid, urlSendTestsFOrLabModule } from "../../../../../endpoints.js";
 import dayjs from "dayjs";
 import ColumnGroup from "antd/es/table/ColumnGroup";
 import { render } from "react-dom";
@@ -42,12 +45,21 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
   const [loading, setLoading] = useState(false);
   const [serviceDetails, setServiceDetails] = useState();
   const [sampleCollectionGrid, setSampleCollectionGrid] = useState([]);
+  const [defaultActiveKey, setDefaultActiveKey] = useState("1");
 
   const handleCancel = () => {
     form1.resetFields();
     form2.resetFields();
     form3.resetFields();
     handleClose();
+  };
+
+  const onTabChange = (key) => {
+    // if (key == '2') {
+    //   handleClear()
+    // }
+    setDefaultActiveKey(key)
+    // form2.submit()
   };
 
   useEffect(() => {
@@ -140,6 +152,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
     form2.resetFields()
     form3.resetFields()
     setServices([])
+    setDefaultActiveKey(key)
     if (key == '4') {
       try {
         const response = await customAxios.get(
@@ -200,12 +213,37 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
       dataIndex: "ProviderName",
       key: "key",
     },
-    {
-      title: "Charge Amount",
-      dataIndex: "Rate",
-      key: "key",
+    // defaultActiveKey === '1' && {
+    //   title: "Charge Amount",
+    //   dataIndex: "ChargeAmount",
+    //   width: 150,
+    // },
+    defaultActiveKey == '2' && {
+      title: "Lab Number",
+      dataIndex: "LabNumber",
+      width: 120,
     },
-  ];
+    defaultActiveKey == '2' && {
+      title: "Status",
+      width: 120,
+      render: (_, record) => (
+        <Space>
+          <Tooltip title={record.SamplColHeaderId ? 'Sent' : 'Click on Send to Lab'}>
+            <Badge status={record.SamplColHeaderId ? 'success' : 'error'} />
+          </Tooltip>
+          <Tooltip title={record.IsSamplCollected ? 'Sample Collected' : 'Sample Collection Pending'}>
+            <Badge status={record.IsSamplCollected ? "success" : 'error'} />
+          </Tooltip>
+          <Tooltip title={record.IsResultEntryDone ? 'Result Entry Done' : 'Result Entry Pending'}>
+            <Badge status={record.IsResultEntryDone ? "success" : 'error'} />
+          </Tooltip>
+          <Tooltip title={record.IsVerificationDone ? 'Verification Done' : 'Verification Pending'}>
+            <Badge status={record.IsVerificationDone ? "success" : 'error'} />
+          </Tooltip>
+        </Space>
+      ),
+    }
+  ].filter(Boolean);
 
   const columns3 = [
     {
@@ -244,7 +282,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
       TemplateName: "Template",
     },
   ];
-  
+
   const columns4 = [
     {
       title: "Test Name",
@@ -320,6 +358,43 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
     setLoading(false);
   };
 
+  async function handleSendtoLab() {
+    debugger
+    // await form1.validateFields()
+    // Patient.handleLoading(true)
+    setLoading(true)
+    const investigations = Dropdown.PatientAccountCharges.filter(f => f.ServiceGroupID == 1042)
+    const listnotsentToLab = investigations.filter(f => f.SamplColHeaderId == null || f.SamplColHeaderId == 0);
+    if (listnotsentToLab.length > 0 && Dropdown.LastEncounter.PatientType != 22) {
+      const BillViewModel = {
+        PatientId: patient.PatientId,
+        EncounterId: patient.EncounterId,
+        IsAdvance: form2.getFieldValue('stat'),
+        PFlag: 1,
+        PatientAccountCharges: listnotsentToLab
+      }
+      const response = await customAxios.post(urlSendTestsFOrLabModule, BillViewModel, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (response.status == 200) {
+        handleOrderEntry(response.data.data.PatientAccountCharges)
+        // Patient.UpdateDropDown(response.data.data.PatientAccountCharges)
+        // form1.resetFields()
+        setLoading(false)
+        message.success("Investigations Has Been Sent Successfully.");
+        // Patient.handleLoading(false)
+      }
+      else {
+        message.error('Failed To Send Investigations.')
+        // Patient.handleLoading(false)
+      }
+    } else {
+      setLoading(false)
+    }
+  }
+
   return (
     <div>
       <Modal
@@ -345,6 +420,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
           style={{ marginTop: "1rem" }}
           tabBarStyle={{ display: "flex" }}
           defaultActiveKey={1}
+          activeKey={defaultActiveKey}
         >
           <Tabs.TabPane
             tab={
@@ -627,7 +703,8 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                   }}
                   style={{ margin: "1rem" }}
                   initialValues={{
-                    Date: dayjs()
+                    Date: dayjs(),
+                    stat: false
                   }}
                 >
                   <Row gutter={16}>
@@ -696,11 +773,11 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                   <Row>
                     <Col span={3}>
                       <Form.Item>
-                        <Button type="primary">Send To Lab</Button>
+                        <Button type="primary" onClick={handleSendtoLab} loading={loading}>Send To Lab</Button>
                       </Form.Item>
                     </Col>
                     <Col span={2}>
-                      <Form.Item>
+                      <Form.Item name='stat' valuePropName="checked">
                         <Checkbox>STAT</Checkbox>
                       </Form.Item>
                     </Col>
@@ -731,6 +808,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                   scroll={{
                     y: 120,
                   }}
+                  loading={loading}
                 />
               </Col>
             </Row>

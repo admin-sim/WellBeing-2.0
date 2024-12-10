@@ -19,7 +19,6 @@ const { Text } = Typography;
 
 function BlockBedModal({ bed, open, handleClose, Dropdown }) {
   const [form] = Form.useForm();
-  console.log("bed info", bed);
   const handleCancel = () => {
     form.resetFields();
     handleClose();

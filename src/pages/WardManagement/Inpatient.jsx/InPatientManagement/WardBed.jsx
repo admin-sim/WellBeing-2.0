@@ -13,6 +13,7 @@ import {
 } from "antd";
 import React, { useEffect, useState } from "react";
 const { Text } = Typography;
+import dayjs from "dayjs";
 import occupied from "../../../../assets/occupied.png";
 import vacant from "../../../../assets/vacant.png";
 import BlockBedModal from "./BlockBedModal";
@@ -43,7 +44,8 @@ import {
   urlGetWardCategory,
   urlGetServiceLocation,
   urlBillingCreate,
-  urlGetPatientBillStatus
+  urlGetPatientBillStatus,
+  urlShowClinicalModal
 } from "../../../../../endpoints.js";
 import { values } from "lodash";
 import AntenatalVitalsModal from "./AntenatalVitalsModal.jsx";
@@ -73,8 +75,7 @@ function WardBed({ bed, ReLoad }) {
   const [arrivalModalOpen, setArrivalModalOpen] = useState(false)
   const [patientVitalModalOpen, setPatientVitalModalOpen] = useState()
   const [patientData, setPatientData] = useState()
-  const [locaton, setLocation] = useState(0)
-  const [antenatalVitalsOpen, setAntenatalVitalsOpen] = useState(false)
+  // const [antenatalVitalsOpen, setAntenatalVitalsOpen] = useState(false)
   const [orderEntry, setOrderEntry] = useState({
     DocumentType: [],
     PatientAccountCharges: [],
@@ -252,8 +253,8 @@ function WardBed({ bed, ReLoad }) {
           record.key !== "18" &&
           record.key !== "19" &&
           record.key !== "15" &&
-          record.key !== "17" &&
-          record.key !== "16"
+          record.key !== "17"
+          // record.key !== "16"
         ) {
           setDropDown(response.data.data);
         } else {
@@ -293,8 +294,8 @@ function WardBed({ bed, ReLoad }) {
       setFluidChartModalOpen(true);
     } else if (record.key == "19") {
       setNrNoteModalOpen(true);
-    } else if (record.key == "16") {
-      setAntenatalVitalsOpen(true);
+      // } else if (record.key == "16") {
+      //   setAntenatalVitalsOpen(true);
     }
     ReLoad('End')
   };
@@ -424,17 +425,17 @@ function WardBed({ bed, ReLoad }) {
         OpenModel(record);
       },
     },
-    {
-      label: "Antenatal Vitals",
-      key: "16",
-      onClick: (record) => {
-        if (bed.PatientGender != 'Female') {
-          message.warning('Only for Female Patient')
-          return false
-        }
-        OpenModel(record);
-      }
-    }
+    // {
+    //   label: "Antenatal Vitals",
+    //   key: "16",
+    //   onClick: (record) => {
+    //     if (bed.PatientGender != 'Female') {
+    //       message.warning('Only for Female Patient')
+    //       return false
+    //     }
+    //     OpenModel(record);
+    //   }
+    // }
   ];
 
   const occupiedBedMenu = (
@@ -637,13 +638,17 @@ function WardBed({ bed, ReLoad }) {
   const handleOrderEntry = (value) => {
     // setOrderEntry(value)
     debugger
-    setOrderEntry((prevDropdown) => {
-      const updatedDropdown = {
-        ...prevDropdown,
-        PatientAccountCharges: value,
-      };
-      return updatedDropdown;
-    });
+    setOrderEntry((prevDropdown) => ({
+      ...prevDropdown,
+      PatientAccountCharges: value
+    }));
+    // setOrderEntry((prevDropdown) => {
+    //   const updatedDropdown = {
+    //     ...prevDropdown,
+    //     PatientAccountCharges: value,
+    //   };
+    //   return updatedDropdown;
+    // });
   }
 
   const handleFinishOrder = async (values) => {
@@ -676,6 +681,22 @@ function WardBed({ bed, ReLoad }) {
       })
     }
   }
+
+  // useEffect(() => {
+  //   OpenOrderEntry()
+  //   // async function fetch(params) {
+  //   //   if (params.PatientId != 0 && params.EncounterId != 0) {
+  //   //     const response = await customAxios.get(
+  //   //       `${urlBillingCreate}?PatientId=${params.PatientId}&EncounterId=${params.EncounterId}`
+  //   //     );
+  //   //     if (response.status == 200) {
+  //   //       setOrderEntry(response.data)
+  //   //       ReLoad('End')
+  //   //     }
+  //   //   }
+  //   // }
+  //   // fetch(bed)
+  // }, [handleOrderEntry])
 
   return (
     <Col key={bed.BedID}>
@@ -805,6 +826,7 @@ function WardBed({ bed, ReLoad }) {
         handleDropdown={handleDropdown}
         patient={patientData}
         open={directTransferModalOpen}
+        flag={0}
         // handleClose={() => setDirectTransferModalOpen(false)}
         handleClose={Close}
       />
@@ -919,13 +941,13 @@ function WardBed({ bed, ReLoad }) {
         open={fluidChartModalOpen}
         handleClose={() => setFluidChartModalOpen(false)}
       />
-      <AntenatalVitalsModal
+      {/* <AntenatalVitalsModal
         bed={bed}
         Dropdown={dropDown1}
         patient={patientData}
         open={antenatalVitalsOpen}
         handleClose={() => setAntenatalVitalsOpen(false)}
-      />
+      /> */}
     </Col>
   );
 }
