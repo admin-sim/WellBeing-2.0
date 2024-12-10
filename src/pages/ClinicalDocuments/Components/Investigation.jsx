@@ -1,4 +1,8 @@
-import { DeleteOutlined, PlusCircleOutlined, CloseSquareFilled } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  PlusCircleOutlined,
+  CloseSquareFilled,
+} from "@ant-design/icons";
 import {
   Badge,
   Button,
@@ -9,11 +13,13 @@ import {
   Input,
   Row,
   message,
-  Space, AutoComplete,
+  Space,
+  AutoComplete,
   Table,
   Tabs,
   Tooltip,
   Dropdown,
+  Modal,
 } from "antd";
 import { debounce } from "lodash";
 import { useForm } from "antd/es/form/Form";
@@ -21,40 +27,51 @@ import moment from "moment/moment";
 import React, { useEffect, useState } from "react";
 import CustomTable from "../../../components/customTable/index";
 import customAxios from "../../../components/customAxios/customAxios";
+import { v4 as uuidv4 } from "uuid"; // Import uuidv4
 import {
   urlPackageDescriptionServiceforclincal,
   urlGetServiceCharge,
   urlClinicalAddNewCharge,
   urlShowClinicalModal,
   urlSendTestsFOrLabModule,
-  urlGetAllLabReportsForHealthSummary
+  urlGetAllLabReportsForHealthSummary,
+  urlGetAllTemplateTestForPatient,
 } from "../../../../endpoints";
 import dayjs from "dayjs";
+import CkEditor from "../../../components/CKEditor";
 
 function Investigation(Patient) {
   const [dropDown, setDropDown] = useState({
-    PatientAccountCharges: []
-  })
-  const [loading, setLoading] = useState(true)
+    PatientAccountCharges: [],
+  });
+  const [loading, setLoading] = useState(true);
 
   const UpdateDropDown = (value) => {
-    debugger
+    debugger;
     setDropDown((prevDropdown) => ({
       ...prevDropdown,
-      PatientAccountCharges: value
+      PatientAccountCharges: value,
     }));
     // setLoading(false)
-  }
+  };
 
   const handleLoading = (status) => {
-    setLoading(status)
-  }
+    setLoading(status);
+  };
 
   const items = [
     {
       key: "1",
       label: "Order Details",
-      children: <OrderDetails Patient={Patient} dropDown={dropDown} loading={loading} UpdateDropDown={UpdateDropDown} handleLoading={handleLoading} />,
+      children: (
+        <OrderDetails
+          Patient={Patient}
+          dropDown={dropDown}
+          loading={loading}
+          UpdateDropDown={UpdateDropDown}
+          handleLoading={handleLoading}
+        />
+      ),
     },
     {
       key: "2",
@@ -70,14 +87,20 @@ function Investigation(Patient) {
 
   useEffect(() => {
     async function fetch(params) {
-      const response = await customAxios(`${urlShowClinicalModal}?Id=${0}&PatientID=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&FromDate=${dayjs()}&ToDate=${dayjs()}&flag=${1}&returnType=${0}`)
+      const response = await customAxios(
+        `${urlShowClinicalModal}?Id=${0}&PatientID=${
+          Patient.Patient.PatientId
+        }&EncounterId=${
+          Patient.Patient.Encounter
+        }&FromDate=${dayjs()}&ToDate=${dayjs()}&flag=${1}&returnType=${0}`
+      );
       if (response.status == 200) {
-        setDropDown(response.data.data)
-        setLoading(false)
+        setDropDown(response.data.data);
+        setLoading(false);
       }
     }
-    fetch()
-  }, [UpdateDropDown])
+    fetch();
+  }, [UpdateDropDown]);
 
   return (
     <>
@@ -114,13 +137,12 @@ const OrderDetails = (Patient) => {
         responseData.length > 0 &&
         responseData[0].Id !== undefined
       ) {
-        const newOptions = responseData
-          .map((option) => ({
-            value: option.Name,
-            label: option.Name,
-            key: option.Id,
-          }))
-        setServices(newOptions)
+        const newOptions = responseData.map((option) => ({
+          value: option.Name,
+          label: option.Name,
+          key: option.Id,
+        }));
+        setServices(newOptions);
       } else {
         setServices(null);
         form1.setFieldValue("Services", "");
@@ -137,12 +159,12 @@ const OrderDetails = (Patient) => {
   );
 
   const handleSelectDia = async (value, option) => {
-    debugger
+    debugger;
     setLoading(true);
     if (option.key) {
       try {
         const newData = await fetchDataForSelectedService(option.key);
-        setServiceDetails(newData)
+        setServiceDetails(newData);
         if (newData.servicePrice) {
           form1.setFieldsValue({
             Provider: newData.servicePrice.ProviderName,
@@ -211,17 +233,37 @@ const OrderDetails = (Patient) => {
       width: 120,
       render: (_, record) => (
         <Space>
-          <Tooltip title={record.SamplColHeaderId ? 'Sent' : 'Click on Send to Lab'}>
-            <Badge status={record.SamplColHeaderId ? 'success' : 'error'} />
+          <Tooltip
+            title={record.SamplColHeaderId ? "Sent" : "Click on Send to Lab"}
+          >
+            <Badge status={record.SamplColHeaderId ? "success" : "error"} />
           </Tooltip>
-          <Tooltip title={record.IsSamplCollected ? 'Sample Collected' : 'Sample Collection Pending'}>
-            <Badge status={record.IsSamplCollected ? "success" : 'error'} />
+          <Tooltip
+            title={
+              record.IsSamplCollected
+                ? "Sample Collected"
+                : "Sample Collection Pending"
+            }
+          >
+            <Badge status={record.IsSamplCollected ? "success" : "error"} />
           </Tooltip>
-          <Tooltip title={record.IsResultEntryDone ? 'Result Entry Done' : 'Result Entry Pending'}>
-            <Badge status={record.IsResultEntryDone ? "success" : 'error'} />
+          <Tooltip
+            title={
+              record.IsResultEntryDone
+                ? "Result Entry Done"
+                : "Result Entry Pending"
+            }
+          >
+            <Badge status={record.IsResultEntryDone ? "success" : "error"} />
           </Tooltip>
-          <Tooltip title={record.IsVerificationDone ? 'Verification Done' : 'Verification Pending'}>
-            <Badge status={record.IsVerificationDone ? "success" : 'error'} />
+          <Tooltip
+            title={
+              record.IsVerificationDone
+                ? "Verification Done"
+                : "Verification Pending"
+            }
+          >
+            <Badge status={record.IsVerificationDone ? "success" : "error"} />
           </Tooltip>
           {/* <Badge status={record.SamplColHeaderId ? 'success' : 'error'} /> */}
           {/* <Badge status={record.IsSamplCollected ? "success" : 'error'} /> */}
@@ -257,23 +299,26 @@ const OrderDetails = (Patient) => {
       const BillViewModel = {
         PatientId: Patient.Patient.Patient.PatientId,
         EncounterId: Patient.Patient.Patient.Encounter,
-        IsAdvance: form1.getFieldValue('stat'),
+        IsAdvance: form1.getFieldValue("stat"),
         PFlag: 1,
-        PatientAccountCharges: listnotsentToLab
-      }
-      const response = await customAxios.post(urlSendTestsFOrLabModule, BillViewModel, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+        PatientAccountCharges: listnotsentToLab,
+      };
+      const response = await customAxios.post(
+        urlSendTestsFOrLabModule,
+        BillViewModel,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       if (response.status == 200) {
-        Patient.UpdateDropDown(response.data.data.PatientAccountCharges)
-        form1.resetFields()
+        Patient.UpdateDropDown(response.data.data.PatientAccountCharges);
+        form1.resetFields();
         message.success("Investigations Has Been Sent Successfully.");
         // Patient.handleLoading(false)
-      }
-      else {
-        message.error('Failed To Send Investigations.')
+      } else {
+        message.error("Failed To Send Investigations.");
         // Patient.handleLoading(false)
       }
     }
@@ -294,10 +339,10 @@ const OrderDetails = (Patient) => {
         layout="vertical"
         form={form1}
         onFinish={async (values) => {
-          debugger
-          Patient.handleLoading(true)
+          debugger;
+          Patient.handleLoading(true);
           const service = {
-            StrServiceDate: values.Date ? values.Date.format('DD-MM-YYYY') : '',
+            StrServiceDate: values.Date ? values.Date.format("DD-MM-YYYY") : "",
             PatientId: Patient.Patient.Patient.PatientId,
             ProviderID: serviceDetails.servicePrice.ProviderID,
             EncounterId: Patient.Patient.Patient.Encounter,
@@ -305,25 +350,30 @@ const OrderDetails = (Patient) => {
             Rate: serviceDetails.servicePrice.ChargeAmount,
             ChargeAmount: serviceDetails.servicePrice.ChargeAmount,
             NetAmount: serviceDetails.servicePrice.ChargeAmount,
-            PatientChargeAmount: serviceDetails.servicePrice.PatientChargeAmount,
+            PatientChargeAmount:
+              serviceDetails.servicePrice.PatientChargeAmount,
             PatientTypeID: Patient.dropDown.LastEncounter.PatientType,
-            OrderEntry: 1
-          }
-          const response = await customAxios.post(urlClinicalAddNewCharge, service, {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
+            OrderEntry: 1,
+          };
+          const response = await customAxios.post(
+            urlClinicalAddNewCharge,
+            service,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
           if (response.status == 200 && response.data != null) {
-            Patient.UpdateDropDown(response.data.data.PatientAccountCharges)
-            form1.resetFields()
+            Patient.UpdateDropDown(response.data.data.PatientAccountCharges);
+            form1.resetFields();
             message.success("Charge Added Successfully");
-            Patient.handleLoading(false)
+            Patient.handleLoading(false);
           }
         }}
         initialValues={{
           stat: false,
-          Date: dayjs()
+          Date: dayjs(),
         }}
       >
         <Row gutter={32}>
@@ -336,9 +386,7 @@ const OrderDetails = (Patient) => {
                 //onSearch={handleAutoCompleteChange}
                 onSearch={debouncedHandleAutoCompleteChangeServiceDia}
                 onSelect={handleSelectDia}
-                onChange={(value) => {
-
-                }}
+                onChange={(value) => {}}
                 allowClear={{
                   clearIcon: <CloseSquareFilled />,
                 }}
@@ -372,12 +420,25 @@ const OrderDetails = (Patient) => {
             </Form.Item>
           </Col> */}
           <Col span={3} style={{ display: "flex", alignItems: "center" }}>
-            <Button size="large" type="link" icon={<PlusCircleOutlined />} htmlType="submit" />
+            <Button
+              size="large"
+              type="link"
+              icon={<PlusCircleOutlined />}
+              htmlType="submit"
+            />
           </Col>
         </Row>
-        <Row gutter={32} hidden={Patient.Patient.patientData?.PatientType == 22 ? true : false}>
+        <Row
+          gutter={32}
+          hidden={Patient.Patient.patientData?.PatientType == 22 ? true : false}
+        >
           <Col>
-            <Button type="primary" size="middle" onClick={handleSendtoLab} loading={Patient.loading}>
+            <Button
+              type="primary"
+              size="middle"
+              onClick={handleSendtoLab}
+              loading={Patient.loading}
+            >
               Send To Lab
             </Button>
           </Col>
@@ -387,10 +448,13 @@ const OrderDetails = (Patient) => {
             </Form.Item>
           </Col>
         </Row>
-      </Form >
-      <Table loading={Patient.loading}
+      </Form>
+      <Table
+        loading={Patient.loading}
         columns={columns}
-        dataSource={Patient.dropDown.PatientAccountCharges.filter((item) => item.ServiceGroupID == 1042)}
+        dataSource={Patient.dropDown.PatientAccountCharges.filter(
+          (item) => item.ServiceGroupID == 1042
+        )}
         title={() => <strong>Charge Details</strong>}
       />
     </>
@@ -399,14 +463,14 @@ const OrderDetails = (Patient) => {
 
 const PreviousOrderDetails = (Patient) => {
   const [form1] = useForm();
-  const [fromDate, setFromDate] = useState(dayjs().subtract(1, 'day'));
+  const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
   const [toDate, setToDate] = useState(dayjs());
-  const [dataSource, setDataSource] = useState()
-  const [loading, setLoading] = useState(true)
+  const [dataSource, setDataSource] = useState();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    handleSearch()
-  }, [])
+    handleSearch();
+  }, []);
 
   const columns = [
     {
@@ -428,11 +492,19 @@ const PreviousOrderDetails = (Patient) => {
   ];
 
   async function handleSearch() {
-    setLoading(true)
-    const response = await customAxios(`${urlShowClinicalModal}?Id=${0}&PatientID=${Patient.Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Patient.Encounter}&FromDate=${fromDate.format('DD-MM-YYYY')}&ToDate=${toDate.format('DD-MM-YYYY')}&flag=${2}&returnType=${0}`)
+    setLoading(true);
+    const response = await customAxios(
+      `${urlShowClinicalModal}?Id=${0}&PatientID=${
+        Patient.Patient.Patient.PatientId
+      }&EncounterId=${
+        Patient.Patient.Patient.Encounter
+      }&FromDate=${fromDate.format("DD-MM-YYYY")}&ToDate=${toDate.format(
+        "DD-MM-YYYY"
+      )}&flag=${2}&returnType=${0}`
+    );
     if (response.status == 200) {
-      setDataSource(response.data.data.OrderModel)
-      setLoading(false)
+      setDataSource(response.data.data.OrderModel);
+      setLoading(false);
     }
   }
 
@@ -454,7 +526,9 @@ const PreviousOrderDetails = (Patient) => {
           <Col span={6}>
             <Form.Item name="FromDate" label="From Date">
               {/* <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" /> */}
-              <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+              <DatePicker
+                style={{ width: "100%" }}
+                format="DD-MM-YYYY"
                 value={fromDate}
                 onChange={(date) => setFromDate(date)}
                 disabledDate={(current) => current > moment()}
@@ -468,7 +542,9 @@ const PreviousOrderDetails = (Patient) => {
                 defaultValue={moment()}
                 format="DD-MM-YYYY"
               /> */}
-              <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+              <DatePicker
+                style={{ width: "100%" }}
+                format="DD-MM-YYYY"
                 value={toDate}
                 onChange={(date) => setToDate(date)}
                 disabledDate={(current) => current < fromDate}
@@ -477,7 +553,11 @@ const PreviousOrderDetails = (Patient) => {
           </Col>
           <Form.Item label=" ">
             <Col>
-              <Button type="primary" style={{ width: "100%" }} onClick={handleSearch}>
+              <Button
+                type="primary"
+                style={{ width: "100%" }}
+                onClick={handleSearch}
+              >
                 Search
               </Button>
             </Col>
@@ -496,19 +576,40 @@ const PreviousOrderDetails = (Patient) => {
 };
 
 const LabReports = (Patient) => {
-  const [dataSource, setDataSource] = useState([]);
-  const [loading, setLoading] = useState(true)
-
+  const [tests, setTests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRow, setSelectedRow] = useState([]);
+  const [resultEntry, setResultEntry] = useState([]);
+  const [ckModalOpen, setCkModalOpen] = useState(false);
+  const [templateEditorData, setTemplateEditorData] = useState("");
+  const [key, setKey] = useState(null);
+  const [customKey, setCustomKey] = useState(resultEntry?.length + 1000);
+  const [currentRecord, setCurrentRecord] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [error, setError] = useState(null);
+  const [reportUrl, setReportUrl] = useState(null);
+  const [blobData, setBlobData] = useState(null);
   useEffect(() => {
-    handleLoad()
-  }, [])
+    handleLoad();
+  }, []);
 
   async function handleLoad() {
-    debugger
-    const response = await customAxios(`${urlGetAllLabReportsForHealthSummary}?PatientId=${Patient.Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Patient.Encounter}&Flag=${0}`)
+    debugger;
+    const response = await customAxios(
+      `${urlGetAllLabReportsForHealthSummary}?PatientId=${
+        Patient.Patient.Patient.PatientId
+      }&EncounterId=${Patient.Patient.Patient.Encounter}&Flag=${0}`
+    );
     if (response.status == 200) {
-      setDataSource(response.data.data.ListOfSamplColTests)
-      setLoading(false)
+      const ListOfSamplCol = response.data.data.ListOfSamplColTests.map(
+        (method) => ({
+          ...method,
+          key: uuidv4(), // Assign a unique key using uuidv4
+        })
+      );
+      setTests(ListOfSamplCol);
+      setLoading(false);
     }
   }
 
@@ -523,34 +624,280 @@ const LabReports = (Patient) => {
     },
   ];
 
+  const handleTemplateClick = async (record) => {
+    // Handle the click event, you can log the record or perform other actions
+
+    // Additional logic to handle the template click
+    setCurrentRecord(record);
+    if (record.ResId > 0) {
+      setTemplateEditorData(record.ObservedValues);
+    } else {
+      const response = await customAxios.get(
+        `${urlGetTemplateDataByTemplateId}?Tid=${record.TemplateId}`
+      );
+      if (response.status === 200) {
+        setTemplateEditorData(response.data.data.TempData);
+        //setKey();
+      }
+    }
+    // setReadOnly(true)
+    setCkModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setCustomKey(customKey + 1);
+    setTemplateEditorData("");
+    setCkModalOpen(false);
+  };
+
+  const resultEntrycolumns = [
+    {
+      title: "Test Name",
+      dataIndex: "TestName",
+      width: 150,
+    },
+    {
+      title: "Template Name",
+      render: (text, record) => {
+        console.log("IsTemplateTest:", record.IsTemplateTest); // Debugging step to see value
+        if (record.IsTemplateTest === true) {
+          return (
+            <span
+              style={{ color: "#1890ff", cursor: "pointer" }}
+              onClick={() => handleTemplateClick(record)}
+            >
+              Template
+            </span>
+          );
+        } else {
+          return null; // Handle the case when IsTemplateTest is false, if needed
+        }
+      },
+      width: 120,
+    },
+  ];
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: async (selectedRowKeys, selectedRows) => {
+      debugger;
+
+      // Filter rows where IsResultEntryDone is true
+      const filteredSelectedRows = selectedRows.filter(
+        (row) => row.IsResultEntryDone
+      );
+      setSelectedRowKeys(selectedRowKeys); // Update selected row keys state
+      setSelectedRow(filteredSelectedRows); // Update filtered selected rows state
+
+      // Prepare ListOfResultEntryData by filtering and mapping rows with ChargeId > 0
+      const ListOfResultEntryData = filteredSelectedRows
+        .filter((row) => parseInt(row.ChargeId) > 0)
+        .map((row) => ({ ChargeId: row.ChargeId }));
+
+      // If ListOfResultEntryData has valid data, proceed to API call
+      if (ListOfResultEntryData.length > 0) {
+        try {
+          const AllTemplateTest = await GetAllTemplateTestForPatient(
+            Patient.Patient.Patient.PatientId,
+            Patient.Patient.Patient.Encounter,
+            ListOfResultEntryData
+          );
+          setResultEntry(AllTemplateTest);
+          // Handle the API response (AllTemplateTest) here
+        } catch (error) {
+          console.error("Error fetching template tests:", error);
+        }
+      } else {
+        setResultEntry([]);
+      }
+    },
+    getCheckboxProps: (record) => ({
+      disabled: !record.IsResultEntryDone,
+    }),
+  };
+
+  const GetAllTemplateTestForPatient = async (
+    PatientId,
+    EncounterId,
+    ListOfResultEntryData
+  ) => {
+    try {
+      const ChargeIdList = ListOfResultEntryData;
+
+      const response = await customAxios.post(
+        urlGetAllTemplateTestForPatient, // Adjust the URL to match your API endpoint
+        ChargeIdList,
+        {
+          params: { PatientId: PatientId, EncounterId: EncounterId },
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response && response.data.data != null) {
+        return response.data.data.ResultEntryList;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching template tests:", error);
+      return null;
+    }
+  };
+
+  const handleReport = async () => {
+    // Initialize the array to hold ChargeIds
+    debugger;
+    let ListOfSmplColResult = [];
+  
+    // Assuming selectedRow is an array of selected rows
+    selectedRow.forEach((row) => {
+      // Check if IsResultEntryDone is true and IsTemplate is not true for each selected row
+      if (row.IsResultEntryDone === true && row.IsTemplate !== true) {
+        // Push the ChargeId of the row into ListOfSmplColResult
+        ListOfSmplColResult.push(row.ChargeId);
+      }
+    });
+  
+    // If there are ChargeIds in ListOfSmplColResult, proceed
+    if (ListOfSmplColResult.length > 0) {
+      // Join the ChargeIds into a comma-separated string
+      const chargeIdStr = ListOfSmplColResult.join(",");
+  
+      // Create the request object
+      const request = {
+        ChargeId: chargeIdStr,  // Use the comma-separated ChargeIds string
+        PatientId: selectedRow[0].PatientId, // Assuming PatientId is the same across selected rows
+        EncounterId: selectedRow[0].EncounterId, // Assuming EncounterId is the same across selected rows
+      };
+  
+      try {
+        // Call the fetchReport function with the request
+        const { url, blob } = await fetchReport(request);
+  
+        // Handle the response (e.g., displaying the report URL or downloading the file)
+        setReportUrl(url);
+        setBlobData(blob);
+        setIsModalVisible(true); // Display the modal with the report
+      } catch (error) {
+        console.error("Error fetching report:", error);
+      }
+    } else {
+      console.log("No valid ChargeIds selected.");
+    }
+  };
+
+  async function fetchReport(request) {
+    const response = await fetch(
+      "http://localhost:43705/api/ReportsApi/GetLabReport",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch report");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    return { url, blob };
+  }
   return (
     <>
       <span style={{ fontSize: "1rem", fontWeight: 600 }}>Lab Reports</span>
-      <CustomTable loading={loading}
-        rowSelection={{
-          onChange: (selectedRowKeys, selectedRows) => {
-            console.log(
-              `selectedRowKeys: ${selectedRowKeys}`,
-              "selectedRows: ",
-              selectedRows
-            );
-          },
-          getCheckboxProps: (record) => ({
-            // Column configuration not to be checked
-            name: record.name,
-          }),
-        }}
+      <CustomTable
+        rowSelection={rowSelection}
         columns={columns}
-        dataSource={dataSource}
+        dataSource={tests}
         actionColumn={false}
       />
-      <Row justify={"end"} style={{ margin: "-0.5rem 1rem" }}>
+      <Row justify="end" gutter={16} style={{ marginTop: "1rem" }}>
         <Col>
-          <Button type="primary" size="middle">
-            View Report
-          </Button>
+          <Form.Item>
+            <Button type="primary" onClick={() => handleReport()}>
+              View Report
+            </Button>
+          </Form.Item>
         </Col>
       </Row>
+      <CustomTable
+        columns={resultEntrycolumns}
+        dataSource={resultEntry}
+        actionColumn={false}
+      />
+
+      <div>
+        <Modal
+          width={"65rem"}
+          height={"auto"}
+          centered
+          title={
+            <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>
+              Template
+            </span>
+          }
+          open={ckModalOpen}
+          maskClosable={false}
+          footer={null}
+          onCancel={handleCancel}
+        >
+          <CkEditor
+            key={key ? key : customKey}
+            initialData={templateEditorData}
+            printButton={true}
+            setData={setTemplateEditorData}
+            isDisable={true}
+          />
+          <Row gutter={16} justify={"end"} style={{ marginTop: "1rem" }}>
+            {/* <Col>
+              <Button type="primary" onClick={handleTemplateSave}>
+                Save
+              </Button>
+            </Col> */}
+            <Col style={{ marginRight: "1rem" }}>
+              <Button danger onClick={handleCancel}>
+                Cancel
+              </Button>
+            </Col>
+          </Row>
+        </Modal>
+
+        <div>
+          {error && <div>Error: {error}</div>}
+
+          <Modal
+            centered
+            title="Report"
+            open={isModalVisible}
+            onCancel={() => setIsModalVisible(false)}
+            footer={[
+              <Button
+                key="close"
+                danger
+                onClick={() => setIsModalVisible(false)}
+              >
+                Close
+              </Button>,
+            ]}
+            width={"60rem"} // You can adjust the width as needed
+            height={"auto"}
+          >
+            {reportUrl && (
+              <iframe
+                src={reportUrl}
+                style={{ width: "100%", height: "500px", border: "none" }}
+                title="Report"
+              />
+            )}
+          </Modal>
+        </div>
+      </div>
     </>
   );
 };

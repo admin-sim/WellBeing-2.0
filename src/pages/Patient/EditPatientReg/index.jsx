@@ -1168,8 +1168,61 @@ const NewPatient = () => {
                 <WebcamImage onImageUpload={handleImageUpload} />
               </Col>
             </Row>
-
             <Divider />
+            <Divider orientation="left">Contact Details</Divider>
+            <Row gutter={32}>
+              <Col span={6}>
+                <Form.Item
+                  name="MobileNumber"
+                  label="Mobile Number"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter your mobile number.",
+                    },
+                    {
+                      pattern: new RegExp(/^\d{10}$/),
+                      message: "Invalid mobile number!",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="LandlineNumber"
+                  label="Landline Number"
+                  rules={[
+                    {
+                      pattern: new RegExp(/^\d{6,10}$/),
+                      message: "Invalid Landline Number",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="EmailId"
+                  label="Email Id"
+                  rules={[
+                    {
+                      type: "email",
+                      message: "Please input valid E-mail",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name="Occupation" label="Occupation">
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
             <Row gutter={32}>
               <Col span={12}>
                 <Divider orientation="left" style={{ margin: "0" }}>
@@ -1386,60 +1439,6 @@ const NewPatient = () => {
                     </Form.Item>
                   </Col>
                 </Row>
-              </Col>
-            </Row>
-            <Divider orientation="left">Contact Details</Divider>
-            <Row gutter={32}>
-              <Col span={6}>
-                <Form.Item
-                  name="MobileNumber"
-                  label="Mobile Number"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter your mobile number.",
-                    },
-                    {
-                      pattern: new RegExp(/^\d{10}$/),
-                      message: "Invalid mobile number!",
-                    },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="LandlineNumber"
-                  label="Landline Number"
-                  rules={[
-                    {
-                      pattern: new RegExp(/^\d{6,10}$/),
-                      message: "Invalid Landline Number",
-                    },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="EmailId"
-                  label="Email Id"
-                  rules={[
-                    {
-                      type: "email",
-                      message: "Please input valid E-mail",
-                    },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item name="Occupation" label="Occupation">
-                  <Input />
-                </Form.Item>
               </Col>
             </Row>
             <Divider orientation="left">Other Details</Divider>

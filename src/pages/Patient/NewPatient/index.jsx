@@ -1000,6 +1000,60 @@ const NewPatient = () => {
               </Col>
             </Row>
             <Divider />
+            <Divider orientation="left">Contact Details</Divider>
+            <Row gutter={32}>
+              <Col span={6}>
+                <Form.Item
+                  name="MobileNumber"
+                  label="Mobile Number"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter your mobile number.",
+                    },
+                    {
+                      pattern: /^\d{10}$/,
+                      message: "Please enter a valid 10 digit number!",
+                    },
+                  ]}
+                >
+                  <Input maxLength={10} />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="LandlineNumber"
+                  label="Landline Number"
+                  rules={[
+                    {
+                      pattern: /^\d{10}$/,
+                      message: "Please enter a valid 10 digit number!",
+                    },
+                  ]}
+                >
+                  <Input maxLength={10} />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="EmailId"
+                  label="Email Id"
+                  rules={[
+                    {
+                      type: "email",
+                      message: "Please input valid E-mail",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name="Occupation" label="Occupation">
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
             <Row gutter={32}>
               <Col span={12}>
                 <Divider orientation="left" style={{ margin: "0" }}>
@@ -1216,60 +1270,6 @@ const NewPatient = () => {
                     </Form.Item>
                   </Col>
                 </Row>
-              </Col>
-            </Row>
-            <Divider orientation="left">Contact Details</Divider>
-            <Row gutter={32}>
-              <Col span={6}>
-                <Form.Item
-                  name="MobileNumber"
-                  label="Mobile Number"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter your mobile number.",
-                    },
-                    {
-                      pattern: /^\d{10}$/,
-                      message: "Please enter a valid 10 digit number!",
-                    },
-                  ]}
-                >
-                  <Input maxLength={10} />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="LandlineNumber"
-                  label="Landline Number"
-                  rules={[
-                    {
-                      pattern: /^\d{10}$/,
-                      message: "Please enter a valid 10 digit number!",
-                    },
-                  ]}
-                >
-                  <Input maxLength={10} />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="EmailId"
-                  label="Email Id"
-                  rules={[
-                    {
-                      type: "email",
-                      message: "Please input valid E-mail",
-                    },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item name="Occupation" label="Occupation">
-                  <Input />
-                </Form.Item>
               </Col>
             </Row>
             <Divider orientation="left">Other Details</Divider>

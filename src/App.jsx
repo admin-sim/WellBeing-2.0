@@ -21,6 +21,7 @@ import LabDashboard from "./pages/Laboratory/LabDashboard";
 import SampleCollection from "./pages/Laboratory/LabDashboard/SampleCollection";
 import ResultEntry from "./pages/Laboratory/LabDashboard/ResultEntry/index.jsx";
 import Verification from "./pages/Laboratory/LabDashboard/Verification/index.jsx";
+import Report from "./pages/Laboratory/LabDashboard/Report/index.jsx";
 import ClinicalChartFlow from "./pages/ClinicalDocuments/ClinicalChart/ClinicalChartFlow.jsx";
 import ClinicalChart from "./pages/ClinicalDocuments/ClinicalChart/index.jsx";
 import PurchaseOrder from "./pages/Inventory/PurchaseOrder";
@@ -568,6 +569,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Verification />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="Report"
+              element={
+                <ProtectedRoute>
+                  <Report />
                 </ProtectedRoute>
               }
             />

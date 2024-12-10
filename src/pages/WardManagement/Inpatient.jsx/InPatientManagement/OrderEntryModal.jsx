@@ -23,7 +23,7 @@ import {
   DeleteOutlined,
   PlusCircleOutlined,
   RedoOutlined,
-  CloseSquareFilled
+  CloseSquareFilled,
 } from "@ant-design/icons";
 import { debounce } from "lodash";
 import PatientHeader from "../../../../components/PatientHeader";
@@ -35,8 +35,18 @@ import { urlGetAllAutocompleteServicesAsync, urlGetServiceCharge, urlAddNewCharg
 import dayjs from "dayjs";
 import ColumnGroup from "antd/es/table/ColumnGroup";
 import { render } from "react-dom";
+import { v4 as uuidv4 } from "uuid"; // Import uuidv4
+import CkEditor from "../../../../components/CKEditor/index.jsx";
 
-function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntry, handleFinish }) {
+function OrderEntry({
+  bed,
+  patient,
+  Dropdown,
+  open,
+  handleClose,
+  handleOrderEntry,
+  handleFinish,
+}) {
   const [form1] = Form.useForm();
   const [form2] = Form.useForm();
   const [form3] = Form.useForm(); // Initialize form3
@@ -63,8 +73,8 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
   };
 
   useEffect(() => {
-    setLoading(false)
-  }, [Dropdown])
+    setLoading(false);
+  }, [Dropdown]);
 
   const handleAutoCompleteChange = async (value) => {
     debugger;
@@ -84,13 +94,12 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
         responseData.length > 0 &&
         responseData[0].Id !== undefined
       ) {
-        const newOptions = responseData
-          .map((option) => ({
-            value: option.Name,
-            label: option.Name,
-            key: option.Id,
-          }))
-        setServices(newOptions)
+        const newOptions = responseData.map((option) => ({
+          value: option.Name,
+          label: option.Name,
+          key: option.Id,
+        }));
+        setServices(newOptions);
       } else {
         setServices(null);
         form1.setFieldValue("Services", "");
@@ -119,13 +128,12 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
         responseData.length > 0 &&
         responseData[0].Id !== undefined
       ) {
-        const newOptions = responseData
-          .map((option) => ({
-            value: option.Name,
-            label: option.Name,
-            key: option.Id,
-          }))
-        setServices(newOptions)
+        const newOptions = responseData.map((option) => ({
+          value: option.Name,
+          label: option.Name,
+          key: option.Id,
+        }));
+        setServices(newOptions);
       } else {
         setServices(null);
         form1.setFieldValue("Services", "");
@@ -156,10 +164,16 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
     if (key == '4') {
       try {
         const response = await customAxios.get(
-          `${urlLoadSampleCollectionGrid}?PatientId=${bed.PatientId}&EncounterId=${bed.EncounterId}&SelclabId=${0}`
+          `${urlLoadSampleCollectionGrid}?PatientId=${
+            bed.PatientId
+          }&EncounterId=${bed.EncounterId}&SelclabId=${0}`
         );
         if (response.status == 200) {
-          setSampleCollectionGrid(response.data.data);
+          const ListOfSamplCol = response.data.data.map((method) => ({
+            ...method,
+            key: uuidv4(), // Assign a unique key using uuidv4
+          }));
+          setSampleCollectionGrid(ListOfSamplCol);
         }
       } catch (error) {
         throw error;
@@ -263,30 +277,10 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
     },
   ];
 
-  const columns5 = [
-    {
-      title: "Test Name",
-      dataIndex: "testName",
-    },
-    {
-      title: "Template Name",
-      dataIndex: "TemplateName",
-      render: (text) => <a>{text}</a>,
-    },
-  ];
-
-  const dataSource5 = [
-    {
-      key: "1",
-      testName: "Urin Analysis",
-      TemplateName: "Template",
-    },
-  ];
-
   const columns4 = [
     {
       title: "Test Name",
-      dataIndex: "testName",
+      dataIndex: "TestName",
     },
     {
       title: "Lab Number",
@@ -294,22 +288,35 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
     },
   ];
 
-  const rowSelection = {
-    onChange: (selectedRowKeys, selectedRows) => {
-      console.log(
-        `selectedRowKeys: ${selectedRowKeys}`,
-        "selectedRows: ",
-        selectedRows
-      );
+  const columns4 = [
+    {
+      title: "Test Name",
+      dataIndex: "TestName",
+      width: 150,
     },
-    getCheckboxProps: (record) => ({
-      // Column configuration not to be checked
-      name: record.name,
-    }),
-  };
+    {
+      title: "Template Name",
+      render: (text, record) => {
+        console.log("IsTemplateTest:", record.IsTemplateTest); // Debugging step to see value
+        if (record.IsTemplateTest === true) {
+          return (
+            <span
+              style={{ color: "#1890ff", cursor: "pointer" }}
+              onClick={() => handleTemplateClick(record)}
+            >
+              Template
+            </span>
+          );
+        } else {
+          return null; // Handle the case when IsTemplateTest is false, if needed
+        }
+      },
+      width: 120,
+    },
+  ];
 
   const fetchDataForSelectedService = async (ServiceId) => {
-    debugger
+    debugger;
     try {
       const response = await customAxios.get(
         `${urlGetServiceCharge}?ServiceId=${ServiceId}&PatientId=${bed.PatientId}&EncounterId=${bed.EncounterId}`
@@ -326,7 +333,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
     if (option.key) {
       try {
         const newData = await fetchDataForSelectedService(option.key);
-        setServiceDetails(newData)
+        setServiceDetails(newData);
         if (newData.servicePrice) {
           form1.setFieldsValue({
             Provider: newData.servicePrice.ProviderName,
@@ -345,7 +352,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
     if (option.key) {
       try {
         const newData = await fetchDataForSelectedService(option.key);
-        setServiceDetails(newData)
+        setServiceDetails(newData);
         if (newData.servicePrice) {
           form2.setFieldsValue({
             Provider: newData.servicePrice.ProviderName,
@@ -483,10 +490,12 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                   layout="vertical"
                   form={form1}
                   onFinish={async (values) => {
-                    debugger
-                    setLoading(true)
+                    debugger;
+                    setLoading(true);
                     const service = {
-                      StrServiceDate: values.Date ? values.Date.format('DD-MM-YYYY') : '',
+                      StrServiceDate: values.Date
+                        ? values.Date.format("DD-MM-YYYY")
+                        : "",
                       PatientId: bed.PatientId,
                       ProviderID: serviceDetails.servicePrice.ProviderID,
                       EncounterId: bed.EncounterId,
@@ -494,26 +503,31 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                       Rate: serviceDetails.servicePrice.ChargeAmount,
                       ChargeAmount: serviceDetails.servicePrice.ChargeAmount,
                       NetAmount: serviceDetails.servicePrice.ChargeAmount,
-                      PatientChargeAmount: serviceDetails.servicePrice.PatientChargeAmount,
+                      PatientChargeAmount:
+                        serviceDetails.servicePrice.PatientChargeAmount,
                       PatientTypeID: patient.PatientType,
-                      OrderEntry: 1
-                    }
-                    const response = await customAxios.post(urlAddNewCharge, service, {
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                    });
+                      OrderEntry: 1,
+                    };
+                    const response = await customAxios.post(
+                      urlAddNewCharge,
+                      service,
+                      {
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                      }
+                    );
                     if (response.status == 200 && response.data != null) {
-                      handleOrderEntry(response.data.PatientAccountCharges)
-                      form1.resetFields()
-                      setLoading(false)
+                      handleOrderEntry(response.data.PatientAccountCharges);
+                      form1.resetFields();
+                      setLoading(false);
                       message.success("Charge Added Successfully");
                     }
                     // handleCancel();
                   }}
                   style={{ margin: "1rem" }}
                   initialValues={{
-                    Date: dayjs()
+                    Date: dayjs(),
                   }}
                 >
                   <Row gutter={16}>
@@ -533,9 +547,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                           //onSearch={handleAutoCompleteChange}
                           onSearch={debouncedHandleAutoCompleteChangeService}
                           onSelect={handleSelect}
-                          onChange={(value) => {
-
-                          }}
+                          onChange={(value) => {}}
                           allowClear={{
                             clearIcon: <CloseSquareFilled />,
                           }}
@@ -554,7 +566,10 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                           },
                         ]}
                       >
-                        <DatePicker style={{ width: "100%" }} format='DD-MM-YYYY' />
+                        <DatePicker
+                          style={{ width: "100%" }}
+                          format="DD-MM-YYYY"
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={6}>
@@ -573,7 +588,11 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                     </Col>
                     <Col offset={1} span={4}>
                       <Form.Item label="&nbsp;">
-                        <Button type="primary" htmlType="submit" loading={loading}>
+                        <Button
+                          type="primary"
+                          htmlType="submit"
+                          loading={loading}
+                        >
                           Add Service
                         </Button>
                       </Form.Item>
@@ -597,7 +616,9 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                     </span>
                   )}
                   columns={columns2}
-                  dataSource={(Dropdown.PatientAccountCharges || []).filter(item => item.ServiceGroupID != 1042)}
+                  dataSource={(Dropdown.PatientAccountCharges || []).filter(
+                    (item) => item.ServiceGroupID != 1042
+                  )}
                   pagination={false}
                   // onDelete={(record) => {
                   //   alert("Deleting Sl No. : " + record.slno);
@@ -673,10 +694,12 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                   layout="vertical"
                   form={form2}
                   onFinish={async (values) => {
-                    debugger
-                    setLoading(true)
+                    debugger;
+                    setLoading(true);
                     const service = {
-                      StrServiceDate: values.Date ? values.Date.format('DD-MM-YYYY') : '',
+                      StrServiceDate: values.Date
+                        ? values.Date.format("DD-MM-YYYY")
+                        : "",
                       PatientId: bed.PatientId,
                       ProviderID: serviceDetails.servicePrice.ProviderID,
                       EncounterId: bed.EncounterId,
@@ -684,19 +707,24 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                       Rate: serviceDetails.servicePrice.ChargeAmount,
                       ChargeAmount: serviceDetails.servicePrice.ChargeAmount,
                       NetAmount: serviceDetails.servicePrice.ChargeAmount,
-                      PatientChargeAmount: serviceDetails.servicePrice.PatientChargeAmount,
+                      PatientChargeAmount:
+                        serviceDetails.servicePrice.PatientChargeAmount,
                       PatientTypeID: patient.PatientType,
-                      OrderEntry: 1
-                    }
-                    const response = await customAxios.post(urlAddNewCharge, service, {
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                    });
+                      OrderEntry: 1,
+                    };
+                    const response = await customAxios.post(
+                      urlAddNewCharge,
+                      service,
+                      {
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                      }
+                    );
                     if (response.status == 200 && response.data != null) {
-                      handleOrderEntry(response.data.PatientAccountCharges)
-                      form2.resetFields()
-                      setLoading(false)
+                      handleOrderEntry(response.data.PatientAccountCharges);
+                      form2.resetFields();
+                      setLoading(false);
                       message.success("Charge Added Successfully");
                     }
                     // handleCancel();
@@ -724,9 +752,7 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                           //onSearch={handleAutoCompleteChange}
                           onSearch={debouncedHandleAutoCompleteChangeServiceDia}
                           onSelect={handleSelectDia}
-                          onChange={(value) => {
-
-                          }}
+                          onChange={(value) => {}}
                           allowClear={{
                             clearIcon: <CloseSquareFilled />,
                           }}
@@ -745,7 +771,10 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                           },
                         ]}
                       >
-                        <DatePicker style={{ width: "100%" }} format='DD-MM-YYYY' />
+                        <DatePicker
+                          style={{ width: "100%" }}
+                          format="DD-MM-YYYY"
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={6}>
@@ -764,7 +793,11 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                     </Col>
                     <Col offset={1} span={4}>
                       <Form.Item label="&nbsp;">
-                        <Button type="primary" htmlType="submit" loading={loading}>
+                        <Button
+                          type="primary"
+                          htmlType="submit"
+                          loading={loading}
+                        >
                           Add Service
                         </Button>
                       </Form.Item>
@@ -800,7 +833,9 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                     </span>
                   )}
                   columns={columns2}
-                  dataSource={(Dropdown.PatientAccountCharges || []).filter(item => item.ServiceGroupID == 1042)}
+                  dataSource={(Dropdown.PatientAccountCharges || []).filter(
+                    (item) => item.ServiceGroupID == 1042
+                  )}
                   pagination={false}
                   actionColumn={false}
                   isFilter={true}
@@ -874,12 +909,11 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                   layout="vertical"
                   form={form3}
                   onFinish={(values) => {
-                    setLoading(true),
-                      handleFinish(values)
+                    setLoading(true), handleFinish(values);
                   }}
                   style={{ margin: "1rem" }}
                   initialValues={{
-                    FromDate: dayjs().subtract(1, 'day'),
+                    FromDate: dayjs().subtract(1, "day"),
                     ToDate: dayjs(),
                   }}
                 >
@@ -895,7 +929,10 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                           },
                         ]}
                       >
-                        <DatePicker style={{ width: "100%" }} format='DD-MM-YYYY' />
+                        <DatePicker
+                          style={{ width: "100%" }}
+                          format="DD-MM-YYYY"
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={4}>
@@ -909,7 +946,10 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                           },
                         ]}
                       >
-                        <DatePicker style={{ width: "100%" }} format='DD-MM-YYYY' />
+                        <DatePicker
+                          style={{ width: "100%" }}
+                          format="DD-MM-YYYY"
+                        />
                       </Form.Item>
                     </Col>
                     <Col span={6}>
@@ -924,15 +964,17 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                         ]}
                         initialValue={2060}
                       >
-                        <Select style={{ width: '100%' }} defaultValue={2060}>
-                          {(Dropdown ? Dropdown.DocumentType : []).map((option) => (
-                            <Select.Option
-                              key={option.LookupID}
-                              value={option.LookupID}
-                            >
-                              {option.LookupDescription}
-                            </Select.Option>
-                          ))}
+                        <Select style={{ width: "100%" }} defaultValue={2060}>
+                          {(Dropdown ? Dropdown.DocumentType : []).map(
+                            (option) => (
+                              <Select.Option
+                                key={option.LookupID}
+                                value={option.LookupID}
+                              >
+                                {option.LookupDescription}
+                              </Select.Option>
+                            )
+                          )}
                         </Select>
                       </Form.Item>
                     </Col>
@@ -940,12 +982,12 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                       <Form.Item
                         name="Description"
                         label="Description"
-                      // rules={[
-                      //   {
-                      //     required: true,
-                      //     message: "Please select Description",
-                      //   },
-                      // ]}
+                        // rules={[
+                        //   {
+                        //     required: true,
+                        //     message: "Please select Description",
+                        //   },
+                        // ]}
                       >
                         <Input style={{ width: "100%" }} />
                       </Form.Item>
@@ -1049,37 +1091,101 @@ function OrderEntry({ bed, patient, Dropdown, open, handleClose, handleOrderEntr
                     </Button>
                   </Col>
                 </Row>
-                <Table
-                  size="small"
-                  rowSelection={{
-                    type: Checkbox,
-                    ...rowSelection,
-                  }}
+                <CustomTable
+                  rowSelection={rowSelection}
                   columns={columns4}
                   dataSource={sampleCollectionGrid}
-                  pagination={{
-                    pageSize: 10,
-                  }}
+                  actionColumn={false}
                 />
-                <Row>
-                  <Col
-                    span={23}
-                    style={{
-                      display: "flex",
-                      justifyContent: "end",
-                      margin: "0.5rem 0 1rem 0",
-                    }}
-                  >
-                    <Button type="primary">View Report</Button>
+                <Row justify="end" gutter={16} style={{ marginTop: "1rem" }}>
+                  <Col>
+                    <Form.Item>
+                      <Button type="primary" onClick={() => handleReport()}>
+                        View Report
+                      </Button>
+                    </Form.Item>
                   </Col>
                 </Row>
-                <Table columns={columns5} dataSource={dataSource5} size="small" />
+                <CustomTable
+                  columns={resultEntrycolumns}
+                  dataSource={resultEntry}
+                  actionColumn={false}
+                />
+                <div>
+                  <Modal
+                    width={"65rem"}
+                    height={"auto"}
+                    centered
+                    title={
+                      <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>
+                        Template
+                      </span>
+                    }
+                    open={ckModalOpen}
+                    maskClosable={false}
+                    footer={null}
+                    onCancel={handleCkeditorCancel}
+                  >
+                    <CkEditor
+                      key={key ? key : customKey}
+                      initialData={templateEditorData}
+                      printButton={true}
+                      setData={setTemplateEditorData}
+                      isDisable={true}
+                    />
+                    <Row
+                      gutter={16}
+                      justify={"end"}
+                      style={{ marginTop: "1rem" }}
+                    >
+                      <Col style={{ marginRight: "1rem" }}>
+                        <Button danger onClick={handleCkeditorCancel}>
+                          Cancel
+                        </Button>
+                      </Col>
+                    </Row>
+                  </Modal>
+
+                  <div>
+                    {error && <div>Error: {error}</div>}
+
+                    <Modal
+                      centered
+                      title="Report"
+                      open={isModalVisible}
+                      onCancel={() => setIsModalVisible(false)}
+                      footer={[
+                        <Button
+                          key="close"
+                          danger
+                          onClick={() => setIsModalVisible(false)}
+                        >
+                          Close
+                        </Button>,
+                      ]}
+                      width={"60rem"} // You can adjust the width as needed
+                      height={"auto"}
+                    >
+                      {reportUrl && (
+                        <iframe
+                          src={reportUrl}
+                          style={{
+                            width: "100%",
+                            height: "500px",
+                            border: "none",
+                          }}
+                          title="Report"
+                        />
+                      )}
+                    </Modal>
+                  </div>
+                </div>
               </div>
             </Layout>
           </Tabs.TabPane>
         </Tabs>
       </Modal>
-    </div >
+    </div>
   );
 }
 
