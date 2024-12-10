@@ -234,6 +234,7 @@ const GRNAgainstPO = () => {
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
+      setLoading(false)
       setError(error.message);
     }
   };
@@ -252,6 +253,7 @@ const GRNAgainstPO = () => {
     console.log("respo", response);
 
     if (!response.ok) {
+      setLoading(false)
       throw new Error("Failed to fetch report");
     }
 

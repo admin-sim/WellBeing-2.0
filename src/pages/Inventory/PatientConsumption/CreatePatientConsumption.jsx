@@ -105,6 +105,7 @@ const PatientConsumption = () => {
       setDropDown(apiData);
     });
     if (issueId > 0) {
+      debugger
       setButtonTitle("Update");
       customAxios
         .get(`${urlPatientConsumptionEdit}?IssueId=${issueId}`)

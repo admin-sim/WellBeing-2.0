@@ -14,7 +14,9 @@ import {
   Table,
   Tabs,
   message,
-  Spin,
+  Space,
+  Tooltip,
+  Badge
 } from "antd";
 import React, { useEffect, useState } from "react";
 import {
@@ -28,17 +30,8 @@ import PatientHeader from "../../../../components/PatientHeader";
 import CustomTable from "../../../../components/customTable";
 import Title from "antd/es/typography/Title";
 import { TfiReload } from "react-icons/tfi";
-import customAxios from "../../../../components/customAxios/customAxios.jsx";
-import {
-  urlGetAllAutocompleteServicesAsync,
-  urlGetServiceCharge,
-  urlAddNewCharge,
-  urlPackageDescriptionServiceforclincal,
-  urlPackageDescriptionServicewithoutDiagServc,
-  urlLoadSampleCollectionGrid,
-  urlGetTemplateDataByTemplateId,
-  urlGetAllTemplateTestForPatient,
-} from "../../../../../endpoints.js";
+import customAxios from '../../../../components/customAxios/customAxios.jsx'
+import { urlGetAllAutocompleteServicesAsync, urlGetServiceCharge, urlAddNewCharge, urlPackageDescriptionServiceforclincal, urlPackageDescriptionServicewithoutDiagServc, urlLoadSampleCollectionGrid, urlSendTestsFOrLabModule } from "../../../../../endpoints.js";
 import dayjs from "dayjs";
 import ColumnGroup from "antd/es/table/ColumnGroup";
 import { render } from "react-dom";
@@ -62,19 +55,7 @@ function OrderEntry({
   const [loading, setLoading] = useState(false);
   const [serviceDetails, setServiceDetails] = useState();
   const [sampleCollectionGrid, setSampleCollectionGrid] = useState([]);
-
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [selectedRow, setSelectedRow] = useState([]);
-  const [resultEntry, setResultEntry] = useState([]);
-  const [ckModalOpen, setCkModalOpen] = useState(false);
-  const [templateEditorData, setTemplateEditorData] = useState("");
-  const [key, setKey] = useState(null);
-  const [customKey, setCustomKey] = useState(resultEntry?.length + 1000);
-  const [currentRecord, setCurrentRecord] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [error, setError] = useState(null);
-  const [reportUrl, setReportUrl] = useState(null);
-  const [blobData, setBlobData] = useState(null);
+  const [defaultActiveKey, setDefaultActiveKey] = useState("1");
   const [reportloading, setReportLoading] = useState(false);
 
   const handleCancel = () => {
@@ -82,6 +63,14 @@ function OrderEntry({
     form2.resetFields();
     form3.resetFields();
     handleClose();
+  };
+
+  const onTabChange = (key) => {
+    // if (key == '2') {
+    //   handleClear()
+    // }
+    setDefaultActiveKey(key)
+    // form2.submit()
   };
 
   useEffect(() => {
@@ -167,12 +156,13 @@ function OrderEntry({
   );
 
   const onChange = async (key) => {
-    debugger;
-    form1.resetFields();
-    form2.resetFields();
-    form3.resetFields();
-    setServices([]);
-    if (key == "4") {
+    debugger
+    form1.resetFields()
+    form2.resetFields()
+    form3.resetFields()
+    setServices([])
+    setDefaultActiveKey(key)
+    if (key == '4') {
       try {
         const response = await customAxios.get(
           `${urlLoadSampleCollectionGrid}?PatientId=${
@@ -238,12 +228,37 @@ function OrderEntry({
       dataIndex: "ProviderName",
       key: "key",
     },
-    {
-      title: "Charge Amount",
-      dataIndex: "Rate",
-      key: "key",
+    // defaultActiveKey === '1' && {
+    //   title: "Charge Amount",
+    //   dataIndex: "ChargeAmount",
+    //   width: 150,
+    // },
+    defaultActiveKey == '2' && {
+      title: "Lab Number",
+      dataIndex: "LabNumber",
+      width: 120,
     },
-  ];
+    defaultActiveKey == '2' && {
+      title: "Status",
+      width: 120,
+      render: (_, record) => (
+        <Space>
+          <Tooltip title={record.SamplColHeaderId ? 'Sent' : 'Click on Send to Lab'}>
+            <Badge status={record.SamplColHeaderId ? 'success' : 'error'} />
+          </Tooltip>
+          <Tooltip title={record.IsSamplCollected ? 'Sample Collected' : 'Sample Collection Pending'}>
+            <Badge status={record.IsSamplCollected ? "success" : 'error'} />
+          </Tooltip>
+          <Tooltip title={record.IsResultEntryDone ? 'Result Entry Done' : 'Result Entry Pending'}>
+            <Badge status={record.IsResultEntryDone ? "success" : 'error'} />
+          </Tooltip>
+          <Tooltip title={record.IsVerificationDone ? 'Verification Done' : 'Verification Pending'}>
+            <Badge status={record.IsVerificationDone ? "success" : 'error'} />
+          </Tooltip>
+        </Space>
+      ),
+    }
+  ].filter(Boolean);
 
   const columns3 = [
     {
@@ -273,7 +288,8 @@ function OrderEntry({
       dataIndex: "LabNumber",
     },
   ];
-  const resultEntrycolumns = [
+
+  const columns4 = [
     {
       title: "Test Name",
       dataIndex: "TestName",
@@ -350,168 +366,42 @@ function OrderEntry({
     setLoading(false);
   };
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: async (selectedRowKeys, selectedRows) => {
-      debugger;
-
-      // Filter rows where IsResultEntryDone is true
-      const filteredSelectedRows = selectedRows.filter(
-        (row) => row.IsResultEntryDone
-      );
-      setSelectedRowKeys(selectedRowKeys); // Update selected row keys state
-      setSelectedRow(filteredSelectedRows); // Update filtered selected rows state
-
-      // Prepare ListOfResultEntryData by filtering and mapping rows with ChargeId > 0
-      const ListOfResultEntryData = filteredSelectedRows
-        .filter((row) => parseInt(row.ChargeId) > 0)
-        .map((row) => ({ ChargeId: row.ChargeId }));
-
-      // If ListOfResultEntryData has valid data, proceed to API call
-      if (ListOfResultEntryData.length > 0) {
-        try {
-          const AllTemplateTest = await GetAllTemplateTestForPatient(
-            bed.PatientId,
-            bed.EncounterId,
-            ListOfResultEntryData
-          );
-          setResultEntry(AllTemplateTest);
-          // Handle the API response (AllTemplateTest) here
-        } catch (error) {
-          console.error("Error fetching template tests:", error);
-        }
-      } else {
-        setResultEntry([]);
+  async function handleSendtoLab() {
+    debugger
+    // await form1.validateFields()
+    // Patient.handleLoading(true)
+    setLoading(true)
+    const investigations = Dropdown.PatientAccountCharges.filter(f => f.ServiceGroupID == 1042)
+    const listnotsentToLab = investigations.filter(f => f.SamplColHeaderId == null || f.SamplColHeaderId == 0);
+    if (listnotsentToLab.length > 0 && Dropdown.LastEncounter.PatientType != 22) {
+      const BillViewModel = {
+        PatientId: patient.PatientId,
+        EncounterId: patient.EncounterId,
+        IsAdvance: form2.getFieldValue('stat'),
+        PFlag: 1,
+        PatientAccountCharges: listnotsentToLab
       }
-    },
-    getCheckboxProps: (record) => ({
-      disabled: !record.IsResultEntryDone,
-    }),
-  };
-
-  const GetAllTemplateTestForPatient = async (
-    PatientId,
-    EncounterId,
-    ListOfResultEntryData
-  ) => {
-    try {
-      const ChargeIdList = ListOfResultEntryData;
-
-      const response = await customAxios.post(
-        urlGetAllTemplateTestForPatient, // Adjust the URL to match your API endpoint
-        ChargeIdList,
-        {
-          params: { PatientId: PatientId, EncounterId: EncounterId },
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response && response.data.data != null) {
-        return response.data.data.ResultEntryList;
-      } else {
-        return null;
-      }
-    } catch (error) {
-      console.error("Error fetching template tests:", error);
-      return null;
-    }
-  };
-
-  const handleReport = async () => {
-    // Initialize the array to hold ChargeIds
-    debugger;
-    setReportLoading(true); 
-    let ListOfSmplColResult = [];
-
-    // Assuming selectedRow is an array of selected rows
-    selectedRow.forEach((row) => {
-      // Check if IsResultEntryDone is true and IsTemplate is not true for each selected row
-      if (row.IsResultEntryDone === true && row.IsTemplate !== true) {
-        // Push the ChargeId of the row into ListOfSmplColResult
-        ListOfSmplColResult.push(row.ChargeId);
-      }
-    });
-
-    // If there are ChargeIds in ListOfSmplColResult, proceed
-    if (ListOfSmplColResult.length > 0) {
-      // Join the ChargeIds into a comma-separated string
-      const chargeIdStr = ListOfSmplColResult.join(",");
-
-      // Create the request object
-      const request = {
-        ChargeId: chargeIdStr, // Use the comma-separated ChargeIds string
-        PatientId: selectedRow[0].PatientId, // Assuming PatientId is the same across selected rows
-        EncounterId: selectedRow[0].EncounterId, // Assuming EncounterId is the same across selected rows
-      };
-
-      try {
-        // Call the fetchReport function with the request
-        const { url, blob } = await fetchReport(request);
-
-        // Handle the response (e.g., displaying the report URL or downloading the file)
-        setReportUrl(url);
-        setBlobData(blob);
-        setIsModalVisible(true); // Display the modal with the report
-      } catch (error) {
-        console.error("Error fetching report:", error);
-      }finally {
-        setReportLoading(false); // End loading
-      }
-    } else {
-      console.log("No valid ChargeIds selected.");
-      message.warning('Please select  Tests ');
-      setReportLoading(false); 
-    }
-  };
-
-  async function fetchReport(request) {
-    const response = await fetch(
-      "https://192.168.29.254:808/api/ReportsApi/GetLabReport",
-      {
-        method: "POST",
+      const response = await customAxios.post(urlSendTestsFOrLabModule, BillViewModel, {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(request),
+      });
+      if (response.status == 200) {
+        handleOrderEntry(response.data.data.PatientAccountCharges)
+        // Patient.UpdateDropDown(response.data.data.PatientAccountCharges)
+        // form1.resetFields()
+        setLoading(false)
+        message.success("Investigations Has Been Sent Successfully.");
+        // Patient.handleLoading(false)
       }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch report");
-    }
-
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    return { url, blob };
-  }
-
-  const handleTemplateClick = async (record) => {
-    // Handle the click event, you can log the record or perform other actions
-
-    // Additional logic to handle the template click
-    setCurrentRecord(record);
-    if (record.ResId > 0) {
-      setTemplateEditorData(record.ObservedValues);
+      else {
+        message.error('Failed To Send Investigations.')
+        // Patient.handleLoading(false)
+      }
     } else {
-      const response = await customAxios.get(
-        `${urlGetTemplateDataByTemplateId}?Tid=${record.TemplateId}`
-      );
-      if (response.status === 200) {
-        setTemplateEditorData(response.data.data.TempData);
-        //setKey();
-      }
+      setLoading(false)
     }
-    // setReadOnly(true)
-    setCkModalOpen(true);
-  };
-
-  const handleCkeditorCancel = () => {
-    setCustomKey(customKey + 1);
-    setTemplateEditorData("");
-    setCkModalOpen(false);
-  };
+  }
 
   return (
     <div>
@@ -538,6 +428,7 @@ function OrderEntry({
           style={{ marginTop: "1rem" }}
           tabBarStyle={{ display: "flex" }}
           defaultActiveKey={1}
+          activeKey={defaultActiveKey}
         >
           <Tabs.TabPane
             tab={
@@ -842,6 +733,7 @@ function OrderEntry({
                   style={{ margin: "1rem" }}
                   initialValues={{
                     Date: dayjs(),
+                    stat: false
                   }}
                 >
                   <Row gutter={16}>
@@ -915,11 +807,11 @@ function OrderEntry({
                   <Row>
                     <Col span={3}>
                       <Form.Item>
-                        <Button type="primary">Send To Lab</Button>
+                        <Button type="primary" onClick={handleSendtoLab} loading={loading}>Send To Lab</Button>
                       </Form.Item>
                     </Col>
                     <Col span={2}>
-                      <Form.Item>
+                      <Form.Item name='stat' valuePropName="checked">
                         <Checkbox>STAT</Checkbox>
                       </Form.Item>
                     </Col>
@@ -952,6 +844,7 @@ function OrderEntry({
                   scroll={{
                     y: 120,
                   }}
+                  loading={loading}
                 />
               </Col>
             </Row>

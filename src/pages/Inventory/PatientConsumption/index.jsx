@@ -200,6 +200,7 @@ const PatientConsumption = () => {
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
+      setLoading(false)
       setError(error.message);
     }
   };
@@ -230,7 +231,6 @@ const PatientConsumption = () => {
 
 
   const onFinish = async (values) => {
-    debugger;
     setIsSearchLoading(true);
     setLoading(true);
     try {
@@ -244,7 +244,6 @@ const PatientConsumption = () => {
         PatientId: values.PatientId ? values.PatientId : 0
       };
       const response = await customAxios.post(urlSearchPatientConsumption, postData1);
-      debugger;
       const ApiData = response.data.data.newIndentIssueModel.map((item, index) => {
         return {
           ...item,
@@ -278,7 +277,6 @@ const PatientConsumption = () => {
   }
 
   function handleSelect2(value, option) {
-    debugger
     if (value) {
       form.setFieldsValue({ PatientName: option.data.PatientFirstName + ' ' + option.data.PatientLastName })
       form.setFieldsValue({ PatientId: option.data.PatientId })

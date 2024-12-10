@@ -39,11 +39,11 @@ function ClinicalChartFlow() {
         if (key == '1') {
             await form1.validateFields()
             form1.submit()
-        } else if (key == '2') {
+        } else if (key == '22') {
             fetch('Ambulatory Patient')
-        } else if (key == '3') {
+        } else if (key == '23') {
             fetch('InPatient')
-        } else if (key == 4) {
+        } else if (key == '24') {
             fetch('Day Care')
         } else {
             fetch('Emergency')
@@ -67,6 +67,12 @@ function ClinicalChartFlow() {
         {
             title: "Encounter",
             dataIndex: "GeneratedEncounterId",
+            render: (text, record) => {
+                return (
+                    <Button type="link" onClick={() => handleSelectPatient(record)}>{record.GeneratedEncounterId}</Button>
+                );
+
+            },
         },
         {
             title: "Provider",
@@ -74,13 +80,7 @@ function ClinicalChartFlow() {
         },
         {
             title: "Name",
-            dataIndex: "PatientFirstName",
-            render: (text, record) => {
-                return (
-                    <Button type="link" onClick={() => handleSelectPatient(record)}>{record.PatientFirstName}</Button>
-                );
-
-            },
+            dataIndex: "PatientFirstName"
         }
     ];
 
@@ -149,7 +149,7 @@ function ClinicalChartFlow() {
                     </Form>
                     <div style={{ display: "flex", justifyContent: "flex-end" }}>
                         <Tabs
-                            defaultActiveKey="2"
+                            defaultActiveKey="22"
                             size="small"
                             onChange={onTabChange}
                             tabBarGutter={0}
@@ -186,7 +186,7 @@ function ClinicalChartFlow() {
                                         OP
                                     </div>
                                 }
-                                key="2"
+                                key="22"
                             >
                                 {/* <Table columns={columns} dataSource={tableData} /> */}
                             </Tabs.TabPane>
@@ -202,7 +202,7 @@ function ClinicalChartFlow() {
                                         IP
                                     </div>
                                 }
-                                key="3"
+                                key="23"
                             >
                                 {/* <Table columns={columns} dataSource={tableData} /> */}
                             </Tabs.TabPane>
@@ -218,7 +218,7 @@ function ClinicalChartFlow() {
                                         DM
                                     </div>
                                 }
-                                key="4"
+                                key="24"
                             >
                                 {/* <Table columns={columns} dataSource={tableData} /> */}
                             </Tabs.TabPane>
@@ -234,7 +234,7 @@ function ClinicalChartFlow() {
                                         EM
                                     </div>
                                 }
-                                key="5"
+                                key="25"
                             >
                                 {/* <Table columns={columns} dataSource={tableData} loading={loading} /> */}
                             </Tabs.TabPane>

@@ -477,177 +477,6 @@ function Prescription(Patient) {
     },
   ];
 
-  // const columns = [
-  //   {
-  //     title: "Drug",
-  //     width: 300,
-  //     render: (_, record) => (
-  //       <div
-  //         style={{
-  //           display: "flex",
-  //           alignItems: "end",
-  //           margin: "0rem 0 -1.5rem 0",
-  //         }}
-  //       >
-  //         <Form.Item style={{ width: "100%" }} name={[record.key, 'Drug']}>
-  //           <AutoComplete
-  //             disabled={!!record.PrescriptionLineId}
-  //             options={productOptions}
-  //             onSearch={handleSearch}
-  //             onSelect={(value, option) =>
-  //               handleInputChange(value, record, option)
-  //             }
-  //           />
-  //         </Form.Item>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     title: "Route",
-  //     width: 100,
-  //     render: (_, record) => (
-  //       <div
-  //         style={{
-  //           display: "flex",
-  //           alignItems: "end",
-  //           margin: "0rem 0 -1.5rem 0",
-  //         }}
-  //       >
-  //         <Form.Item style={{ width: "100%" }} name={[record.key, 'Route']}>
-  //           <Select placeholder='Select'>
-  //             {dropDown.Route.map((option) => (
-  //               <Select.Option key={option.LookupID} value={option.LookupID}>{option.LookupDescription}</Select.Option>
-  //             ))}
-  //           </Select>
-  //         </Form.Item>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     title: "Frequency",
-  //     width: 100,
-  //     render: (_, record) => (
-  //       <div
-  //         style={{
-  //           display: "flex",
-  //           alignItems: "end",
-  //           margin: "0rem 0 -1.5rem 0",
-  //         }}
-  //       >
-  //         <Form.Item style={{ width: "100%" }} name={[record.key, 'Frequency']}>
-  //           <Select placeholder='Select' onChange={(value, option) => SelectFrequency(value, option, record)}>
-  //             {(dropDown.Frequency || []).map((option) => (
-  //               <Select.Option key={option.FrequencyId} value={option.FrequencyId}>{option.FrequencyName}</Select.Option>
-  //             ))}
-  //           </Select>
-  //         </Form.Item>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     title: "No. of days",
-  //     width: 100,
-  //     render: (text, record) => (
-  //       <div
-  //         style={{
-  //           display: "flex",
-  //           alignItems: "end",
-  //           margin: "0rem 0 -1.5rem 0",
-  //         }}
-  //       >
-  //         <Form.Item style={{ width: "100%" }} name={[record.key, 'IntervalInDays']}>
-  //           <Input
-  //             value={text}
-  //             onChange={(e) => Interval(e.target.value, record)}
-  //           />
-  //         </Form.Item>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     title: "Total Quantity",
-  //     width: 100,
-  //     render: (_, record) => (
-  //       <div
-  //         style={{
-  //           display: "flex",
-  //           alignItems: "end",
-  //           margin: "0rem 0 -1.5rem 0",
-  //         }}
-  //       >
-  //         <Form.Item style={{ width: "100%" }} name={[record.key, 'TotalQty']}>
-  //           <Input />
-  //         </Form.Item>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     title: "Instructions",
-  //     render: (_, record) => (
-  //       <div
-  //         style={{
-  //           display: "flex",
-  //           alignItems: "end",
-  //           margin: "0rem 0 -1.5rem 0",
-  //         }}
-  //       >
-  //         <Form.Item
-  //           style={{ width: "100%" }}
-  //           name={[record.key, "Instruction"]}
-  //         >
-  //           <Input
-  //             size="small"
-  //             options={[
-  //               {
-  //                 value: "yes",
-  //                 label: "Yes",
-  //               },
-  //               {
-  //                 value: "no",
-  //                 label: "No",
-  //               },
-  //             ]}
-  //           />
-  //         </Form.Item>
-  //       </div>
-  //     ),
-  //     width: 100,
-  //   },
-  //   {
-  //     title: (
-  //       <span style={{ display: "flex", justifyContent: "center" }}>
-  //         Action{" "}
-  //         <Tooltip title="Add Drug">
-  //           {" "}
-  //           <Button
-  //             type="link"
-  //             icon={<PlusCircleOutlined />}
-  //             style={{ fontSize: "1.5rem" }}
-  //             onClick={handleAddRow}
-  //           />
-  //         </Tooltip>
-  //       </span>
-  //     ),
-  //     render: (_, record) => (
-  //       <div
-  //         style={{
-  //           display: "flex",
-  //           justifyContent: "space-evenly",
-  //         }}
-  //       >
-  //         {/* <Button icon={<EditOutlined />} /> */}
-  //         <Popconfirm
-  //           title="Sure to delete?"
-  //           onConfirm={() => handleDeleteRow(record.key)}
-  //         >
-  //           <Button danger icon={<DeleteOutlined />} />
-  //         </Popconfirm>
-  //       </div>
-  //     ),
-  //     width: 120,
-  //   },
-  // ];
-
   return (
     <>
       <Row>
@@ -1085,18 +914,16 @@ function Prescription(Patient) {
             </Row>
             <Divider style={{ marginBottom: "0rem" }} />
           </Form>
-          <Spin spinning={loading}>
-            <CustomTable
-              columns={columns2}
-              dataSource={tableData2}
-              actionColumn={false}
-              isFilter={true}
-              scroll={{
-                //   x: 1500,
-                y: 110,
-              }}
-            />
-          </Spin>
+          <CustomTable loading={loading}
+            columns={columns2}
+            dataSource={tableData2}
+            actionColumn={false}
+            isFilter={true}
+            scroll={{
+              //   x: 1500,
+              y: 110,
+            }}
+          />
         </Tabs.TabPane>
       </Tabs >
     </>

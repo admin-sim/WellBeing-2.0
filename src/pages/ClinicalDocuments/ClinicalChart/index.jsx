@@ -276,7 +276,6 @@ function ClinicalChart() {
   const navigate = useNavigate();
 
   function EndConsultation() {
-    debugger
     navigate("/ClinicalChartFlow");
   }
 
@@ -315,7 +314,7 @@ function ClinicalChart() {
             size="large"
             onClick={EndConsultation}
           >
-            End Consultation
+            Back
             <RxExit style={{ marginLeft: "5px", fontSize: "1.3rem" }} />
           </Button>
         </Col>

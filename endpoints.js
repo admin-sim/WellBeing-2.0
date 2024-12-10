@@ -539,4 +539,6 @@ export const urlGetAllAutocompleteRecurringServicesAsync = `${baseURL}/api/Recur
 export const urlCreateRecuringCharge = `${baseURL}/api/RecurringCharges/Create`;
 export const urlSaveRecurringChargesModel = `${baseURL}/api/RecurringCharges/SaveRecurringChargesModel`;
 export const urlDeleteRecuringCharges = `${baseURL}/api/RecurringCharges/DeleteCharges`;
+export const urlShowAcceptOrReject = `${baseURL}/api/WardManagement/ShowAcceptOrReject`;
+export const urlSaveAcceptOrReject = `${baseURL}/api/WardManagement/SaveAcceptOrReject`;
 
