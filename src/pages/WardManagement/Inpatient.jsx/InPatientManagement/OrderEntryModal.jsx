@@ -16,7 +16,8 @@ import {
   message,
   Space,
   Tooltip,
-  Badge
+  Badge,
+  Spin
 } from "antd";
 import React, { useEffect, useState } from "react";
 import {
@@ -31,7 +32,7 @@ import CustomTable from "../../../../components/customTable";
 import Title from "antd/es/typography/Title";
 import { TfiReload } from "react-icons/tfi";
 import customAxios from '../../../../components/customAxios/customAxios.jsx'
-import { urlGetAllAutocompleteServicesAsync, urlGetServiceCharge, urlAddNewCharge, urlPackageDescriptionServiceforclincal, urlPackageDescriptionServicewithoutDiagServc, urlLoadSampleCollectionGrid, urlSendTestsFOrLabModule } from "../../../../../endpoints.js";
+import { urlGetAllAutocompleteServicesAsync, urlGetServiceCharge, urlAddNewCharge, urlPackageDescriptionServiceforclincal, urlPackageDescriptionServicewithoutDiagServc, urlLoadSampleCollectionGrid, urlSendTestsFOrLabModule, urlGetAllTemplateTestForPatient } from "../../../../../endpoints.js";
 import dayjs from "dayjs";
 import ColumnGroup from "antd/es/table/ColumnGroup";
 import { render } from "react-dom";
@@ -56,6 +57,20 @@ function OrderEntry({
   const [serviceDetails, setServiceDetails] = useState();
   const [sampleCollectionGrid, setSampleCollectionGrid] = useState([]);
   const [defaultActiveKey, setDefaultActiveKey] = useState("1");
+
+
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRow, setSelectedRow] = useState([]);
+  const [resultEntry, setResultEntry] = useState([]);
+  const [ckModalOpen, setCkModalOpen] = useState(false);
+  const [templateEditorData, setTemplateEditorData] = useState("");
+  const [key, setKey] = useState(null);
+  const [customKey, setCustomKey] = useState(resultEntry?.length + 1000);
+  const [currentRecord, setCurrentRecord] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [error, setError] = useState(null);
+  const [reportUrl, setReportUrl] = useState(null);
+  const [blobData, setBlobData] = useState(null);
   const [reportloading, setReportLoading] = useState(false);
 
   const handleCancel = () => {
@@ -403,7 +418,126 @@ function OrderEntry({
     }
   }
 
+  const handleTemplateClick = async (record) => {
+    // Handle the click event, you can log the record or perform other actions
 
+    // Additional logic to handle the template click
+    setCurrentRecord(record);
+    if (record.ResId > 0) {
+      setTemplateEditorData(record.ObservedValues);
+    } else {
+      const response = await customAxios.get(
+        `${urlGetTemplateDataByTemplateId}?Tid=${record.TemplateId}`
+      );
+      if (response.status === 200) {
+        setTemplateEditorData(response.data.data.TempData);
+        //setKey();
+      }
+    }
+    // setReadOnly(true)
+    setCkModalOpen(true);
+  };
+  const resultEntrycolumns = [
+    {
+      title: "Test Name",
+      dataIndex: "TestName",
+      width: 150,
+    },
+    {
+      title: "Template Name",
+      render: (text, record) => {
+        console.log("IsTemplateTest:", record.IsTemplateTest); // Debugging step to see value
+        if (record.IsTemplateTest === true) {
+          return (
+            <span
+              style={{ color: "#1890ff", cursor: "pointer" }}
+              onClick={() => handleTemplateClick(record)}
+            >
+              Template
+            </span>
+          );
+        } else {
+          return null; // Handle the case when IsTemplateTest is false, if needed
+        }
+      },
+      width: 120,
+    },
+  ];
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: async (selectedRowKeys, selectedRows) => {
+      debugger;
+
+      // Filter rows where IsResultEntryDone is true
+      const filteredSelectedRows = selectedRows.filter(
+        (row) => row.IsResultEntryDone
+      );
+      setSelectedRowKeys(selectedRowKeys); // Update selected row keys state
+      setSelectedRow(filteredSelectedRows); // Update filtered selected rows state
+
+      // Prepare ListOfResultEntryData by filtering and mapping rows with ChargeId > 0
+      const ListOfResultEntryData = filteredSelectedRows
+        .filter((row) => parseInt(row.ChargeId) > 0)
+        .map((row) => ({ ChargeId: row.ChargeId }));
+
+      // If ListOfResultEntryData has valid data, proceed to API call
+      if (ListOfResultEntryData.length > 0) {
+        try {
+          const AllTemplateTest = await GetAllTemplateTestForPatient(
+            bed.PatientId,
+            bed.EncounterId,
+            ListOfResultEntryData
+          );
+          setResultEntry(AllTemplateTest);
+          // Handle the API response (AllTemplateTest) here
+        } catch (error) {
+          console.error("Error fetching template tests:", error);
+        }
+      } else {
+        setResultEntry([]);
+      }
+    },
+    getCheckboxProps: (record) => ({
+      disabled: !record.IsResultEntryDone,
+    }),
+  };
+
+
+  const GetAllTemplateTestForPatient = async (
+    PatientId,
+    EncounterId,
+    ListOfResultEntryData
+  ) => {
+    try {
+      const ChargeIdList = ListOfResultEntryData;
+
+      const response = await customAxios.post(
+        urlGetAllTemplateTestForPatient, // Adjust the URL to match your API endpoint
+        ChargeIdList,
+        {
+          params: { PatientId: PatientId, EncounterId: EncounterId },
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response && response.data.data != null) {
+        return response.data.data.ResultEntryList;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching template tests:", error);
+      return null;
+    }
+  };
+  const handleCkeditorCancel = () => {
+    setCustomKey(customKey + 1);
+    setTemplateEditorData("");
+    setCkModalOpen(false);
+  };
   
   const handleReport = async () => {
     // Initialize the array to hold ChargeIds
@@ -454,7 +588,7 @@ function OrderEntry({
 
   async function fetchReport(request) {
     const response = await fetch(
-      "https://192.168.29.254:808/api/ReportsApi/GetLabReport",
+      "http://localhost:43705/api/ReportsApi/GetLabReport",
       {
         method: "POST",
         headers: {
