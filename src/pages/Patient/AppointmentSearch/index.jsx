@@ -49,22 +49,21 @@ const AppointmentSearch = () => {
   const [patientsearchDetails, setPatientSearchDetails] = useState([]);
   const [patientHeaderDetails, setPatientHeaderDetails] = useState({});
   const [encounterId, setEncounterId] = useState();
+  const [appointmentId, setAppointmentId] = useState();
   const [selectedUhId, setSelectedUhId] = useState(null);
   const [serviceLocations, setServiceLocations] = useState([]);
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const [form1] = Form.useForm();
 
-  const [selecteddob, setdob] = useState(undefined);
-  const [selectedRegFrom, setRegFrom] = useState(undefined);
-  const [selectedRegTo, setRegTo] = useState(undefined);
+
 
   const [isVisitModalVisible, setIsVisitModalVisible] = useState(false);
 
   const [messageApi, contextHolder] = message.useMessage();
   const [IsVisitCreated, setIsVisitCreated] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+
   const [showWard, setShowWard] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null); 
   const [departmentLoading, setDepartmentLoading] = useState(true);
@@ -209,7 +208,7 @@ const AppointmentSearch = () => {
         setPatientHeaderDetails(response1.data.data.EncounterModel);
         setVisitDropdown(response.data.data);
         //  setEncounterTypeId(response.data.data.EncounterTypeId);
-
+        setAppointmentId(record.AppointmentId);
         // Set the form field values
         form.setFieldsValue({
           EncounterType: response.data.data.EncounterTypeId,
@@ -233,8 +232,8 @@ const AppointmentSearch = () => {
     debugger;
 
     try {
-      await form.validateFields();
-      const values = form.getFieldsValue();
+      await form1.validateFields();
+      const values = form1.getFieldsValue();
       setIsVisitCreated(true);
       setIsSubmitLoader(true);
       const postData = {
@@ -254,6 +253,7 @@ const AppointmentSearch = () => {
         WardCategoryId: values.WardCategory,
         WardId: values.Ward,
         BedId: values.Bed,
+        AppointmentId:values.AppointmentId
       };
 
       // Send a POST request to the server
@@ -286,7 +286,7 @@ const AppointmentSearch = () => {
           type: "error",
           content: `Visit Creation Unsuccessful`,
         });
-        form.resetFields();
+        form1.resetFields();
       }
 
       // setIsModalVisible(false);
@@ -299,14 +299,14 @@ const AppointmentSearch = () => {
       setIsSubmitLoader(false);
       if (error.errorFields) {
         // Highlight the fields with errors
-        form.scrollToField(error.errorFields[0].name, {
+        form1.scrollToField(error.errorFields[0].name, {
           behavior: "smooth",
         });
         message.error("Please fill all required fields.");
       } else {
         console.error("Failed to send data to server: ", error);
         message.error(`Error creating visit for patient: ${error.message}.`);
-        form.resetFields();
+        form1.resetFields();
       }
     }
   };
@@ -348,7 +348,7 @@ const AppointmentSearch = () => {
     setPatientHeaderDetails([]);
     setEncounterId(null);
     setShowWard(false);
-    form.resetFields();
+    form1.resetFields();
   };
 
   const handleOnSearch = (values) => {
@@ -627,11 +627,12 @@ const AppointmentSearch = () => {
                   IsVisitCreated={IsVisitCreated}
                   patientHeaderDetails={patientHeaderDetails}
                   encounterId={encounterId}
-                  form1={form}
+                  form1={form1}
                   dropdown={visitsDropdown}
                   showWard={showWard}
                   isCancelOrEditVisit={false}
                   isCancelEncounter={false}
+                  AppointmentId={appointmentId}
                 />
               )}
           </ConfigProvider>

@@ -20,6 +20,7 @@ import {
   Tooltip,
   Dropdown,
   Modal,
+  Spin,
 } from "antd";
 import { debounce } from "lodash";
 import { useForm } from "antd/es/form/Form";
@@ -589,6 +590,7 @@ const LabReports = (Patient) => {
   const [error, setError] = useState(null);
   const [reportUrl, setReportUrl] = useState(null);
   const [blobData, setBlobData] = useState(null);
+  const [reportloading, setReportLoading] = useState(false);
   useEffect(() => {
     handleLoad();
   }, []);
@@ -748,6 +750,7 @@ const LabReports = (Patient) => {
   const handleReport = async () => {
     // Initialize the array to hold ChargeIds
     debugger;
+    setReportLoading(true); 
     let ListOfSmplColResult = [];
   
     // Assuming selectedRow is an array of selected rows
@@ -781,15 +784,19 @@ const LabReports = (Patient) => {
         setIsModalVisible(true); // Display the modal with the report
       } catch (error) {
         console.error("Error fetching report:", error);
+      }finally {
+        setReportLoading(false); // End loading
       }
     } else {
       console.log("No valid ChargeIds selected.");
+      message.warning('Please select  Tests ');
+      setReportLoading(false); 
     }
   };
 
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:43705/api/ReportsApi/GetLabReport",
+      "https://192.168.29.254:808/api/ReportsApi/GetLabReport",
       {
         method: "POST",
         headers: {
@@ -866,7 +873,24 @@ const LabReports = (Patient) => {
             </Col>
           </Row>
         </Modal>
-
+        {reportloading && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(255, 255, 255, 0.8)", // Light overlay
+                zIndex: 1000,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Spin size="large" />
+            </div>
+          )}
         <div>
           {error && <div>Error: {error}</div>}
 

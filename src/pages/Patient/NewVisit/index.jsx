@@ -93,12 +93,7 @@ const NewVisit = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showWard, setShowWard] = useState(false);
 
-  const [serviceLocationId, setServiceLocationId] = useState();
-  const [wardsLoader, setWardsLoader] = useState(false);
-  const [BedsLoader, setBedsLoader] = useState(false);
-  const [wards, setWards] = useState([]);
-  const [beds, setBeds] = useState([]);
-  const [encounterTypeId, setEncounterTypeId] = useState();
+ 
 
   useEffect(() => {
     debugger;
@@ -313,7 +308,7 @@ const NewVisit = () => {
       if (response.data && response1.data) {
         setPatientHeaderDetails(response1.data.data.EncounterModel);
         setVisitDropdown(response.data.data);
-        setEncounterTypeId(response.data.data.EncounterTypeId);
+        //setEncounterTypeId(response.data.data.EncounterTypeId);
         
         // Set the form field values
         form1.setFieldsValue({

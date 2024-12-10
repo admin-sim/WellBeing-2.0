@@ -10,6 +10,7 @@ import {
   Spin,
   notification,
   Tooltip,
+  Tabs,
 } from "antd";
 import { LuCalendarSearch } from "react-icons/lu";
 import Form from "antd/es/form";
@@ -21,6 +22,7 @@ import {
   urlEditOrDeletePatientVisit,
   urlGetEditOrCancelEncounterDetails,
   urlGetPatientHeaderDetails,
+  urlGetAllPatientsRegisteredToady,
 } from "../../../endpoints.js";
 import { UserAddOutlined } from "@ant-design/icons";
 import { EnvironmentOutlined } from "@ant-design/icons";
@@ -31,9 +33,13 @@ import defaultPic from "../../assets/defaultPic.png";
 import PatientHeader from "../../components/PatientHeader/index.jsx";
 import VisitModal from "./NewVisit/visitModal.jsx";
 import { isMobile } from "react-device-detect";
+import CustomTable from "../../components/customTable/index.jsx";
 
+const { Title } = Typography;
+const { TabPane } = Tabs;
 const Patient = () => {
   const [patientDetails, setPatientDetails] = useState([]);
+  const [patientRegisterDetails, setPatientRegisterDetails] = useState([]);
   const { Title } = Typography;
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -43,18 +49,15 @@ const Patient = () => {
   const [isEditOrDeleteVisitModalVisible, setIsEditOrCancelVisitModalVisible] =
     useState(false);
   const [isMoreModalVisible, setIsMoreModalVisible] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isCancelEncounter, setIsCancelEncounter] = useState(false);
   const [isCancelOrEditEncounter, setIsCancelOrEditEncounter] = useState(false);
   const [submitLoader, setIsSubmitLoader] = useState(false);
   const [encounterDetails, setEncounterDetails] = useState();
   const [showWard, setShowWard] = useState(false);
+  const [activeTab, setActiveTab] = useState("1");
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentPatients = patientDetails.slice(startIndex, endIndex);
-  const totalPatients = patientDetails.length;
+
+
 
   const [patientDropdown, setPatientDropdown] = useState({
     PatientType: [],
@@ -73,7 +76,11 @@ const Patient = () => {
   useEffect(() => {
     setIsLoading(true);
     customAxios.get(urlGetAllPatients).then((response) => {
-      setPatientDetails(response.data.data.Patients);
+      const Patients = response.data.data.Patients.map((obj, index) => {
+        return { ...obj, key: index + 1 };
+      });
+
+      setPatientDetails(Patients);
       setIsLoading(false);
     });
   }, []);
@@ -258,8 +265,11 @@ const Patient = () => {
 
         if (response.data.data !== null) {
           setIsSubmitLoader(false);
-          const encounterDetails = response.data.data.Patients;
-          setPatientDetails(encounterDetails);
+          const Patients = response.data.data.Patients.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          });
+
+          setPatientDetails(Patients);
           form.resetFields();
 
           if (isCancelEncounter) {
@@ -307,15 +317,11 @@ const Patient = () => {
   const columns = [
     {
       title: "Sl No",
-      key: "index",
-
-      render: (text, record, index) => {
-        const serialNumber = (currentPage - 1) * itemsPerPage + index + 1;
-        return serialNumber;
-      },
+      dataIndex: "key",
+      key: "key",
     },
     {
-      title: "UH ID",
+      title: "UHID",
       dataIndex: "UhId",
       key: "UhId",
       // sorter: (a, b) => a.UhId - b.UhId,
@@ -451,6 +457,99 @@ const Patient = () => {
     },
   ];
 
+  const Registercolumns = [
+    {
+      title: "Sl No",
+      dataIndex: "key",
+      key: "key",
+    },
+    {
+      title: "UH ID",
+      dataIndex: "UhId",
+      key: "UhId",
+      // sorter: (a, b) => a.UhId - b.UhId,
+      // sortDirections: ['descend', 'ascend'],
+      render: (text, record) => (
+        <Tag
+          color="blue"
+          style={{ fontWeight: "bold", borderWidth: "5px", fontSize: "15px" }}
+        >
+          {record.UhId}
+        </Tag>
+      ),
+    },
+
+    {
+      title: "Image",
+      dataIndex: "Gender",
+      key: "Gender",
+      render: (text, record) => (
+        <Avatar src={showGenderPic(record.Gender)} size="large" />
+      ),
+    },
+    {
+      title: "Patient Details",
+      dataIndex: "PatientName",
+      key: "PatientName",
+
+      render: (text, record) => (
+        <div>
+          <p>
+            <strong>Name:</strong> {record.PatientFirstName}
+            <br />
+            <strong>Mob No:</strong> {record.MobileNumber}
+            <br />
+            <strong>Dob:</strong> {formatDatefortable(record.DateOfBirth)}
+            <br />
+            <strong>Gender:</strong> {record.Gender == 7 ? "Male" : "Female"}
+          </p>
+        </div>
+      ),
+    },
+    // {
+    //   title: "Actions",
+    //   key: "actions",
+    //   width: 200,
+    //   render: (text, record) => (
+    //     <>
+  
+    //       <div>
+    //         <p>
+    //           <a
+    //             href="#"
+    //             onClick={(e) => {
+    //               e.preventDefault();
+    //               handleMoreDetailsModal(record);
+    //             }}
+    //           >
+    //             More Details
+    //           </a>
+    //         </p>
+    //       </div>
+    //     </>
+    //   ),
+    // },
+  ];
+
+
+  const handleTabChange = (key) => {
+    console.log("Tab changed:", key);
+    setActiveTab(key);
+    setIsLoading(true);
+
+    customAxios.get(urlGetAllPatientsRegisteredToady).then((response) => {
+      const Patients = response.data.data.Patients.map((obj, index) => {
+        return { ...obj, key: index + 1 };
+      });
+
+      setPatientRegisterDetails(Patients);
+      setIsLoading(false);
+    });
+
+    // Here you can update the patient data depending on the tab selected
+    // Example: fetch data when switching tabs
+  };
+
   return (
     <>
       <Layout
@@ -501,7 +600,12 @@ const Patient = () => {
                 </Button>
               </Col>
               <Col>
-                <Button    onClick={navigateToAppointmentsearch} type="default" size="middle" className="dfja">
+                <Button
+                  onClick={navigateToAppointmentsearch}
+                  type="default"
+                  size="middle"
+                  className="dfja"
+                >
                   <LuCalendarSearch
                     style={{ fontSize: "1.2rem", marginRight: "0.3rem" }}
                   />
@@ -535,7 +639,7 @@ const Patient = () => {
                     fontWeight: 600,
                   }}
                 >
-                  {patientDetails?.length}
+                  {activeTab === "1" ? patientDetails?.length : patientRegisterDetails?.length}
                 </div>
               </span>
             </Tooltip>
@@ -548,74 +652,49 @@ const Patient = () => {
             </Col>
           </Col>
         </Row>
-        <Row gutter={16} style={{ marginTop: "0.8rem", padding: "0 1rem" }}>
-          <Col span={24}>
-            <Title level={4} style={{ margin: 0 }}>
-              List of Patients in Visit
-            </Title>
-            <Title level={5} style={{ marginTop: "0.3rem" }}>
-              Showing {startIndex + 1} to {Math.min(endIndex, totalPatients)} of{" "}
-              {totalPatients} Patients
-            </Title>
-          </Col>
-        </Row>
-        <Spin spinning={isLoading}>
-          <Row gutter={16} style={{ padding: "0.5rem" }}>
-            <Col span={24}>
-              <Table
-                dataSource={patientDetails}
-                columns={columns}
-                rowKey={(row) => row.EncounterId}
-                size="small"
-                className="custom-table"
-                scroll={{ x: 1000 }}
-                // onChange={(pagination) => {
-                //   setCurrentPage(pagination.current);
-                //   setItemsPerPage(pagination.pageSize);
-                // }}
-                pagination={{
-                  current: currentPage,
-                  pageSize: itemsPerPage,
-                  total: totalPatients,
-                  onChange: (page, pageSize) => {
-                    setCurrentPage(page);
-                    setItemsPerPage(pageSize);
-                  },
-                }}
-                bordered
-              />
-            </Col>
-          </Row>
-        </Spin>
-      </Layout>
-      <ConfigProvider
-        theme={{
-          token: {
-            zIndexPopupBase: 3000,
-          },
-        }}
-      >
-        {/* {contextHolder} */}
+        <div>
+          <Tabs
+            defaultActiveKey="1"
+            onChange={handleTabChange}
+            tabBarStyle={{ padding: "1rem", borderBottom: "2px solid #e8e8e8" }}
+            tabPosition="top"
+            type="card" // This will make the tabs appear as cards
+          >
+            {/* Tab for "List of Patients in Visit" */}
+            <TabPane tab="List of Patients in Visit Toady" key="1">
+              <Spin spinning={isLoading}>
+                <Row gutter={16} style={{ padding: "0.5rem" }}>
+                  <Col span={24}>
+                    <CustomTable
+                      dataSource={patientDetails} // Table data for patients in visit
+                      columns={columns}
+                      actionColumn={false}
+                      isFilter={true}
+                    />
+                  </Col>
+                </Row>
+              </Spin>
+            </TabPane>
 
-        {isEditOrDeleteVisitModalVisible &&
-          patientDropdown.PatientType !== undefined && (
-            <VisitModal
-              open={isEditOrDeleteVisitModalVisible}
-              handleOk={handleOk}
-              submitLoader={submitLoader}
-              // ModalLoader={ModalLoader}
-              close={handleEditOrDeleteVisitModalCancel}
-              // IsVisitCreated={IsVisitCreated}
-              patientHeaderDetails={patientHeaderDetails}
-              // encounterId={encounterId}
-              isCancelOrEditVisit={isCancelOrEditEncounter}
-              form1={form}
-              dropdown={patientDropdown}
-              showWard={showWard}
-              isCancelEncounter={isCancelEncounter}
-            />
-          )}
-      </ConfigProvider>
+            {/* Tab for "List of Patients Registered" */}
+            <TabPane tab="List of Patients Registered Today" key="2">
+              <Spin spinning={isLoading}>
+                <Row gutter={16} style={{ padding: "0.5rem" }}>
+                  <Col span={24}>
+                    <CustomTable
+                      dataSource={patientRegisterDetails} // Table data for registered patients
+                      columns={Registercolumns}
+                      actionColumn={false}
+                      isFilter={true}
+                    />
+                  </Col>
+                </Row>
+              </Spin>
+            </TabPane>
+          </Tabs>
+        </div>
+      </Layout>
+   
 
       {/* {contextHolder} */}
       <Modal

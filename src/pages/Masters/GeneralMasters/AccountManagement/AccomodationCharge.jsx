@@ -3,12 +3,12 @@ import { Button, Col, Form, Modal, Row, Select, Spin, Layout, Table,Tooltip, mes
 import Title from "antd/es/typography/Title";
 import customAxios from "../../../../components/customAxios/customAxios";
 import React, { useEffect, useState } from "react";
-import { urlGetAllAutoChargeAsync, urlRemoveAutoCharge } from "../../../../../endpoints";
+import { urlDeleteAttribute, urlGetAllAccomodationChargeAtribute, urlGetAllAutoChargeAsync } from "../../../../../endpoints";
 import CustomTable from "../../../../components/customTable";
 import { useNavigate } from "react-router";
 import { EditOutlined,DeleteOutlined } from "@ant-design/icons";
 
-function AutoCharge() {
+function AccomodationCharge() {
   const [columnData, setColumnData] = useState();
 
   const [loading, setLoading] = useState(false);
@@ -22,9 +22,9 @@ function AutoCharge() {
     debugger;
     setLoading(true);
     try {
-      const response = await customAxios.get(`${urlGetAllAutoChargeAsync}`);
+      const response = await customAxios.get(`${urlGetAllAccomodationChargeAtribute}`);
       if (response.status === 200 && response.data.data != null) {
-        const newColumnData = response.data.data.map(
+        const newColumnData = response.data.data?.AccommodationTypeAttributeList.map(
           (obj, index) => {
             return { ...obj, key: index + 1 };
           }
@@ -40,95 +40,55 @@ function AutoCharge() {
   };
 
   const columns = [
+  
     {
-      title: "Sl. No.",
-      dataIndex: "key",
-      key: "key",
-      width:40
+      title: "Facility Name",
+      dataIndex: "Facility",
+
     },
     {
-      title: "Facility",
-      dataIndex: "FacilityName",
-      key: "FacilityName",
+      title: "Accommodation Type",
+      dataIndex: "AccommodationTypeName",
+     
     },
     {
-      title: "Department",
-      dataIndex: "DepartmentName",
-      key: "DepartmentName",
-      render: (text) => {
-        return text ? text : "All";
-      },
+      title: "Level of Service",
+      dataIndex: "LevelOfService",
+
     },
     {
-      title: "EncounterType",
-      dataIndex: "EncounterTypeName",
-      key: "EncounterTypeName",
+      title: "Minimum Charge Hours",
+      dataIndex: "MinimumChargeHour",
+
     },
     {
-      title: "PatientType",
-      dataIndex: "PatientTypeName",
-      key: "PatientTypeName",
-      render: (text) => {
-        return text ? text : "All";
-      },
+      title: "Discharge grace hour",
+      dataIndex: "DischargeGraceHour",
     },
     {
-      title: "Provider",
-      dataIndex: "ProviderName",
-      key: "ProviderName",
-      render: (text) => {
-        return text && text.trim() ? text : "All";
-      },
-    },
-    {
-      title: "Service",
-      dataIndex: "ServiceName",
-      key: "ServiceName",
-    },
-    {
-      title: "Is One Time",
-      dataIndex: "IsOneTime",
-      key: "IsOneTime",
-      render: (text) => {
-        return text ? "Yes" : "No";
-      },
+      title: "Discharge bed block hour",
+      dataIndex: "DischargeBedBlockHour",
     },
     {
       title: "Status",
       dataIndex: "Status",
       key: "Status",
-      render: (text, record) => (record.Status == "True" ? "Active" : "Hidden"),
-    },
-    {
-      title: "Encounter Provider",
-      dataIndex: "ChargeEncounterProvider",
-      key: "ChargeEncounterProvider",
-      render: (text) => {
-        return text ? "Yes" : "No";
-      },
-    },
-    {
-      title: "Charge Provider",
-      dataIndex: "ChargeProviderName",
-      key: "ChargeProviderName",
-    },
-  
+      render: (text, record) => (record.ActiveFlag == true ? "Active" : "Hidden"),
+    }
+    
   ];
 
   const handleAddAutoCharge = () => {
-    navigate("/CreateAutoCharge");
+    navigate("/CreateAccomodationCharge");
   };
 
-  const handleEdit = (record) => {
-    debugger;
-      navigate("/CreateAutoCharge", { state: { AutoChargeId: record.AutoChargeId } });
-  };
-  const handledelete =async (record) => {
+
+  const handledelete = async(record) => {
     debugger;
     try {
-      const response = await customAxios.delete(urlRemoveAutoCharge, {
+      const response = await customAxios.delete(urlDeleteAttribute, {
         params: {
-          id: record.AutoChargeId,
+          ID: record.AccommodationAttributeId,
         }
       });
       if (response.status === 200 && response.data.data === true) {
@@ -136,6 +96,7 @@ function AutoCharge() {
         fetchData();
     }
     } catch (error) { }
+    //  navigate("/CreatePriceTariff", { state: { PriceTariffId: record.PriceTariffId } });
   };
 
   return (
@@ -166,16 +127,15 @@ function AutoCharge() {
                   paddingTop: 0,
                 }}
               >
-                AutoCharge
+                Accomodation Charge Attribute
               </Title>
             </Col>
             <Col offset={5} span={3}>
               <Button
                 icon={<PlusCircleOutlined />}
                 onClick={() => handleAddAutoCharge()}
-                
               >
-                AddAutoCharge
+                Add
               </Button>
             </Col>
           </Row>
@@ -184,7 +144,6 @@ function AutoCharge() {
             <CustomTable
               columns={columns}
               dataSource={columnData}
-              onEdit={handleEdit}
               onDelete={handledelete}
             />
           </Spin>
@@ -194,4 +153,4 @@ function AutoCharge() {
   );
 }
 
-export default AutoCharge;
+export default AccomodationCharge;

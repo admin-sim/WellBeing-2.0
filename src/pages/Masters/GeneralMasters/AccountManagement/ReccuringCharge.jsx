@@ -3,12 +3,12 @@ import { Button, Col, Form, Modal, Row, Select, Spin, Layout, Table,Tooltip, mes
 import Title from "antd/es/typography/Title";
 import customAxios from "../../../../components/customAxios/customAxios";
 import React, { useEffect, useState } from "react";
-import { urlGetAllAutoChargeAsync, urlRemoveAutoCharge } from "../../../../../endpoints";
+import { urlDeleteAttribute, urlDeleteRecuringCharges, urlGetAllAccomodationChargeAtribute, urlGetAllAutoChargeAsync, urlGetAllRecuringcharges } from "../../../../../endpoints";
 import CustomTable from "../../../../components/customTable";
 import { useNavigate } from "react-router";
 import { EditOutlined,DeleteOutlined } from "@ant-design/icons";
 
-function AutoCharge() {
+function ReccuringCharge() {
   const [columnData, setColumnData] = useState();
 
   const [loading, setLoading] = useState(false);
@@ -22,9 +22,9 @@ function AutoCharge() {
     debugger;
     setLoading(true);
     try {
-      const response = await customAxios.get(`${urlGetAllAutoChargeAsync}`);
+      const response = await customAxios.get(`${urlGetAllRecuringcharges}`);
       if (response.status === 200 && response.data.data != null) {
-        const newColumnData = response.data.data.map(
+        const newColumnData = response.data.data?.RecurringChargesList.map(
           (obj, index) => {
             return { ...obj, key: index + 1 };
           }
@@ -40,95 +40,83 @@ function AutoCharge() {
   };
 
   const columns = [
+  
     {
-      title: "Sl. No.",
-      dataIndex: "key",
-      key: "key",
-      width:40
+      title: "Facility Name",
+      dataIndex: "Facility",
+
     },
     {
-      title: "Facility",
-      dataIndex: "FacilityName",
-      key: "FacilityName",
+      title: "Ward Type",
+      dataIndex: "WardType",
+     
     },
     {
-      title: "Department",
-      dataIndex: "DepartmentName",
-      key: "DepartmentName",
-      render: (text) => {
-        return text ? text : "All";
-      },
-    },
-    {
-      title: "EncounterType",
-      dataIndex: "EncounterTypeName",
-      key: "EncounterTypeName",
-    },
-    {
-      title: "PatientType",
+      title: "Patient Type",
       dataIndex: "PatientTypeName",
-      key: "PatientTypeName",
-      render: (text) => {
-        return text ? text : "All";
-      },
-    },
-    {
-      title: "Provider",
-      dataIndex: "ProviderName",
-      key: "ProviderName",
-      render: (text) => {
-        return text && text.trim() ? text : "All";
-      },
+
     },
     {
       title: "Service",
       dataIndex: "ServiceName",
-      key: "ServiceName",
+
     },
     {
-      title: "Is One Time",
-      dataIndex: "IsOneTime",
-      key: "IsOneTime",
-      render: (text) => {
-        return text ? "Yes" : "No";
-      },
+      title: "Is Provider mandatory",
+      dataIndex: "IsProviderMandatory",
+      render: (text, record) => (record.IsProviderMandatory == "Y" ? "Yes" : "No"),
+    },
+    {
+      title: "Is rule applicable",
+      dataIndex: "IsRuleApplicable",
+      render: (text, record) => (record.IsRuleApplicable == "Y" ? "Yes" : "No"),
+    },
+    {
+      title: "Effective From",
+      dataIndex: "SEffectiveFrom",
+    },
+    {
+      title: "Effective To",
+      dataIndex: "SEffectiveTo",
+    },
+    {
+      title: "Quantity",
+      dataIndex: "Quantity",
+    
+    },
+    {
+      title: "Rate",
+      dataIndex: "Rate",
+    },
+    {
+      title: "Charge Frequency",
+      dataIndex: "ChargeFrequency",
+    },
+    {
+      title: "Value",
+      dataIndex: "Value",
+      width:40
     },
     {
       title: "Status",
       dataIndex: "Status",
       key: "Status",
-      render: (text, record) => (record.Status == "True" ? "Active" : "Hidden"),
-    },
-    {
-      title: "Encounter Provider",
-      dataIndex: "ChargeEncounterProvider",
-      key: "ChargeEncounterProvider",
-      render: (text) => {
-        return text ? "Yes" : "No";
-      },
-    },
-    {
-      title: "Charge Provider",
-      dataIndex: "ChargeProviderName",
-      key: "ChargeProviderName",
-    },
-  
+      render: (text, record) => (record.ActiveFlag == true ? "Active" : "Hidden"),
+    }
+    
   ];
 
   const handleAddAutoCharge = () => {
-    navigate("/CreateAutoCharge");
+    navigate("/CreateReccuringCharge");
   };
 
-  const handleEdit = (record) => {
-    debugger;
-      navigate("/CreateAutoCharge", { state: { AutoChargeId: record.AutoChargeId } });
-  };
-  const handledelete =async (record) => {
+
+  const handledelete = async(record) => {
     debugger;
     try {
-      const response = await customAxios.delete(urlRemoveAutoCharge, {
+      const response = await customAxios.delete(urlDeleteRecuringCharges, {
         params: {
-          id: record.AutoChargeId,
+          ID: record.RecurringChargesId,
         }
       });
       if (response.status === 200 && response.data.data === true) {
@@ -136,6 +124,7 @@ function AutoCharge() {
         fetchData();
     }
     } catch (error) { }
+    //  navigate("/CreatePriceTariff", { state: { PriceTariffId: record.PriceTariffId } });
   };
 
   return (
@@ -166,16 +155,15 @@ function AutoCharge() {
                   paddingTop: 0,
                 }}
               >
-                AutoCharge
+                Recurring Charges
               </Title>
             </Col>
             <Col offset={5} span={3}>
               <Button
                 icon={<PlusCircleOutlined />}
                 onClick={() => handleAddAutoCharge()}
-                
               >
-                AddAutoCharge
+                Add
               </Button>
             </Col>
           </Row>
@@ -184,7 +172,6 @@ function AutoCharge() {
             <CustomTable
               columns={columns}
               dataSource={columnData}
-              onEdit={handleEdit}
               onDelete={handledelete}
             />
           </Spin>
@@ -194,4 +181,4 @@ function AutoCharge() {
   );
 }
 
-export default AutoCharge;
+export default ReccuringCharge;

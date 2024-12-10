@@ -44,6 +44,7 @@ function AdditionalCharge() {
             title: "Sl. No.",
             dataIndex: "key",
             key: "key",
+            width:40
         },
         {
             title: "Facility Name",

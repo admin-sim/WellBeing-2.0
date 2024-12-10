@@ -15,6 +15,8 @@ import {
   Space,
   Popconfirm,
   Tooltip,
+  ConfigProvider,
+  message,
 } from "antd";
 import { IoAddCircleOutline } from "react-icons/io5";
 import { FaAnglesRight } from "react-icons/fa6";
@@ -28,9 +30,9 @@ import { useNavigate, useLocation } from "react-router";
 import {
   urlGetPatientDetail,
   urlAddNewPatient,
-  urlGetDepartmentBasedOnPatitentType,
-  urlGetProviderBasedOnDepartment,
-  urlGetServiceLocationBasedonId,
+  urlGetPatientHeaderDetails,
+  urlGetEncounterDetails,
+  urlAddNewVisit1,
 } from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import TextArea from "antd/es/input/TextArea";
@@ -38,6 +40,7 @@ import WebcamImage from "../../../components/WebCam/index.jsx";
 import dayjs from "dayjs";
 import { DateTime } from "luxon";
 import PageHeader from "../../../components/PageHeader/index.jsx";
+import VisitModal from "../NewVisit/visitModal.jsx";
 
 const NewPatient = () => {
   const [patientDropdown, setPatientDropdown] = useState({
@@ -69,17 +72,11 @@ const NewPatient = () => {
   const [filteredCities, setFilteredCities] = useState([]);
   const [filteredAreas, setFilteredAreas] = useState([]);
 
-  const [departments, setDepartments] = useState([]);
-  const [providers, setProviders] = useState([]);
-  const [serviceLocations, setServiceLocations] = useState([]);
-  const [selectedPatientType, setSelectedPatientType] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
-  const [selectedProvider, setSelectedProvider] = useState("");
-  const [selectedServiceLocation, setSelectedServiceLocation] = useState("");
   const [loadings, setLoadings] = useState(false);
   const [isloading, setLoading] = useState(true);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [form] = Form.useForm();
+  const [form1] = Form.useForm();
   const [form2] = Form.useForm();
   const navigate = useNavigate();
   const [identifierDetails, setIdentifierDetails] = useState([]);
@@ -89,8 +86,18 @@ const NewPatient = () => {
   const [identificationData, setIdentificationData] = useState();
 
 
+  const [isVisitModalVisible, setIsVisitModalVisible] = useState(false);
+  const [visitsDropdown, setVisitDropdown] = useState({});
+  const [patientHeaderDetails, setPatientHeaderDetails] = useState({});
+  const [selectedRecord, setSelectedRecord] = useState(null); // New state variable to store selected record
+  const [IsVisitCreated, setIsVisitCreated] = useState(false);
+  const [ModalLoader, setModalLoader] = useState(false);
+  const [showWard, setShowWard] = useState(false);
+  const [encounterId, setEncounterId] = useState();
+  const [messageApi, contextHolder] = message.useMessage();
 
   const handleImageUpload = (base64data) => {
+    debugger;
     setUploadedImage(base64data);
     console.log(base64data);
   };
@@ -332,73 +339,6 @@ const NewPatient = () => {
     });
   }, []);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     if (selectedPatientType) {
-  //       try {
-  //         const response = await customAxios.get(
-  //           `${urlGetDepartmentBasedOnPatitentType}?PatientType=${selectedPatientType}`
-  //         );
-  //         if (response.status === 200) {
-  //           const dept = response.data.data.Department;
-  //           setDepartments(dept);
-  //         } else {
-  //           console.error("Failed to fetch departments");
-  //         }
-  //       } catch (error) {
-  //         console.error("Error fetching departments:", error);
-  //       }
-  //     } else {
-  //       // Reset the department dropdown if no patient type is selected
-  //       setDepartments([]);
-  //       setSelectedDepartment("");
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [selectedPatientType, setSelectedDepartment, setDepartments]);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     // Fetch data for the "provider" and "servicelocation" dropdowns when "selectedDepartment" changes
-  //     if (selectedDepartment) {
-  //       try {
-  //         const providerResponse = await customAxios.get(
-  //           `${urlGetProviderBasedOnDepartment}?DepartmentId=${selectedDepartment}`
-  //         );
-  //         const serviceLocationResponse = await customAxios.get(
-  //           `${urlGetServiceLocationBasedonId}?DepartmentId=${selectedDepartment}&patienttype=${selectedPatientType}`
-  //         );
-
-  //         if (providerResponse.status === 200) {
-  //           const provider = providerResponse.data.data.Provider;
-  //           setProviders(provider);
-  //         } else {
-  //           console.error("Failed to fetch providers");
-  //         }
-
-  //         if (serviceLocationResponse.status === 200) {
-  //           const serviceloc =
-  //             serviceLocationResponse.data.data.ServiceLocation;
-  //           setServiceLocations(serviceloc);
-  //         } else {
-  //           console.error("Failed to fetch service locations");
-  //         }
-  //       } catch (error) {
-  //         console.error("Error fetching data:", error);
-  //       }
-  //     } else {
-  //       // Reset the provider and servicelocation dropdowns if no department is selected
-  //       setProviders([]);
-  //       setServiceLocations([]);
-  //       setSelectedProvider("");
-  //       setSelectedServiceLocation("");
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [selectedDepartment, selectedPatientType]);
-
   const handleSearchToVisit = () => {
     const url = `/patient/NewVisit`;
     // Navigate to the new URL
@@ -412,7 +352,6 @@ const NewPatient = () => {
 
     values.dob = selecteddob;
     const patientDetails = {
-   
       PatientTitle: values.title === undefined ? null : values.title,
       PatientFirstName:
         values.PatientFirstName === undefined || values.PatientFirstName === ""
@@ -420,7 +359,7 @@ const NewPatient = () => {
           : values.PatientFirstName,
       PatientMiddleName:
         values.PatientMiddleName === undefined ||
-          values.PatientMiddleName === ""
+        values.PatientMiddleName === ""
           ? null
           : values.PatientMiddleName,
       PatientLastName:
@@ -437,7 +376,7 @@ const NewPatient = () => {
           : values.titleFatherHusband,
       FatherHusbandName:
         values.FatherHusbandName === undefined ||
-          values.FatherHusbandName === ""
+        values.FatherHusbandName === ""
           ? null
           : values.FatherHusbandName,
       MaritalStatus:
@@ -469,7 +408,7 @@ const NewPatient = () => {
       ReligionId: values.Religion === undefined ? null : values.Religion,
       PermanentAddress1:
         values.permanentAddress1 === undefined ||
-          values.permanentAddress1 === ""
+        values.permanentAddress1 === ""
           ? null
           : values.permanentAddress1,
       PermanentCountryId: values?.permanentCountryId,
@@ -508,12 +447,12 @@ const NewPatient = () => {
           : values.BirthPlace,
       BirthIdentification1:
         values.birthIdentification1 === undefined ||
-          values.birthIdentification1 === ""
+        values.birthIdentification1 === ""
           ? null
           : values.birthIdentification1,
       BirthIdentification2:
         values.birthIdentification2 === undefined ||
-          values.birthIdentification2 === ""
+        values.birthIdentification2 === ""
           ? null
           : values.birthIdentification2,
     };
@@ -539,13 +478,25 @@ const NewPatient = () => {
 
       console.log("Response data: ", data);
 
-      // Display success notification
-      notification.success({
-        message: "Patient Registration Successful",
-        description: `The patient details have been successfully registered. The UHID is${data}.`,
-      });
-      handleSearchToVisit();
+    
+
       setLoadings(false);
+      // After receiving the response and generating the report
+      Modal.confirm({
+        title: `Patient Registered Successfully. The UHID is ${data}`, // Correct string interpolation here
+        content: "Do you want to create a visit?",
+        onOk: () => {
+          // Here you can handle the creation of the visit
+          console.log("Visit Creation Logic Triggered");
+          handlevisitmodal(response.data.data.PatientDetail);
+        },
+        onCancel: () => {
+          console.log("User canceled the visit creation");
+          const url = `/Patient`;
+          // Navigate to the new URL
+          navigate(url);
+        },
+      });
     } catch (error) {
       console.error("Failed to send data to server: ", error);
 
@@ -715,6 +666,131 @@ const NewPatient = () => {
       permanentPinCode: presentAddressFields.presentPinCode,
     });
   };
+
+
+  const handlevisitmodal = async (record) => {
+    try {
+      setSelectedRecord(record);
+      setIsVisitCreated(false);
+      setModalLoader(true);
+  
+      // Fetch encounter details
+      const [response, response1] = await Promise.all([
+        customAxios.get(`${urlGetEncounterDetails}?PatientId=${record.PatientId}&PatientType=0&AppointmentId=0`),
+        customAxios.get(`${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}`)
+      ]);
+  
+      // Check if responses are valid before setting data
+      if (response.data && response1.data) {
+        setPatientHeaderDetails(response1.data.data.EncounterModel);
+        setVisitDropdown(response.data.data);
+       // setEncounterTypeId(response.data.data.EncounterTypeId);
+        
+        // Set the form field values
+        form1.setFieldsValue({
+          EncounterType: response.data.data.EncounterTypeId,
+        });
+        
+        setIsVisitModalVisible(true); // Open modal only after data is set
+      } else {
+        message.error("Failed to fetch visit details. Please try again.");
+      }
+  
+    } catch (error) {
+      console.error("Error fetching visit modal data:", error);
+      message.error("An error occurred while loading visit details. Please try again.");
+    } finally {
+      setModalLoader(false); // Hide loader in both success and error cases
+    }
+  };
+
+  const handleVisitModalCancel = () => {
+    setIsVisitModalVisible(false);
+    setIsVisitCreated(false);
+    form1.resetFields();
+    const url = `/patient`;
+    // Navigate to the new URL
+    navigate(url);
+  };
+
+  const handleOk = async () => {
+    debugger;
+
+    try {
+      await form1.validateFields();
+      const values = form1.getFieldsValue();
+      setIsVisitCreated(true);
+     // setIsSubmitLoader(true);
+      const postData = {
+        PatientId: selectedRecord.PatientId,
+        PatientType: values.PatientType,
+        FacilityDepartmentId: values.Department,
+        FacilityDepartmentServiceLocationId: values.ServiceLocation,
+        ProviderId: values.Provider,
+        EncounterTypeId: values.EncounterType,
+        EncounterReasonId: values.EncounterReason,
+        KinTitle: values.KinTitle,
+        KinName: values.KinName,
+        KinAddress: values.KinAddress,
+        KinContactNo: values.KinContactNo,
+        ReferredBy: values.referredBy,
+        AttendingProviderId: values.admittedUnder,
+        WardCategoryId: values.WardCategory,
+        WardId: values.Ward,
+        BedId: values.Bed,
+      };
+
+      // Send a POST request to the server
+      const response = await customAxios.post(urlAddNewVisit1, postData, {
+        headers: {
+          "Content-Type": "application/json",
+          // Add any other required headers here
+        },
+      });
+
+      if (response.data != null) {
+      //  setIsSubmitLoader(false);
+        if (response.data.EncounterResult != null) {
+          messageApi.warning({
+            type: "warning",
+            content: response.data.EncounterResult
+          });
+        } else {
+          const genVisitId = response.data.GeneratedEncounterId;
+          setEncounterId(genVisitId);
+          messageApi.open({
+            type: "success",
+            content: `Successfully  visit created for patient.`,
+          });
+        }
+      } else {
+      //  setIsSubmitLoader(false);
+        messageApi.open({
+          type: "error",
+          content: `Visit Creation Unsuccessful`,
+        });
+        form1.resetFields();
+      }
+
+   
+    } catch (error) {
+     // setIsSubmitLoader(false);
+      if (error.errorFields) {
+        // Highlight the fields with errors
+        form1.scrollToField(error.errorFields[0].name, {
+          behavior: "smooth",
+        });
+        message.error("Please fill all required fields.");
+      } else {
+        console.error("Failed to send data to server: ", error);
+        message.error(`Error creating visit for patient: ${error.message}.`);
+        form1.resetFields();
+      }
+    }
+  };
+
+
+
 
   return (
     <>
@@ -1353,43 +1429,6 @@ const NewPatient = () => {
                 </Form.Item>
               </Col>
             </Row>
-
-            {/* <div
-                style={{
-                  width: "100%",
-                  backgroundColor: "white",
-                  minHeight: "max-content",
-                  borderRadius: "10px",
-                }}
-              >
-                <Row
-                  style={{
-                    padding: "0.5rem 2rem 0.5rem 2rem",
-                    backgroundColor: "#40A2E3",
-                    borderRadius: "10px 10px 10px 10px ",
-                  }}
-                >
-                  <Col span={16}>
-                    <Title
-                      level={4}
-                      style={{
-                        color: "white",
-                        fontWeight: 500,
-                        margin: 0,
-                        paddingTop: 0,
-                      }}
-                    >
-                      Identification Details
-                    </Title>
-                  </Col>
-                  <Col offset={7} span={1} style={{ alignItems: "right" }}>
-                    <Button
-                      icon={<PlusCircleOutlined />}
-                      onClick={handleAddIdentification}
-                    ></Button>
-                  </Col>
-                </Row>
-              </div> */}
             <Divider orientation="left" style={{ fontSize: "1.3rem" }}>
               Patient Identifiers
             </Divider>
@@ -1471,7 +1510,7 @@ const NewPatient = () => {
               },
             ]}
           >
-            <Input style={{ width: "100%" }} placeholder='xxxx-xxxx-xxxx' />
+            <Input style={{ width: "100%" }} placeholder="xxxx-xxxx-xxxx" />
           </Form.Item>
 
           <Row gutter={32} style={{ height: "1rem" }} justify={"end"}>
@@ -1497,6 +1536,32 @@ const NewPatient = () => {
           </Row>
         </Form>
       </Modal>
+      <ConfigProvider
+        theme={{
+          token: {
+            zIndexPopupBase: 3000,
+          },
+        }}
+      >
+       
+       {contextHolder}
+        {isVisitModalVisible && visitsDropdown.PatientType !== undefined && (
+          <VisitModal
+            open={isVisitModalVisible}
+            handleOk={handleOk}
+            ModalLoader={ModalLoader}
+            close={handleVisitModalCancel}
+            IsVisitCreated={IsVisitCreated}
+            patientHeaderDetails={patientHeaderDetails}
+            encounterId={encounterId}
+            form1={form1}
+            dropdown={visitsDropdown}
+            showWard={showWard}
+            isCancelOrEditVisit={false}
+            isCancelEncounter={false}
+          />
+        )}
+      </ConfigProvider>
     </>
   );
 };

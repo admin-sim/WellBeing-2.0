@@ -15,6 +15,7 @@ import {
 
 import PatientHeader from "../../../components/PatientHeader/index.jsx";
 import PropTypes from "prop-types";
+import { propTypes } from "react-bootstrap/esm/Image.js";
 
 const VisitModal = (
   details,
@@ -35,6 +36,7 @@ const VisitModal = (
 
   useEffect(() => {
     setDropdown(details.dropdown);
+
   }, [details]);
 
   const [departments, setDepartments] = useState([]);
@@ -271,6 +273,7 @@ const VisitModal = (
             form={details.form1}
             disabled={details.IsVisitCreated}
             // initialValues={{ EncounterType: encounterTypeId }}
+            initialValues={{ AppointmentId: details?.AppointmentId }}
             layout="vertical"
           >
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
@@ -315,6 +318,9 @@ const VisitModal = (
                         </Select>
                       )}
                     </Form.Item>
+                    <Form.Item hidden name='AppointmentId'>
+                  <Input />
+                </Form.Item>
                   </Col>
                   <Col span={12}>
                     <Form.Item name="EncounterType" label="Encounter Type">
@@ -761,6 +767,7 @@ VisitModal.propTypes = {
   showWard: PropTypes.bool,
   isCancelOrEditVisit: PropTypes.bool.isRequired,
   isCancelEncounter: PropTypes.bool.isRequired,
+  AppointmentId:propTypes.string
   //   isCancel: PropTypes.bool.isRequired,
 };
 

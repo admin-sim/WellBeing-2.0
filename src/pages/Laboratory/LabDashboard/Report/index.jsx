@@ -60,6 +60,7 @@ const Report = () => {
   const [error, setError] = useState(null);
   const [reportUrl, setReportUrl] = useState(null);
   const [blobData, setBlobData] = useState(null);
+  const [reportloading, setReportLoading] = useState(false);
 
   useEffect(() => {
     if (!ckModalOpen) handleCancel();
@@ -304,6 +305,7 @@ const Report = () => {
   const handleReport = async () => {
     // Initialize the array to hold ChargeIds
     debugger;
+    setReportLoading(true);
     let ListOfSmplColResult = [];
   
     // Assuming selectedRow is an array of selected rows
@@ -338,14 +340,19 @@ const Report = () => {
       } catch (error) {
         console.error("Error fetching report:", error);
       }
+      finally {
+        setReportLoading(false); // End loading
+      }
     } else {
       console.log("No valid ChargeIds selected.");
+      message.warning('Please select  Tests ');
+      setReportLoading(false); 
     }
   };
   
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:43705/api/ReportsApi/GetLabReport",
+      "https://192.168.29.254:808/api/ReportsApi/GetLabReport",
       {
         method: "POST",
         headers: {
@@ -476,7 +483,24 @@ const Report = () => {
             </Col>
           </Row>
         </Modal>
-
+        {reportloading && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(255, 255, 255, 0.8)", // Light overlay
+                zIndex: 1000,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Spin size="large" />
+            </div>
+          )}
         <div>
           {error && <div>Error: {error}</div>}
 

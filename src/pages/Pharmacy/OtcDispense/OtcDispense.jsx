@@ -49,6 +49,7 @@ import {
   urlPharmacyCreate,
   urlSaveChargesForPharmacyTempTable,
   urlSaveChargesForTempTable,
+  urlValidateProductExpiry,
 } from "../../../../endpoints.js";
 import Title from "antd/es/typography/Title";
 import { useLocation } from "react-router-dom";
@@ -104,6 +105,7 @@ const OtcDispense = () => {
   const [storeId, setStoreId] = useState([]);
   const [batchOptions, setBatchOptions] = useState([]);
   const [billflag, setBillFlag] = useState(null);
+  const [reportloading, setReportLoading] = useState(false);
   console.log("l", location.state);
   const [billloading, setBillLoading] = useState(false);
   useEffect(() => {
@@ -136,7 +138,7 @@ const OtcDispense = () => {
     debugger;
     try {
       const storeId = "";
-      
+
       const response = await customAxios.get(
         `${urlPharmacyCreate}?PatientId=${PatientId}&EncounterId=${EncounterId}&StoreId=${storeId}&flag=${flag} `
       );
@@ -648,7 +650,7 @@ const OtcDispense = () => {
 
   const handlePrintBill = async () => {
     debugger;
-
+    setReportLoading(true); // Start loading
     try {
       const flag = 1;
       const response = await customAxios.get(
@@ -657,6 +659,7 @@ const OtcDispense = () => {
       if (response.status === 200) {
         if (response.data.data === ":") {
           message.warning("Bill Not Yet Generated");
+          setReportLoading(false); // Start loading
           return;
         } else {
           var res = response.data.data.split(":");
@@ -674,6 +677,9 @@ const OtcDispense = () => {
       }
     } catch (error) {
       setError(error.message);
+      setReportLoading(false);
+    } finally {
+      setReportLoading(false); // End loading
     }
   };
   async function fetchReport(request) {
@@ -912,7 +918,7 @@ const OtcDispense = () => {
   };
 
   const handleOnFinish = async (values) => {
-    setTableLoading(true);
+    
     debugger;
     const [BatchNo, ExpDate] = values.Batch.split("/");
     const expDate = parseDate(ExpDate);
@@ -940,6 +946,59 @@ const OtcDispense = () => {
       PFlag: 1,
     };
 
+    const response = await customAxios.post(urlValidateProductExpiry, Charge, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      withCredentials: true, // This ensures the session cookie is sent
+    });
+    if (response.status === 200 && response.data != null) {
+      const expdata = response.data.data;
+      if (expdata != null && expdata.IsProductExpiryApplicable == true) {
+       
+        if (expdata != null && expdata.OTCProductExpirySpan <= 0) {
+          //return
+          //Product is Expired
+          message.warning(
+            "Selected Batch Is Expired Please Select Diffrent Batch If Exists."
+          );
+       
+          return;
+        } else if (
+          expdata != null &&
+          expdata.OTCProductExpirySpan <= expdata.OTCRistrictExpiryDays
+        ) {
+          //product is being expired in span days do u want to continue
+
+          Modal.confirm({
+            title: `The Product Is Being Expired In  ${expdata.OTCProductExpirySpan} Days`, // Correct string interpolation here
+            content: "Do You Want To Continue?",
+            onOk: () => {
+              AddNewCharge(Charge);
+              // Here you can handle the creation of the visit
+              console.log("Visit Creation Logic Triggered");
+            },
+            onCancel: () => {
+              console.log("User canceled the visit creation");
+          
+              return;
+            },
+          });
+        } else {
+          AddNewCharge(Charge);
+        }
+      }else{
+        AddNewCharge(Charge);
+      }
+    }
+     else {
+    }
+
+    // addnewcharge(Charge);
+  };
+
+  const AddNewCharge = async (Charge) => {
+    setTableLoading(true);
     try {
       const response = await customAxios.post(urlAddNewChargePharmacy, Charge, {
         headers: {
@@ -1064,11 +1123,7 @@ const OtcDispense = () => {
     }
   }
 
-  const handlePrescriptionTypeSubmit = (values) => {
-    
-
-
-  };
+  const handlePrescriptionTypeSubmit = (values) => {};
   const hanldePrescription = async () => {
     debugger;
     try {
@@ -1087,24 +1142,23 @@ const OtcDispense = () => {
     } catch (error) {}
   };
 
-  const handleShowPrescriptions =async(record)=>{
-        debugger
-      try {
-        const response = await customAxios.get(
-          `${urlGetPrescriptionHedderIdPhar}?EncounterId=${EncounterId}&PatientId=${PatientId}&PriscptionHedderId=${record.PriscptionHedderId}`
-        );
-        if (response.status === 200 && response.data != null) {
-          const existingprescription =
-          response.data.data.PrescriptionModel.map((obj, index) => {
+  const handleShowPrescriptions = async (record) => {
+    debugger;
+    try {
+      const response = await customAxios.get(
+        `${urlGetPrescriptionHedderIdPhar}?EncounterId=${EncounterId}&PatientId=${PatientId}&PriscptionHedderId=${record.PriscptionHedderId}`
+      );
+      if (response.status === 200 && response.data != null) {
+        const existingprescription = response.data.data.PrescriptionModel.map(
+          (obj, index) => {
             return { ...obj, key: index + 1 };
-          });
-              setPrescriptionlistPharmacy(existingprescription);
-                   
-        } else {
-        }
-      } catch (error) {}
-  
-  }
+          }
+        );
+        setPrescriptionlistPharmacy(existingprescription);
+      } else {
+      }
+    } catch (error) {}
+  };
 
   return (
     <Layout style={{ zIndex: "999999999" }}>
@@ -1624,6 +1678,24 @@ const OtcDispense = () => {
                 </Col>
               </Row>
             </>
+          )}
+          {reportloading && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(255, 255, 255, 0.8)", // Light overlay
+                zIndex: 1000,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Spin size="large" />
+            </div>
           )}
           <div>
             {error && <div>Error: {error}</div>}

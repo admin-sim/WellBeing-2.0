@@ -14,7 +14,7 @@ import {
   AutoComplete,
   notification,
   Checkbox,
-  InputNumber
+  InputNumber,
 } from "antd";
 import Title from "antd/es/typography/Title";
 import Input from "antd/es/input/Input";
@@ -154,7 +154,7 @@ function CreateAutoCharge() {
     }
     if (values.Status === "Active") {
       values.Status = "True";
-    }else{
+    } else {
       values.Status = "False";
     }
 
@@ -363,7 +363,7 @@ function CreateAutoCharge() {
                   paddingTop: 0,
                 }}
               >
-                PriceTariff
+                Auto Charge
               </Title>
             </Col>
           </Row>
@@ -373,7 +373,6 @@ function CreateAutoCharge() {
               name="control-hooks"
               layout="vertical"
               variant="outlined"
-              size="Default"
               initialValues={{
                 Status: "Active", // Default value for Status
               }}
@@ -416,7 +415,6 @@ function CreateAutoCharge() {
                         message: "Department is  Required.",
                       },
                     ]}
-                    
                   >
                     <Select
                       showSearch
@@ -427,7 +425,7 @@ function CreateAutoCharge() {
                       }
                       onChange={onChangeDept}
                       value={selectedDept}
-                      disabled={AutoChargeId?true:false}
+                      disabled={AutoChargeId ? true : false}
                     >
                       {selectedFacilityId && (
                         <Select.Option key="-1" value="-1">
@@ -485,7 +483,7 @@ function CreateAutoCharge() {
                       }
                       showSearch
                       value={selectedProvider}
-                      disabled={AutoChargeId?true:false}
+                      disabled={AutoChargeId ? true : false}
                     >
                       {selectedDept && (
                         <Select.Option key="-1" value="-1">
@@ -617,31 +615,18 @@ function CreateAutoCharge() {
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={6}>
-                  <Form.Item
-                    name="ValidForDays"
-                    label="Valid For Days"
-                   
-                  >
-                    <InputNumber ></InputNumber>
+                  <Form.Item name="ValidForDays" label="Valid For Days">
+                    <InputNumber></InputNumber>
                   </Form.Item>
                 </Col>
               </Row>
               <Row justify="end">
-                <Col>
+                <Col style={{ marginRight: "10px" }}>
                   <Form.Item>
                     <Button type="primary" htmlType="submit">
                       Save
                     </Button>
                   </Form.Item>
-                  {/* <Form.Item
-                  >
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                    >
-                      Update
-                    </Button>
-                  </Form.Item> */}
                 </Col>
                 <Col>
                   <Form.Item>

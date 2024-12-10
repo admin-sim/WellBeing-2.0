@@ -149,6 +149,11 @@ import PharamcyIndex from "./pages/Pharmacy/index.jsx";
 import OtcDispense from "./pages/Pharmacy/OtcDispense/OtcDispense.jsx";
 import OtcReturn from "./pages/Pharmacy/OtcReturn/index.jsx";
 import PharamcyPrescriptionIndex from "./pages/Pharmacy/PharmacyPrescription/index.jsx";
+import DailyCollectionReport from "./pages/ReportManagement/AccountManagementReport/DailyCollectionReport.jsx";
+import AccomodationCharge from "./pages/Masters/GeneralMasters/AccountManagement/AccomodationCharge.jsx";
+import CreateAccomodationCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAccomodationCharge.jsx";
+import ReccuringCharge from "./pages/Masters/GeneralMasters/AccountManagement/ReccuringCharge.jsx";
+import CreateReccuringCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateReccuringCharge.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -964,6 +969,38 @@ function App() {
                 </ProtectedRoute>
               }
             />
+             <Route
+              path="AccomodationCharge"
+              element={
+                <ProtectedRoute>
+                  <AccomodationCharge />
+                </ProtectedRoute>
+              }
+            />
+              <Route
+              path="CreateAccomodationCharge"
+              element={
+                <ProtectedRoute>
+                  <CreateAccomodationCharge />
+                </ProtectedRoute>
+              }
+            />
+              <Route
+              path="ReccuringCharge"
+              element={
+                <ProtectedRoute>
+                  <ReccuringCharge />
+                </ProtectedRoute>
+              }
+            />
+              <Route
+              path="CreateReccuringCharge"
+              element={
+                <ProtectedRoute>
+                  <CreateReccuringCharge />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="ManageAppointment"
               element={
@@ -1289,6 +1326,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PharamcyPrescriptionIndex />
+                </ProtectedRoute>
+              }
+            />
+              <Route
+              path="DailyCollectionReport"
+              element={
+                <ProtectedRoute>
+                  <DailyCollectionReport />
                 </ProtectedRoute>
               }
             />

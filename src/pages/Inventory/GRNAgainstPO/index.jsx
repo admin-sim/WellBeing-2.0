@@ -240,7 +240,7 @@ const GRNAgainstPO = () => {
 
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:43705/api/ReportsApi/GetGRNRpt",
+      "https://192.168.29.254:808/api/ReportsApi/GetGRNRpt",
       {
         method: "POST",
         headers: {

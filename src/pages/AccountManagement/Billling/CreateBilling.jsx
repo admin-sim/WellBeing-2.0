@@ -17,7 +17,7 @@ import {
   Typography,
   Empty,
   Spin,
-  Modal
+  Modal,
 } from "antd";
 import {
   DeleteOutlined,
@@ -88,15 +88,17 @@ const CreateBilling = () => {
   const [billNumber, setBillNumber] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [billloading, setBillLoading] = useState(false);
+  const [reportloading, setReportLoading] = useState(false);
   console.log("l", location.state);
 
   useEffect(() => {
-    debugger;
+  
 
     fetchDataHeader();
   }, []);
 
   const fetchDataHeader = async () => {
+    debugger;
     try {
       const response = await customAxios.get(
         `${urlGetPatientHeaderDetails}?PatientId=${PatientId}&EncounterId=${EncounterId}`
@@ -117,7 +119,7 @@ const CreateBilling = () => {
 
   const fetchData = async () => {
     setTableLoading(true);
-    debugger;
+
     try {
       const response = await customAxios.get(
         `${urlBillingCreate}?PatientId=${PatientId}&EncounterId=${EncounterId}`
@@ -135,9 +137,6 @@ const CreateBilling = () => {
       setTableLoading(false);
     }
   };
-
-
-  
 
   const totalAmount =
     charges?.reduce((total, row) => {
@@ -196,7 +195,7 @@ const CreateBilling = () => {
   };
 
   const handleAutoCompleteChange = async (value) => {
-    debugger;
+  
     setLoading(true); // Start loading
     try {
       if (!value.trim()) {
@@ -236,7 +235,7 @@ const CreateBilling = () => {
   );
 
   const handleSelect = async (value, option) => {
-    debugger;
+    
     setSelectedServiceId(option.key);
     setLoading(true);
     if (option.key) {
@@ -260,7 +259,7 @@ const CreateBilling = () => {
   };
 
   const fetchDataForSelectedService = async (ServiceId) => {
-    debugger;
+    
     try {
       const response = await customAxios.get(
         `${urlGetServiceCharge}?ServiceId=${ServiceId}&PatientId=${PatientId}&EncounterId=${EncounterId}`
@@ -272,7 +271,7 @@ const CreateBilling = () => {
   };
 
   const handleproviderAutoCompleteChange = async (value) => {
-    debugger;
+
     setLoading(true); // Start loading
     try {
       if (!value.trim()) {
@@ -316,7 +315,7 @@ const CreateBilling = () => {
   };
   // Function to handle discount click
   const handleDiscount = async (row) => {
-    debugger;
+    
     const response = await customAxios.get(
       `${urlEditDiscount}?DiscountChargeId=${row.ChargeID}&PatientId=${row.PatientId}&EncounterId=${row.EncounterId}`
     );
@@ -327,7 +326,7 @@ const CreateBilling = () => {
     }
   };
   const handleInvoiceDiscount = async (row) => {
-    debugger;
+  
     const Flag = "";
     const response = await customAxios.get(
       `${urlInvoiceDiscount}?PatientId=${PatientId}&EncounterId=${EncounterId}&Flag=${Flag}`
@@ -340,7 +339,7 @@ const CreateBilling = () => {
   };
 
   const handleDeleteCharge = async (record) => {
-    debugger;
+    
     const amt = 0;
     const response = await customAxios.delete(
       `${urlDeleteBillCharge}?chargeId=${record.ChargeID}&patientId=${record.PatientId}&encounterId=${record.EncounterId}&amt=${record.AdjustedAmount}`
@@ -403,7 +402,7 @@ const CreateBilling = () => {
         {
           title: "NetInsAmt",
           dataIndex: "NetInsurenceAmount",
-         // render: (value) => value.toFixed(2), // Format with toFixed
+          // render: (value) => value.toFixed(2), // Format with toFixed
         },
       ],
     },
@@ -483,7 +482,6 @@ const CreateBilling = () => {
       ],
     },
   ];
-  
 
   // const handleInputChange = (e, column, index,record) => {
   //   const newData = [...receiptInsAmtData];
@@ -519,26 +517,22 @@ const CreateBilling = () => {
     // form1.resetFields();
     // setReceiptInsAmtData(initialDataSource); // Reset the data source
   };
- 
 
   const handlePrintBill = async () => {
-   debugger;
-
+    setReportLoading(true); // Start loading
     try {
-      const flag=0;
+      const flag = 0;
       const response = await customAxios.get(
         `${urlGetLastBillNumber}?PatientId=${PatientId}&EncounterId=${EncounterId}&Flag=${flag}`
       );
-      if(response.status===200){
-        if(response.data.data===":"){
+      if (response.status === 200) {
+        if (response.data.data === ":") {
           message.warning("Bill Not Yet Generated");
+          setReportLoading(false);
           return;
-        }
-        else{
+        } else {
           var res = response.data.data.split(":");
-         // showReceipt(res[0],res[1]);
           const request = {
-          //  EncounterId: 1,
             BillingId: res[1],
             FileType: "pdf", // or 'excel'
           };
@@ -548,11 +542,10 @@ const CreateBilling = () => {
           setIsModalVisible(true);
         }
       }
-
-
-    
     } catch (error) {
       setError(error.message);
+    } finally {
+      setReportLoading(false); // End loading
     }
   };
   async function fetchReport(request) {
@@ -669,7 +662,8 @@ const CreateBilling = () => {
       key: "BankId",
       render: (text, record, index) => (
         <Form.Item name={["BankId", record.key - 1]}>
-          <Select disabled
+          <Select
+            disabled
             onChange={(value) => handleInputChange(value, "BankId", record.key)}
           >
             {banks?.map((option) => (
@@ -692,7 +686,8 @@ const CreateBilling = () => {
           style={{ width: "100%" }}
           // initialValue={record.Branch}
         >
-          <Input disabled
+          <Input
+            disabled
             min={0}
             defaultValue={text}
             onChange={(value) =>
@@ -731,7 +726,8 @@ const CreateBilling = () => {
           style={{ width: "100%" }}
           //initialValue={record.AuthRefNo}
         >
-          <Input disabled
+          <Input
+            disabled
             min={0}
             defaultValue={text}
             onChange={(value) =>
@@ -789,7 +785,7 @@ const CreateBilling = () => {
 
   const handleOnFinish = async (values) => {
     setTableLoading(true);
-    debugger;
+
 
     const Charge = {
       PatientId: PatientId,
@@ -802,7 +798,7 @@ const CreateBilling = () => {
       FacilityId: 1,
       ActiveFlag: true,
       ServiceQuantity: 1,
-      PatientTypeID:patientData.PatientType,
+      PatientTypeID: patientData.PatientType,
     };
     try {
       const response = await customAxios.post(urlAddNewCharge, Charge, {
@@ -835,9 +831,12 @@ const CreateBilling = () => {
 
   const handleSaveBill = async (values) => {
     if (billloading) return; // Prevent multiple clicks
-  
+
     setBillLoading(true); // Start loading state
-    const loadingMessage = message.loading("Please wait, bill is being processed...", 0); // Persistent loading message
+    const loadingMessage = message.loading(
+      "Please wait, bill is being processed...",
+      0
+    ); // Persistent loading message
     try {
       const formattedReceiptInsAmtData = receiptInsAmtData.map((item) => ({
         AuthorizationReference: item.AuthorizationReference || "",
@@ -854,14 +853,14 @@ const CreateBilling = () => {
         (acc, item) => acc + item.InstrumentAmount,
         0
       );
-  
+
       if (!charges) {
         message.warning("Please Add Charges To Proceed Billing....");
         setBillLoading(false);
         loadingMessage(); // Remove loading message
         return false;
       }
-  
+
       const billingData = {
         PatientAccountReceiptModel: {
           ReceiptAmount: totalInstrumentAmount,
@@ -876,14 +875,14 @@ const CreateBilling = () => {
         PatientAccountReceiptInstrumentModels: formattedReceiptInsAmtData,
         PatientAccountChargeModel: charges,
       };
-  
+
       const response = await customAxios.post(urlAddNewBill, billingData, {
         headers: {
           "Content-Type": "application/json",
         },
         withCredentials: true,
       });
-  
+
       if (response.status === 200 && response.data) {
         if (
           response.data.data === "Failed To Generate Bill" ||
@@ -909,14 +908,13 @@ const CreateBilling = () => {
   };
 
   async function GetBillReceipt(BillNumber) {
-    const fg=1;
+    const fg = 1;
     const response = await customAxios.get(
       `${urlSaveChargesForTempTable}?billId=${BillNumber}&Flag=${fg}`
     );
-    if(response.status===200){
-
-    }else{
-      message.warning('Something Went Wrong While Saving Data to TempTable');
+    if (response.status === 200) {
+    } else {
+      message.warning("Something Went Wrong While Saving Data to TempTable");
     }
   }
 
@@ -943,7 +941,10 @@ const CreateBilling = () => {
             </Title>
           </Col>
           <Col offset={5} span={3}>
-            <Button icon={<LeftOutlined />}   onClick={() => handleCreateService()}>
+            <Button
+              icon={<LeftOutlined />}
+              onClick={() => handleCreateService()}
+            >
               Back
             </Button>
           </Col>
@@ -1166,16 +1167,24 @@ const CreateBilling = () => {
                       <Text style={{ fontWeight: 600 }}>Total</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{netamt.toFixed(2)}</Text>
+                      <Text style={{ fontWeight: 600 }}>
+                        {netamt.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{insamt.toFixed(2)}</Text>
+                      <Text style={{ fontWeight: 600 }}>
+                        {insamt.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{taxamt.toFixed(2)}</Text>
+                      <Text style={{ fontWeight: 600 }}>
+                        {taxamt.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{netinsamt.toFixed(2)}</Text>
+                      <Text style={{ fontWeight: 600 }}>
+                        {netinsamt.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
                       <Text style={{ fontWeight: 600 }}>Total</Text>
@@ -1186,13 +1195,19 @@ const CreateBilling = () => {
                       </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{taxrate.toFixed(2)}</Text>
+                      <Text style={{ fontWeight: 600 }}>
+                        {taxrate.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{patientnetamt.toFixed(2)}</Text>
+                      <Text style={{ fontWeight: 600 }}>
+                        {patientnetamt.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2}>
-                      <Text style={{ fontWeight: 600 }}>{adjamt.toFixed(2)}</Text>
+                      <Text style={{ fontWeight: 600 }}>
+                        {adjamt.toFixed(2)}
+                      </Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell
                       index={2}
@@ -1294,33 +1309,51 @@ const CreateBilling = () => {
             </Col>
             <Col style={{ marginRight: "20px", marginTop: "1rem" }}>
               <Form.Item>
-                <Button type="primary"   onClick={() => handleProvisional()}>
+                <Button type="primary" onClick={() => handleProvisional()}>
                   Provisional
                 </Button>
               </Form.Item>
             </Col>
             <Col style={{ marginRight: "20px", marginTop: "1rem" }}>
               <Form.Item>
-                <Button type="primary"  onClick={() => handlePrintBill()}>
+                <Button type="primary" onClick={() => handlePrintBill()}>
                   PrintBill
                 </Button>
               </Form.Item>
             </Col>
           </Row>
+          {/* Loader Overlay */}
+          {reportloading && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(255, 255, 255, 0.8)", // Light overlay
+                zIndex: 1000,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Spin size="large" />
+            </div>
+          )}
           <div>
             {error && <div>Error: {error}</div>}
 
-
             <Modal
               title="Report"
-              visible={isModalVisible}
+              open={isModalVisible}
               onCancel={() => setIsModalVisible(false)}
               footer={[
                 <Button key="close" onClick={() => setIsModalVisible(false)}>
                   Close
                 </Button>,
               ]}
-              width={"60rem"} // You can adjust the width as needed
+              width={"60rem"}
             >
               {reportUrl && (
                 <iframe
