@@ -77,6 +77,7 @@ function OrderEntry({
     form1.resetFields();
     form2.resetFields();
     form3.resetFields();
+    setSelectedRowKeys([]);
     handleClose();
   };
 
@@ -1375,7 +1376,11 @@ function OrderEntry({
                       centered
                       title="Report"
                       open={isModalVisible}
-                      onCancel={() => setIsModalVisible(false)}
+                      onCancel={() => {
+                        setIsModalVisible(false); // Hide the modal
+                        setSelectedRowKeys([]);   // Clear the selected row keys
+                      }}
+                      
                       footer={[
                         <Button
                           key="close"

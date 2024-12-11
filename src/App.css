@@ -356,15 +356,15 @@ li .ant-menu-item {
 .invalid-input .ant-select-selector {
   background-color: #ffccc7 !important;
 }
- .ant-form-item {
+ /* .ant-form-item {
   margin: 0 !important;
   padding: 0 !important;
-}
+} */
  /* .ant-table-cell {
   padding: 0 !important;
 }   */
 
-.form-item-no-padding {
+/* .form-item-no-padding {
   margin: 0 !important;
   padding: 0 !important;
-}
+} */
