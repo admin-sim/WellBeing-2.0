@@ -154,6 +154,7 @@ import AccomodationCharge from "./pages/Masters/GeneralMasters/AccountManagement
 import CreateAccomodationCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAccomodationCharge.jsx";
 import ReccuringCharge from "./pages/Masters/GeneralMasters/AccountManagement/ReccuringCharge.jsx";
 import CreateReccuringCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateReccuringCharge.jsx";
+import EncounterConfigFlow from "./pages/EncounterConfigFlow/index.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -1334,6 +1335,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <DailyCollectionReport />
+                </ProtectedRoute>
+              }
+            />
+              <Route
+              path="EncounterConfigFlow"
+              element={
+                <ProtectedRoute>
+                  <EncounterConfigFlow />
                 </ProtectedRoute>
               }
             />

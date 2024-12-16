@@ -166,6 +166,9 @@ function CreateReceipt() {
       IFSC: "",
       AuthorizationReference: "",
       CardExpiryDate: "",
+      CardNumber: "",
+      Cheqdate: "",
+      Remarks: "",
     },
   ];
   const [receiptInsAmtData, setReceiptInsAmtData] = useState(initialDataSource);
@@ -183,6 +186,9 @@ function CreateReceipt() {
         IFSC: "",
         AuthorizationReference: "",
         CardExpiryDate: "",
+        CardNumber: "",
+        Cheqdate: "",
+        Remarks: "",
       },
     ]);
     setCounter(counter + 1); // increment counter
@@ -247,7 +253,7 @@ function CreateReceipt() {
     {
       title: "PaymentType",
       dataIndex: "PaymentTypeId",
-      width: 180,
+      width: 150,
       key: "PaymentTypeId",
       render: (text, record, index) => (
         <Form.Item
@@ -317,6 +323,7 @@ function CreateReceipt() {
       render: (text, record, index) => (
         <Form.Item name={["BankId", record.key - 1]}>
           <Select
+            //disabled
             onChange={(value) => handleInputChange(value, "BankId", record.key)}
           >
             {banks?.map((option) => (
@@ -331,7 +338,6 @@ function CreateReceipt() {
     {
       title: "Branch",
       dataIndex: "BranchName",
-
       key: "BranchName",
       render: (text, record, index) => (
         <Form.Item
@@ -340,10 +346,11 @@ function CreateReceipt() {
           // initialValue={record.Branch}
         >
           <Input
+            // disabled
             min={0}
             defaultValue={text}
-            onChange={(value) =>
-              handleInputChange(value, "BranchName", record.key)
+            onChange={(e) =>
+              handleInputChange(e.target.value, "BranchName", record.key)
             }
           />
         </Form.Item>
@@ -362,7 +369,10 @@ function CreateReceipt() {
           <Input
             min={0}
             defaultValue={text}
-            onChange={(value) => handleInputChange(value, "IFSC", record)}
+            onChange={(e) =>
+              handleInputChange(e.target.value, "IFSC", record.key)
+            }
+            // disabled
           />
         </Form.Item>
       ),
@@ -378,10 +388,15 @@ function CreateReceipt() {
           //initialValue={record.AuthRefNo}
         >
           <Input
+            // disabled
             min={0}
             defaultValue={text}
-            onChange={(value) =>
-              handleInputChange(value, "AuthorizationReference", record)
+            onChange={(e) =>
+              handleInputChange(
+                e.target.value,
+                "AuthorizationReference",
+                record.key
+              )
             }
           />
         </Form.Item>
@@ -392,13 +407,97 @@ function CreateReceipt() {
       title: "ExpiryDate",
       dataIndex: "CardExpiryDate",
       key: "CardExpiryDate",
+      width: 120,
       render: (text, record, index) => (
         <Form.Item
           name={["CardExpiryDate", record.key - 1]}
           style={{ width: "100%" }}
-          // initialValue={record.ExpiryDate}
+          rules={[
+            {
+              validator: (_, value) =>
+                value && value.isBefore(dayjs(), "month")
+                  ? Promise.reject(
+                      new Error(
+                        "Expiry date cannot be earlier than the current month"
+                      )
+                    )
+                  : Promise.resolve(),
+            },
+          ]}
         >
-          <Input min={0} defaultValue={text} />
+          <DatePicker
+            format="MM-YYYY" // Date format
+            picker="month" // Month picker
+            placeholder="Select Date"
+            disabledDate={(current) => {
+              // Disable dates before the current month
+              return current && current.isBefore(dayjs().startOf("month"));
+            }}
+            onChange={(date, dateString) =>
+              handleInputChange(dateString, "CardExpiryDate", record.key)
+            }
+          />
+        </Form.Item>
+      ),
+    },
+
+    {
+      title: "Card Number",
+      dataIndex: "CardNumber",
+      render: (_, record) => (
+        <Form.Item name={["CardNumber", record.key - 1]}>
+          <Input
+            placeholder="Enter Card Number"
+            onChange={(e) =>
+              handleInputChange(e.target.value, "CardNumber", record.key)
+            }
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      title: "Date",
+      dataIndex: "Cheqdate",
+      width: 150,
+      render: (_, record) => (
+        <Form.Item
+          style={{ width: "100%" }}
+          name={["Cheqdate", record.key - 1]} // Use record.key for dynamic name
+          rules={[
+            {
+              validator: (_, value) =>
+                value && value.isBefore(dayjs(), "day")
+                  ? Promise.reject(new Error("Date cannot be earlier than today"))
+                  : Promise.resolve(),
+            },
+          ]}
+        >
+          <DatePicker
+            format="DD-MM-YYYY" // Date format
+            placeholder="Select Date"
+            disabledDate={(current) => {
+              // Disable dates before today
+              return current && current.isBefore(dayjs(), "day");
+            }}
+            onChange={(date, dateString) =>
+              handleInputChange(dateString, "Cheqdate", record.key)
+            } // Pass the date, column name, and record.key to handleInputChange
+          />
+        </Form.Item>
+      ),
+    },
+
+    {
+      title: "Remarks",
+      dataIndex: "Remarks",
+      render: (_, record) => (
+        <Form.Item name={["Remarks", record.key - 1]}>
+          <Input
+            placeholder="Enter Remarks"
+            onChange={(e) =>
+              handleInputChange(e.target.value, "Remarks", record.key)
+            }
+          />
         </Form.Item>
       ),
     },
@@ -409,7 +508,7 @@ function CreateReceipt() {
           type="primary"
           size="small"
           icon={<PlusOutlined style={{ fontSize: "12px" }} />}
-          onClick={handleAddRow}
+          onClick={() => handleAddRow()}
         ></Button>
       ),
       dataIndex: "add",
@@ -468,6 +567,18 @@ function CreateReceipt() {
       ...item,
       EncounterID: EncounterId,
       BankId: item.BankId ? item.BankId : null,
+      AuthorizationReference: item.AuthorizationReference || "",
+      BankId: item.BankId ? parseInt(item.BankId, 10) : 0,
+      BranchName: item.BranchName || "",
+      CardExpiryDate: item.CardExpiryDate || "",
+      ChequeDates: item.Cheqdate || "",
+      IFSC: item.IFSC || "",
+      // InstrumentAmount: item.InstrumentAmount
+      //   ? parseFloat(item.InstrumentAmount)
+      //   : 0,
+      PaymentTypeId: item.PaymentTypeId,
+      CardNumber: item.CardNumber || "",
+      Remarks: item.Remarks || "",
     }));
 
     // Append EncounterID to each item in allocations

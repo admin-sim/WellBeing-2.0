@@ -49,6 +49,8 @@ import {
   urlPharmacyCreate,
   urlSaveChargesForPharmacyTempTable,
   urlSaveChargesForTempTable,
+  urlUpdateInvoiceDiscount,
+  urlUpdatePharmacyDiscount,
   urlValidateProductExpiry,
 } from "../../../../endpoints.js";
 import Title from "antd/es/typography/Title";
@@ -106,6 +108,7 @@ const OtcDispense = () => {
   const [batchOptions, setBatchOptions] = useState([]);
   const [billflag, setBillFlag] = useState(null);
   const [reportloading, setReportLoading] = useState(false);
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
   console.log("l", location.state);
   const [billloading, setBillLoading] = useState(false);
   useEffect(() => {
@@ -192,6 +195,9 @@ const OtcDispense = () => {
       IFSC: "",
       AuthorizationReference: "",
       CardExpiryDate: "",
+      CardNumber: "",
+      Cheqdate: "",
+      Remarks: "",
     },
   ];
   const [receiptInsAmtData, setReceiptInsAmtData] = useState(initialDataSource);
@@ -209,6 +215,9 @@ const OtcDispense = () => {
         IFSC: "",
         AuthorizationReference: "",
         CardExpiryDate: "",
+        CardNumber: "",
+        Cheqdate: "",
+        Remarks: "",
       },
     ]);
     setCounter(counter + 1); // increment counter
@@ -440,14 +449,20 @@ const OtcDispense = () => {
   };
   const handleInvoiceDiscount = async (row) => {
     debugger;
-    const Flag = "Y";
-    const response = await customAxios.get(
-      `${urlInvoiceDiscount}?PatientId=${PatientId}&EncounterId=${EncounterId}&Flag=${Flag}`
-    );
-    if (response.status === 200 && response.data.data != null) {
-      setInvoiceDiscountReason(response.data.data.DiscountReasons);
-      setInvoiceDiscountDetails(response.data.data.InvoiceDetailModel);
-      setIsInvoiceModalOpen(true);
+    setInvoiceLoading(true);
+    try {
+      const Flag = "Y";
+      const response = await customAxios.get(
+        `${urlInvoiceDiscount}?PatientId=${PatientId}&EncounterId=${EncounterId}&Flag=${Flag}`
+      );
+      if (response.status === 200 && response.data.data != null) {
+        setInvoiceDiscountReason(response.data.data.DiscountReasons);
+        setInvoiceDiscountDetails(response.data.data.InvoiceDetailModel);
+        setIsInvoiceModalOpen(true);
+      }
+    } catch (error) {
+    } finally {
+      setInvoiceLoading(false); // Hide loader
     }
   };
 
@@ -461,6 +476,73 @@ const OtcDispense = () => {
       message.success("Charge Deleted Successfully...");
     } else {
       message.warning("Something Went Wrong...");
+    }
+  };
+
+  const handleDiscountSubmit = async (values) => {
+    debugger;
+    values.ChargeID = discountDetails.ChargeID;
+    values.ServiceId = discountDetails.ServiceId;
+    values.PatientId = discountDetails.PatientId;
+    values.EncounterId = discountDetails.EncounterId;
+
+    try {
+      const response = await customAxios.post(
+        urlUpdatePharmacyDiscount,
+        values,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("actionresu", response.data);
+
+        setCharges(response.data.PatientAccountCharges);
+        message.success("Discount Applied");
+        //handleCancel();
+      } else {
+        message.error("Something Went Wrong");
+      }
+    } catch (error) {
+      message.error("Something went wrong");
+      console.error(error);
+    }
+  };
+
+  const handleInvoiceDiscountSubmit = async (values) => {
+    debugger;
+    values.ChargeID = invoicediscountDetails.ChargeID;
+    values.ServiceId = invoicediscountDetails.ServiceId;
+    values.Flag = "Y";
+    values.PatientId = invoicediscountDetails.PatientId;
+    values.EncounterId = invoicediscountDetails.EncounterId;
+    setInvoiceLoading(true);
+    try {
+      const response = await customAxios.post(
+        urlUpdateInvoiceDiscount,
+        values,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.status == 200 && response.data.data != null) {
+        setCharges(response.data.data.PatientAccountCharges);
+        message.success("Discount Applied");
+        //handleCancel();
+      } else {
+        message.error("Something Went Wrong");
+      }
+    } catch (error) {
+      message.error("Something went wrong");
+      console.error(error);
+    } finally {
+      setInvoiceLoading(false); // Hide loader
+      setIsInvoiceModalOpen(false); // Close modal
     }
   };
 
@@ -549,7 +631,7 @@ const OtcDispense = () => {
         {
           title: "Disc",
           dataIndex: "PatientDiscountAmount",
-          render: (value) => value.toFixed(2),
+          //render: (value) => value.toFixed(2),
           width: 80,
         },
         {
@@ -708,7 +790,7 @@ const OtcDispense = () => {
     {
       title: "PaymentType",
       dataIndex: "PaymentTypeId",
-      width: 180,
+      width: 150,
       key: "PaymentTypeId",
       render: (text, record, index) => (
         <Form.Item
@@ -752,7 +834,7 @@ const OtcDispense = () => {
     {
       title: "Amount",
       dataIndex: "InstrumentAmount",
-      width: 200,
+      width: 180,
       key: "InstrumentAmount",
       render: (text, record) => (
         <Form.Item
@@ -797,6 +879,7 @@ const OtcDispense = () => {
       render: (text, record, index) => (
         <Form.Item name={["BankId", record.key - 1]}>
           <Select
+            //disabled
             onChange={(value) => handleInputChange(value, "BankId", record.key)}
           >
             {banks?.map((option) => (
@@ -811,7 +894,6 @@ const OtcDispense = () => {
     {
       title: "Branch",
       dataIndex: "BranchName",
-
       key: "BranchName",
       render: (text, record, index) => (
         <Form.Item
@@ -820,10 +902,11 @@ const OtcDispense = () => {
           // initialValue={record.Branch}
         >
           <Input
+            // disabled
             min={0}
             defaultValue={text}
-            onChange={(value) =>
-              handleInputChange(value, "BranchName", record.key)
+            onChange={(e) =>
+              handleInputChange(e.target.value, "BranchName", record.key)
             }
           />
         </Form.Item>
@@ -842,7 +925,10 @@ const OtcDispense = () => {
           <Input
             min={0}
             defaultValue={text}
-            onChange={(value) => handleInputChange(value, "IFSC", record)}
+            onChange={(e) =>
+              handleInputChange(e.target.value, "IFSC", record.key)
+            }
+            // disabled
           />
         </Form.Item>
       ),
@@ -858,27 +944,116 @@ const OtcDispense = () => {
           //initialValue={record.AuthRefNo}
         >
           <Input
+            // disabled
             min={0}
             defaultValue={text}
-            onChange={(value) =>
-              handleInputChange(value, "AuthorizationReference", record)
+            onChange={(e) =>
+              handleInputChange(
+                e.target.value,
+                "AuthorizationReference",
+                record.key
+              )
             }
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      title: "ExpiryDate",
+      dataIndex: "CardExpiryDate",
+      key: "CardExpiryDate",
+      width: 120,
+      render: (text, record, index) => (
+        <Form.Item
+          name={["CardExpiryDate", record.key - 1]}
+          style={{ width: "100%" }}
+          rules={[
+            {
+              validator: (_, value) =>
+                value && value.isBefore(dayjs(), "month")
+                  ? Promise.reject(
+                      new Error(
+                        "Expiry date cannot be earlier than the current month"
+                      )
+                    )
+                  : Promise.resolve(),
+            },
+          ]}
+        >
+          <DatePicker
+            format="MM-YYYY" // Date format
+            picker="month" // Month picker
+            placeholder="Select Date"
+            disabledDate={(current) => {
+              // Disable dates before the current month
+              return current && current.isBefore(dayjs().startOf("month"));
+            }}
+            onChange={(date, dateString) =>
+              handleInputChange(dateString, "CardExpiryDate", record.key)
+            }
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      title: "Card Number",
+      dataIndex: "CardNumber",
+      render: (_, record) => (
+        <Form.Item name={["CardNumber", record.key - 1]}>
+          <Input
+            placeholder="Enter Card Number"
+            onChange={(e) =>
+              handleInputChange(e.target.value, "CardNumber", record.key)
+            }
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      title: "Date",
+      dataIndex: "Cheqdate",
+      width: 150,
+      render: (_, record) => (
+        <Form.Item
+          style={{ width: "100%" }}
+          name={["Cheqdate", record.key - 1]} // Use record.key for dynamic name
+          rules={[
+            {
+              validator: (_, value) =>
+                value && value.isBefore(dayjs(), "day")
+                  ? Promise.reject(
+                      new Error("Date cannot be earlier than today")
+                    )
+                  : Promise.resolve(),
+            },
+          ]}
+        >
+          <DatePicker
+            format="DD-MM-YYYY" // Date format
+            placeholder="Select Date"
+            disabledDate={(current) => {
+              // Disable dates before today
+              return current && current.isBefore(dayjs(), "day");
+            }}
+            onChange={(date, dateString) =>
+              handleInputChange(dateString, "Cheqdate", record.key)
+            } // Pass the date, column name, and record.key to handleInputChange
           />
         </Form.Item>
       ),
     },
 
     {
-      title: "ExpiryDate",
-      dataIndex: "CardExpiryDate",
-      key: "CardExpiryDate",
-      render: (text, record, index) => (
-        <Form.Item
-          name={["CardExpiryDate", record.key - 1]}
-          style={{ width: "100%" }}
-          // initialValue={record.ExpiryDate}
-        >
-          <Input min={0} defaultValue={text} />
+      title: "Remarks",
+      dataIndex: "Remarks",
+      render: (_, record) => (
+        <Form.Item name={["Remarks", record.key - 1]}>
+          <Input
+            placeholder="Enter Remarks"
+            onChange={(e) =>
+              handleInputChange(e.target.value, "Remarks", record.key)
+            }
+          />
         </Form.Item>
       ),
     },
@@ -918,7 +1093,6 @@ const OtcDispense = () => {
   };
 
   const handleOnFinish = async (values) => {
-    
     debugger;
     const [BatchNo, ExpDate] = values.Batch.split("/");
     const expDate = parseDate(ExpDate);
@@ -955,14 +1129,13 @@ const OtcDispense = () => {
     if (response.status === 200 && response.data != null) {
       const expdata = response.data.data;
       if (expdata != null && expdata.IsProductExpiryApplicable == true) {
-       
         if (expdata != null && expdata.OTCProductExpirySpan <= 0) {
           //return
           //Product is Expired
           message.warning(
             "Selected Batch Is Expired Please Select Diffrent Batch If Exists."
           );
-       
+
           return;
         } else if (
           expdata != null &&
@@ -980,18 +1153,17 @@ const OtcDispense = () => {
             },
             onCancel: () => {
               console.log("User canceled the visit creation");
-          
+
               return;
             },
           });
         } else {
           AddNewCharge(Charge);
         }
-      }else{
+      } else {
         AddNewCharge(Charge);
       }
-    }
-     else {
+    } else {
     }
 
     // addnewcharge(Charge);
@@ -1041,11 +1213,15 @@ const OtcDispense = () => {
       BankId: item.BankId ? parseInt(item.BankId, 10) : 0,
       BranchName: item.BranchName || "",
       CardExpiryDate: item.CardExpiryDate || "",
+      ChequeDates: item.Cheqdate || "",
       IFSC: item.IFSC || "",
       InstrumentAmount: item.InstrumentAmount
         ? parseFloat(item.InstrumentAmount)
         : 0,
       PaymentTypeId: item.PaymentTypeId,
+      CardNumber: item.CardNumber || "",
+      Remarks: item.Remarks || "",
+      EncounterId: EncounterId || "",
     }));
     const totalInstrumentAmount = formattedReceiptInsAmtData.reduce(
       (acc, item) => acc + item.InstrumentAmount,
@@ -1563,19 +1739,24 @@ const OtcDispense = () => {
             />
           </Spin>
         </ConfigProvider>
+        {invoiceLoading && (
+          <div className="full-page-loader">
+            <Spin size="large" />
+          </div>
+        )}
         <PharmacyInvoiceDiscountModal
           options={invoicediscountReason}
           open={isinvoiceModalOpen}
           handleClose={() => setIsInvoiceModalOpen(false)}
           discountDetails={invoicediscountDetails}
-          setCharges={setCharges}
+          handleSubmit={handleInvoiceDiscountSubmit}
         />
         <PharmacyDiscountModal
           options={discountReason}
           open={isModalOpen}
           handleClose={() => setIsModalOpen(false)}
           discountDetails={discountDetails}
-          setCharges={setCharges}
+          handleSubmit={handleDiscountSubmit}
         />
         <PrescriptionListModal
           open={prescriptionModalOpen}

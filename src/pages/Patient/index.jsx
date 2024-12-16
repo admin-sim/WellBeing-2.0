@@ -124,6 +124,7 @@ const Patient = () => {
   };
 
   const handleEditorCancelVisitModal = async (record, isCancel) => {
+    debugger;
     setSelectedRecord(record);
     setIsLoading(true);
     setIsCancelOrEditEncounter(true);
@@ -695,6 +696,34 @@ const Patient = () => {
         </div>
       </Layout>
    
+      <ConfigProvider
+        theme={{
+          token: {
+            zIndexPopupBase: 3000,
+          },
+        }}
+      >
+        {/* {contextHolder} */}
+
+        {isEditOrDeleteVisitModalVisible &&
+          patientDropdown.PatientType !== undefined && (
+            <VisitModal
+              open={isEditOrDeleteVisitModalVisible}
+              handleOk={handleOk}
+              submitLoader={submitLoader}
+              // ModalLoader={ModalLoader}
+              close={handleEditOrDeleteVisitModalCancel}
+              // IsVisitCreated={IsVisitCreated}
+              patientHeaderDetails={patientHeaderDetails}
+              // encounterId={encounterId}
+              isCancelOrEditVisit={isCancelOrEditEncounter}
+              form1={form}
+              dropdown={patientDropdown}
+              showWard={showWard}
+              isCancelEncounter={isCancelEncounter}
+            />
+          )}
+      </ConfigProvider>
 
       {/* {contextHolder} */}
       <Modal

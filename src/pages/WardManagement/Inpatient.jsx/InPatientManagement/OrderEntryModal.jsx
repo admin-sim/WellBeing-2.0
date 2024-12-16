@@ -589,7 +589,7 @@ function OrderEntry({
 
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:43705/api/ReportsApi/GetLabReport",
+      "https://192.168.29.254:808/api/ReportsApi/GetLabReport",
       {
         method: "POST",
         headers: {

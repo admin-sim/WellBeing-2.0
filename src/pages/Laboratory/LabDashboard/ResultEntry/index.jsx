@@ -779,6 +779,7 @@ const ResultEntry = () => {
                   }
                   scroll={{ x: true }}
                   size="small"
+                  pagination={false}
                   bordered
                 />
               </Spin>

@@ -242,6 +242,7 @@ const SampleCollection = () => {
                     record.IsSampleCollected && greenRow
                   }
                   scroll={{ x: true }}
+                  pagination={false}
                   size="small"
                   bordered
                 />

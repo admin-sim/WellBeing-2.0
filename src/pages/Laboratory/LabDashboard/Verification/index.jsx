@@ -757,6 +757,7 @@ const Verification = () => {
               scroll={{ x: true }}
               size="small"
               bordered
+              pagination={false}
             />
 
             <Row justify="end" gutter={16} style={{ marginTop: "1rem" }}>

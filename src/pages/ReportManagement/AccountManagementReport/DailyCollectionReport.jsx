@@ -107,7 +107,7 @@ const DailyCollectionReport = () => {
 
   async function fetchReport(request) {
     const response = await fetch(
-      "https://192.168.29.254:808/api/ReportsApi/GetDailyCollectionReport",
+      "http://localhost:43705/api/ReportsApi/GetDailyCollectionReport",
       {
         method: "POST",
         headers: {
