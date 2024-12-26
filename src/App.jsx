@@ -1346,6 +1346,78 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/PurchaseOrderReport"
+              element={
+                <ProtectedRoute>
+                  <PurchaseOrderReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/StockExpiryReport"
+              element={
+                <ProtectedRoute>
+                  <StockExpiryReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/StoreStockStatementReport"
+              element={
+                <ProtectedRoute>
+                  <StoreStockStatementReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/StockItemLedgerReport"
+              element={
+                <ProtectedRoute>
+                  <StockItemLedgerReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/StoreStockPostionReport"
+              element={
+                <ProtectedRoute>
+                  <StoreStockPostionReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/CurrentStockPositionReport"
+              element={
+                <ProtectedRoute>
+                  <CurrentStockPositionReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/EncounterConfigFlow"
+              element={
+                <ProtectedRoute>
+                  <EncounterConfigFlow />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/PatientRegistartionReport"
+              element={
+                <ProtectedRoute>
+                  <PatientRegistartionReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/EncounterRegistrationReport"
+              element={
+                <ProtectedRoute>
+                  <EncounterRegistrationReport />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<Error />} />
           </Route>
           <Route path="login" element={<Login />} />

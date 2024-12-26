@@ -144,7 +144,7 @@ const CurrentStockPositionReport = () => {
                     borderRadius: "10px",
                 }}
             >
-                <PageHeader title={"Stock Item Ledger Report"} button={false} />
+                <PageHeader title={"Current Stock Position Report"} button={false} />
                 <div
                     style={{
                         padding: "1rem",
