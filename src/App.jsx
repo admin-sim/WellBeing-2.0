@@ -154,6 +154,12 @@ import AccomodationCharge from "./pages/Masters/GeneralMasters/AccountManagement
 import CreateAccomodationCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAccomodationCharge.jsx";
 import ReccuringCharge from "./pages/Masters/GeneralMasters/AccountManagement/ReccuringCharge.jsx";
 import CreateReccuringCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateReccuringCharge.jsx";
+import PurchaseOrderReport from "./pages/ReportManagement/InventoryManagement/PurchaseOrderReport.jsx";
+import StockExpiryReport from "./pages/ReportManagement/InventoryManagement/StockExpiryReport.jsx";
+import StoreStockStatementReport from "./pages/ReportManagement/InventoryManagement/StoreStockStatementReport.jsx";
+import StockItemLedgerReport from "./pages/ReportManagement/InventoryManagement/StockItemLedgerReport.jsx";
+import StoreStockPostionReport from "./pages/ReportManagement/InventoryManagement/StoreStockPostionReport.jsx";
+import CurrentStockPositionReport from "./pages/ReportManagement/InventoryManagement/CurrentStockPositionReport.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -969,7 +975,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-             <Route
+            <Route
               path="AccomodationCharge"
               element={
                 <ProtectedRoute>
@@ -977,7 +983,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-              <Route
+            <Route
               path="CreateAccomodationCharge"
               element={
                 <ProtectedRoute>
@@ -985,7 +991,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-              <Route
+            <Route
               path="ReccuringCharge"
               element={
                 <ProtectedRoute>
@@ -993,7 +999,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-              <Route
+            <Route
               path="CreateReccuringCharge"
               element={
                 <ProtectedRoute>
@@ -1297,7 +1303,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-              <Route
+            <Route
               path="PharamcyIndex"
               element={
                 <ProtectedRoute>
@@ -1313,7 +1319,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-             <Route
+            <Route
               path="OtcReturn"
               element={
                 <ProtectedRoute>
@@ -1321,7 +1327,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-             <Route
+            <Route
               path="PharamcyPrescriptionIndex"
               element={
                 <ProtectedRoute>
@@ -1329,11 +1335,59 @@ function App() {
                 </ProtectedRoute>
               }
             />
-              <Route
-              path="DailyCollectionReport"
+            <Route
+              path="/DailyCollectionReport"
               element={
                 <ProtectedRoute>
                   <DailyCollectionReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/PurchaseOrderReport"
+              element={
+                <ProtectedRoute>
+                  <PurchaseOrderReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/CurrentStockPositionReport"
+              element={
+                <ProtectedRoute>
+                  <CurrentStockPositionReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/StockItemLedgerReport"
+              element={
+                <ProtectedRoute>
+                  <StockItemLedgerReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/StoreStockPostionReport"
+              element={
+                <ProtectedRoute>
+                  <StoreStockPostionReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/StoreStockStatementReport"
+              element={
+                <ProtectedRoute>
+                  <StoreStockStatementReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/StockExpiryReport"
+              element={
+                <ProtectedRoute>
+                  <StockExpiryReport />
                 </ProtectedRoute>
               }
             />

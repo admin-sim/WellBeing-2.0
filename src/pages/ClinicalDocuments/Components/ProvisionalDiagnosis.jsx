@@ -117,15 +117,22 @@ function ProvisionalDiagnosis(Patient) {
       key: 'Description',
       dataIndex: 'Description',
       render: (_, record) => {
-        return <Form.Item style={{ width: "100%" }} name={[record.key, 'Description']}>
-          <Input />
+        return <Form.Item style={{ width: "100%" }} name={[record.key, 'Description']}
+          rules={[
+            {
+              required: true,
+              message: "Please input!",
+            },
+          ]}
+        >
+          <Input disabled />
         </Form.Item>
       }
     }
   ]
 
-  function handleAddRow() {
-    debugger
+  async function handleAddRow() {
+    await form.validateFields()
     setProductOptions([])
     const newData = {
       key: data.length + 1,
@@ -368,7 +375,7 @@ function ProvisionalDiagnosis(Patient) {
             justifyContent: "center",
           }}
         >
-          <Button
+          {/* <Button
             style={{ borderRadius: "1rem" }}
             size="middle"
             className="d-flex allignCenter"
@@ -376,7 +383,7 @@ function ProvisionalDiagnosis(Patient) {
           >
             Previous Provisional Diagnosis
             <FaHistory style={{ marginLeft: "0.5rem" }} />
-          </Button>
+          </Button> */}
         </Col>
       </Row >
       <CustomTable columns={columns1} dataSource={Patient.initialData.ClinicalAdvices}

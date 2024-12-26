@@ -112,7 +112,6 @@ function Prescription(Patient) {
   };
 
   const handleDeleteRow = (record) => {
-    debugger
     const newData = dataSource.map((item) => {
       if (item.key === record.key) {
         return { ...item, PrescriptionStatus: false };
@@ -124,7 +123,6 @@ function Prescription(Patient) {
 
   useEffect(() => {
     const fetch = async () => {
-      debugger
       const response = await customAxios.get(
         `${urlGetNewRequest}?EncounterId=${Patient.Patient.Encounter}&Patientid=${Patient.Patient.PatientId}`
       );
@@ -156,7 +154,6 @@ function Prescription(Patient) {
   }, [])
 
   const handleSearch = async (searchText) => {
-    debugger;
     if (searchText) {
       const response = await customAxios.get(
         `${urlGetAllDrugs}?Type=${searchText}`
@@ -185,7 +182,6 @@ function Prescription(Patient) {
   };
 
   const getInstruction = (value) => {
-    debugger;
     switch (value) {
       case 5:
         return { text: "Afternoon", round: 1 };
@@ -201,7 +197,6 @@ function Prescription(Patient) {
   };
 
   const SelectFrequency = (value, option, record) => {
-    debugger;
     const total = 0;
     const interval = form1.getFieldValue([record.key, "IntervalInDays"]);
     if (value) {
@@ -218,7 +213,6 @@ function Prescription(Patient) {
   };
 
   const Interval = (value, record) => {
-    debugger;
     const form3data = form1.getFieldsValue();
     const specific = form3data[record.key].Frequency;
     form1.setFieldsValue({ [record.key]: { TotalQty: getInstruction(specific).round * (value ? parseInt(value) : 1) } });
@@ -484,26 +478,7 @@ function Prescription(Patient) {
           <span style={{ fontSize: "1rem", fontWeight: 600 }}>
             Prescription
           </span>
-        </Col>
-        {/* <Col
-          span={5}
-          style={{
-            margin: "1rem 0 0 0.5rem",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <Button
-            type="primary"
-            style={{ borderRadius: "1rem" }}
-            size="middle"
-            className="d-flex allignCenter"
-            disabled
-          >
-            Previous Provisional Diagnosis
-            <FaHistory style={{ marginLeft: "0.5rem" }} />
-          </Button>
-        </Col> */}
+        </Col>        
       </Row>
       <Tabs
         defaultActiveKey="1"
@@ -796,7 +771,6 @@ function Prescription(Patient) {
             layout="vertical"
             form={form2}
             onFinish={async (values) => {
-              debugger;
               setLoading(true)
               const Pre = {
                 FromDateString: fromDate

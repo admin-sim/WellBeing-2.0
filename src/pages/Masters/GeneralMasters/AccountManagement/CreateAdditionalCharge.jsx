@@ -1,5 +1,5 @@
-import { PlusCircleOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Modal, InputNumber, Row, Select, Spin, Tabs, Layout, Input, AutoComplete, message, Popconfirm, Tooltip, Card, Checkbox, DatePicker } from "antd";
+import { CloseSquareFilled, PlusCircleOutlined } from "@ant-design/icons";
+import { Button, Col, Form, Modal, InputNumber, Row, Select, Spin, Tabs, Layout, Input, AutoComplete, message, Popconfirm, Tooltip, Card, Checkbox, DatePicker, Descriptions } from "antd";
 import Title from "antd/es/typography/Title";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import PageHeader from '../../../../components/PageHeader/index.jsx'
@@ -7,7 +7,8 @@ import React, { useEffect, useState } from "react";
 import {
     urlAdditionalChargeCreate, urlSaveNewAdditionalCharge, urlAddNewRule, urlAdditionalChargeEdit, urlUpdateAdditionalCharge,
     urlDeleteSelectedSurgeryRule, urlDeleteSelectedAssociation, urlDeleteSelectedAdditionalChargeRule, urlAddNewAssociation,
-    urlAddNewSurgery
+    urlAddNewSurgery, urlPackageDescriptionServiceGroup, urlPackageDescriptionServiceClassification, urlPackageDescriptionService,
+    urlGetEditAssociation, urlUpdateAssociation
 } from "../../../../../endpoints";
 import CustomTable from "../../../../components/customTable";
 import { useNavigate } from "react-router";
@@ -30,7 +31,12 @@ function CreateAdditionalCharge() {
     const [additionalChargeType, setAdditionalChargeType] = useState(1)
     const [buttonTitle, setButtonTitle] = useState('Save')
     const [fromDate, setFromDate] = useState(dayjs());
+    const [isIndicator, setIsIndicator] = useState(false);
+    const [isDescription, setIsDescription] = useState(false);
     const [toDate, setToDate] = useState(dayjs());
+    const [url, setUrl] = useState();
+    const [productOptions, setProductOptions] = useState([]);
+    const [isHideButton, setIsHideButton] = useState(false)
     const [dropdown, setDropdown] = useState({
         AnesthesiaType: [],
         AdditionalChargesRule: [],
@@ -63,7 +69,6 @@ function CreateAdditionalCharge() {
     };
 
     useEffect(() => {
-        debugger;
         const fetchData1 = async () => {
             if (AdditionalChargeId > 0) {
                 setPageLoading(true)
@@ -146,47 +151,6 @@ function CreateAdditionalCharge() {
             dataIndex: "AdditionalChargeIndicator",
             key: "AdditionalChargeIndicator",
         },
-        // {
-        //     title: "To Date",
-        //     dataIndex: "EffectiveToDate",
-        //     key: "EffectiveToDate",
-        // },
-        // {
-        //     title: "Additional Charge Type",
-        //     dataIndex: "AdditionalChargeType",
-        //     key: "AdditionalChargeType",
-        // },
-        // {
-        //     title: "Status",
-        //     dataIndex: "Status",
-        //     key: "Status",
-        //     render: (text, record) => (record.Status ? "Active" : "Hidden"),
-        // },
-        // {
-        //     title: '',
-        //     dataIndex: 'actions',
-        //     key: 'actions',
-        //     render: (_, record, index) => (
-        //         <span style={{ display: 'flex' }}>
-        //             {/* <Tooltip title="Edit">
-        //                 <EditOutlined style={{ fontSize: '0.8rem', cursor: 'pointer', marginRight: '10px' }} onClick={() => handleEdit(record.AdditionalChargeId)} />
-        //             </Tooltip> */}
-        //             {/* <Tooltip title="Delete">
-        //                 <DeleteOutlined style={{ fontSize: '0.8rem', cursor: 'pointer' }} onClick={() => handleDeleteRule(record.AdditionalChargeRuleId)} />
-        //             </Tooltip> */}
-        //             <Popconfirm
-        //                 title="Are you sure you want to delete this record?"
-        //                 onConfirm={() => handleDeleteRule(record.AdditionalChargeRuleId)}
-        //             >
-        //                 <Button
-        //                     size="small"
-        //                     danger
-        //                     icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
-        //                 ></Button>
-        //             </Popconfirm>
-        //         </span>
-        //     ),
-        // },
     ];
 
     const columns2 = [
@@ -220,31 +184,6 @@ function CreateAdditionalCharge() {
             dataIndex: "DependOnServiceName",
             key: "DependOnServiceName",
         },
-        // {
-        //     title: '',
-        //     dataIndex: 'actions',
-        //     key: 'actions',
-        //     render: (_, record, index) => (
-        //         <span style={{ display: 'flex' }}>
-        //             {/* <Tooltip title="Edit">
-        //                 <EditOutlined style={{ fontSize: '0.8rem', cursor: 'pointer', marginRight: '10px' }} onClick={() => handleEdit(record.AdditionalChargeId)} />
-        //             </Tooltip> */}
-        //             {/* <Tooltip title="Delete">
-        //                 <DeleteOutlined style={{ fontSize: '0.8rem', cursor: 'pointer' }} onClick={() => handleDeleteSurgery(record.SurgeryRuleId)} />
-        //             </Tooltip> */}
-        //             <Popconfirm
-        //                 title="Are you sure you want to delete this record?"
-        //                 onConfirm={() => handleDeleteSurgery(record.SurgeryRuleId)}
-        //             >
-        //                 <Button
-        //                     size="small"
-        //                     danger
-        //                     icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
-        //                 ></Button>
-        //             </Popconfirm>
-        //         </span>
-        //     ),
-        // },
     ];
 
     const columns3 = [
@@ -268,39 +207,13 @@ function CreateAdditionalCharge() {
             dataIndex: "EffectiveToDate1",
             key: "EffectiveToDate1",
         },
-        // {
-        //     title: '',
-        //     dataIndex: 'actions',
-        //     key: 'actions',
-        //     render: (_, record, index) => (
-        //         <span style={{ display: 'flex' }}>
-        //             {/* <Tooltip title="Edit">
-        //                 <EditOutlined style={{ fontSize: '0.8rem', cursor: 'pointer', marginRight: '10px' }} onClick={() => handleEdit(record.AdditionalChargeId)} />
-        //             </Tooltip> */}
-        //             {/* <Tooltip title="Delete">
-        //                 <DeleteOutlined style={{ fontSize: '0.8rem', cursor: 'pointer' }} onClick={() => handleDeleteAssociation(record.AssociationId)} />
-        //             </Tooltip> */}
-        //             <Popconfirm
-        //                 title="Are you sure you want to delete this record?"
-        //                 onConfirm={() => handleDeleteAssociation(record.AssociationId)}
-        //             >
-        //                 <Button
-        //                     size="small"
-        //                     danger
-        //                     icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
-        //                 ></Button>
-        //             </Popconfirm>
-        //         </span>
-        //     ),
-        // },
     ];
 
     const handleEdit = (record) => {
-        debugger;
         navigate("/CreateAutoCharge", { state: { AdditionalChargeId: record.AdditionalChargeId } });
     };
+
     const handleDeleteRule = async (record) => {
-        debugger;
         const response = await customAxios.get(
             `${urlDeleteSelectedAdditionalChargeRule}?AdditionalChargeRuleId=${record.AdditionalChargeRuleId}&AdditionalChargeId=${form.getFieldValue('AdditionalChargeId')}`
         );
@@ -315,8 +228,27 @@ function CreateAdditionalCharge() {
         }
     };
 
+    async function handleEditAssociation(value) {
+        debugger
+        const response = await customAxios.get(
+            `${urlGetEditAssociation}?Id=${value.AssociationId}`
+        );
+        if (response.status === 200) {
+            const ApiData = response.data.data
+            handleIndicatorChange(ApiData.IndicatorId)
+            setIsIndicator(ApiData.IndicatorId === 2060 ? true : false)
+            form3.setFieldsValue({
+                AssociationId: ApiData.AssociationId,
+                Indicator: ApiData.IndicatorId,
+                DescriptionId: ApiData.DescriptionId,
+                Description: ApiData.DescriptionName,
+                EffectiveFrom: dayjs(ApiData.EffectiveFromDate1, "DD-MM-YYYY"),
+                EffectiveTo: dayjs(ApiData.EffectiveToDate1, "DD-MM-YYYY")
+            })
+        }
+    }
+
     const handleDeleteAssociation = async (record) => {
-        debugger;
         const response = await customAxios.get(
             `${urlDeleteSelectedAssociation}?AssociationId=${record.AssociationId}&AdditionalChargeId=${form.getFieldValue('AdditionalChargeId')}`
         );
@@ -332,7 +264,6 @@ function CreateAdditionalCharge() {
     }
 
     const handleDeleteSurgery = async (record) => {
-        debugger;
         const response = await customAxios.get(
             `${urlDeleteSelectedSurgeryRule}?SurgeryRuleId=${record.SurgeryRuleId}&AdditionalChargeId=${form.getFieldValue('AdditionalChargeId')}`
         );
@@ -348,7 +279,6 @@ function CreateAdditionalCharge() {
     }
 
     const handlePlusButton = (value) => {
-        debugger
         setShowTable(true)
     }
 
@@ -383,7 +313,6 @@ function CreateAdditionalCharge() {
     });
 
     const handleAdditionalChargeType = (value) => {
-        debugger
         if (value == 'Associated Services') {
             setAdditionalChargeType(2)
             setActiveTabKey(2)
@@ -416,6 +345,38 @@ function CreateAdditionalCharge() {
             <Spin size="large" />
         </div>
     }
+
+    function handleIndicatorChange(value) {
+        setIsIndicator(value == 2060 ? true : false)
+        setIsDescription(value == 2060 ? false : true)
+        switch (value) {
+            case 2063: setUrl(urlPackageDescriptionService); break;
+            case 2062: setUrl(urlPackageDescriptionServiceGroup); break;
+            default: setUrl(urlPackageDescriptionServiceClassification); break;
+        }
+        setProductOptions([])
+        form3.setFieldsValue({ 'Description': '' })
+        form3.setFieldsValue({ 'DescriptionId': 0 })
+    }
+
+    const handleSelect = (value, option) => {
+        debugger
+        form3.setFieldsValue({ 'DescriptionId': option.key })
+        form3.setFieldsValue({ 'Description': option.value })
+    };
+
+    const handleSearch = async (searchText) => {
+        debugger
+        if (searchText) {
+            const response = await customAxios.get(`${url}?Description=${searchText}`);
+            const apiData = url == urlPackageDescriptionService ? response.data.data : response.data;
+            const newOptions = apiData.map((item) => ({
+                value: item.Name,
+                key: item.Id,
+            }));
+            setProductOptions(newOptions);
+        }
+    };
 
     return (
         <>
@@ -465,7 +426,7 @@ function CreateAdditionalCharge() {
                                 });
                                 if (response.status == 200) {
                                     form.setFieldsValue({ AdditionalChargeId: response.data })
-                                    setButtonTitle('Update')
+                                    setIsHideButton(buttonTitle === 'Save' ? true : false)
                                     message.success('Saved')
                                 }
                             }}
@@ -626,8 +587,8 @@ function CreateAdditionalCharge() {
                             </Row>
                             <Row justify="end">
                                 <Col>
-                                    <Form.Item>
-                                        <Button type="primary" htmlType="submit">
+                                    <Form.Item hidden={isHideButton}>
+                                        <Button type="primary" htmlType="submit" >
                                             {buttonTitle}
                                         </Button>
                                     </Form.Item>
@@ -659,7 +620,6 @@ function CreateAdditionalCharge() {
                                         // AdditionalChargeId: dropdown.AdditionalChargeId,
                                     }}
                                     onFinish={async (values) => {
-                                        debugger
                                         const Rules = {
                                             AdditionalChargeId: form.getFieldValue('AdditionalChargeId'),
                                             ComponentName: values.ChargeComponent,
@@ -769,7 +729,6 @@ function CreateAdditionalCharge() {
                                         maxWidth: 1500,
                                     }}
                                     onFinish={async (values) => {
-                                        debugger
                                         const Surgery = {
                                             AdditionalChargeId: form.getFieldValue('AdditionalChargeId'),
                                             AnesthesiaTypeId: values.AnesthesiaType,
@@ -929,12 +888,14 @@ function CreateAdditionalCharge() {
                                         debugger
                                         const Association = {
                                             AdditionalChargeId: form.getFieldValue('AdditionalChargeId'),
+                                            AssociationId: values.AssociationId,
                                             IndicatorId: values.Indicator,
-                                            DescriptionId: 0,
+                                            DescriptionId: values.DescriptionId,
                                             EffectiveFromDate1: values.EffectiveFrom ? values.EffectiveFrom.format('DD-MM-YYYY') : '',
-                                            EffectiveToDate1: values.EffectiveFrom ? values.EffectiveFrom.format('DD-MM-YYYY') : ''
+                                            EffectiveToDate1: values.EffectiveTo ? values.EffectiveTo.format('DD-MM-YYYY') : ''
                                         }
-                                        const response = await customAxios.post(urlAddNewAssociation, Association, {
+                                        const u = values.AssociationId ? urlUpdateAssociation : urlAddNewAssociation
+                                        const response = await customAxios.post(u, Association, {
                                             headers: {
                                                 "Content-Type": "application/json",
                                             },
@@ -952,10 +913,10 @@ function CreateAdditionalCharge() {
                                     }}
                                     initialValues={{
                                         EffectiveFrom: dayjs(),
-                                        EffectiveTo: dayjs()
+                                        EffectiveTo: dayjs(),
+                                        AssociationId: 0
                                     }}
                                 >
-                                    {/* Form fields here */}
                                     <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
                                         <Col className="gutter-row" span={5}>
                                             <Form.Item
@@ -968,15 +929,17 @@ function CreateAdditionalCharge() {
                                                     },
                                                 ]}
                                             >
-                                                <Select placeholder='Select' loading={loading}>
-                                                    {dropdown.Indicators.map((option) => (
-                                                        <Select.Option
-                                                            key={option.LookupID}
-                                                            value={option.LookupID}
-                                                        >
-                                                            {option.LookupDescription}
-                                                        </Select.Option>
-                                                    ))}
+                                                <Select placeholder='Select' onChange={handleIndicatorChange} loading={loading}>
+                                                    {dropdown.Indicators
+                                                        .filter((option) => option.LookupID !== 12152)
+                                                        .map((option) => (
+                                                            <Select.Option
+                                                                key={option.LookupID}
+                                                                value={option.LookupID}
+                                                            >
+                                                                {option.LookupDescription}
+                                                            </Select.Option>
+                                                        ))}
                                                 </Select>
                                             </Form.Item>
                                         </Col>
@@ -984,13 +947,29 @@ function CreateAdditionalCharge() {
                                             <Form.Item
                                                 name="Description"
                                                 label="Description"
-                                                // rules={[
-                                                //     {
-                                                //         required: true,
-                                                //         message: "Required.",
-                                                //     },
-                                                // ]}
+                                                rules={[
+                                                    {
+                                                        required: isDescription,
+                                                        message: "Required.",
+                                                    },
+                                                ]}
                                             >
+                                                <AutoComplete
+                                                    options={productOptions}
+                                                    onSearch={handleSearch}
+                                                    onSelect={(value, option) => handleSelect(value, option)}
+                                                    onChange={(value) => {
+                                                        if (!value) {
+                                                            setProductOptions([]);
+                                                        }
+                                                    }}
+                                                    allowClear={{
+                                                        clearIcon: <CloseSquareFilled />,
+                                                    }}
+                                                    disabled={isIndicator}
+                                                />
+                                            </Form.Item>
+                                            <Form.Item name="DescriptionId" hidden >
                                                 <Input />
                                             </Form.Item>
                                             <Form.Item name="AssociationId" hidden >
@@ -1016,11 +995,18 @@ function CreateAdditionalCharge() {
                                                 name="EffectiveTo"
                                                 label="Effective To"
                                             >
-                                                <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' />
+                                                <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY'
+                                                    disabledDate={(current) => {
+                                                        const effectiveFrom = form3.getFieldValue('EffectiveFrom');
+                                                        if (effectiveFrom) {
+                                                            return current.isBefore(effectiveFrom, 'day');
+                                                        }
+                                                        return false;
+                                                    }} />
                                             </Form.Item>
                                         </Col>
                                         <Col className="gutter-row" span={4}>
-                                            <Button style={{ marginTop: '28px' }} icon={<PlusCircleOutlined />} htmlType="submit"
+                                            <Button style={{ marginTop: '28px' }} icon={form3.getFieldValue('AssociationId') > 0 ? <EditOutlined /> : <PlusCircleOutlined />} htmlType="submit"
                                                 disabled={form.getFieldValue('AdditionalChargeId') == 0 ? true : false}></Button>
                                         </Col>
                                     </Row>
@@ -1029,18 +1015,12 @@ function CreateAdditionalCharge() {
                                         dataSource={dropdown.AdditionalChargesAssociation}
                                         isFilter={true}
                                         onDelete={handleDeleteAssociation}
+                                        onEdit={handleEditAssociation}
                                     />
                                 </Form>
                             </Card>
                         )}
                     </Card>
-                    {/* <Spin spinning={loading}>
-                        <CustomTable
-                            columns={columns}
-                            dataSource={columnData}
-                            isFilter={true}
-                        />
-                    </Spin> */}
                 </div>
             </Layout >
         </>

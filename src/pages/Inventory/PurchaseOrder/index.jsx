@@ -134,9 +134,9 @@ const PurchaseOrder = () => {
     },
     {
       title: "PO Auth By",
-      dataIndex: "CreatedBy",
-      key: "CreatedBy",
-      sorter: (a, b) => a.CreatedBy.localeCompare(b.CreatedBy),
+      dataIndex: "ShortName",
+      key: "ShortName",
+      sorter: (a, b) => a.ShortName.localeCompare(b.ShortName),
       sortDirections: ["descend", "ascend"],
     },
     {

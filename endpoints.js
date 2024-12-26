@@ -280,6 +280,7 @@ export const urlGetEncounterDetails = `${baseURL}/api/Encounter/GetEncounterDeta
 export const urlDeletePriceTariffChargeParameter = `${baseURL}/api/PriceTariff/DeletePriceTariffChargeParameter`;
 export const urlDeleteBillAgreementChargeParameter = `${baseURL}/api/BillAgreement/DeleteBillAgreementChargeParameter`;
 export const urlPackageDescriptionServiceGroup = `${baseURL}/api/Service/PackageDescriptionServiceGroup`;
+export const urlPackageDescriptionService = `${baseURL}/api/Service/PackageDescriptionService`;
 export const urlPackageDescriptionServiceClassification = `${baseURL}/api/Service/PackageDescriptionServiceClassification`;
 export const urlPackageDescriptionServiceForInsurance = `${baseURL}/api/Service/PackageDescriptionServiceForInsurance`;
 export const urlSearchPatientIndent = `${baseURL}/api/PatientIndent/SearchPatientIndent`;
@@ -541,4 +542,8 @@ export const urlSaveRecurringChargesModel = `${baseURL}/api/RecurringCharges/Sav
 export const urlDeleteRecuringCharges = `${baseURL}/api/RecurringCharges/DeleteCharges`;
 export const urlShowAcceptOrReject = `${baseURL}/api/WardManagement/ShowAcceptOrReject`;
 export const urlSaveAcceptOrReject = `${baseURL}/api/WardManagement/SaveAcceptOrReject`;
+export const urlShowEditDefinition = `${baseURL}/api/ProductDefinition/ShowEditDefinition`;
+export const urlUpdateProduct = `${baseURL}/api/ProductDefinition/UpdateProduct`;
+export const urlGetEditAssociation = `${baseURL}/api/AdditionalChargeSetup/GetEditAssociation`;
+export const urlUpdateAssociation = `${baseURL}/api/AdditionalChargeSetup/UpdateAssociation`;
 

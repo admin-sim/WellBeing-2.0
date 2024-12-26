@@ -152,10 +152,10 @@ const Indent = () => {
       sortDirections: ["descend", "ascend"],
     },
     {
-      title: "Indented By",
-      dataIndex: "PatientName",
-      key: "PatientName",
-      sorter: (a, b) => a.PatientName.localeCompare(b.PatientName),
+      title: "Indent Owner",
+      dataIndex: "CreatedBy",
+      key: "CreatedBy",
+      sorter: (a, b) => a.CreatedBy.localeCompare(b.CreatedBy),
       sortDirections: ["descend", "ascend"],
 
     },
@@ -226,6 +226,7 @@ const Indent = () => {
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
+      setLoading(false)
       setError(error.message);
     }
   };
@@ -241,9 +242,9 @@ const Indent = () => {
         body: JSON.stringify(request),
       }
     );
-    console.log("respo", response);
 
     if (!response.ok) {
+      setLoading(false)
       throw new Error("Failed to fetch report");
     }
 
@@ -429,8 +430,6 @@ const Indent = () => {
       </div>
       <div>
         {error && <div>Error: {error}</div>}
-
-
         <Modal
           title="Report"
           visible={isModalVisible}

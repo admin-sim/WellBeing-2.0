@@ -176,10 +176,10 @@ const PatientIndent = () => {
       sortDirections: ["descend", "ascend"],
     },
     {
-      title: "Indented By",
-      dataIndex: "IndentedBy",
-      key: "IndentedBy",
-      sorter: (a, b) => a.IndentedBy.localeCompare(b.IndentedBy),
+      title: "Indent Owner",
+      dataIndex: "CreatedBy",
+      key: "CreatedBy",
+      sorter: (a, b) => a.CreatedBy.localeCompare(b.CreatedBy),
       sortDirections: ["descend", "ascend"],
     },
     {
@@ -214,6 +214,7 @@ const PatientIndent = () => {
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
+      setLoading(false)
       setError(error.message);
     }
   };
@@ -229,9 +230,9 @@ const PatientIndent = () => {
         body: JSON.stringify(request),
       }
     );
-    console.log("respo", response);
 
     if (!response.ok) {
+      setLoading(false)
       throw new Error("Failed to fetch report");
     }
 
@@ -421,10 +422,10 @@ const PatientIndent = () => {
             <Row justify="end">
               <Col>
                 <Form.Item>
-                  <Button 
+                  <Button
                     type="primary"
                     loading={loading}
-                    htmlType="submit" 
+                    htmlType="submit"
                   >
                     Search
                   </Button>
@@ -451,7 +452,6 @@ const PatientIndent = () => {
       </div>
       <div>
         {error && <div>Error: {error}</div>}
-
         <Modal
           title="Report"
           visible={isModalVisible}

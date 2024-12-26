@@ -8,7 +8,8 @@ import {
     urlUpdatePatientIndent,
     urlEditPatientIndent,
     urlGetProductDetailsById,
-    urlAddNewPatientIndent
+    urlAddNewPatientIndent,
+    urlGetDrNotes
 } from '../../../../endpoints.js';
 import Select from 'antd/es/select';
 import { ConfigProvider, Card, Typography, Checkbox, Tooltip, Modal, Skeleton, Popconfirm, Spin, Col, Divider, Row, AutoComplete, message } from 'antd';
@@ -27,6 +28,9 @@ import { useLocation } from "react-router-dom";
 import customAxios from '../../../components/customAxios/customAxios.jsx';
 import PageHeader from '../../../components/PageHeader/index.jsx';
 import UhidSelectComponent from '../../../components/UhidSelectComponent/index.jsx';
+import CustomTable from '../../../components/customTable/index.jsx';
+import { ColWithEightSpan } from '../../../components/customGridColumns/index.jsx';
+import CkEditor from '../../../components/CKEditor/index.jsx';
 
 const CreatePatientIndent = () => {
     const [DropDown, setDropDown] = useState({
@@ -45,6 +49,10 @@ const CreatePatientIndent = () => {
     const Patient = location.state.bed;
     const [dropDownLoad, setDropDownLoading] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [readOnly, setReadOnly] = useState(false);
+    const [openCKModel, setOpenCKModel] = useState(false);
+    const [templateEditorData, setTemplateEditorData] = useState("");
+
     const initialDataSource =
         indentId === 0
             ? [
@@ -63,6 +71,7 @@ const CreatePatientIndent = () => {
             : [];
 
     const [encounter, setEncounter] = useState([]);
+    const [form] = Form.useForm();
     const [form1] = Form.useForm();
     const [form2] = Form.useForm();
     const [form3] = Form.useForm();
@@ -73,7 +82,7 @@ const CreatePatientIndent = () => {
     const [data, setData] = useState(initialDataSource);
     const [dataModal, setDataModal] = useState([]);
     const [poloading, setPoloading] = useState(false);
-    const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
+    const [filteredData, setFilteredData] = useState([]);
     const [autoCompleteProduct, setAutoCompleteProduct] = useState([]);
     const fields = form1.getFieldsValue();
     const [buttonTitle, setButtonTitle] = useState('Save');
@@ -81,6 +90,8 @@ const CreatePatientIndent = () => {
     const [indentStatus, setIndentStatus] = useState(false);
     const [isProductAvailable, setIsProductAvailable] = useState(false)
     const [uhid, setUhid] = useState()
+    const [key, setKey] = useState(null);
+    const [customKey, setCustomKey] = useState(filteredData?.length + 1000);
 
     useEffect(() => {
         customAxios.get(urlCreatePurchaseOrder).then((response) => {
@@ -95,7 +106,6 @@ const CreatePatientIndent = () => {
     }, []);
 
     const fetchData = async () => {
-        debugger
         if (indentId > 0) {
             setLoading(true);
             setButtonTitle('Update');
@@ -132,8 +142,8 @@ const CreatePatientIndent = () => {
             });
             setLoading(false);
         } else if (Patient) {
-            debugger
             setUhid(Patient.UhId)
+            GetEncounter(Patient.PatientId)
             form1.setFieldsValue({
                 UHID: Patient.UhId,
                 Name: Patient.PatientName,
@@ -157,7 +167,6 @@ const CreatePatientIndent = () => {
     }
 
     const onFinishmodal = (values) => {
-        debugger;
         setPoloading(true);
         setIsPoSearchTable(true);
         const postData = {
@@ -178,6 +187,15 @@ const CreatePatientIndent = () => {
         //   // Handle the error as needed
         // }
     }
+
+    const handleCancel1 = () => {
+        setCustomKey(customKey + 1);
+        setTemplateEditorData("");
+        form.resetFields();
+        setOpenCKModel(false);
+        setButtonTitle("Save");
+        setReadOnly(false);
+    };
 
     const AddProduct = async () => {
         setAutoCompleteProduct([])
@@ -398,44 +416,47 @@ const CreatePatientIndent = () => {
     const Modelcolumns = [
         {
             title: 'Date',
-            dataIndex: 'date',
-            key: 'date',
-            sorter: (a, b) => a.date.localeCompare(b.date),
+            dataIndex: 'datestring',
+            key: 'datestring',
+            sorter: (a, b) => a.datestring.localeCompare(b.datestring),
         },
         {
             title: 'Time',
-            dataIndex: 'time',
-            key: 'time',
-            sorter: (a, b) => a.time.localeCompare(b.time),
+            dataIndex: 'Time',
+            key: 'Time',
+            sorter: (a, b) => a.Time.localeCompare(b.Time),
         },
-        {
-            title: 'View',
-            dataIndex: 'view',
-            key: 'view',
-            sorter: (a, b) => a.view.localeCompare(b.view),
-        }
+        // {
+        //     title: 'View',
+        //     dataIndex: 'view',
+        //     key: 'view',
+        //     sorter: (a, b) => a.view.localeCompare(b.view),
+        // }
     ];
 
     const onCancelmodal = () => {
         setIsModalOpen(false);
-        // setDataModal([]);
     }
 
     const handleCancel = () => {
         const url = '/PatientIndent';
         navigate(url);
     }
-    const ShowModel = () => {
-        debugger;
-        const uhid = form1.getFieldValue('UHID');
-        form1
-            .validateFields(['UHID'])
-            .then(() => {
-                setIsModalOpen(true);
-            })
-            .catch((error) => {
-                console.log('Validation error:', error);
-            });
+
+    function handleView(params) {
+        debugger
+        setTemplateEditorData(params.DrNote)
+        setOpenCKModel(true);
+    }
+
+    async function ShowModel() {
+        const form1data = form1.getFieldsValue()
+        await form1.validateFields(['UHID', 'PatientId', 'EncounterId'])
+        customAxios.get(`${urlGetDrNotes}?EncounterId=${form1data.EncounterId}&PatientId=${form1data.PatientId}`).then((response) => {
+            const apiData = response.data.data.DrNotesList;
+            setDataModal(apiData)
+            setIsModalOpen(true)
+        })
     }
 
     const onFinishFailed = (errorInfo) => {
@@ -443,11 +464,6 @@ const CreatePatientIndent = () => {
     };
 
     const handleOnFinish = async (values) => {
-        debugger;
-        // if (!values.EncounterId) {
-        //     message.warning("Selected Patient Encounter Is Not Created");
-        //     return false;
-        // }
         await form2.validateFields()
         const products = [];
         if (data.length == 0) {
@@ -526,49 +542,26 @@ const CreatePatientIndent = () => {
         setIndentStatus(event.target.checked)
     }
 
-    const GetUHID = (value) => {
-        if (value !== "") {
-            customAxios.get(`${urlSearchUHID}?Uhid=${value}`).then((response) => {
-                const apiData = response.data.data;
-                const newOptions = apiData.map(item => ({ value: item.UhId, key: item.UhId, PatientId: item.PatientId, PatientName: item.PatientFirstName + '' + item.PatientLastName }));
-                setAutoCompleteOptions(newOptions);
-            });
-        } else {
-            setEncounter([]);
-            form1.setFieldsValue({ Encounter: '' });
-            form1.setFieldsValue({ Name: '' });
-        }
-    }
-
-    const handleSelect = (value, option) => {
-        form1.setFieldsValue({ Name: option.PatientName });
-        form1.setFieldsValue({ UHID: option.value });
-        customAxios.get(`${urlGetLastEncounter}?Uhid=${option.key}`).then((response) => {
-            const apiData = response.data.data;
-            if (apiData.length > 0) {
-                setEncounter(apiData);
-                form1.setFieldsValue({ Encounter: apiData[0].EncounterId });
-                form1.setFieldsValue({ EncounterId: apiData[0].EncounterId });
-                form1.setFieldsValue({ PatientId: option.PatientId });
-            } else {
-                setEncounter([]);
-                form1.setFieldsValue({ EncounterId: '' });
-                form1.setFieldsValue({ Encounter: '' });
-                form1.setFieldsValue({ PatientId: '' });
-            }
-        });
-    }
-
     const handleStoreChange = (value) => {
-        debugger
         setData(initialDataSource);
         setAutoCompleteProduct([]);
         form2.resetFields();
         setIsTableVisible(true);
     }
 
+    async function GetEncounter(value) {
+        await customAxios.get(`${urlGetLastEncounter}?patientId=${value}`).then((response) => {
+            const apiData = response.data;
+            if (apiData.length > 0) {
+                setEncounter(apiData);
+                form1.setFieldsValue({ Encounter: apiData[0].EncounterId });
+                form1.setFieldsValue({ EncounterId: apiData[0].EncounterId });
+                // form1.setFieldsValue({ PatientId: option.data.PatientId });
+            }
+        })
+    }
+
     function handleSelect2(value, option) {
-        debugger
         if (value) {
             form1.setFieldsValue({ Name: option.data.PatientFirstName + ' ' + option.data.PatientLastName });
             form1.setFieldsValue({ UHID: value });
@@ -842,8 +835,106 @@ const CreatePatientIndent = () => {
                             autoComplete="off"
                             form={form3}
                         >
-                            <Table columns={Modelcolumns} dataSource={dataModal} scroll={{ x: 0 }} />
+                            {/* <Table columns={Modelcolumns} dataSource={dataModal} scroll={{ x: 0 }} /> */}
+                            <CustomTable columns={Modelcolumns}
+                                dataSource={dataModal}
+                                actionColumnName='Action'
+                                onView={handleView}
+                            />
                         </Form>
+                    </Modal>
+                    <Modal
+                        width={"70%"}
+                        height={"auto"}
+                        centered
+                        title={
+                            <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>                                
+                                View Doctor Note
+                            </span>
+                        }
+                        open={openCKModel}
+                        maskClosable={false}
+                        footer={null}
+                        onCancel={handleCancel1}
+                    >
+                        {/* <Form
+                            form={form}
+                            // layout="vertical"
+                            variant="outlined"
+                            initialValues={{
+                                Date: dayjs(),
+                            }}
+                            onFinish={async (values) => {
+                                debugger
+                                setLoading(true)
+                                if (templateEditorData == "") {
+                                    message.warning("No data to Save");
+                                    return false;
+                                }
+                                const note = {
+                                    DrNoteId: values.DrNoteId ? values.DrNoteId : 0,
+                                    PatientId: bed.PatientId,
+                                    EncounterId: bed.EncounterId,
+                                    datestring: values.Date ? values.Date.format("DD-MM-YYYY") : "",
+                                    timestring: values.Date ? values.Date.format("HH:mm:ss") : "",
+                                    DrNote: templateEditorData,
+                                };
+                                const response = await customAxios.post(urlAddNewDrNote, note, {
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                });
+                                if (response.status === 200 && response.data.data != null) {
+                                    message.success("Success");
+                                    setFilteredData(response.data.data.DrNotesList);
+                                    form.resetFields();
+                                    setTemplateEditorData("");
+                                    setButtonTitle("Save");
+                                    setReadOnly(false);
+                                    setLoading(false)
+                                }
+                                handleCancel1();
+                            }}
+                        > */}
+                        {/* <Row gutter={16} style={{ margin: "1.5rem 0 -1rem 0" }}>
+                                <ColWithEightSpan>
+                                    <Form.Item
+                                        name="Date"
+                                        label="Date"
+                                        rules={[{ required: true, message: "Please input!" }]}
+                                    >
+                                        <DatePicker
+                                            style={{ width: "100%" }}
+                                            showTime={{ format: "hh:mm A" }}
+                                            format="dddd , DD-MM-YYYY , hh:mm A"
+                                        />
+                                    </Form.Item>
+                                    <Form.Item name="DrNoteId" hidden><Input /></Form.Item>
+                                </ColWithEightSpan>
+                            </Row> */}
+                        <CkEditor
+                            key={key ? key : customKey}
+                            initialData={templateEditorData}
+                            printButton={true}
+                        // setData={setTemplateEditorData}
+                        />
+                        <Row justify="end" gutter={16} style={{ margin: "1rem 0.5rem 0 0" }}>
+                            {/* <Col>
+                                    <Form.Item hidden={readOnly}>
+                                        <Button type="primary" htmlType="submit" loading={loading}>
+                                            {buttonTitle}
+                                        </Button>
+                                    </Form.Item>
+                                </Col> */}
+                            <Col>
+                                <Form.Item>
+                                    <Button danger onClick={handleCancel1}>
+                                        Cancel
+                                    </Button>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        {/* </Form> */}
                     </Modal>
                 </ConfigProvider>
             </div>

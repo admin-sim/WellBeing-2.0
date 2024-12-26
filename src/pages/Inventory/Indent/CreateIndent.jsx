@@ -372,7 +372,8 @@ const CreateIndent = () => {
           >
             <Select
               defaultValue={record.UomId}
-              disabled={!!indentId}
+              // disabled={!!indentId}
+              disabled
               onChange={(value, option) =>
                 handleUomChange(option, "UomId", index, record)
               }

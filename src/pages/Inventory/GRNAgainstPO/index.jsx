@@ -141,9 +141,9 @@ const GRNAgainstPO = () => {
     },
     {
       title: "GRN Owner",
-      dataIndex: "GRNOwner",
-      key: "GRNOwner",
-      sorter: (a, b) => a.GRNOwner.localeCompare(b.GRNOwner),
+      dataIndex: "LongName",
+      key: "LongName",
+      sorter: (a, b) => a.LongName.localeCompare(b.LongName),
       sortDirections: ["descend", "ascend"],
     },
     {

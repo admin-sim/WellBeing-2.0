@@ -18,14 +18,13 @@ import {
   Divider,
   Tooltip,
   Table,
+  Modal,
 } from "antd";
 import { useNavigate } from "react-router";
 import { urlGetPurshaseOrderDetails, urlSearchVendorReturn } from "../../../../endpoints.js";
 import CustomTable from "../../../components/customTable/index.jsx";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
-//import { format } from 'prettier';
-//import { useLocation } from 'react-router-dom';
 
 const VendorReturn = () => {
   const [Dropdown, setDropDown] = useState({
@@ -41,8 +40,12 @@ const VendorReturn = () => {
   const [page, setPage] = useState(1);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [isTable, setIsTable] = useState(false);
-  const { Title } = Typography;
+  const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
+  const [toDate, setToDate] = useState(dayjs());
+  const [error, setError] = useState(null);
+  const [reportUrl, setReportUrl] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
   useEffect(() => {
     try {
       customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
@@ -54,6 +57,18 @@ const VendorReturn = () => {
     }
     form.submit()
   }, []);
+
+  const disableFromDate = (current) => {
+    return current && current.isAfter(dayjs().endOf("day"));
+  };
+
+  const disableToDate = (current) => {
+    return (
+      current &&
+      (current.isBefore(fromDate, "day") ||
+        current.isAfter(dayjs().endOf("day")))
+    );
+  };
 
   const navigate = useNavigate();
 
@@ -91,18 +106,10 @@ const VendorReturn = () => {
     },
     {
       title: "Returned Date",
-      dataIndex: "ReturnDate",
-      key: "ReturnDate",
-      sorter: (a, b) => a.ReturnDate.localeCompare(b.ReturnDate),
+      dataIndex: "ReturnDatestring",
+      key: "ReturnDatestring",
+      sorter: (a, b) => a.ReturnDatestring.localeCompare(b.ReturnDatestring),
       sortDirections: ["descend", "ascend"],
-      render: (text) => {
-        const dateParts = text.split('T')[0].split('-');
-        const year = dateParts[0];
-        const month = dateParts[1];
-        const day = dateParts[2];
-
-        return `${day}-${month}-${year}`;
-      },
     },
     {
       title: "Returning Location",
@@ -133,16 +140,52 @@ const VendorReturn = () => {
       },
     },
     {
-      title: "Report",
-      dataIndex: "Report",
-      key: "Report",
-      render: (record) => {
-        return <Button type="link">Report</Button>
-      }
+      render: (_, record) => (
+        <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>
+      ),
     },
   ];
 
+  const handleReport = async (value, record) => {
+    setLoading(true)
+    try {
+      const request = {
+        PONO: record.ReturnHeaderId,
+        use: 'admin',
+        FileType: "pdf", // or 'excel'
+      };
+      const { url, blob } = await fetchReport(request);
+      setReportUrl(url);
+      // setBlobData(blob);
+      setIsModalVisible(true);
+    } catch (error) {
+      setLoading(false)
+      setError(error.message);
+    }
+  };
 
+  async function fetchReport(request) {
+    const response = await fetch(
+      "https://192.168.29.254:808/api/ReportsApi/GetVendorReturnRpt",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+
+    if (!response.ok) {
+      setLoading(false)
+      throw new Error("Failed to fetch report");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    setLoading(false)
+    return { url, blob };
+  }
 
   const onFinish = async (values) => {
     debugger;
@@ -186,18 +229,6 @@ const VendorReturn = () => {
   return (
     <Layout style={{ zIndex: '999999999' }}>
       <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-        {/* <Row style={{ padding: '0.5rem 2rem 0.5rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
-          <Col span={16}>
-            <Title level={4} style={{ color: 'white', fontWeight: 500, margin: 0, paddingTop: 0 }}>
-              Vendor Return
-            </Title>
-          </Col>
-          <Col offset={5} span={2}>
-            <Button icon={<PlusCircleOutlined />} style={{ marginRight: 0 }} onClick={() => GetModelDetails(0)}>
-              Add Vendor Return
-            </Button>
-          </Col>
-        </Row> */}
         <PageHeader
           title={"Vendor Return"}
           buttonLabel="Add Vendor Return"
@@ -246,12 +277,24 @@ const VendorReturn = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="FromDate" label="From Date">
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker
+                    value={fromDate}
+                    onChange={(date) => setFromDate(date)}
+                    disabledDate={disableFromDate}
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                  />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="ToDate" label="To Date">
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker
+                    value={toDate}
+                    onChange={(date) => setToDate(date)}
+                    disabledDate={disableToDate}
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                  />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
@@ -282,34 +325,36 @@ const VendorReturn = () => {
               </Col>
             </Row>
           </Form>
-          <Spin spinning={loading}>
-            <CustomTable
-              dataSource={filteredData}
-              columns={columns}
-              isFilter={true}
-              actionColumn={false}
-              bordered
-            />
-          </Spin>
-          {/* <Table display={setIsTable}
+          <CustomTable loading={loading}
             dataSource={filteredData}
             columns={columns}
-            pagination={{
-              onChange: (current, pageSize) => {
-                setPage(current);
-                setPaginationSize(pageSize);
-              },
-              defaultPageSize: 5,
-              hideOnSinglePage: true,
-              showSizeChanger: true,
-              showTotal: (total, range) =>
-                `Showing ${range[0]} to ${range[1]} of ${total} entries`,
-            }}
-            rowKey={(row) => row.AppUserId}
-            size="small"
+            isFilter={true}
+            actionColumn={false}
             bordered
-          /> */}
+          />
         </Card>
+      </div>
+      <div>
+        {error && <div>Error: {error}</div>}
+        <Modal
+          title="Report"
+          visible={isModalVisible}
+          onCancel={() => setIsModalVisible(false)}
+          footer={[
+            <Button key="close" onClick={() => setIsModalVisible(false)}>
+              Close
+            </Button>,
+          ]}
+          width={"60rem"} // You can adjust the width as needed
+        >
+          {reportUrl && (
+            <iframe
+              src={reportUrl}
+              style={{ width: "100%", height: "500px", border: "none" }}
+              title="Report"
+            />
+          )}
+        </Modal>
       </div>
     </Layout>
   );

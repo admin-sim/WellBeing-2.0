@@ -54,8 +54,24 @@ const CreateVendorReturn = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRadio, setSelectedRadio] = useState("option1");
   const [buttonTitle, setButtonTitle] = useState("Save");
+  const [pfromDate, setPFromDate] = useState(dayjs());
+  const [ptoDate, setPToDate] = useState(dayjs());
+  const [vfromDate, setVFromDate] = useState(dayjs());
+  const [vtoDate, setVToDate] = useState(dayjs());
 
-  // const tableRef = useRef(null);
+  const pdisableToDate = (current) => {
+    return (
+      current &&
+      current.isBefore(pfromDate, "day")
+    );
+  };
+
+  const vdisableToDate = (current) => {
+    return (
+      current &&
+      current.isBefore(vfromDate, "day")
+    );
+  };
 
   useEffect(() => {
     customAxios.get(urlGetPurshaseOrderDetails).then((response) => {
@@ -65,7 +81,6 @@ const CreateVendorReturn = () => {
   }, []);
 
   useEffect(() => {
-    debugger;
     const fetchData = async () => {
       if (ReturnHeaderId > 0) {
         setButtonTitle("Update");
@@ -106,7 +121,6 @@ const CreateVendorReturn = () => {
   }, []);
 
   const handleSearch = async (searchText) => {
-    debugger;
     if (searchText) {
       const response = await customAxios.get(
         `${urlAutocompleteProduct}?Product=${searchText}`
@@ -130,7 +144,6 @@ const CreateVendorReturn = () => {
   };
 
   const onOkModal = async () => {
-    debugger;
     if (selectedRowKeys.length == 0) {
       message.warning("Please Select Alteast one Batch!");
       return false;
@@ -167,25 +180,16 @@ const CreateVendorReturn = () => {
   };
 
   const onFinishModel = async (values) => {
-    debugger;
     setDataModal([]);
     const VendorReturn = {
-      GRNDateFrom:
+      ExpiryDateFrom:
         values.GRNDateFrom && selectedRadio == "option1"
           ? values.GRNDateFrom.format("DD-MM-YYYY")
-          : null,
-      GRNDateTo:
-        values.ExpiryDateTo && selectedRadio == "option1"
-          ? values.ExpiryDateTo.format("DD-MM-YYYY")
-          : null,
+          : values.ExpiryDateFrom.format("DD-MM-YYYY"),
       ExpiryDateTo:
-        values.ExpiryDateTo && selectedRadio == "option2"
-          ? values.ExpiryDateTo.format("DD-MM-YYYY")
-          : null,
-      ExpiryDateFrom:
-        values.ExpiryDateFrom && selectedRadio == "option2"
-          ? values.ExpiryDateFrom.format("DD-MM-YYYY")
-          : null,
+        values.GRNDateTo && selectedRadio == "option1"
+          ? values.GRNDateTo.format("DD-MM-YYYY")
+          : values.ExpiryDateTo.format("DD-MM-YYYY"),
       Store: form1.getFieldValue("StoreId"),
       SupplierId:
         values.SupplierId && selectedRadio == "option2" ? values.SupplierId : 0,
@@ -193,9 +197,8 @@ const CreateVendorReturn = () => {
         values.ProductId && selectedRadio == "option1" ? values.ProductId : 0,
     };
     const response = await customAxios.get(
-      `${urlVendorReturnSearchGrn}?Store=${VendorReturn.Store}&Product=${VendorReturn.ProductId}&Supplier=${VendorReturn.SupplierId}&ExpToString=${VendorReturn.ExpiryDateTo}&ExpFromString=${VendorReturn.ExpiryDateFrom}&FromDateString=${VendorReturn.GRNDateFrom}&ToDateString=${VendorReturn.GRNDateTo}`
+      `${urlVendorReturnSearchGrn}?Store=${VendorReturn.Store}&Product=${VendorReturn.ProductId}&Supplier=${VendorReturn.SupplierId}&ExpToString=${VendorReturn.ExpiryDateTo}&ExpFromString=${VendorReturn.ExpiryDateFrom}`
     );
-    debugger;
     const newColumnData = response.data.data.GRNDetails.map((item, index) => {
       return { ...item, key: item.GRNHeaderId };
     });
@@ -203,7 +206,6 @@ const CreateVendorReturn = () => {
   };
 
   const onCancelModel = () => {
-    debugger;
     form2.resetFields();
     setDataModal([]);
     setSelectedRowKeys([]);
@@ -211,7 +213,6 @@ const CreateVendorReturn = () => {
   };
 
   const handleSelect = (value, option, column) => {
-    debugger;
     form2.setFieldsValue({ ProductId: option.key });
   };
 
@@ -229,7 +230,6 @@ const CreateVendorReturn = () => {
     setIsModalOpen(true);
   };
   const handleOnFinish = async (values) => {
-    debugger;
     const newdata = data.filter((item) => item.ActiveFlag == true);
     if (newdata.length == 0) {
       message.warning("Please Add Product/Batch");
@@ -279,7 +279,6 @@ const CreateVendorReturn = () => {
   };
 
   const handleCheckboxChange = (checked, record) => {
-    debugger;
     const newSelectedRowKeys = checked
       ? [
         ...selectedRowKeys,
@@ -451,7 +450,6 @@ const CreateVendorReturn = () => {
   ];
 
   const handleDelete = (record) => {
-    debugger;
     const newData = data.map((item) => {
       if (item.key === record.key) {
         return { ...item, ActiveFlag: false };
@@ -517,18 +515,10 @@ const CreateVendorReturn = () => {
     },
     {
       title: "Expiry Date",
-      dataIndex: "EXPDate",
-      key: "EXPDate",
-      sorter: (a, b) => a.EXPDate.localeCompare(b.EXPDate),
-      sortDirections: ["descend", "ascend"],
-      render: (text) => {
-        const dateParts = text.split("T")[0].split("-");
-        const year = dateParts[0];
-        const month = dateParts[1];
-        const day = dateParts[2];
-
-        return `${day}-${month}-${year}`;
-      },
+      dataIndex: "EXPDateString",
+      key: "EXPDateString",
+      sorter: (a, b) => a.EXPDateString.localeCompare(b.EXPDateString),
+      sortDirections: ["descend", "ascend"],      
     },
   ];
 
@@ -538,16 +528,18 @@ const CreateVendorReturn = () => {
 
   const handleReset = () => {
     form2.resetFields();
+    setPFromDate(dayjs());
+    setPToDate(dayjs())
+    setVFromDate(dayjs())
+    setVToDate(dayjs())
   };
 
   const onFinishModel3 = (values) => {
-    debugger;
   };
 
   const onFinishFailed3 = () => { };
 
   const handleRadioChange = (group, value) => {
-    debugger;
     setSelectedRadio(value);
   };
 
@@ -561,36 +553,6 @@ const CreateVendorReturn = () => {
           borderRadius: "10px",
         }}
       >
-        {/* <Row
-          style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
-          }}
-        >
-          <Col span={16}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              Create Vendor Return
-            </Title>
-          </Col>
-          <Col offset={6} span={2}>
-            <Button
-              icon={<LeftOutlined />}
-              style={{ marginBottom: 0 }}
-              onClick={handleToBack}
-            >
-              Back
-            </Button>
-          </Col>
-        </Row> */}
         <PageHeader
           title={"Create Vendor Return"}
           buttonLabel="Back"
@@ -759,8 +721,8 @@ const CreateVendorReturn = () => {
             }}
             initialValues={{
               GRNDateTo: dayjs(),
-              GRNDateFrom: dayjs().subtract(1, "day"),
-              ExpiryDateFrom: dayjs().subtract(1, "day"),
+              GRNDateFrom: dayjs(),
+              ExpiryDateFrom: dayjs(),
               ExpiryDateTo: dayjs(),
               Radio1: true,
             }}
@@ -806,7 +768,13 @@ const CreateVendorReturn = () => {
                   name="GRNDateFrom"
                   style={{ marginLeft: "10px" }}
                 >
-                  <DatePicker format="DD-MM-YYYY" />
+                  <DatePicker
+                    value={pfromDate}
+                    onChange={(date) => setPFromDate(date)}
+                    // disabledDate={pdisableFromDate}
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                  />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
@@ -815,7 +783,13 @@ const CreateVendorReturn = () => {
                   name="GRNDateTo"
                   style={{ marginLeft: "10px" }}
                 >
-                  <DatePicker format="DD-MM-YYYY" />
+                  <DatePicker
+                    value={ptoDate}
+                    onChange={(date) => setPToDate(date)}
+                    disabledDate={pdisableToDate}
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                  />
                 </Form.Item>
               </Col>
             </Row>
@@ -852,7 +826,13 @@ const CreateVendorReturn = () => {
                   name="ExpiryDateFrom"
                   style={{ marginLeft: "10px" }}
                 >
-                  <DatePicker format="DD-MM-YYYY" />
+                  <DatePicker
+                    value={vfromDate}
+                    onChange={(date) => setVFromDate(date)}
+                    // disabledDate={vdisableFromDate}
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                  />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
@@ -861,7 +841,13 @@ const CreateVendorReturn = () => {
                   name="ExpiryDateTo"
                   style={{ marginLeft: "10px" }}
                 >
-                  <DatePicker format="DD-MM-YYYY" />
+                  <DatePicker
+                    value={vtoDate}
+                    onChange={(date) => setVToDate(date)}
+                    disabledDate={vdisableToDate}
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                  />
                 </Form.Item>
               </Col>
             </Row>

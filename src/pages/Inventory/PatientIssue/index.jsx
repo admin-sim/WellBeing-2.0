@@ -168,10 +168,10 @@ const PatientIssue = () => {
     },
     {
       title: "Order By",
-      // dataIndex: "OrderBy",
-      // key: "OrderBy",
-      // sorter: (a, b) => a.OrderBy.localeCompare(b.OrderBy),
-      // sortDirections: ["descend", "ascend"],
+      dataIndex: "CreatedBy",
+      key: "CreatedBy",
+      sorter: (a, b) => a.CreatedBy.localeCompare(b.CreatedBy),
+      sortDirections: ["descend", "ascend"],
     },
     {
       title: "Priority",
@@ -217,7 +217,7 @@ const PatientIssue = () => {
     setLoading(true)
     try {
       const request = {
-        PONO: record.IndentNumber,
+        PONO: record.IssueNumber,
         use: 'admin',
         FileType: "pdf", // or 'excel'
       };
@@ -226,6 +226,7 @@ const PatientIssue = () => {
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
+      setLoading(false)
       setError(error.message);
     }
   };
@@ -241,7 +242,6 @@ const PatientIssue = () => {
         body: JSON.stringify(request),
       }
     );
-    console.log("respo", response);
 
     if (!response.ok) {
       setLoading(false)

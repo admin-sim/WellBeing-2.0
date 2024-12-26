@@ -17,6 +17,7 @@ import {
   Divider,
   Tooltip,
   Table,
+  Modal,
 } from "antd";
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
@@ -38,7 +39,9 @@ const StoreReturn = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
-  const { Title } = Typography;
+  const [error, setError] = useState(null);
+  const [reportUrl, setReportUrl] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     try {
@@ -123,14 +126,52 @@ const StoreReturn = () => {
       },
     },
     {
-      title: "Report",
-      dataIndex: "Report",
-      key: "Report",
-      render: (record) => {
-        return <Button type="link">Report</Button>
-      }
+      render: (_, record) => (
+        <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>
+      ),
     },
   ];
+
+  const handleReport = async (value, record) => {
+    setLoading(true)
+    try {
+      const request = {
+        PONo: record.ReturnHeaderId,
+        use: 'admin',
+        FileType: "pdf", // or 'excel'
+      };
+      const { url, blob } = await fetchReport(request);
+      setReportUrl(url);
+      // setBlobData(blob);
+      setIsModalVisible(true);
+    } catch (error) {
+      setLoading(false)
+      setError(error.message);
+    }
+  };
+
+  async function fetchReport(request) {
+    const response = await fetch(
+      "https://192.168.29.254:808/api/ReportsApi/GetStoreReturnRpt",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+
+    if (!response.ok) {
+      setLoading(false)
+      throw new Error("Failed to fetch report");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    setLoading(false)
+    return { url, blob };
+  }
 
   const onFinish = async (values) => {
     setLoading(true);
@@ -267,6 +308,28 @@ const StoreReturn = () => {
             />
           </Spin>
         </Card>
+      </div>
+      <div>
+        {error && <div>Error: {error}</div>}
+        <Modal
+          title="Report"
+          visible={isModalVisible}
+          onCancel={() => setIsModalVisible(false)}
+          footer={[
+            <Button key="close" onClick={() => setIsModalVisible(false)}>
+              Close
+            </Button>,
+          ]}
+          width={"60rem"} // You can adjust the width as needed
+        >
+          {reportUrl && (
+            <iframe
+              src={reportUrl}
+              style={{ width: "100%", height: "500px", border: "none" }}
+              title="Report"
+            />
+          )}
+        </Modal>
       </div>
     </Layout>
   );

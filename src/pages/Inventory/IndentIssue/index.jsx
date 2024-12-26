@@ -175,10 +175,10 @@ const IndentIssue = () => {
     },
     {
       title: "Document Owner",
-      dataIndex: "DocumentOwner",
-      key: "DocumentOwner",
+      dataIndex: "CreatedBy",
+      key: "CreatedBy",
       width: 80,
-      sorter: (a, b) => a.DocumentOwner.localeCompare(b.DocumentOwner),
+      sorter: (a, b) => a.CreatedBy.localeCompare(b.CreatedBy),
       sortDirections: ["descend", "ascend"],
       render: (text) => {
         return (
@@ -220,15 +220,20 @@ const IndentIssue = () => {
     },
     {
       width: 80,
-      render: (_, record) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
-    },
+      render: (_, record) => {
+        return record.IssueNumber ? (
+          <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>
+        ) : null;
+      },
+    },    
   ];
 
   const handleReport = async (value, record) => {
+    debugger
     setLoading(true)
     try {
       const request = {
-        PONO: record.IndentNumber,
+        PONO: record.IssueNumber,
         use: 'admin',
         FileType: "pdf", // or 'excel'
       };
@@ -237,6 +242,7 @@ const IndentIssue = () => {
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
+      setLoading(false)
       setError(error.message);
     }
   };
@@ -252,9 +258,9 @@ const IndentIssue = () => {
         body: JSON.stringify(request),
       }
     );
-    console.log("respo", response);
 
     if (!response.ok) {
+      setLoading(false)
       throw new Error("Failed to fetch report");
     }
 
@@ -440,7 +446,7 @@ const IndentIssue = () => {
               </Col>
               <Col className="gutter-row" span={4}>
                 <Form.Item label="Indent Status" name="IndentStatus">
-                  <Select loading={dropDownLoad}> 
+                  <Select loading={dropDownLoad}>
                     <Select.Option key={0} value={0}>
                       All
                     </Select.Option>
@@ -492,13 +498,13 @@ const IndentIssue = () => {
               </Col>
             </Row>
           </Form>
-            <CustomTable 
-             dataSource={filteredData}
-             isFilter={true}
-              actionColumn={false} 
-              columns={columns} 
-              loading={loading}
-              />
+          <CustomTable
+            dataSource={filteredData}
+            isFilter={true}
+            actionColumn={false}
+            columns={columns}
+            loading={loading}
+          />
         </Card>
       </div>
       <div>

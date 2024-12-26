@@ -377,7 +377,7 @@ function WardBed({ bed, ReLoad }) {
       label: "Patient Consumption",
       key: "27",
       onClick: () => {
-        setIsBlockBedModalOpen(true);
+        navigate("/CreatePatientConsumption", { state: { bed } });
       },
     },
     {

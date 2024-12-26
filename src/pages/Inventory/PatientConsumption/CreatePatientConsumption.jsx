@@ -54,14 +54,14 @@ const PatientConsumption = () => {
 
   const location = useLocation();
   let [counter, setCounter] = useState(1);
-  let [counterModal, setCounterModal] = useState(0);
+  const Patient = location.state.bed;
   const issueId = location.state.IssueId;
 
   const initialDataSource =
     issueId === 0
       ? [
         {
-          key: 0,
+          key: uuidv4(),
           ProductName: "",
           ProductId: "",
           UomId: "",
@@ -82,7 +82,6 @@ const PatientConsumption = () => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [dataModal, setDataModal] = useState([]);
-  //const dateFormat = DropDown.DateFormat.toString().toUpperCase().replace(/D/g, 'D').replace(/Y/g, 'Y');
   const [productDetails, setProductDetails] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
@@ -97,7 +96,6 @@ const PatientConsumption = () => {
   const [buttonTitle, setButtonTitle] = useState("Save");
   const [finalBatchDetails, setFinalBatchDetails] = useState([]);
   const [batchRecord, setBatchRecord] = useState();
-  // const tableRef = useRef(null);
 
   useEffect(() => {
     customAxios.get(urlCreatePurchaseOrder).then((response) => {
@@ -117,7 +115,7 @@ const PatientConsumption = () => {
           ) {
             const products = apiData.newIndentIssueModel.map((item, index) => ({
               ...item,
-              key: index,
+              key: uuidv4(),
               AvlQtyAtIssue: item.StockBalanceQty,
               index: index + 1,
             }));
@@ -146,12 +144,23 @@ const PatientConsumption = () => {
           const newData = apiData.BatchDetails.map((item) => {
             return {
               ...item,
-              //key: Index + 1,
+              key: uuidv4(),
               RequestQty: item.IssueQty,
             };
           });
           setDataModal(newData);
         });
+    } else if (Patient) {
+      debugger
+      setUhId(Patient.UhId)
+      GetEncounter(Patient.PatientId)
+      form1.setFieldsValue({
+        UHID: Patient.UhId,
+        Name: Patient.PatientName,
+        Encounter: Patient.EncounterId,
+        EncounterId: Patient.EncounterId,
+        PatientId: Patient.PatientId,
+      })
     }
   }, []);
 
@@ -269,15 +278,18 @@ const PatientConsumption = () => {
         products.push(product);
       }
     }
+    
     if (products.length === 0) {
       message.warning("Please Add Products")
       return false;
     }
+
     const result = checkActiveBatches(products, dataModal);
     if (!result.allActiveProductsHaveActiveBatch) {
       message.warning("Please Add BatchDeatils");
       return false;
     }
+
     const sumItems = (items, key) =>
       items.reduce((sum, item) => sum + parseInt(item[key] || 0, 10), 0);
 
@@ -306,18 +318,20 @@ const PatientConsumption = () => {
       EncounterId: values.EncounterId,
       IndentType: values.IndentType,
     };
+
     const defaultDateTime = new Date().toISOString();
     const finalBatchDetailsWithDefaultExpdate = dataModal.map((batch) => ({
       ...batch,
       EXPDate: defaultDateTime,
       StockLocator: batch.StockLocator ? batch.StockLocator : 0,
     }));
+
     const postData = {
       newIndentModel: Indent,
       IndentDetails: products,
       Batch: finalBatchDetailsWithDefaultExpdate,
     };
-    console.log("postData", postData);
+
     try {
       const response = await customAxios.post(
         urlAddNewPatientConsumption,
@@ -497,6 +511,18 @@ const PatientConsumption = () => {
     }
   };
 
+  async function GetEncounter(value) {
+    debugger
+    await customAxios.get(`${urlGetLastEncounter}?patientId=${value}`).then((response) => {
+      const apiData = response.data;
+      if (apiData.length > 0) {
+        setEncounter(apiData);
+        form1.setFieldsValue({ Encounter: apiData[0].EncounterId });
+        form1.setFieldsValue({ EncounterId: apiData[0].EncounterId });
+      }
+    })
+  }
+
   const BatchSelect = (selectedStockId, recordKey) => {
     debugger;
     batchDetails
@@ -507,7 +533,7 @@ const PatientConsumption = () => {
 
     if (existingBatch) {
       message.warning("Same Batch Number should not be selected.");
-       return;
+      return;
     }
     const selectedBatch = batchDetails.find(
       (batch) => batch.StockId === selectedStockId

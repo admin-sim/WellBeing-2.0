@@ -172,13 +172,14 @@ const OpeningStock = () => {
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
+      setLoading(false)
       setError(error.message);
     }
   };
 
   async function fetchReport(request) {
     const response = await fetch(
-      "https://192.168.29.254:808/api/ReportsApi/GetPatientConsumptionRpt",
+      "https://192.168.29.254:808/api/ReportsApi/GetOpeningStockRpt",
       {
         method: "POST",
         headers: {
@@ -187,7 +188,6 @@ const OpeningStock = () => {
         body: JSON.stringify(request),
       }
     );
-    console.log("respo", response);
 
     if (!response.ok) {
       setLoading(false)
@@ -250,36 +250,6 @@ const OpeningStock = () => {
           borderRadius: "10px",
         }}
       >
-        {/* <Row
-          style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
-          }}
-        >
-          <Col span={16}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              Opening Stock
-            </Title>
-          </Col>
-          <Col offset={5} span={2}>
-            <Button
-              icon={<PlusCircleOutlined />}
-              style={{ marginRight: 0 }}
-              onClick={() => handleAddTemplate(0)}
-            >
-              Add Opening Stock
-            </Button>
-          </Col>
-        </Row> */}
         <PageHeader
           title={"Opening Stock"}
           buttonLabel="Add Opening Stock"
@@ -376,7 +346,6 @@ const OpeningStock = () => {
       </div>
       <div>
         {error && <div>Error: {error}</div>}
-
         <Modal
           title="Report"
           visible={isModalVisible}

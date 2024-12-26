@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import {
   urlAddNewProduct,
   urlShowCreateDefinition,
+  urlShowEditDefinition,
+  urlUpdateProduct,
 } from "../../../../../endpoints.js";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import "./showCreateEditDefinition.css";
@@ -13,7 +15,9 @@ import {
   Divider,
   Form,
   Input,
+  InputNumber,
   message,
+  Modal,
   Row,
   Select,
   Spin,
@@ -24,6 +28,7 @@ import { LeftOutlined } from "@ant-design/icons";
 import { useForm } from "antd/es/form/Form.js";
 import TextArea from "antd/es/input/TextArea.js";
 import { IoMdAddCircle, IoMdAddCircleOutline } from "react-icons/io";
+import { v4 as uuidv4 } from "uuid";
 import CustomTable from "../../../../components/customTable/index.jsx";
 import {
   ColWithEightSpan,
@@ -35,28 +40,86 @@ import {
 function ShowEditDefinition() {
   const [loading, setLoading] = useState(false);
   const [apiData, setApiData] = useState();
+  const [UomData, setUomData] = useState([]);
+  const [selectedRecord, setSelectedRecord] = useState({});
+  const [buttonTitle, setButtonTitle] = useState('Add To List');
   const location = useLocation();
   const navigate = useNavigate();
   const record = location.state.record;
-  console.log("record", record);
+  const type = location.state.type
+  const [isModalOpen, setIsModalOpen] = useState()
   const [form] = useForm();
+  const [form1] = useForm();
 
   useEffect(() => {
-    try {
-      setLoading(true);
-      customAxios
-        .get(
-          `${urlShowCreateDefinition}?ProductGroup=${record?.ProductGroupId}&Classification=${record?.ProductDefinitionId}`
-        )
-        .then((response) => {
-          const apiData = response.data.data;
-          setApiData(apiData);
-          console.log(apiData);
-        });
-    } catch (error) {
-      console.error("Error fetching Product Definitiondetails:", error);
+    async function fetch() {
+      if (type) {
+        try {
+          setLoading(true);
+          await customAxios
+            .get(
+              `${urlShowCreateDefinition}?ProductGroup=${record?.ProductGroupId}&Classification=${record?.ProductClassificationId}`
+            )
+            .then((response) => {
+              const apiData = response.data.data;
+              setApiData(apiData);
+            });
+        } catch (error) {
+          console.error("Error fetching Product Definitiondetails:", error);
+        }
+      } else {
+        try {
+          setLoading(true);
+          await customAxios
+            .get(
+              `${urlShowEditDefinition}?Id=${record?.ProductDefinitionId}&ProductGroup=${record?.ProductGroupId}`
+            )
+            .then((response) => {
+              const apiData = response.data.data;
+              const newUom = apiData.ProductUom.map((i) => {
+                return {
+                  ...i,
+                  key: uuidv4(),
+                  AlternateUOML: i.AlternateUOMName,
+                  EquivalentUOML: i.EquivalentUOMName
+                }
+              })
+              setUomData(newUom)
+              form.setFieldsValue({ 'HSNSAC': apiData.NewProductDefinitionModel.HSNSAC })
+              form.setFieldsValue({ 'ShortName': apiData.NewProductDefinitionModel.ShortName })
+              form.setFieldsValue({ 'LongName': apiData.NewProductDefinitionModel.LongName })
+              form.setFieldsValue({ 'Manufacturer': apiData.NewProductDefinitionModel.Manufacturer == 0 ? undefined : apiData.NewProductDefinitionModel.Manufacturer })
+              form.setFieldsValue({ 'TrackingMethod': apiData.NewProductDefinitionModel.TrackingMethod })
+              form.setFieldsValue({ 'IsAtomic': apiData.NewProductDefinitionModel.IsAtomic })
+              form.setFieldsValue({ 'Sourcing': apiData.NewProductDefinitionModel.Sourcing })
+              form.setFieldsValue({ 'Expiry': apiData.NewProductDefinitionModel.Expiry })
+              form.setFieldsValue({ 'Status': apiData.NewProductDefinitionModel.Status })
+              form.setFieldsValue({ 'Remrks': apiData.NewProductDefinitionModel.Remrks })
+              form.setFieldsValue({ 'UOMPrimaryUOM': apiData.NewProductDefinitionModel.UOMPrimaryUOM })
+              form.setFieldsValue({ 'UOMDecimalPlaces': apiData.NewProductDefinitionModel.UOMDecimalPlaces })
+              form.setFieldsValue({ 'ProductDefinitionId': apiData.NewProductDefinitionModel.ProductDefinitionId })
+              form.setFieldsValue({ 'BillingIsChargeable': apiData.NewProductDefinitionModel.BillingIsChargeable === 'N' ? false : true })
+              form.setFieldsValue({ 'BillingIsProviderMandatory': apiData.NewProductDefinitionModel.BillingIsProviderMandatory === 'N' ? false : true })
+              form.setFieldsValue({ 'BillingPricingMethod': apiData.NewProductDefinitionModel.BillingPricingMethod })
+              form.setFieldsValue({ 'Serialization': apiData.NewProductDefinitionModel.Serialization===null ? 'Auto' : apiData.NewProductDefinitionModel.Serialization })
+              form.setFieldsValue({ 'MinimumStock': apiData.NewProductDefinitionModel.MinimumStock })
+              form.setFieldsValue({ 'MaximumStock': apiData.NewProductDefinitionModel.MaximumStock })
+              form.setFieldsValue({ 'ReorderLevel': apiData.NewProductDefinitionModel.ReorderLevel })
+              form.setFieldsValue({ 'MinimumStockDays': apiData.NewProductDefinitionModel.MinimumStockDays })
+              form.setFieldsValue({ 'BarcodeApplicability': apiData.NewProductDefinitionModel.BarcodeApplicability })
+              form.setFieldsValue({ 'DefaultPrice': apiData.NewProductDefinitionModel.DefaultPrice })
+              form.setFieldsValue({ 'MinimumShelfLifeinDays': apiData.NewProductDefinitionModel.MinimumShelfLifeinDays })
+              form.setFieldsValue({ 'LeadTimeinDays': apiData.NewProductDefinitionModel.LeadTimeinDays })
+              form.setFieldsValue({ 'DrugForm': apiData.NewProductDefinitionModel.DrugForm })
+              setApiData(apiData);
+            });
+        } catch (error) {
+          console.error("Error fetching Product Definitiondetails:", error);
+        }
+      }
+      setLoading(false);
     }
-    setLoading(false);
+    fetch()
   }, []);
 
   const handleBackToList = () => {
@@ -68,6 +131,7 @@ function ShowEditDefinition() {
     try {
       const Product = {
         ProductClassificationId: record.ProductClassificationId,
+        ProductDefinitionId: values.ProductDefinitionId,
         HSNSAC: values.HSNSAC,
         LongName: values.LongName,
         ShortName: values.ShortName,
@@ -82,32 +146,32 @@ function ShowEditDefinition() {
         UOMDecimalPlaces: values.UOMDecimalPlaces ? values.UOMDecimalPlaces : 0,
         BillingIsChargeable:
           values.BillingIsChargeable === true ||
-          values.BillingIsChargeable === undefined
+            values.BillingIsChargeable === undefined
             ? "True"
             : "False",
         BillingIsProviderMandatory:
           values.BillingIsProviderMandatory === true ||
-          values.BillingIsProviderMandatory === undefined
+            values.BillingIsProviderMandatory === undefined
             ? "True"
             : "False",
         BillingPricingMethod:
           values.BillingPricingMethod === "Regulated Price" ||
-          values.BillingPricingMethod === undefined
+            values.BillingPricingMethod === undefined
             ? "Regulated Price"
             : values.BillingPricingMethod,
         OrderIsOrderable:
           values.OrderIsOrderable === true ||
-          values.OrderIsOrderable === undefined
+            values.OrderIsOrderable === undefined
             ? "True"
             : "False",
         OrderIsIntervalApplicable:
           values.OrderIsIntervalApplicable === true ||
-          values.OrderIsIntervalApplicable === undefined
+            values.OrderIsIntervalApplicable === undefined
             ? "True"
             : "False",
         OrderIsQuantityApplicable:
           values.OrderIsQuantityApplicable === true ||
-          values.OrderIsQuantityApplicable === undefined
+            values.OrderIsQuantityApplicable === undefined
             ? "True"
             : "False",
         OrderDuration: values.OrderDuration,
@@ -136,40 +200,60 @@ function ShowEditDefinition() {
         ReorderQuantity: values.ReorderQuantity,
         BarcodeApplicability:
           values.BarcodeApplicability === "Not Applicable" ||
-          values.BarcodeApplicability === undefined
+            values.BarcodeApplicability === undefined
             ? "Not Applicable"
             : values.BarcodeApplicability,
         DefaultPrice: values.DefaultPrice,
         MinimumShelfLifeinDays: values.MinimumShelfLifeinDays,
         IsConsumptionAllowed:
           values.IsConsumptionAllowed === true ||
-          values.IsConsumptionAllowed === undefined
+            values.IsConsumptionAllowed === undefined
             ? "True"
             : "False",
       };
 
+      const datafiltered = UomData.filter(item => item.ActiveFlag === true)
+
       const ProductDefinition = {
         NewProductDefinitionModel: Product,
-        ProductDefinition: null,
+        ProductDefinition: type ? datafiltered : UomData,
         ProductStock: Stock,
         Gender: null,
       };
-      //Send a POST request to the server
-      const response = await customAxios.post(
-        urlAddNewProduct,
-        ProductDefinition,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      //Send a POST request to the server 
+      if (type) {
+        const response = await customAxios.post(
+          urlAddNewProduct,
+          ProductDefinition,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      if (response.status === 200 && response.data.data === true) {
-        message.success("Product Definition Is Success");
-        navigate("/ProductDefinition");
+        if (response.status === 200 && response.data.data === true) {
+          message.success("Product Definition Is Success");
+          navigate("/ProductDefinition");
+        }
+      } else {
+        const response = await customAxios.post(
+          urlUpdateProduct,
+          ProductDefinition,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.status === 200 && response.data.data === true) {
+          message.success("Product Definition Is Success");
+          navigate("/ProductDefinition");
+        }
       }
-    } catch (error) {}
+
+    } catch (error) { }
   };
 
   const UOMColumns = [
@@ -181,7 +265,7 @@ function ShowEditDefinition() {
     },
     {
       title: "Alternate UOM",
-      dataIndex: "AlternateUOM",
+      dataIndex: "AlternateUOML",
       key: "2",
       width: 180,
     },
@@ -193,7 +277,7 @@ function ShowEditDefinition() {
     },
     {
       title: "Equivalent UOM",
-      dataIndex: "EquivalentUOM",
+      dataIndex: "EquivalentUOML",
       key: "4",
       width: 180,
     },
@@ -232,6 +316,35 @@ function ShowEditDefinition() {
     },
   ];
 
+  function handleCloseModal() {
+    form1.resetFields()
+    setIsModalOpen(false)
+    setButtonTitle('Add To List')
+  }
+
+  function handleEditUom(value) {
+    form1.setFieldsValue({ 'AlternateUOMUnit': value.AlternateUOMUnits })
+    form1.setFieldsValue({ 'EquivalentUOMUnit': value.EquivalentUOMUnits })
+    form1.setFieldsValue({ 'AUOMLabel': value.AlternateUOML })
+    form1.setFieldsValue({ 'EUOMLabel': value.EquivalentUOML })
+    form1.setFieldsValue({ 'AUOM': value.AlternateUOM })
+    form1.setFieldsValue({ 'EUOM': value.EquivalentUOM })
+    setIsModalOpen(true)
+    setSelectedRecord(value)
+    setButtonTitle('Update')
+  }
+
+  function handleDeleteUom(value) {
+    debugger
+    const newData = UomData.map((item) => {
+      if (item.key === value.key) {
+        return { ...item, ActiveFlag: false };
+      }
+      return item;
+    });
+    setUomData(newData);
+  }
+
   const itemsUOM = [
     {
       key: "1",
@@ -267,14 +380,20 @@ function ShowEditDefinition() {
           </Row>
           <CustomTable
             columns={UOMColumns}
-            dataSource={null}
-            actionColumn={false}
+            dataSource={UomData.filter(item => item.ActiveFlag === true)}
+            // actionColumn={false}
+            onEdit={handleEditUom}
+            onDelete={handleDeleteUom}
           />
         </div>
       ),
       extra: (
         <Button
-          // onClick={() => alert("UOM icon Clicked")}
+          onClick={async (e) => {
+            e.stopPropagation();
+            await form.validateFields(['UOMPrimaryUOM'])
+            setIsModalOpen(true)
+          }}
           type="link"
           icon={
             <IoMdAddCircleOutline
@@ -296,7 +415,7 @@ function ShowEditDefinition() {
                 name="BillingIsChargeable"
                 label=" "
               >
-                <Checkbox checked>Is Chargeable</Checkbox>
+                <Checkbox>Is Chargeable</Checkbox>
               </Form.Item>
             </ColWithEightSpan>
             <ColWithEightSpan>
@@ -637,6 +756,9 @@ function ShowEditDefinition() {
                   >
                     <Input style={{ width: "100%" }} />
                   </Form.Item>
+                  <Form.Item name="ProductDefinitionId" hidden>
+                    <Input />
+                  </Form.Item>
                 </ColWithSixSpan>
                 <ColWithSixSpan>
                   <Form.Item
@@ -798,7 +920,7 @@ function ShowEditDefinition() {
                   marginRight: "1rem",
                 }}
               >
-                Save
+                {type ? 'Save' : 'Update'}
               </Button>
               <Button danger onClick={handleBackToList} size="middle">
                 Cancel
@@ -816,6 +938,145 @@ function ShowEditDefinition() {
             />
           </div>
         </Form>
+        <Modal
+          width={"60rem"}
+          maskClosable={false}
+          title="Delivery Schedule"
+          open={isModalOpen}
+          footer={false}
+          onCancel={handleCloseModal}
+        >
+          <Form
+            layout="vertical"
+            form={form1}
+            onFinish={async (value) => {
+              debugger
+              if (buttonTitle === 'Update') {
+                const newData = UomData.map((item) => {
+                  if (item.key === selectedRecord.key) {
+                    return {
+                      ...item,
+                      AlternateUOMUnits: value.AlternateUOMUnit,
+                      AlternateUOML: value.AUOMLabel,
+                      AlternateUOM: value.AUOM,
+                      EquivalentUOMUnits: value.EquivalentUOMUnit,
+                      EquivalentUOML: value.EUOMLabel,
+                      EquivalentUOM: value.EUOM
+                    };
+                  }
+                  return item;
+                });
+                setUomData(newData);
+              } else {
+                setUomData([
+                  ...UomData,
+                  {
+                    key: uuidv4(),
+                    AlternateUOMUnits: value.AlternateUOMUnit,
+                    AlternateUOML: value.AUOMLabel,
+                    AlternateUOM: value.AUOM,
+                    EquivalentUOMUnits: value.EquivalentUOMUnit,
+                    EquivalentUOML: value.EUOMLabel,
+                    EquivalentUOM: value.EUOM,
+                    ActiveFlag: true,
+                  },
+                ]);
+              }
+              handleCloseModal()
+            }}
+          >
+            <Row gutter={16}>
+              <Col span={6}>
+                <Form.Item name='AlternateUOMUnit' label='Alternate UOM Unit'
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <InputNumber min={0} style={{ width: '100%' }} />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name='AUOM' label='UOM'
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Select
+                    style={{ width: "100%" }}
+                    options={apiData?.UOM?.map((option) => ({
+                      value: option.UomId,
+                      label: option.FullName,
+                    }))}
+                    onChange={(value, option) => {
+                      form1.setFieldsValue({ AUOMLabel: option.label });
+                    }}
+                  />
+                </Form.Item>
+                <Form.Item name="AUOMLabel" hidden>
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name='EquivalentUOMUnit' label='Equivalent UOM Unit'
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <InputNumber min={0} style={{ width: '100%' }} />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name='EUOM' label='UOM'
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Select
+                    style={{ width: "100%" }}
+                    options={apiData?.UOM?.map((option) => ({
+                      value: option.UomId,
+                      label: option.FullName,
+                    }))}
+                    onChange={(value, option) => {
+                      form1.setFieldsValue({ EUOMLabel: option.label });
+                    }}
+                  />
+                </Form.Item>
+                <Form.Item name="EUOMLabel" hidden>
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row justify="end" gutter={26} style={{ marginTop: '20px' }}>
+              <Col>
+                <Form.Item>
+                  <Button type="primary" loading={loading} htmlType="submit">
+                    {buttonTitle}
+                  </Button>
+                </Form.Item>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button danger onClick={handleCloseModal}>
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
       </div>
     </Spin>
   );

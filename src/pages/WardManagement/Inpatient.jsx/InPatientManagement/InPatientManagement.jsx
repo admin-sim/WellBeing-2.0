@@ -707,7 +707,8 @@ function InPatientManagement() {
                       key="3"
                     >
                       <div>
-                        {showAwaitingPatient.IncomingRequestForTransfer.map((item, index) => {
+                        {/* {showAwaitingPatient.IncomingRequestForTransfer.map((item, index) => {
+                          debugger
                           if (item.AdtStatus == "Confirmed") {
                             return <Tag>{item.PatientName / item.AdtStatus}</Tag>
                           } else {
@@ -716,6 +717,25 @@ function InPatientManagement() {
                                 {item.PatientName} / {item.AdtStatus}
                               </Button>
                             )
+                          }
+                        })} */}
+                        {showAwaitingPatient.IncomingRequestForTransfer.map((item, index) => {
+                          if (item.AdtStatus === "Confirmed") {
+                            return (
+                              <Tag key={index}>
+                                {`${item.PatientName} / ${item.AdtStatus}`}
+                              </Tag>
+                            );
+                          } else {
+                            return (
+                              <Button
+                                type="link"
+                                key={index}
+                                onClick={() => handleInRequest(item)}
+                              >
+                                {`${item.PatientName} / ${item.AdtStatus}`}
+                              </Button>
+                            );
                           }
                         })}
                       </div>
@@ -748,7 +768,7 @@ function InPatientManagement() {
                             justifyContent: "space-between",
                           }}
                         >
-                          <span>Awaiting For Discharge</span>
+                          <span>Awaiting Patients</span>
                           <Tag color="#2db7f5">{showAwaitingPatient.AwaitingPatients.length}</Tag>
                         </div>
                       }

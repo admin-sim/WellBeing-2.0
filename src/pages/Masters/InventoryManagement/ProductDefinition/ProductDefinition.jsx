@@ -236,7 +236,7 @@ function ProductDefinition() {
                     onClick={() => {
                       navigate("/ProductDefinition/ShowCreateEditDefinition", {
                         state: {
-                          record: tableData.length > 0 ? tableData[0] : null,
+                          record: tableData.length > 0 ? tableData[0] : null, type:'Add'
                         },
                       });
                     }}

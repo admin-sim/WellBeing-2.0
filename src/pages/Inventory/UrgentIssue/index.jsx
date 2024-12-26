@@ -165,13 +165,14 @@ const UrgentIssue = () => {
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
+      setLoading(false)
       setError(error.message);
     }
   };
 
   async function fetchReport(request) {
     const response = await fetch(
-      "https://192.168.29.254:808/api/ReportsApi/GetPatientIndentRpt",
+      "https://192.168.29.254:808/api/ReportsApi/GetUrgentIssueRpt",
       {
         method: "POST",
         headers: {
@@ -180,7 +181,6 @@ const UrgentIssue = () => {
         body: JSON.stringify(request),
       }
     );
-    console.log("respo", response);
 
     if (!response.ok) {
       setLoading(false)

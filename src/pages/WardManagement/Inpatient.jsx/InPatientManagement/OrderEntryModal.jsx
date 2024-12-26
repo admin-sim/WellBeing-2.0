@@ -180,8 +180,7 @@ function OrderEntry({
     if (key == '4') {
       try {
         const response = await customAxios.get(
-          `${urlLoadSampleCollectionGrid}?PatientId=${
-            bed.PatientId
+          `${urlLoadSampleCollectionGrid}?PatientId=${bed.PatientId
           }&EncounterId=${bed.EncounterId}&SelclabId=${0}`
         );
         if (response.status == 200) {
@@ -538,13 +537,13 @@ function OrderEntry({
     setTemplateEditorData("");
     setCkModalOpen(false);
   };
-  
+
   const handleReport = async () => {
     // Initialize the array to hold ChargeIds
     debugger;
-    setReportLoading(true); 
+    setReportLoading(true);
     let ListOfSmplColResult = [];
-  
+
     // Assuming selectedRow is an array of selected rows
     selectedRow.forEach((row) => {
       // Check if IsResultEntryDone is true and IsTemplate is not true for each selected row
@@ -553,36 +552,36 @@ function OrderEntry({
         ListOfSmplColResult.push(row.ChargeId);
       }
     });
-  
+
     // If there are ChargeIds in ListOfSmplColResult, proceed
     if (ListOfSmplColResult.length > 0) {
       // Join the ChargeIds into a comma-separated string
       const chargeIdStr = ListOfSmplColResult.join(",");
-  
+
       // Create the request object
       const request = {
         ChargeId: chargeIdStr,  // Use the comma-separated ChargeIds string
         PatientId: selectedRow[0].PatientId, // Assuming PatientId is the same across selected rows
         EncounterId: selectedRow[0].EncounterId, // Assuming EncounterId is the same across selected rows
       };
-  
+
       try {
         // Call the fetchReport function with the request
         const { url, blob } = await fetchReport(request);
-  
+
         // Handle the response (e.g., displaying the report URL or downloading the file)
         setReportUrl(url);
         setBlobData(blob);
         setIsModalVisible(true); // Display the modal with the report
       } catch (error) {
         console.error("Error fetching report:", error);
-      }finally {
+      } finally {
         setReportLoading(false); // End loading
       }
     } else {
       console.log("No valid ChargeIds selected.");
       message.warning('Please select  Tests ');
-      setReportLoading(false); 
+      setReportLoading(false);
     }
   };
 
@@ -751,7 +750,7 @@ function OrderEntry({
                           //onSearch={handleAutoCompleteChange}
                           onSearch={debouncedHandleAutoCompleteChangeService}
                           onSelect={handleSelect}
-                          onChange={(value) => {}}
+                          onChange={(value) => { }}
                           allowClear={{
                             clearIcon: <CloseSquareFilled />,
                           }}
@@ -956,7 +955,7 @@ function OrderEntry({
                           //onSearch={handleAutoCompleteChange}
                           onSearch={debouncedHandleAutoCompleteChangeServiceDia}
                           onSelect={handleSelectDia}
-                          onChange={(value) => {}}
+                          onChange={(value) => { }}
                           allowClear={{
                             clearIcon: <CloseSquareFilled />,
                           }}
@@ -1007,7 +1006,7 @@ function OrderEntry({
                       </Form.Item>
                     </Col>
                   </Row>
-                  <Row>
+                  <Row style={{ marginTop: 20 }}>
                     <Col span={3}>
                       <Form.Item>
                         <Button type="primary" onClick={handleSendtoLab} loading={loading}>Send To Lab</Button>
@@ -1186,12 +1185,12 @@ function OrderEntry({
                       <Form.Item
                         name="Description"
                         label="Description"
-                        // rules={[
-                        //   {
-                        //     required: true,
-                        //     message: "Please select Description",
-                        //   },
-                        // ]}
+                      // rules={[
+                      //   {
+                      //     required: true,
+                      //     message: "Please select Description",
+                      //   },
+                      // ]}
                       >
                         <Input style={{ width: "100%" }} />
                       </Form.Item>

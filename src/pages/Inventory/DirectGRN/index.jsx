@@ -65,12 +65,10 @@ const DirectGRN = () => {
   };
 
   const disableFromDate = (current) => {
-    // Disable dates that are after today
     return current && current.isAfter(dayjs().endOf("day"));
   };
 
   const disableToDate = (current) => {
-    // Disable dates that are before the selected fromDate or after today
     return (
       current &&
       (current.isBefore(fromDate, "day") ||
@@ -175,8 +173,8 @@ const DirectGRN = () => {
     },
     {
       title: "GRN Owner",
-      dataIndex: "GRNOwner",
-      key: "GRNOwner",
+      dataIndex: "LongName",
+      key: "LongName",
     },
     {
       title: "GRN Status",

@@ -221,6 +221,7 @@ const ItemReceipt = () => {
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
+      setLoading(false)
       setError(error.message);
     }
   };
@@ -236,7 +237,6 @@ const ItemReceipt = () => {
         body: JSON.stringify(request),
       }
     );
-    console.log("respo", response);
 
     if (!response.ok) {
       setLoading(false)
@@ -250,6 +250,7 @@ const ItemReceipt = () => {
   }
 
   const onFinish = async (values) => {
+    debugger
     setLoading(true);
     try {
       const postData1 = {

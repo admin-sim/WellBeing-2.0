@@ -210,6 +210,7 @@ const StoreConsumption = () => {
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
+      setLoading(false)
       setError(error.message);
     }
   };
@@ -225,7 +226,6 @@ const StoreConsumption = () => {
         body: JSON.stringify(request),
       }
     );
-    console.log("respo", response);
 
     if (!response.ok) {
       setLoading(false)
