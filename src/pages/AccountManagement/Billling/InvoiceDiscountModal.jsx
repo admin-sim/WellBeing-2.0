@@ -23,56 +23,44 @@ function InvoiceDiscountModal({
   open,
   handleClose,
   discountDetails,
-  setCharges,
+  handleSubmit,
 }) {
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    if (discountDetails) {
-      form.setFieldsValue({
-        ServiceCatalogue: "All",
-        PatientChargeAmount: discountDetails.TotalChargeAmount,
-      });
-    }
-  }, [discountDetails]);
 
-  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (open) {
+      form.resetFields(); // Clear previous values
+      if (discountDetails) {
+        form.setFieldsValue({
+          ServiceCatalogue: "All",
+          PatientChargeAmount: discountDetails.TotalChargeAmount,
+        });
+      }
+    }
+  }, [open, discountDetails]);
 
   const handleCancel = () => {
     form.resetFields();
     handleClose();
   };
 
-  const onFinishForAddChargeParameters = async (values) => {
-    debugger;
-    values.ChargeID = discountDetails.ChargeID;
-    values.ServiceId = discountDetails.ServiceId;
-    values.Flag = "";
-    values.PatientId = discountDetails.PatientId;
-    values.EncounterId = discountDetails.EncounterId;
-
+  const onFormSubmit = async (values) => {
     try {
-      const response = await customAxios.post(
-        urlUpdateInvoiceDiscount,
-        values,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response.status == 200 && response.data.data!=null) {
-        setCharges(response.data.data.PatientAccountCharges);
-        message.success("Discount Applied");
-        handleCancel();
-      } else {
-        message.error("Something Went Wrong");
-      }
+      // Start loader
+ 
+      // Call handleSubmit passed as prop to process the form data
+      await handleSubmit(values);
+  
+      // After successfully submitting, reset the form and close the modal
+      form.resetFields();
+      handleClose();
     } catch (error) {
-      message.error("Something went wrong");
-      console.error(error);
+      // Handle error, optionally show a message
+      message.error("Submission failed, please try again.");
     }
   };
+ 
   const handleDiscountRateChange = (disc) => {
     debugger;
     // Check if disc is not null, undefined, or NaN
@@ -105,7 +93,6 @@ function InvoiceDiscountModal({
 
   return (
     <div>
-      <Spin spinning={loading}>
         <Modal
           title="Invoive Discount Modal"
           open={open}
@@ -118,13 +105,9 @@ function InvoiceDiscountModal({
             style={{ margin: "1rem 0" }}
             layout="vertical"
             form={form}
-            onFinish={onFinishForAddChargeParameters}
+            onFinish={onFormSubmit}
             onCancel={handleCancel}
-            // initialValues={{
-            //   ServiceCatalogue: discountDetails?.ServiceName,
-            //   PatientChargeAmount:
-            //     discountDetails?.ServiceChargeAmountIncludingPriceTariff,
-            // }}
+   
           >
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col   span={12}>
@@ -230,7 +213,6 @@ function InvoiceDiscountModal({
             </Row>
           </Form>
         </Modal>
-      </Spin>
     </div>
   );
 }

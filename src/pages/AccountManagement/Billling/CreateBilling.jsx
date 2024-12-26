@@ -44,6 +44,8 @@ import {
   urlDeleteBillCharge,
   urlGetLastBillNumber,
   urlSaveChargesForTempTable,
+  urlUpdateDiscount,
+  urlUpdateInvoiceDiscount,
 } from "../../../../endpoints";
 import Title from "antd/es/typography/Title";
 import { useLocation } from "react-router-dom";
@@ -89,11 +91,10 @@ const CreateBilling = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [billloading, setBillLoading] = useState(false);
   const [reportloading, setReportLoading] = useState(false);
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
   console.log("l", location.state);
 
   useEffect(() => {
-  
-
     fetchDataHeader();
   }, []);
 
@@ -117,7 +118,10 @@ const CreateBilling = () => {
     fetchData();
   }, []);
 
+
+ 
   const fetchData = async () => {
+    debugger;
     setTableLoading(true);
 
     try {
@@ -168,6 +172,9 @@ const CreateBilling = () => {
       IFSC: "",
       AuthorizationReference: "",
       CardExpiryDate: "",
+      CardNumber: "",
+      Cheqdate: "",
+      Remarks: "",
     },
   ];
   const [receiptInsAmtData, setReceiptInsAmtData] = useState(initialDataSource);
@@ -185,6 +192,9 @@ const CreateBilling = () => {
         IFSC: "",
         AuthorizationReference: "",
         CardExpiryDate: "",
+        CardNumber: "",
+        Cheqdate: "",
+        Remarks: "",
       },
     ]);
     setCounter(counter + 1); // increment counter
@@ -195,7 +205,6 @@ const CreateBilling = () => {
   };
 
   const handleAutoCompleteChange = async (value) => {
-  
     setLoading(true); // Start loading
     try {
       if (!value.trim()) {
@@ -235,7 +244,6 @@ const CreateBilling = () => {
   );
 
   const handleSelect = async (value, option) => {
-    
     setSelectedServiceId(option.key);
     setLoading(true);
     if (option.key) {
@@ -259,7 +267,6 @@ const CreateBilling = () => {
   };
 
   const fetchDataForSelectedService = async (ServiceId) => {
-    
     try {
       const response = await customAxios.get(
         `${urlGetServiceCharge}?ServiceId=${ServiceId}&PatientId=${PatientId}&EncounterId=${EncounterId}`
@@ -271,7 +278,6 @@ const CreateBilling = () => {
   };
 
   const handleproviderAutoCompleteChange = async (value) => {
-
     setLoading(true); // Start loading
     try {
       if (!value.trim()) {
@@ -315,7 +321,7 @@ const CreateBilling = () => {
   };
   // Function to handle discount click
   const handleDiscount = async (row) => {
-    
+    debugger;
     const response = await customAxios.get(
       `${urlEditDiscount}?DiscountChargeId=${row.ChargeID}&PatientId=${row.PatientId}&EncounterId=${row.EncounterId}`
     );
@@ -325,21 +331,62 @@ const CreateBilling = () => {
       setIsModalOpen(true);
     }
   };
+
   const handleInvoiceDiscount = async (row) => {
-  
-    const Flag = "";
-    const response = await customAxios.get(
-      `${urlInvoiceDiscount}?PatientId=${PatientId}&EncounterId=${EncounterId}&Flag=${Flag}`
-    );
-    if (response.status === 200 && response.data.data != null) {
-      setInvoiceDiscountReason(response.data.data.DiscountReasons);
-      setInvoiceDiscountDetails(response.data.data.InvoiceDetailModel);
-      setIsInvoiceModalOpen(true);
+    setInvoiceLoading(true); // Show loader
+    try {
+      const Flag = "";
+      const response = await customAxios.get(
+        `${urlInvoiceDiscount}?PatientId=${PatientId}&EncounterId=${EncounterId}&Flag=${Flag}`
+      );
+      if (response.status === 200 && response.data.data != null) {
+        setInvoiceDiscountReason(response.data.data.DiscountReasons);
+        setInvoiceDiscountDetails(response.data.data.InvoiceDetailModel);
+        setIsInvoiceModalOpen(true);
+      }
+    } catch (error) {
+      console.error("Error fetching invoice discount:", error);
+    } finally {
+      setInvoiceLoading(false); // Hide loader
+    }
+  };
+
+  const handleInvoiceDiscountSubmit = async (values) => {
+    debugger;
+    setInvoiceLoading(true);
+    values.ChargeID = invoicediscountDetails.ChargeID;
+    values.ServiceId = invoicediscountDetails.ServiceId;
+    values.Flag = "";
+    values.PatientId = invoicediscountDetails.PatientId;
+    values.EncounterId = invoicediscountDetails.EncounterId;
+
+    try {
+      const response = await customAxios.post(
+        urlUpdateInvoiceDiscount,
+        values,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.status == 200 && response.data.data != null) {
+        setCharges(response.data.data.PatientAccountCharges);
+        message.success("Discount Applied");
+        //handleCancel();
+      } else {
+        message.error("Something Went Wrong");
+      }
+    } catch (error) {
+      message.error("Something went wrong");
+      console.error(error);
+    } finally {
+      setInvoiceLoading(false); // Hide loader
+      setIsInvoiceModalOpen(false); // Close modal
     }
   };
 
   const handleDeleteCharge = async (record) => {
-    
     const amt = 0;
     const response = await customAxios.delete(
       `${urlDeleteBillCharge}?chargeId=${record.ChargeID}&patientId=${record.PatientId}&encounterId=${record.EncounterId}&amt=${record.AdjustedAmount}`
@@ -377,7 +424,7 @@ const CreateBilling = () => {
         {
           title: "ChargeAmt",
           dataIndex: "ChargeAmount",
-          render: (value) => value.toFixed(2), // Format with toFixed
+         // render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "Qty",
@@ -387,17 +434,17 @@ const CreateBilling = () => {
         {
           title: "NetAmt",
           dataIndex: "NetAmount",
-          render: (value) => value.toFixed(2), // Format with toFixed
+        //  render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "InsAmt",
           dataIndex: "InsuranceCoveredAmount",
-          render: (value) => value.toFixed(2), // Format with toFixed
+        //  render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "TaxAmt",
-          dataIndex: "TaxRate",
-          render: (value) => value.toFixed(2), // Format with toFixed
+          dataIndex: "PatientTaxAmount",
+        //  render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "NetInsAmt",
@@ -416,7 +463,7 @@ const CreateBilling = () => {
         {
           title: "Charge",
           dataIndex: "PatientChargeAmount",
-          render: (value) => value.toFixed(2), // Format with toFixed
+       //   render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "Discount",
@@ -426,23 +473,23 @@ const CreateBilling = () => {
         {
           title: "Tax",
           dataIndex: "PatientTaxRate",
-          render: (value) => value.toFixed(2), // Format with toFixed
+         // render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "NetAmt",
           dataIndex: "PatientNetAmount",
-          render: (value) => value.toFixed(2), // Format with toFixed
+         // render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "AdjAmt",
           dataIndex: "AdjustedAmount",
-          render: (value) => value.toFixed(2), // Format with toFixed
+         // render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "LL Disc",
           dataIndex: "Discount",
           render: (_, row) => {
-            if (row.ServiceType.trim() === "P") {
+            if (row?.ServiceType?.trim() === "P") {
               return null; // Hide the discount button if ServiceType is "P"
             }
             return (
@@ -458,7 +505,7 @@ const CreateBilling = () => {
           title: "",
           dataIndex: "actions",
           render: (_, row) => {
-            if (row.ServiceType.trim() === "P") {
+            if (row?.ServiceType.trim() === "P") {
               return null; // Hide the delete button if ServiceType is "P"
             }
             return (
@@ -496,6 +543,7 @@ const CreateBilling = () => {
 
   // };
   const handleInputChange = (value, column, key) => {
+    debugger;
     const newData = receiptInsAmtData.map((item) => {
       if (item.key === key) {
         return { ...item, [column]: value };
@@ -534,6 +582,7 @@ const CreateBilling = () => {
           var res = response.data.data.split(":");
           const request = {
             BillingId: res[1],
+            EncounterId: EncounterId,
             FileType: "pdf", // or 'excel'
           };
           const { url, blob } = await fetchReport(request);
@@ -550,7 +599,7 @@ const CreateBilling = () => {
   };
   async function fetchReport(request) {
     const response = await fetch(
-      "https://192.168.29.254:808/api/ReportsApi/BillReport",
+      "http://localhost:43705/api/ReportsApi/BillReport",
       {
         method: "POST",
         headers: {
@@ -574,7 +623,7 @@ const CreateBilling = () => {
     {
       title: "PaymentType",
       dataIndex: "PaymentTypeId",
-      width: 180,
+      width: 150,
       key: "PaymentTypeId",
       render: (text, record, index) => (
         <Form.Item
@@ -618,7 +667,7 @@ const CreateBilling = () => {
     {
       title: "Amount",
       dataIndex: "InstrumentAmount",
-      width: 200,
+      width: 180,
       key: "InstrumentAmount",
       render: (text, record) => (
         <Form.Item
@@ -663,7 +712,7 @@ const CreateBilling = () => {
       render: (text, record, index) => (
         <Form.Item name={["BankId", record.key - 1]}>
           <Select
-            disabled
+            //disabled
             onChange={(value) => handleInputChange(value, "BankId", record.key)}
           >
             {banks?.map((option) => (
@@ -678,7 +727,6 @@ const CreateBilling = () => {
     {
       title: "Branch",
       dataIndex: "BranchName",
-
       key: "BranchName",
       render: (text, record, index) => (
         <Form.Item
@@ -687,11 +735,11 @@ const CreateBilling = () => {
           // initialValue={record.Branch}
         >
           <Input
-            disabled
+            // disabled
             min={0}
             defaultValue={text}
-            onChange={(value) =>
-              handleInputChange(value, "BranchName", record.key)
+            onChange={(e) =>
+              handleInputChange(e.target.value, "BranchName", record.key)
             }
           />
         </Form.Item>
@@ -710,8 +758,10 @@ const CreateBilling = () => {
           <Input
             min={0}
             defaultValue={text}
-            onChange={(value) => handleInputChange(value, "IFSC", record)}
-            disabled
+            onChange={(e) =>
+              handleInputChange(e.target.value, "IFSC", record.key)
+            }
+            // disabled
           />
         </Form.Item>
       ),
@@ -727,28 +777,115 @@ const CreateBilling = () => {
           //initialValue={record.AuthRefNo}
         >
           <Input
-            disabled
+            // disabled
             min={0}
             defaultValue={text}
-            onChange={(value) =>
-              handleInputChange(value, "AuthorizationReference", record)
+            onChange={(e) =>
+              handleInputChange(
+                e.target.value,
+                "AuthorizationReference",
+                record.key
+              )
             }
           />
         </Form.Item>
       ),
     },
-
     {
       title: "ExpiryDate",
       dataIndex: "CardExpiryDate",
       key: "CardExpiryDate",
+      width: 120,
       render: (text, record, index) => (
         <Form.Item
           name={["CardExpiryDate", record.key - 1]}
           style={{ width: "100%" }}
-          // initialValue={record.ExpiryDate}
+          rules={[
+            {
+              validator: (_, value) =>
+                value && value.isBefore(dayjs(), "month")
+                  ? Promise.reject(
+                      new Error(
+                        "Expiry date cannot be earlier than the current month"
+                      )
+                    )
+                  : Promise.resolve(),
+            },
+          ]}
         >
-          <Input disabled min={0} defaultValue={text} />
+          <DatePicker
+            format="MM-YYYY" // Date format
+            picker="month" // Month picker
+            placeholder="Select Date"
+            disabledDate={(current) => {
+              // Disable dates before the current month
+              return current && current.isBefore(dayjs().startOf("month"));
+            }}
+            onChange={(date, dateString) =>
+              handleInputChange(dateString, "CardExpiryDate", record.key)
+            }
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      title: "Card Number",
+      dataIndex: "CardNumber",
+      render: (_, record) => (
+        <Form.Item name={["CardNumber", record.key - 1]}>
+          <Input
+            placeholder="Enter Card Number"
+            onChange={(e) =>
+              handleInputChange(e.target.value, "CardNumber", record.key)
+            }
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      title: "Date",
+      dataIndex: "Cheqdate",
+      width: 150,
+      render: (_, record) => (
+        <Form.Item
+          style={{ width: "100%" }}
+          name={["Cheqdate", record.key - 1]} // Use record.key for dynamic name
+          rules={[
+            {
+              validator: (_, value) =>
+                value && value.isBefore(dayjs(), "day")
+                  ? Promise.reject(
+                      new Error("Date cannot be earlier than today")
+                    )
+                  : Promise.resolve(),
+            },
+          ]}
+        >
+          <DatePicker
+            format="DD-MM-YYYY" // Date format
+            placeholder="Select Date"
+            disabledDate={(current) => {
+              // Disable dates before today
+              return current && current.isBefore(dayjs(), "day");
+            }}
+            onChange={(date, dateString) =>
+              handleInputChange(dateString, "Cheqdate", record.key)
+            } // Pass the date, column name, and record.key to handleInputChange
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      title: "Remarks",
+      dataIndex: "Remarks",
+      render: (_, record) => (
+        <Form.Item name={["Remarks", record.key - 1]}>
+          <Input
+            placeholder="Enter Remarks"
+            onChange={(e) =>
+              handleInputChange(e.target.value, "Remarks", record.key)
+            }
+          />
         </Form.Item>
       ),
     },
@@ -785,7 +922,6 @@ const CreateBilling = () => {
 
   const handleOnFinish = async (values) => {
     setTableLoading(true);
-
 
     const Charge = {
       PatientId: PatientId,
@@ -830,6 +966,7 @@ const CreateBilling = () => {
   };
 
   const handleSaveBill = async (values) => {
+    debugger;
     if (billloading) return; // Prevent multiple clicks
 
     setBillLoading(true); // Start loading state
@@ -843,11 +980,15 @@ const CreateBilling = () => {
         BankId: item.BankId ? parseInt(item.BankId, 10) : 0,
         BranchName: item.BranchName || "",
         CardExpiryDate: item.CardExpiryDate || "",
+        ChequeDates: item.Cheqdate || "",
         IFSC: item.IFSC || "",
         InstrumentAmount: item.InstrumentAmount
           ? parseFloat(item.InstrumentAmount)
           : 0,
         PaymentTypeId: item.PaymentTypeId,
+        CardNumber: item.CardNumber || "",
+        Remarks: item.Remarks || "",
+        EncounterId: EncounterId || "",
       }));
       const totalInstrumentAmount = formattedReceiptInsAmtData.reduce(
         (acc, item) => acc + item.InstrumentAmount,
@@ -917,6 +1058,35 @@ const CreateBilling = () => {
       message.warning("Something Went Wrong While Saving Data to TempTable");
     }
   }
+
+  const handleDiscountSubmit = async (values) => {
+    debugger;
+    values.ChargeID = discountDetails.ChargeID;
+    values.ServiceId = discountDetails.ServiceId;
+    values.PatientId = discountDetails.PatientId;
+    values.EncounterId = discountDetails.EncounterId;
+
+    try {
+      const response = await customAxios.post(urlUpdateDiscount, values, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.status === 200) {
+        console.log("actionresu", response.data);
+
+        setCharges(response.data.PatientAccountCharges);
+        message.success("Discount Applied");
+        //handleCancel();
+      } else {
+        message.error("Something Went Wrong");
+      }
+    } catch (error) {
+      message.error("Something went wrong");
+      console.error(error);
+    }
+  };
 
   return (
     <Layout style={{ zIndex: "999999999" }}>
@@ -1138,7 +1308,7 @@ const CreateBilling = () => {
                   ({
                     NetAmount,
                     InsuranceCoveredAmount,
-                    TaxRate,
+                    PatientTaxAmount,
                     NetInsurenceAmount,
                     PatientDiscountAmount,
                     PatientTaxRate,
@@ -1147,7 +1317,7 @@ const CreateBilling = () => {
                   }) => {
                     netamt += NetAmount;
                     insamt += InsuranceCoveredAmount;
-                    taxamt += TaxRate;
+                    taxamt += PatientTaxAmount;
                     netinsamt += NetInsurenceAmount;
                     discamt += PatientDiscountAmount;
                     taxrate += PatientTaxRate;
@@ -1219,19 +1389,24 @@ const CreateBilling = () => {
             />
           </Spin>
         </ConfigProvider>
+        {invoiceLoading && (
+          <div className="full-page-loader">
+            <Spin size="large" />
+          </div>
+        )}
         <InvoiceDiscountModal
           options={invoicediscountReason}
           open={isinvoiceModalOpen}
           handleClose={() => setIsInvoiceModalOpen(false)}
           discountDetails={invoicediscountDetails}
-          setCharges={setCharges}
+          handleSubmit={handleInvoiceDiscountSubmit}
         />
         <DiscountModal
           options={discountReason}
           open={isModalOpen}
           handleClose={() => setIsModalOpen(false)}
           discountDetails={discountDetails}
-          setCharges={setCharges}
+          handleSubmit={handleDiscountSubmit}
         />
         {/* <Divider orientation="left"></Divider> */}
         <Form

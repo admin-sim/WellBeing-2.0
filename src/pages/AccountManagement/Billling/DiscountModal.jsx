@@ -14,28 +14,28 @@ import {
 } from "antd";
 import React, { useState } from "react";
 const { Text } = Typography;
-import customAxios from "../../../components/customAxios/customAxios";
-import { urlUpdateDiscount } from "../../../../endpoints";
 import { useEffect } from "react";
 function DiscountModal({
   options,
   open,
   handleClose,
   discountDetails,
-  setCharges,
+  handleSubmit,
 }) {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    debugger;
-    if (discountDetails) {
-      form.setFieldsValue({
-        ServiceCatalogue: discountDetails.ServiceName,
-        PatientChargeAmount:
-          discountDetails.PatientChargeAmount,
-      });
+    if (open) {
+      form.resetFields(); // Clear previous values
+      if (discountDetails) {
+        form.setFieldsValue({
+          ServiceCatalogue: discountDetails.ServiceName,
+          PatientChargeAmount: discountDetails.PatientChargeAmount,
+        });
+      }
     }
-  }, [discountDetails]);
+  }, [open, discountDetails]);
+  
 
   const [loading, setLoading] = useState(false);
 
@@ -44,34 +44,31 @@ function DiscountModal({
     handleClose();
   };
 
-  const onFinishForAddChargeParameters = async (values) => {
-    debugger;
-    values.ChargeID = discountDetails.ChargeID;
-    values.ServiceId = discountDetails.ServiceId;
-    values.PatientId = discountDetails.PatientId;
-    values.EncounterId = discountDetails.EncounterId;
 
+
+  const onFormSubmit = async (values) => {
     try {
-      const response = await customAxios.post(urlUpdateDiscount, values, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.status === 200 ) {
-        console.log("actionresu",response.data);
-        
-        setCharges(response.data.PatientAccountCharges);
-        message.success("Discount Applied");
-        handleCancel();
-      } else {
-        message.error("Something Went Wrong");
-      }
+      // Start loader
+      setLoading(true);
+  
+      // Call handleSubmit passed as prop to process the form data
+      await handleSubmit(values);
+  
+      // After successfully submitting, reset the form and close the modal
+      form.resetFields();
+      handleClose();
     } catch (error) {
-      message.error("Something went wrong");
-      console.error(error);
+      // Handle error, optionally show a message
+      message.error("Submission failed, please try again.");
+    } finally {
+      // Stop loader
+      setLoading(false);
     }
   };
+  
+
+
+
   const handleDiscountRateChange = (disc) => {
     debugger;
     // Check if disc is not null, undefined, or NaN
@@ -104,7 +101,11 @@ function DiscountModal({
 
   return (
     <div>
-      <Spin spinning={loading}>
+       {loading && (
+        <div className="full-page-loader">
+          <Spin size="large" />
+        </div>
+      )}
         <Modal
           title="Discount Modal"
           open={open}
@@ -117,7 +118,7 @@ function DiscountModal({
             style={{ margin: "1rem 0" }}
             layout="vertical"
             form={form}
-            onFinish={onFinishForAddChargeParameters}
+            onFinish={onFormSubmit}
             onCancel={handleCancel}
             // initialValues={{
             //   ServiceCatalogue: discountDetails?.ServiceName,
@@ -229,7 +230,7 @@ function DiscountModal({
             </Row>
           </Form>
         </Modal>
-      </Spin>
+    
     </div>
   );
 }

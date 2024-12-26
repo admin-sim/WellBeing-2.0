@@ -124,6 +124,7 @@ const Patient = () => {
   };
 
   const handleEditorCancelVisitModal = async (record, isCancel) => {
+    debugger;
     setSelectedRecord(record);
     setIsLoading(true);
     setIsCancelOrEditEncounter(true);
@@ -215,7 +216,7 @@ const Patient = () => {
 
   const handleOk = async () => {
     //
-
+debugger;
     try {
       await form.validateFields(); // Trigger form validation
       const values = form.getFieldsValue();
@@ -263,7 +264,7 @@ const Patient = () => {
           }
         );
 
-        if (response.data.data !== null) {
+        if (response.data!=false) {
           setIsSubmitLoader(false);
           const Patients = response.data.data.Patients.map((obj, index) => {
             return { ...obj, key: index + 1 };
@@ -284,9 +285,9 @@ const Patient = () => {
         } else {
           setIsSubmitLoader(false);
           if (isCancelEncounter) {
-            notification.error({
-              message: "Cancelling Visit details UnSuccessful",
-              description: "Failed to cancel visit. Please try again later.",
+            notification.warning({
+              message: "Please Clear Charges In Billing and Pharmacy Before Cancel Visit",
+              description: "In Case Of InPatient Please Discharge",
             });
           } else {
             notification.error({
@@ -695,6 +696,34 @@ const Patient = () => {
         </div>
       </Layout>
    
+      <ConfigProvider
+        theme={{
+          token: {
+            zIndexPopupBase: 3000,
+          },
+        }}
+      >
+        {/* {contextHolder} */}
+
+        {isEditOrDeleteVisitModalVisible &&
+          patientDropdown.PatientType !== undefined && (
+            <VisitModal
+              open={isEditOrDeleteVisitModalVisible}
+              handleOk={handleOk}
+              submitLoader={submitLoader}
+              // ModalLoader={ModalLoader}
+              close={handleEditOrDeleteVisitModalCancel}
+              // IsVisitCreated={IsVisitCreated}
+              patientHeaderDetails={patientHeaderDetails}
+              // encounterId={encounterId}
+              isCancelOrEditVisit={isCancelOrEditEncounter}
+              form1={form}
+              dropdown={patientDropdown}
+              showWard={showWard}
+              isCancelEncounter={isCancelEncounter}
+            />
+          )}
+      </ConfigProvider>
 
       {/* {contextHolder} */}
       <Modal

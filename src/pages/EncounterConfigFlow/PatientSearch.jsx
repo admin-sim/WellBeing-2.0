@@ -1,4 +1,4 @@
-import customAxios from "../../../components/customAxios/customAxios.jsx";
+import customAxios from "../../components/customAxios/customAxios.jsx";
 import React, { useEffect, useState } from "react";
 import { LeftOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router";
@@ -16,14 +16,17 @@ import {
   urlAddNewVisit1,
   urlGetEncounterDetails,
   urlGetPatientHeaderDetails,
-} from "../../../../endpoints.js";
+} from "../../../endpoints.js";
+
 
 import debounce from "lodash/debounce";
 
 import { EnvironmentOutlined } from "@ant-design/icons";
-import "../style.css";
-import PageHeader from "../../../components/PageHeader/index.jsx";
-import VisitModal from "./visitModal.jsx";
+//import "style.css";
+import PageHeader from "../../components/PageHeader/index.jsx";
+import VisitModal from "../Patient/NewVisit/visitModal.jsx";
+import CustomTable from "../../components/customTable/index.jsx";
+
 
 const containsDropdown = [
   { id: "1", name: "Starts With" },
@@ -32,7 +35,7 @@ const containsDropdown = [
   { id: "4", name: "Anywhere" },
 ];
 
-const NewVisit = () => {
+const PatientSearch = () => {
   const [patientDropdown, setPatientDropdown] = useState({
     Genders: [],
     Title: [],
@@ -65,8 +68,7 @@ const NewVisit = () => {
 
   const [isMoreModalVisible, setIsMoreModalVisible] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+
   const [showWard, setShowWard] = useState(false);
 
  
@@ -228,7 +230,11 @@ const NewVisit = () => {
           setLoading(false);
           console.log("Response:", response.data);
           //resetForm();
-          setPatientSearchDetails(response.data.data.Patients);
+        
+          const newColumnData = response.data.data?.Patients.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          });
+          setPatientSearchDetails(newColumnData);
           setOptions([]);
         });
     } catch (error) {
@@ -385,10 +391,7 @@ const NewVisit = () => {
         form1.resetFields();
       }
 
-      // setIsModalVisible(false);
-      setDepartments([]);
-      setProviders([]);
-      setServiceLocations([]);
+    
       // form1.resetFields();
 
       // Additional logic after the asynchronous operation
@@ -411,9 +414,7 @@ const NewVisit = () => {
   const handleVisitModalCancel = () => {
     setIsVisitModalVisible(false);
     setIsVisitCreated(false);
-    setDepartments([]);
-    setProviders([]);
-    setServiceLocations([]);
+
     setPatientHeaderDetails([]);
     setEncounterId(null);
     setShowWard(false);
@@ -427,12 +428,7 @@ const NewVisit = () => {
   const columns = [
     {
       title: "Sl No",
-      key: "index",
-
-      render: (text, record, index) => {
-        const serialNumber = (currentPage - 1) * itemsPerPage + index + 1;
-        return serialNumber;
-      },
+      dataIndex: "key",
     },
     {
       title: "UHID",
@@ -529,12 +525,7 @@ const NewVisit = () => {
           borderRadius: "10px",
         }}
       >
-        <PageHeader
-          title="Patient Search"
-          buttonLabel="Back to list"
-          buttonIcon={<LeftOutlined />}
-          onButtonClick={handleBackToList}
-        />
+      
         <Form
           layout="vertical"
           onFinish={handleOnSearch}
@@ -743,17 +734,13 @@ const NewVisit = () => {
         <Spin spinning={loading || ModalLoader}>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col span={24}>
-              <Table
+              <CustomTable
                 dataSource={patientsearchDetails}
                 columns={columns}
-                className="custom-table"
+                //className="custom-table"
                 rowKey={(row) => row.PatientId}
-                size="small"
-                onChange={(pagination) => {
-                  setCurrentPage(pagination.current);
-                  setItemsPerPage(pagination.pageSize);
-                }}
-                bordered
+                actionColumn={false}
+                isFilter={true}
               />
             </Col>
           </Row>
@@ -928,4 +915,4 @@ const NewVisit = () => {
     </div>
   );
 };
-export default NewVisit;
+export default PatientSearch;

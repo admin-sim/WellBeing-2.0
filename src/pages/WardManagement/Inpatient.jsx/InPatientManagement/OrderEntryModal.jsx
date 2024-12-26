@@ -77,6 +77,7 @@ function OrderEntry({
     form1.resetFields();
     form2.resetFields();
     form3.resetFields();
+    setSelectedRowKeys([]);
     handleClose();
   };
 
@@ -587,7 +588,7 @@ function OrderEntry({
 
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:43705/api/ReportsApi/GetLabReport",
+      "https://192.168.29.254:808/api/ReportsApi/GetLabReport",
       {
         method: "POST",
         headers: {
@@ -1374,7 +1375,11 @@ function OrderEntry({
                       centered
                       title="Report"
                       open={isModalVisible}
-                      onCancel={() => setIsModalVisible(false)}
+                      onCancel={() => {
+                        setIsModalVisible(false); // Hide the modal
+                        setSelectedRowKeys([]);   // Clear the selected row keys
+                      }}
+                      
                       footer={[
                         <Button
                           key="close"

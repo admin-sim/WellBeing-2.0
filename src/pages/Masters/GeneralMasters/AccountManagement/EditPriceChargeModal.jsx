@@ -40,6 +40,7 @@ function EditPriceChargeModal({
   //setValue(linedata?.IndicatorDescriptionId);
   const [url, setUrl] = useState();
   useEffect(() => {
+    debugger;
     if (linedata) {
       form.setFieldsValue({
         PatientTypeId: linedata.PatientTypeId,

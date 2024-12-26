@@ -160,6 +160,9 @@ import StoreStockStatementReport from "./pages/ReportManagement/InventoryManagem
 import StockItemLedgerReport from "./pages/ReportManagement/InventoryManagement/StockItemLedgerReport.jsx";
 import StoreStockPostionReport from "./pages/ReportManagement/InventoryManagement/StoreStockPostionReport.jsx";
 import CurrentStockPositionReport from "./pages/ReportManagement/InventoryManagement/CurrentStockPositionReport.jsx";
+import EncounterConfigFlow from "./pages/EncounterConfigFlow/index.jsx";
+import PatientRegistartionReport from "./pages/ReportManagement/IdentityManagement/PatientRegistartionReport.jsx";
+import EncounterRegistrationReport from "./pages/ReportManagement/IdentityManagement/EncounterRegistrationReport.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -1340,54 +1343,6 @@ function App() {
               element={
                 <ProtectedRoute>
                   <DailyCollectionReport />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/PurchaseOrderReport"
-              element={
-                <ProtectedRoute>
-                  <PurchaseOrderReport />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/CurrentStockPositionReport"
-              element={
-                <ProtectedRoute>
-                  <CurrentStockPositionReport />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/StockItemLedgerReport"
-              element={
-                <ProtectedRoute>
-                  <StockItemLedgerReport />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/StoreStockPostionReport"
-              element={
-                <ProtectedRoute>
-                  <StoreStockPostionReport />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/StoreStockStatementReport"
-              element={
-                <ProtectedRoute>
-                  <StoreStockStatementReport />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/StockExpiryReport"
-              element={
-                <ProtectedRoute>
-                  <StockExpiryReport />
                 </ProtectedRoute>
               }
             />

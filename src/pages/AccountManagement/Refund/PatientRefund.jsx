@@ -133,6 +133,9 @@ function PatientRefund() {
       IFSC: "",
       AuthorizationReference: "",
       CardExpiryDate: "",
+      CardNumber: "",
+      Cheqdate: "",
+      Remarks: "",
     },
   ];
   const [receiptInsAmtData, setReceiptInsAmtData] = useState(initialDataSource);
@@ -150,56 +153,59 @@ function PatientRefund() {
         IFSC: "",
         AuthorizationReference: "",
         CardExpiryDate: "",
+        CardNumber: "",
+        Cheqdate: "",
+        Remarks: "",
       },
     ]);
     setCounter(counter + 1); // increment counter
   };
   const receiptInscolumns = [
-    {
-      title: "PaymentType",
-      dataIndex: "PaymentTypeId",
-      width: 180,
-      key: "PaymentTypeId",
-      render: (text, record, index) => (
-        <Form.Item
-          name={["PaymentTypeId", record.key - 1]} // subtract 1 from key
-          rules={[
-            { required: true, message: "Required" },
-            {
-              validator: (_, value) => {
-                const otherRows = receiptInsAmtData.filter(
-                  (row) => row.key !== record.key
-                );
-                const duplicateExists = otherRows.some(
-                  (row) => row.PaymentTypeId === value
-                );
-                if (duplicateExists) {
-                  // return Promise.reject('Payment Type already selected in another row');
-                  return Promise.reject(
-                    new Error("Payment Type should not be same")
-                  );
-                }
-                return Promise.resolve();
-              },
-            },
-          ]}
-          // initialValue={record.LookupDescription} // Set initial value of the field to UomId
-        >
-          <Select
-            onChange={(value) =>
-              handleInputChange(value, "PaymentTypeId", record.key)
-            }
-          >
-            {paymentTypes?.map((option) => (
-              <Option key={option.LookupID} value={option.LookupID}>
-                {option.LookupDescription}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-      ),
-    },
-    {
+     {
+       title: "PaymentType",
+       dataIndex: "PaymentTypeId",
+       width: 150,
+       key: "PaymentTypeId",
+       render: (text, record, index) => (
+         <Form.Item
+           name={["PaymentTypeId", record.key - 1]} // subtract 1 from key
+           rules={[
+             { required: true, message: "Required" },
+             {
+               validator: (_, value) => {
+                 const otherRows = receiptInsAmtData.filter(
+                   (row) => row.key !== record.key
+                 );
+                 const duplicateExists = otherRows.some(
+                   (row) => row.PaymentTypeId === value
+                 );
+                 if (duplicateExists) {
+                   // return Promise.reject('Payment Type already selected in another row');
+                   return Promise.reject(
+                     new Error("Payment Type should not be same")
+                   );
+                 }
+                 return Promise.resolve();
+               },
+             },
+           ]}
+           // initialValue={record.LookupDescription} // Set initial value of the field to UomId
+         >
+           <Select
+             onChange={(value) =>
+               handleInputChange(value, "PaymentTypeId", record.key)
+             }
+           >
+             {paymentTypes?.map((option) => (
+               <Option key={option.LookupID} value={option.LookupID}>
+                 {option.LookupDescription}
+               </Option>
+             ))}
+           </Select>
+         </Form.Item>
+       ),
+     },
+     {
       title: "Amount",
       dataIndex: "InstrumentAmount",
       width: 200,
@@ -220,123 +226,216 @@ function PatientRefund() {
         </Form.Item>
       ),
     },
-    {
-      title: "Bank",
-      dataIndex: "BankId",
-      width: 150,
-      key: "BankId",
-      render: (text, record, index) => (
-        <Form.Item name={["BankId", record.key - 1]}>
-          <Select
-            onChange={(value) => handleInputChange(value, "BankId", record.key)}
-          >
-            {banks?.map((option) => (
-              <Option key={option.LookupID} value={option.LookupID}>
-                {option.LookupDescription}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-      ),
-    },
-    {
-      title: "Branch",
-      dataIndex: "BranchName",
-
-      key: "BranchName",
-      render: (text, record, index) => (
-        <Form.Item
-          name={["BranchName", record.key - 1]}
-          style={{ width: "100%" }}
-          // initialValue={record.Branch}
-        >
-          <Input
-            min={0}
-            defaultValue={text}
-            onChange={(value) =>
-              handleInputChange(value, "BranchName", record.key)
-            }
-          />
-        </Form.Item>
-      ),
-    },
-    {
-      title: "IfscCode",
-      dataIndex: "IFSC",
-      key: "IFSC",
-      render: (text, record, index) => (
-        <Form.Item
-          name={["IFSC", record.key - 1]}
-          style={{ width: "100%" }}
-          //initialValue={record.IfscCode}
-        >
-          <Input
-            min={0}
-            defaultValue={text}
-            onChange={(value) => handleInputChange(value, "IFSC", record)}
-          />
-        </Form.Item>
-      ),
-    },
-    {
-      title: "AuthRefNo",
-      dataIndex: "AuthorizationReference",
-      key: "AuthorizationReference",
-      render: (text, record, index) => (
-        <Form.Item
-          name={["AuthorizationReference", record.key - 1]}
-          style={{ width: "100%" }}
-          //initialValue={record.AuthRefNo}
-        >
-          <Input
-            min={0}
-            defaultValue={text}
-            onChange={(value) =>
-              handleInputChange(value, "AuthorizationReference", record)
-            }
-          />
-        </Form.Item>
-      ),
-    },
-
-    {
-      title: "ExpiryDate",
-      dataIndex: "CardExpiryDate",
-      key: "CardExpiryDate",
-      render: (text, record, index) => (
-        <Form.Item
-          name={["CardExpiryDate", record.key - 1]}
-          style={{ width: "100%" }}
-          // initialValue={record.ExpiryDate}
-        >
-          <Input min={0} defaultValue={text} />
-        </Form.Item>
-      ),
-    },
-
-    {
-      title: (
-        <Button
-          type="primary"
-          size="small"
-          icon={<PlusOutlined style={{ fontSize: "12px" }} />}
-          onClick={handleAddRow}
-        ></Button>
-      ),
-      dataIndex: "add",
-      key: "add",
-      width: 50,
-      render: (text, record) => (
-        <Popconfirm
-          title="Sure to delete?"
-          onConfirm={() => handleInstrumentDelete(record)}
-        >
-          <DeleteOutlined />
-        </Popconfirm>
-      ),
-      //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>
-    },
-  ];
+     {
+       title: "Bank",
+       dataIndex: "BankId",
+       width: 150,
+       key: "BankId",
+       render: (text, record, index) => (
+         <Form.Item name={["BankId", record.key - 1]}>
+           <Select
+             //disabled
+             onChange={(value) => handleInputChange(value, "BankId", record.key)}
+           >
+             {banks?.map((option) => (
+               <Option key={option.LookupID} value={option.LookupID}>
+                 {option.LookupDescription}
+               </Option>
+             ))}
+           </Select>
+         </Form.Item>
+       ),
+     },
+     {
+       title: "Branch",
+       dataIndex: "BranchName",
+       key: "BranchName",
+       render: (text, record, index) => (
+         <Form.Item
+           name={["BranchName", record.key - 1]}
+           style={{ width: "100%" }}
+           // initialValue={record.Branch}
+         >
+           <Input
+             // disabled
+             min={0}
+             defaultValue={text}
+             onChange={(e) =>
+               handleInputChange(e.target.value, "BranchName", record.key)
+             }
+           />
+         </Form.Item>
+       ),
+     },
+     {
+       title: "IfscCode",
+       dataIndex: "IFSC",
+       key: "IFSC",
+       render: (text, record, index) => (
+         <Form.Item
+           name={["IFSC", record.key - 1]}
+           style={{ width: "100%" }}
+           //initialValue={record.IfscCode}
+         >
+           <Input
+             min={0}
+             defaultValue={text}
+             onChange={(e) =>
+               handleInputChange(e.target.value, "IFSC", record.key)
+             }
+             // disabled
+           />
+         </Form.Item>
+       ),
+     },
+     {
+       title: "AuthRefNo",
+       dataIndex: "AuthorizationReference",
+       key: "AuthorizationReference",
+       render: (text, record, index) => (
+         <Form.Item
+           name={["AuthorizationReference", record.key - 1]}
+           style={{ width: "100%" }}
+           //initialValue={record.AuthRefNo}
+         >
+           <Input
+             // disabled
+             min={0}
+             defaultValue={text}
+             onChange={(e) =>
+               handleInputChange(
+                 e.target.value,
+                 "AuthorizationReference",
+                 record.key
+               )
+             }
+           />
+         </Form.Item>
+       ),
+     },
+     {
+       title: "ExpiryDate",
+       dataIndex: "CardExpiryDate",
+       key: "CardExpiryDate",
+       width: 120,
+       render: (text, record, index) => (
+         <Form.Item
+           name={["CardExpiryDate", record.key - 1]}
+           style={{ width: "100%" }}
+           rules={[
+             {
+               validator: (_, value) =>
+                 value && value.isBefore(dayjs(), "month")
+                   ? Promise.reject(
+                       new Error(
+                         "Expiry date cannot be earlier than the current month"
+                       )
+                     )
+                   : Promise.resolve(),
+             },
+           ]}
+         >
+           <DatePicker
+             format="MM-YYYY" // Date format
+             picker="month" // Month picker
+             placeholder="Select Date"
+             disabledDate={(current) => {
+               // Disable dates before the current month
+               return current && current.isBefore(dayjs().startOf("month"));
+             }}
+             onChange={(date, dateString) =>
+               handleInputChange(dateString, "CardExpiryDate", record.key)
+             }
+           />
+         </Form.Item>
+       ),
+     },
+     {
+       title: "Card Number",
+       dataIndex: "CardNumber",
+       render: (_, record) => (
+         <Form.Item name={["CardNumber", record.key - 1]}>
+           <Input
+             placeholder="Enter Card Number"
+             onChange={(e) =>
+               handleInputChange(e.target.value, "CardNumber", record.key)
+             }
+           />
+         </Form.Item>
+       ),
+     },
+     {
+       title: "Date",
+       dataIndex: "Cheqdate",
+       width: 150,
+       render: (_, record) => (
+         <Form.Item
+           style={{ width: "100%" }}
+           name={["Cheqdate", record.key - 1]} // Use record.key for dynamic name
+           rules={[
+             {
+               validator: (_, value) =>
+                 value && value.isBefore(dayjs(), "day")
+                   ? Promise.reject(
+                       new Error("Date cannot be earlier than today")
+                     )
+                   : Promise.resolve(),
+             },
+           ]}
+         >
+           <DatePicker
+             format="DD-MM-YYYY" // Date format
+             placeholder="Select Date"
+             disabledDate={(current) => {
+               // Disable dates before today
+               return current && current.isBefore(dayjs(), "day");
+             }}
+             onChange={(date, dateString) =>
+               handleInputChange(dateString, "Cheqdate", record.key)
+             } // Pass the date, column name, and record.key to handleInputChange
+           />
+         </Form.Item>
+       ),
+     },
+ 
+     {
+       title: "Remarks",
+       dataIndex: "Remarks",
+       render: (_, record) => (
+         <Form.Item name={["Remarks", record.key - 1]}>
+           <Input
+             placeholder="Enter Remarks"
+             onChange={(e) =>
+               handleInputChange(e.target.value, "Remarks", record.key)
+             }
+           />
+         </Form.Item>
+       ),
+     },
+ 
+     {
+       title: (
+         <Button
+           type="primary"
+           size="small"
+           icon={<PlusOutlined style={{ fontSize: "12px" }} />}
+           onClick={() => handleAddRow()}
+         ></Button>
+       ),
+       dataIndex: "add",
+       key: "add",
+       width: 50,
+       render: (text, record) => (
+         <Popconfirm
+           title="Sure to delete?"
+           onConfirm={() => handleInstrumentDelete(record)}
+         >
+           <DeleteOutlined />
+         </Popconfirm>
+       ),
+       //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>
+     },
+   ];
 
   const handleInputChange = (value, column, key) => {
     const newData = receiptInsAmtData.map((item) => {
@@ -364,11 +463,16 @@ function PatientRefund() {
       BankId: item.BankId ? parseInt(item.BankId, 10) : 0,
       BranchName: item.BranchName || "",
       CardExpiryDate: item.CardExpiryDate || "",
+      ChequeDates: item.Cheqdate || "",
       IFSC: item.IFSC || "",
       InstrumentAmount: item.InstrumentAmount
         ? parseFloat(item.InstrumentAmount)
         : 0,
       PaymentTypeId: item.PaymentTypeId,
+      CardNumber: item.CardNumber || "",
+      Remarks: item.Remarks || "",
+      EncounterId: selectedRow?.ReceiptEncounterId ?? selectedRow?.EncounterId ?? "",
+
     }));
     const totalInstrumentAmount = formattedReceiptInsAmtData.reduce(
       (acc, item) => acc + item.InstrumentAmount,

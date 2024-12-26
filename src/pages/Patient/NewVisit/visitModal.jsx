@@ -19,17 +19,6 @@ import { propTypes } from "react-bootstrap/esm/Image.js";
 
 const VisitModal = (
   details,
-  handleOk,
-  ModalLoader,
-  close,
-  IsVisitCreated,
-  patientHeaderDetails,
-  encounterId,
-  form1,
-  dropdown,
-  isCancelOrEditVisit,
-  isCancelEncounter,
-  submitLoader
 ) => {
   debugger;
   const [Dropdown, setDropdown] = useState(details.dropdown);
