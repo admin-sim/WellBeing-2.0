@@ -118,7 +118,10 @@ const CreateBilling = () => {
     fetchData();
   }, []);
 
+
+ 
   const fetchData = async () => {
+    debugger;
     setTableLoading(true);
 
     try {
@@ -421,7 +424,7 @@ const CreateBilling = () => {
         {
           title: "ChargeAmt",
           dataIndex: "ChargeAmount",
-          render: (value) => value.toFixed(2), // Format with toFixed
+         // render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "Qty",
@@ -431,17 +434,17 @@ const CreateBilling = () => {
         {
           title: "NetAmt",
           dataIndex: "NetAmount",
-          render: (value) => value.toFixed(2), // Format with toFixed
+        //  render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "InsAmt",
           dataIndex: "InsuranceCoveredAmount",
-          render: (value) => value.toFixed(2), // Format with toFixed
+        //  render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "TaxAmt",
           dataIndex: "PatientTaxAmount",
-          render: (value) => value.toFixed(2), // Format with toFixed
+        //  render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "NetInsAmt",
@@ -460,7 +463,7 @@ const CreateBilling = () => {
         {
           title: "Charge",
           dataIndex: "PatientChargeAmount",
-          render: (value) => value.toFixed(2), // Format with toFixed
+       //   render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "Discount",
@@ -470,23 +473,23 @@ const CreateBilling = () => {
         {
           title: "Tax",
           dataIndex: "PatientTaxRate",
-          render: (value) => value.toFixed(2), // Format with toFixed
+         // render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "NetAmt",
           dataIndex: "PatientNetAmount",
-          render: (value) => value.toFixed(2), // Format with toFixed
+         // render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "AdjAmt",
           dataIndex: "AdjustedAmount",
-          render: (value) => value.toFixed(2), // Format with toFixed
+         // render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "LL Disc",
           dataIndex: "Discount",
           render: (_, row) => {
-            if (row.ServiceType.trim() === "P") {
+            if (row?.ServiceType?.trim() === "P") {
               return null; // Hide the discount button if ServiceType is "P"
             }
             return (
@@ -502,7 +505,7 @@ const CreateBilling = () => {
           title: "",
           dataIndex: "actions",
           render: (_, row) => {
-            if (row.ServiceType.trim() === "P") {
+            if (row?.ServiceType.trim() === "P") {
               return null; // Hide the delete button if ServiceType is "P"
             }
             return (

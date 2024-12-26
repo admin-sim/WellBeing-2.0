@@ -155,6 +155,8 @@ import CreateAccomodationCharge from "./pages/Masters/GeneralMasters/AccountMana
 import ReccuringCharge from "./pages/Masters/GeneralMasters/AccountManagement/ReccuringCharge.jsx";
 import CreateReccuringCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateReccuringCharge.jsx";
 import EncounterConfigFlow from "./pages/EncounterConfigFlow/index.jsx";
+import PatientRegistartionReport from "./pages/ReportManagement/IdentityManagement/PatientRegistartionReport.jsx";
+import EncounterRegistrationReport from "./pages/ReportManagement/IdentityManagement/EncounterRegistrationReport.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -1343,6 +1345,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <EncounterConfigFlow />
+                </ProtectedRoute>
+              }
+            />
+                <Route
+              path="EncounterRegistrationReport"
+              element={
+                <ProtectedRoute>
+                  <EncounterRegistrationReport />
+                </ProtectedRoute>
+              }
+            />
+                <Route
+              path="PatientRegistartionReport"
+              element={
+                <ProtectedRoute>
+                  <PatientRegistartionReport />
                 </ProtectedRoute>
               }
             />

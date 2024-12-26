@@ -541,4 +541,8 @@ export const urlSaveRecurringChargesModel = `${baseURL}/api/RecurringCharges/Sav
 export const urlDeleteRecuringCharges = `${baseURL}/api/RecurringCharges/DeleteCharges`;
 export const urlShowAcceptOrReject = `${baseURL}/api/WardManagement/ShowAcceptOrReject`;
 export const urlSaveAcceptOrReject = `${baseURL}/api/WardManagement/SaveAcceptOrReject`;
+export const urlGetAllConfiguartions = `${baseURL}/api/Configuration/Index`;
+export const urlAddNewConfiguration = `${baseURL}/api/Configuration/AddNewConfiguration`;
+export const urlEditConfiguration = `${baseURL}/api/Configuration/EditConfiguration`;
+export const urlUpdateConfiguration = `${baseURL}/api/Configuration/UpdateConfiguration`;
 

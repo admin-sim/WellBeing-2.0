@@ -21,10 +21,13 @@ import {
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import {
+  urlGetAllDepartments,
+  urlGetAllFacilities,
   urlGetAllPatientTypeAsync,
   urlGetAllPaymentTypesAsync,
+  urlGetAllProviders,
   urlGetAllUsers,
-
+  urlGetProviderBasedOnDept,
 } from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import { useNavigate } from "react-router";
@@ -33,12 +36,13 @@ import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx"
 
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
-const DailyCollectionReport = () => {
+const EncounterRegistrationReport = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm(); // Ant Design Form hook
-  const [users, setUsers] = useState([]);
-  const [paymenttypes, setpaymentTypes] = useState([]);
+  const [providers, setProviders] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [patientttypes, setPatientTypes] = useState([]);
+  const [facilities, setFacilities] = useState([]);
   const [reportUrl, setReportUrl] = useState(null);
   const [error, setError] = useState(null);
 
@@ -50,19 +54,23 @@ const DailyCollectionReport = () => {
 
   const fetchDataHeader = async () => {
     try {
-      const response = await customAxios.get(`${urlGetAllUsers}`);
+      const response = await customAxios.get(`${urlGetAllFacilities}`);
       if (response.status === 200 && response.data != null) {
-        const userdetail = response.data.data;
-        setUsers(userdetail);
+        const userdetail = response.data.data.FacilityModel;
+        setFacilities(userdetail);
+           // Set default value for FacilityId
+           if (userdetail.length > 0) {
+            form.setFieldsValue({ FacilityId: userdetail[0].FacilityId });
+          }
       } else {
       }
     } catch (error) {}
-
+  
     try {
-      const response = await customAxios.get(`${urlGetAllPaymentTypesAsync}`);
+      const response = await customAxios.get(`${urlGetAllDepartments}`);
       if (response.status === 200 && response.data != null) {
-        const paymentdetail = response.data.data.masters;
-        setpaymentTypes(paymentdetail);
+        const paymentdetail = response.data.data.DepartmentModel;
+        setDepartments(paymentdetail);
       } else {
       }
     } catch (error) {}
@@ -80,21 +88,19 @@ const DailyCollectionReport = () => {
     setError(null); // Reset previous errors
 
     const request = {
-      FacilityId: 1,
-      FromDate: values.fromDate.format("DD-MM-YYYY"),
-      ToDate: values.toDate.format("DD-MM-YYYY"),
+      FacilityId: values.FacilityId ?  values.FacilityId : "",
+      FromDate: values.fromDate.format("YYYY-MM-DD"),
+      ToDate: values.toDate.format("YYYY-MM-DD"),
       PatientType: values.PatientType,
-      Receipttype: values.ReceiptType,
-      PaymentType: values.PaymentType,
-      ReportOption: values.ReportOptions,
-      ReportType: values.ReportType,
-      User: values.User,
+      DeptId: values.department,
+      ProviderId: values.Provider,
+      VisitType: values.VisitType,
     };
 
     try {
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);
-    //  setBlobData(blob); // You can use this if you want to download or process the blob.
+      //setBlobData(blob); // You can use this if you want to download or process the blob.
     } catch (err) {
       setError(err.message);
     } finally {
@@ -104,7 +110,7 @@ const DailyCollectionReport = () => {
 
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:43705/api/ReportsApi/GetDailyCollectionReport",
+      "http://localhost:43705/api/ReportsApi/GetEncounterReport",
       {
         method: "POST",
         headers: {
@@ -128,6 +134,32 @@ const DailyCollectionReport = () => {
     form.resetFields(); // Reset the form fields to their initial values
   };
 
+  const handleDepartmentChange = async (value) => {
+   // setProviderLoading(true);
+    //setCalendarData(null);
+    form.resetFields(["Provider"]);
+
+
+    try {
+      const response = await customAxios.get(
+        `${urlGetProviderBasedOnDept}?Id=${value}`
+      );
+
+      setProviders(response.data.data);
+
+      console.log("Deaprtment", response?.data.data);
+      if (response.data != null) {
+        console.log("check the value for response", response.data);
+      } else {
+        console.log("check the value for response", response.data);
+      }
+     // setProviderLoading(false);
+    } catch (error) {
+      console.error(error);
+     // setProviderLoading(false);
+    }
+  };
+
   return (
     <Layout style={{ width: "100%" }}>
       <div
@@ -138,7 +170,7 @@ const DailyCollectionReport = () => {
           borderRadius: "10px",
         }}
       >
-        <PageHeader title={"Daily Collection Report"} button={false} />
+        <PageHeader title={"Encounter Report"} button={false} />
         <div
           style={{
             padding: "1rem",
@@ -151,150 +183,17 @@ const DailyCollectionReport = () => {
             initialValues={{
               toDate: dayjs(),
               fromDate: dayjs(),
-              ReportOptions: "0",
-              User: "",
-              ReportType: "",
-              PaymentType: "",
-              ReceiptType: "",
               PatientType: "",
+              FacilityId: facilities?.length > 0 ? facilities[0].FacilityId : "",
+              department: "",
+              Provider: "",
+              VisitType:"3"
             }}
             layout="vertical"
             onFinish={onFinish}
             form={form}
           >
             <Row gutter={16} style={{ marginBottom: "12px" }}>
-              <ColWithSixSpan>
-                <Form.Item name="fromDate" label="From Date">
-                  <DatePicker
-                    style={{ width: "100%" }}
-                    format={"DD-MM-YYYY"}
-
-                    // disabledDate={disabledDate}
-                  />
-                </Form.Item>
-              </ColWithSixSpan>
-              <ColWithSixSpan>
-                <Form.Item name="toDate" label="To Date">
-                  <DatePicker format={"DD-MM-YYYY"} style={{ width: "100%" }} />
-                </Form.Item>
-              </ColWithSixSpan>
-              <ColWithSixSpan>
-                <Form.Item name="User" label="User">
-                  <Select
-                    showSearch
-                    placeholder="Select the User"
-                    style={{ width: "100%" }}
-                    onChange={(value) => console.log(value)}
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                  >
-                    {/* "All" option as the first item */}
-                    <Select.Option key="all" value={""}>
-                      All
-                    </Select.Option>
-
-                    {/* Mapping the users */}
-                    {users?.map((response) => (
-                      <Select.Option
-                        key={response.ProviderId}
-                        value={response.ProviderId}
-                      >
-                        {response.ProviderName}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </ColWithSixSpan>
-
-              <ColWithSixSpan>
-                <Form.Item
-                  rules={[
-                    {
-                      required: true,
-                      message: "Source Document Required.",
-                    },
-                  ]}
-                  name="ReportOptions"
-                  label="Report Options"
-                >
-                  <Select>
-                    <Select.Option key="All" value="0">
-                      All
-                    </Select.Option>
-                    <Select.Option key="Pharmacy" value="2">
-                      Pharmacy
-                    </Select.Option>
-                    <Select.Option key="Regular" value="3">
-                      Regular
-                    </Select.Option>
-                  </Select>
-                </Form.Item>
-              </ColWithSixSpan>
-              <ColWithSixSpan>
-                <Form.Item name="ReportType" label="Report Type">
-                  <Select>
-                    <Select.Option key="Both" value="">
-                      Both
-                    </Select.Option>
-                    <Select.Option key="Payer" value="1">
-                      Payer
-                    </Select.Option>
-                    <Select.Option key="Patient" value="2">
-                      Patient
-                    </Select.Option>
-                  </Select>
-                </Form.Item>
-              </ColWithSixSpan>
-              <ColWithSixSpan>
-                <Form.Item name="PaymentType" label="Payment Type">
-                  <Select
-                    showSearch
-                    placeholder="Select the PaymentType"
-                    style={{ width: "100%" }}
-                    onChange={(value) => console.log(value)}
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                  >
-                    {/* "All" option as the first item */}
-                    <Select.Option key="all" value={""}>
-                      All
-                    </Select.Option>
-
-                    {/* Mapping the users */}
-                    {paymenttypes?.map((response) => (
-                      <Select.Option
-                        key={response.LookupID}
-                        value={response.LookupID}
-                      >
-                        {response.LookupDescription}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </ColWithSixSpan>
-              <ColWithSixSpan>
-                <Form.Item name="ReceiptType" label="Receipt Type">
-                  <Select>
-                    <Select.Option key="All" value="">
-                      All
-                    </Select.Option>
-                    <Select.Option key="Deposit" value="Deposit">
-                      Deposit
-                    </Select.Option>
-                    <Select.Option key="Receipt" value="Receipt">
-                      Receipt
-                    </Select.Option>
-                  </Select>
-                </Form.Item>
-              </ColWithSixSpan>
               <ColWithSixSpan>
                 <Form.Item name="PatientType" label="Patient Type">
                   <Select
@@ -326,6 +225,145 @@ const DailyCollectionReport = () => {
                   </Select>
                 </Form.Item>
               </ColWithSixSpan>
+              <ColWithSixSpan>
+                <Form.Item name="FacilityId" label="Facility">
+                  <Select
+                    showSearch
+                    placeholder="Select the Facility"
+                    style={{ width: "100%" }}
+                    onChange={(value) => console.log(value)}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                  >
+                    {/* "All" option as the first item */}
+                    <Select.Option key="all" value={""}>
+                      All
+                    </Select.Option>
+
+                    {/* Mapping the users */}
+                    {facilities?.map((option) => (
+                      <Select.Option
+                        key={option.FacilityId}
+                        value={option.FacilityId}
+                      >
+                        {option.FacilityName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
+                <Form.Item name="department" label="Department">
+                  <Select
+
+                    onChange={handleDepartmentChange}
+                    showSearch
+                    placeholder="Select the provider"
+                    style={{ width: "100%" }}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children
+                        .toLowerCase()
+                        .localeCompare(optionB.children.toLowerCase())
+                    }
+                  >
+                       <Select.Option key="all" value={""}>
+                      All
+                    </Select.Option>
+                    {departments?.map((response) => (
+                      <Select.Option
+                        key={response.DepartmentId}
+                        value={response.DepartmentId}
+                      >
+                        {response.DepartmentName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
+                <Form.Item name="Provider" label="Provider">
+                  <Select
+        
+                    showSearch
+                    placeholder="Select the provider"
+                    style={{ width: "100%" }}
+                    //onChange={handleProviderChange}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children
+                        .toLowerCase()
+                        .localeCompare(optionB.children.toLowerCase())
+                    }
+                  >
+                       <Select.Option key="all" value={""}>
+                      All
+                    </Select.Option>
+                    {providers?.map((response) => (
+                      <Select.Option
+                        key={response.ProviderId}
+                        value={response.ProviderId}
+                      >
+                        {response.ProviderName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
+                <Form.Item name="fromDate" label="From Date">
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    format={"DD-MM-YYYY"}
+
+                    // disabledDate={disabledDate}
+                  />
+                </Form.Item>
+              </ColWithSixSpan>
+              <ColWithSixSpan>
+                <Form.Item name="toDate" label="To Date">
+                  <DatePicker format={"DD-MM-YYYY"} style={{ width: "100%" }} />
+                </Form.Item>
+              </ColWithSixSpan>
+
+              <ColWithSixSpan>
+                <Form.Item
+                  rules={[
+                    {
+                      required: true,
+                      message: "Source Document Required.",
+                    },
+                  ]}
+                  name="VisitType"
+                  label="Visit Type"
+                >
+                  <Select>
+                    <Select.Option key="New" value="1">
+                      New
+                    </Select.Option>
+                    <Select.Option key="Revisit" value="2">
+                      Revisit
+                    </Select.Option>
+                    <Select.Option key="Both" value="3">
+                      Both
+                    </Select.Option>
+                  </Select>
+                </Form.Item>
+              </ColWithSixSpan>
             </Row>
             <Row gutter={16} justify="end" style={{ marginTop: "1rem" }}>
               <Col>
@@ -347,18 +385,18 @@ const DailyCollectionReport = () => {
           <div style={{ position: "relative" }}>
             {loading && (
               <div
-              style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(255, 255, 255, 0.8)", // Light overlay
-                zIndex: 1000,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
+                style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(255, 255, 255, 0.8)", // Light overlay
+                  zIndex: 1000,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
               >
                 <Spin size="large" />
               </div>
@@ -384,4 +422,4 @@ const DailyCollectionReport = () => {
   );
 };
 
-export default DailyCollectionReport;
+export default EncounterRegistrationReport;

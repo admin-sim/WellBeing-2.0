@@ -216,7 +216,7 @@ const Patient = () => {
 
   const handleOk = async () => {
     //
-
+debugger;
     try {
       await form.validateFields(); // Trigger form validation
       const values = form.getFieldsValue();
@@ -264,7 +264,7 @@ const Patient = () => {
           }
         );
 
-        if (response.data.data !== null) {
+        if (response.data!=false) {
           setIsSubmitLoader(false);
           const Patients = response.data.data.Patients.map((obj, index) => {
             return { ...obj, key: index + 1 };
@@ -285,9 +285,9 @@ const Patient = () => {
         } else {
           setIsSubmitLoader(false);
           if (isCancelEncounter) {
-            notification.error({
-              message: "Cancelling Visit details UnSuccessful",
-              description: "Failed to cancel visit. Please try again later.",
+            notification.warning({
+              message: "Please Clear Charges In Billing and Pharmacy Before Cancel Visit",
+              description: "In Case Of InPatient Please Discharge",
             });
           } else {
             notification.error({
