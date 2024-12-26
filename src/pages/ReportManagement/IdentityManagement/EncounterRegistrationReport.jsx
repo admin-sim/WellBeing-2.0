@@ -110,7 +110,7 @@ const EncounterRegistrationReport = () => {
 
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:43705/api/ReportsApi/GetEncounterReport",
+      "https://192.168.29.254:808/api/ReportsApi/GetEncounterReport",
       {
         method: "POST",
         headers: {

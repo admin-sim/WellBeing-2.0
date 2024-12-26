@@ -79,7 +79,7 @@ const PatientRegistartionReport = () => {
 
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:43705/api/ReportsApi/GetAllPatientRegistrationReport",
+      "https://192.168.29.254:808/api/ReportsApi/GetAllPatientRegistrationReport",
       {
         method: "POST",
         headers: {
