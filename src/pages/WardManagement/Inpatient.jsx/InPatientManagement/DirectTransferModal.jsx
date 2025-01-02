@@ -61,9 +61,9 @@ function DirectTransferModal({
       ProviderId: values.Provider,
       ToServiceLocationId: values.ToServiceLocation,
       FromServiceLocationId: values.FromServiceLocation,
-      ToWardId: values.ToWard,
+      ToWardId: values.ToWard ?? '',
       FromWardId: values.FromWard,
-      ToBedId: values.ToBed,
+      ToBedId: values.ToBed ?? '',
       FromBedId: values.FromBed,
       ReasonforTransfer: values.Reason,
       PatientID: values.PatientId,
@@ -168,7 +168,7 @@ function DirectTransferModal({
         centered
         title={
           <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>
-            {flag = 1 ? 'Request For Transfer' : 'Direct Transfer'}
+            {flag == 2 ? 'Request For Transfer' : 'Direct Transfer'}
           </span>
         }
         open={open}
@@ -433,13 +433,13 @@ function DirectTransferModal({
                     style={{ marginBottom: "0.5rem" }}
                     name="ToWard"
                     label="Ward"
-                    // initialValue={Dropdown.PatientsCurrentDetails.WardID}
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please select",
-                      },
-                    ]}
+                  // initialValue={Dropdown.PatientsCurrentDetails.WardID}
+                  // rules={[
+                  //   {
+                  //     required: flag == 1 ? false : true,
+                  //     message: "Please select",
+                  //   },
+                  // ]}
                   >
                     <Select
                       style={{ width: "100%" }}
@@ -470,12 +470,12 @@ function DirectTransferModal({
                     style={{ marginBottom: "0.5rem" }}
                     name="ToBed"
                     label="Bed"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please select",
-                      },
-                    ]}
+                  // rules={[
+                  //   {
+                  //     required: flag == 1 ? false : true,
+                  //     message: "Please select",
+                  //   },
+                  // ]}
                   >
                     <Select
                       style={{ width: "100%" }}
@@ -538,7 +538,7 @@ function DirectTransferModal({
                     </Select>
                   </Form.Item>
                 </Col>
-                <Col span={24}>
+                <Col span={24} hidden={flag === 0 ? false : true}>
                   <Form.Item name="Block" valuePropName="checked">
                     <Checkbox onChange={Block}>Retain Bed</Checkbox>
                   </Form.Item>

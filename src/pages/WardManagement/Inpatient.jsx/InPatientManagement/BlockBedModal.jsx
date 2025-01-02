@@ -123,7 +123,7 @@ function BlockBedModal({ bed, open, handleClose, Dropdown }) {
                 <Col span={24}>{(Dropdown.BedDetails || {}).ReasonForBlock}</Col>
               </Row>
               <Row>
-                <Col span={24}><b>BlockReason</b></Col>
+                <Col span={24}><b>BlockTime</b></Col>
               </Row>
               <Row>
                 <Col span={24}>{(Dropdown.BedDetails || {}).BlockTimeString}</Col>

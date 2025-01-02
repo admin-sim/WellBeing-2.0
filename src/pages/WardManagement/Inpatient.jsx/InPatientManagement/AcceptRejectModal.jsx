@@ -165,8 +165,8 @@ function AcceptRejectModal({ bed, patient, Dropdown, open, handleClose, handleDr
                                         "Content-Type": "application/json",
                                     },
                                 });
-                                if (response.status === 200 && response == 'Success') {
-                                    message.success(response)
+                                if (response.status === 200 && response.data.data == 'Success') {
+                                    message.success(response.data.data)
                                     handleCancel()
                                 } else {
                                     message.error('Failure')
@@ -236,7 +236,7 @@ function AcceptRejectModal({ bed, patient, Dropdown, open, handleClose, handleDr
                                 <Col span={12}>
                                     <Form.Item name="AssignedWard" label="Assigned Ward">
                                         <Select style={{ width: "100%" }} onChange={(value) => getDropdown(value)}>
-                                            {Dropdown.Wards.map((option) => {
+                                            {/* {Dropdown.Wards.map((option) => {
                                                 if (option.WardID !== Dropdown.PatientsCurrentDetails.WardID) {
                                                     if (
                                                         option.Gender === "Both" ||
@@ -249,7 +249,17 @@ function AcceptRejectModal({ bed, patient, Dropdown, open, handleClose, handleDr
                                                         );
                                                     }
                                                 }
-                                            })}
+                                            })} */}
+                                            {Dropdown.Wards.filter((option) =>
+                                                option.WardID !== Dropdown.PatientsCurrentDetails.WardID &&
+                                                (option.Gender === "Both" ||
+                                                    option.Gender.toLowerCase() === Dropdown.PatientsCurrentDetails.Gender.toLowerCase())
+                                            ).map((option) => (
+                                                <Select.Option key={option.WardID} value={option.WardID}>
+                                                    {option.WardName}
+                                                </Select.Option>
+                                            ))}
+
                                         </Select>
                                     </Form.Item>
                                 </Col>

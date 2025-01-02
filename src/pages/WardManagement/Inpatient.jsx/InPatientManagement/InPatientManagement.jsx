@@ -30,6 +30,7 @@ import {
   urlGetBeds,
   urlGetPatientHeaderDetails,
   urlGetServiceLocation,
+  urlGetUnBlockedBeds,
   urlGetWardAndBannerData,
   urlGetWardCategory,
   urlGetWardInpatientsDetails,
@@ -78,6 +79,7 @@ function InPatientManagement() {
     AwaitingPatients: [],
     AdtTypes: []
   });
+
   const [cancelDischargeBedModalOpen, setCancelDischargeBedModalOpen] = useState(false);
   const [directTransferModalOpen, setDirectTransferModalOpen] = useState(false);
   const [flag, setFlag] = useState(0)
@@ -89,6 +91,7 @@ function InPatientManagement() {
     Wards: [],
     Beds: [],
   })
+
   const [dropDown, setDropDown] = useState({
     FacilityDepartment: [],
     FacilityDeptServiceLocation: [],
@@ -101,6 +104,7 @@ function InPatientManagement() {
     FacilityDepartmentProvider: [],
     MovementDetails: {},
   });
+
   const [patientData, setPatientData] = useState({})
 
   const fetchDataHeader = async (bed) => {
@@ -210,9 +214,17 @@ function InPatientManagement() {
     }
   };
 
+  async function GetUnBlockedBeds(params) {
+    debugger
+    const response = await customAxios.get(
+      `${urlGetUnBlockedBeds}?ServiceLocationId=${params}`
+    );
+  }
+
   const handleMenuClick = async (e) => {
     setTableLoading(true);
     if (e !== undefined) {
+      GetUnBlockedBeds(e)
       const response = await customAxios.get(
         `${urlGetWardAndBannerData}?LocationId=${e}&Flag=${1}`
       );
@@ -313,6 +325,7 @@ function InPatientManagement() {
       if (response.status === 200 && response.data.data != null) {
         setDropDown(response.data.data);
         if (key == '1') {
+          setFlag(1)
           setDirectTransferModalOpen(true)
         } else if (key == '5') {
           setDischargeInitiationModalOpen(true)
@@ -323,7 +336,7 @@ function InPatientManagement() {
         } else if (key == '12') {
           setAmendDischargeBedModalOpen(true)
         } else {
-          setFlag(1)
+          setFlag(2)
           setDirectTransferModalOpen(true)
         }
       } else {
@@ -721,20 +734,22 @@ function InPatientManagement() {
                         })} */}
                         {showAwaitingPatient.IncomingRequestForTransfer.map((item, index) => {
                           if (item.AdtStatus === "Confirmed") {
-                            return (
+                            return (<>
                               <Tag key={index}>
                                 {`${item.PatientName} / ${item.AdtStatus}`}
-                              </Tag>
+                              </Tag><br />
+                            </>
                             );
                           } else {
-                            return (
+                            return (<>
                               <Button
                                 type="link"
                                 key={index}
                                 onClick={() => handleInRequest(item)}
                               >
                                 {`${item.PatientName} / ${item.AdtStatus}`}
-                              </Button>
+                              </Button><br />
+                            </>
                             );
                           }
                         })}
@@ -754,7 +769,29 @@ function InPatientManagement() {
                         </div>
                       }
                       key="4"
-                    ></Collapse.Panel>
+                    >
+                      {showAwaitingPatient.OutgoingRequestForTransfer.map((item, index) => {
+                        // if (item.AdtStatus === "Confirmed") {
+                        return (<>
+                          <Tag key={index}>
+                            {`${item.PatientName} / ${item.AdtStatus}`}
+                          </Tag><br />
+                        </>
+                        );
+                        // } else {
+                        //   return (<>
+                        //     <Button
+                        //       type="link"
+                        //       key={index}
+                        //       onClick={() => handleInRequest(item)}
+                        //     >
+                        //       {`${item.PatientName} / ${item.AdtStatus}`}
+                        //     </Button><br />
+                        //   </>
+                        //   );
+                        // }
+                      })}
+                    </Collapse.Panel>
                   </Collapse>
                 </div>
                 <div style={{ marginTop: "1rem", paddingBottom: "1.5rem" }}>
@@ -805,7 +842,7 @@ function InPatientManagement() {
           patient={patientData}
           open={directTransferModalOpen}
           flag={flag}
-          handleClose={() => { ReLoad(showAwaitingPatient.NewWardModel.ServiceLocationId), setDirectTransferModalOpen(false) }}
+          handleClose={() => { ReLoad(showAwaitingPatient.NewWardModel.ServiceLocationId), setDirectTransferModalOpen(false), setFlag(0) }}
         // handleClose={Close}
         />
         <DischargeInitiationModal

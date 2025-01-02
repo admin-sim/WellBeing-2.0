@@ -550,4 +550,5 @@ export const urlShowEditDefinition = `${baseURL}/api/ProductDefinition/ShowEditD
 export const urlUpdateProduct = `${baseURL}/api/ProductDefinition/UpdateProduct`;
 export const urlGetEditAssociation = `${baseURL}/api/AdditionalChargeSetup/GetEditAssociation`;
 export const urlUpdateAssociation = `${baseURL}/api/AdditionalChargeSetup/UpdateAssociation`;
+export const urlGetUnBlockedBeds = `${baseURL}/api/WardManagement/GetUnBlockedBeds`;
 

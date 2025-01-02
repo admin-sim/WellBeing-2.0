@@ -77,6 +77,7 @@ const CreatePurchaseOrder = () => {
   const [amount, setAmount] = useState()
   const [poAmount, setPoAmount] = useState()
   const [GSTTax, setGSTTax] = useState()
+  const [alternateUoms, setAlternateUoms] = useState([])
 
   const initialDataSource =
     PoHeaderId === 0
@@ -389,6 +390,7 @@ const CreatePurchaseOrder = () => {
         const apiData = response.data.data;
         let uoms = []
         if (apiData.AlternateUoms.length > 0) {
+          setAlternateUoms(apiData.AlternateUoms)
           uoms = DropDown.UOM.filter(
             i =>
               apiData.AlternateUoms.find(i1 => i1.AlternateUom === i.UomId || i.UomId === option.UomId)
@@ -431,10 +433,13 @@ const CreatePurchaseOrder = () => {
       return item;
     });
 
-    if (["PoQuantity", "PoRate", 'BonusQuantity', "DiscountRate", 'MrpExpected', "TaxType1", "TaxType2"].includes(column)) {
+    if (["PoQuantity", "PoRate", 'BonusQuantity', "DiscountRate", 'MrpExpected', "TaxType1", "TaxType2", 'UomId'].includes(column)) {
       const currentRecord = updatedData.find((item) => item.key === record.key);
 
-      const poQuantity = parseFloat(currentRecord.PoQuantity || 0);
+      const altUom = alternateUoms.find(i => i.AlternateUom == currentRecord.UomId)
+      // let poQuantity = record.PoQuantity * (altUom ? altUom.EquivalentUOMUnits : 1)
+
+      const poQuantity = parseFloat(currentRecord.PoQuantity || 0) * (altUom ? altUom.EquivalentUOMUnits : 1);
       const poRate = parseFloat(currentRecord.PoRate || 0);
       const discountRate = parseFloat(currentRecord.DiscountRate || 0);
       const discountAmount = (poQuantity * poRate * discountRate) / 100;
@@ -509,12 +514,14 @@ const CreatePurchaseOrder = () => {
   };
 
   const calculateTax = (amount, taxDetails, record) => {
+    debugger
     let taxAmount = 0;
     let temp = 0
-    let poQuantity = record.PoQuantity
+    const altUom = alternateUoms.find(i => i.AlternateUom == record.UomId)
+    let poQuantity = record.PoQuantity * (altUom ? altUom.EquivalentUOMUnits : 1)
     const mrp = (record.MrpExpected || 0)
     if (taxDetails.IncludeBonusQuantity) {
-      poQuantity = record.PoQuantity || 0 + record.BonusQuantity || 0;
+      poQuantity = poQuantity || 0 + record.BonusQuantity || 0;
       amount = poQuantity * (record.PoRate || 0) - (record.DiscountAmount || 0);
     }
     if (true) {
@@ -841,9 +848,19 @@ const CreatePurchaseOrder = () => {
           <Select
             // disabled={isProdhasAlternateUom}
             defaultValue={text}
-            onChange={(value, option) =>
-              handleUomChange(option, "UomId", index, record)
-            }
+            onChange={(value, option) => {
+              handleUomChange(option, "UomId", index, record);
+              handleInputChange({ target: { value } }, "UomId", index, record);
+            }}
+          // onChange={(value, option) =>
+          //   handleUomChange(option, "UomId", index, record);
+          //   handleInputChange(
+          //     { target: { value } },
+          //     "UomId",
+          //     index,
+          //     record
+          //   );
+          // }
           >
             {(record.UOM || []).map((option) => (
               <Option key={option.UomId} value={option.UomId}>

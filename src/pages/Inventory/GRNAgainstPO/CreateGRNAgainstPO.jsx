@@ -57,7 +57,7 @@ const CreateGRNAgainstPO = () => {
     DateFormat: [],
   });
 
-  let [counter, setCounter] = useState(2);
+  const [alternateUoms, setAlternateUoms] = useState([]);
   let [productCount, setProductcount] = useState(1);
   const [grnStatus, setGrnStatus] = useState(false);
 
@@ -249,6 +249,8 @@ const CreateGRNAgainstPO = () => {
     if (["ReceivedQty", "PoRate", "DiscountRate"].includes(column)) {
       newData = data.map((item) => {
         if (item.key === record.key) {
+          const altUom = alternateUoms.find(i => i.AlternateUom == record.UomId)
+          // let poQuantity = record.PoQuantity * (altUom ? altUom.EquivalentUOMUnits : 1)
           const updatedItem = { ...item, [column]: e.target.value };
           const recievingQty =
             column === "ReceivedQty" ? e.target.value : item.ReceivedQty;
@@ -261,7 +263,7 @@ const CreateGRNAgainstPO = () => {
           if (poRate != null && recievingQty != null) {
             const discount = discountRate != null ? discountRate : 0;
             discountAmount = (poRate * recievingQty * discount) / 100;
-            amount = poRate * recievingQty - discountAmount;
+            amount = poRate * recievingQty * (altUom ? altUom.EquivalentUOMUnits : 1) - discountAmount;
           }
 
           updatedItem.DiscountAmount = discountAmount;
@@ -327,7 +329,6 @@ const CreateGRNAgainstPO = () => {
   };
 
   const BatchmodalOpen = async (record) => {
-    debugger
     const fieldsToValidate = [[record.key, "ReceivedQty"]];
     const va = form1.getFieldsValue();
     await form1.validateFields(fieldsToValidate);
@@ -346,7 +347,6 @@ const CreateGRNAgainstPO = () => {
   };
 
   const handlePoNumber = (record) => {
-    debugger
     setLoading(true);
     form1.resetFields();
     form3.resetFields();
@@ -373,6 +373,7 @@ const CreateGRNAgainstPO = () => {
             TotalAmount: 0,
             Uom: item.ShortName
           }));
+          setAlternateUoms(apiData.ProductDetails[0].AlternateUoms)
           setData(products);
           const formdata = apiData.POProducts;
           form1.setFieldsValue({
@@ -676,35 +677,25 @@ const CreateGRNAgainstPO = () => {
       title: "Document Type",
       dataIndex: "DocumentTypeName",
       key: "DocumentTypeName",
-      sorter: (a, b) => a.DocumentType.localeCompare(b.DocumentType),
+      sorter: (a, b) => a.DocumentType.localeCompare(b.DocumentType)
     },
     {
       title: "PO Date",
-      dataIndex: "PoDate",
-      key: "PoDate",
-      sorter: (a, b) => a.PoDate.localeCompare(b.PoDate),
-      render: (text) => {
-        if (text !== undefined) {
-          const dateParts = text.split("T")[0].split("-");
-          const year = dateParts[0];
-          const month = dateParts[1];
-          const day = dateParts[2];
-
-          return `${day}-${month}-${year}`;
-        }
-      },
+      dataIndex: "PoDateString",
+      key: "PoDateString",
+      sorter: (a, b) => a.PoDateString.localeCompare(b.PoDateString)
     },
     {
-      title: "PO Raised By",
-      dataIndex: "PORaisedBy",
-      key: "PORaisedBy",
-      sorter: (a, b) => a.PORaisedBy.localeCompare(b.PORaisedBy),
+      title: "PO Owner",
+      dataIndex: "CreatedBy",
+      key: "CreatedBy",
+      sorter: (a, b) => a.CreatedBy.localeCompare(b.CreatedBy)
     },
     {
       title: "Status",
       dataIndex: "PoStatus",
       key: "PoStatus",
-      sorter: (a, b) => a.PoStatus.localeCompare(b.PoStatus),
+      sorter: (a, b) => a.PoStatus.localeCompare(b.PoStatus)
     },
   ];
 
@@ -1619,10 +1610,11 @@ const CreateGRNAgainstPO = () => {
   };
 
   async function CalculateTax(data, record) {
-    debugger
     const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${data[record.key].TaxType1}`);
     const taxDetails = response.data.data[0];
 
+    const altUom = alternateUoms.find(i => i.AlternateUom == batchRecord.UomId)
+    // let poQuantity = record.PoQuantity * (altUom ? altUom.EquivalentUOMUnits : 1)
     let Quantity = parseInt(data[record.key].Quantity || 0);
     let amount = Quantity * (data[record.key].Rate || 0) - (data[record.key].DiscountAmount || 0);
     let discountAmount = data[record.key].DiscountAmount
@@ -1630,8 +1622,8 @@ const CreateGRNAgainstPO = () => {
     let taxAmount = 0;
     let temp = 0;
     if (taxDetails.IncludeBonusQuantity) {
-      Quantity = parseInt(record.PoQuantity || 0) + parseInt(record.BonusQuantity || 0);
-      amount = Quantity * (record.PoRate || 0) - (record.DiscountAmount || 0);
+      Quantity = parseInt(data[record.key].Quantity || 0) * (altUom ? altUom.EquivalentUOMUnits : 1) + parseInt(record.BonusQuantity || 0);
+      amount = Quantity * (data[record.key].Rate || 0) - (data[record.key].DiscountAmount || 0);
     }
     if (true) {
       switch (taxDetails.ChargeType) {

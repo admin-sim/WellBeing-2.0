@@ -70,6 +70,8 @@ const CreateDirectGRN = () => {
   const [gstTax, setGSTTax] = useState()
   const [totaoPoAmount, setTotalPoAmount] = useState()
   const [productId, setProductId] = useState()
+  const [alternateUoms, setAlternateUoms] = useState([])
+
   const initialDataSource =
     grnHeaderId === 0
       ? [
@@ -229,9 +231,9 @@ const CreateDirectGRN = () => {
         item.LineAmount !== null &&
         item.LineAmount !== undefined
       ) {
-        amount += item.LineAmount;
+        totalAmount += item.LineAmount;
         taxAmount += item.TaxAmount1;
-        totalAmount += taxTemp == 0 ?
+        amount += taxTemp == 0 ?
           item.LineAmount + item.TaxAmount1 :
           item.LineAmount - item.TaxAmount1;
       }
@@ -245,10 +247,12 @@ const CreateDirectGRN = () => {
 
   const handleInputChange = (e, column, index, record) => {
     let newData;
-    if (["ReceivedQty", "PoRate", "DiscountRate"].includes(column)) {
+    if (["ReceivedQty", "PoRate", "DiscountRate", 'UomId'].includes(column)) {
       newData = data.map((item) => {
         if (item.key === record.key) {
           const updatedItem = { ...item, [column]: e.target.value };
+          const altUomData = alternateUoms.find(i => i.key == record.key)
+          const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == updatedItem.UomId) : undefined
           const recievingQty =
             column === "ReceivedQty" ? e.target.value : item.ReceivedQty;
           const poRate = column === "PoRate" ? e.target.value : item.PoRate;
@@ -260,9 +264,9 @@ const CreateDirectGRN = () => {
           if (poRate != null && recievingQty != null) {
             const discount = discountRate != null ? discountRate : 0;
             discountAmount = (poRate * recievingQty * discount) / 100;
-            amount = poRate * recievingQty - discountAmount;
+            amount = poRate * recievingQty * (altUom ? altUom.EquivalentUOMUnits : 1) - discountAmount;
           }
-
+          updatedItem.TaxAmount1 = column === "UomId" ? 0 : item.TaxAmount1;
           updatedItem.DiscountAmount = discountAmount;
           updatedItem.LineAmount = amount;
           updatedItem.TotalAmount = amount;
@@ -287,7 +291,7 @@ const CreateDirectGRN = () => {
       });
     }
 
-    if (["ReceivedQty", "PoRate", "DiscountRate"].includes(column)) {
+    if (["ReceivedQty", "PoRate", "DiscountRate", 'UomId'].includes(column)) {
       const totalAmount = calculateTotalAmount(newData);
       form1.setFieldsValue({
         TotalAmount: totalAmount.amount,
@@ -394,9 +398,9 @@ const CreateDirectGRN = () => {
       form1.setFieldsValue({ [batchRecord.key]: { TaxAmount1: taxamt1 + taxamt2 } });
       form1.setFieldsValue({
         [batchRecord.key]: {
-          TotalAmount: taxTemp == 0 ?
-            batchRecord.LineAmount + taxamt1 + taxamt2  :
-            batchRecord.LineAmount - taxamt1 - taxamt2 
+          LineAmount: taxTemp == 0 ?
+            batchRecord.LineAmount + taxamt1 + taxamt2 :
+            batchRecord.LineAmount - taxamt1 - taxamt2
         }
       });
       setData(newData)
@@ -427,11 +431,10 @@ const CreateDirectGRN = () => {
     setDataModel(newData);
     setModalVisible(false);
     form2.resetFields({
-      // Add a callback function to resetFields to handle invalid dates
       callback: (name, value) => {
         if (name === "MFGDateString" || name === "EXPDateString") {
           if (!value || !dayjs(value).isValid()) {
-            return null; // Return null to reset the field to its initial value
+            return null;
           }
         }
         return value;
@@ -597,6 +600,7 @@ const CreateDirectGRN = () => {
 
     if (totalReceivedQty !== totalBatchQuantity) {
       message.warning("Total ReceivedQty does not match total Batch Quantity.");
+      setLoading(false);
       return false;
     }
 
@@ -604,6 +608,7 @@ const CreateDirectGRN = () => {
       message.warning(
         "Total BonusQuantity does not match total Batch BonusQty."
       );
+      setLoading(false);
       return false;
     }
 
@@ -641,6 +646,7 @@ const CreateDirectGRN = () => {
   };
 
   const handleSelect = (value, option, column, record) => {
+    debugger
     form1.setFieldsValue({ [record.key]: { ProductId: option.key } });
     customAxios
       .get(`${urlGetProductDetailsById}?ProductId=${option.key}`)
@@ -648,6 +654,10 @@ const CreateDirectGRN = () => {
         const apiData = response.data.data;
         let uoms = []
         if (apiData.AlternateUoms.length > 0) {
+          setAlternateUoms((prev) => [
+            ...prev,
+            { key: record.key, data: apiData.AlternateUoms },
+          ]);
           uoms = DropDown.UOM.filter(
             i =>
               apiData.AlternateUoms.find(i1 => i1.AlternateUom === i.UomId || i.UomId === option.UomId)
@@ -747,20 +757,50 @@ const CreateDirectGRN = () => {
     }
   };
 
-  const handleUomChange = (option, column, index, record) => {
+  function handleUomChange(option, column, index, record) {
+    debugger
+    form1.setFieldsValue({ [record.key]: { UomId: option.value } });
+    form1.setFieldsValue({ [record.key]: { TaxAmount1: 0 } });
+    form1.setFieldsValue({ [record.key]: { PoRate: '' } });
+    form1.setFieldsValue({ [record.key]: { ReceivedQty: '' } });
+    form1.setFieldsValue({ [record.key]: { LineAmount: 0 } });
+    form1.setFieldsValue({ [record.key]: { TotalAmount: 0 } });
     const newData = data.map((item) => {
       if (item.key === record.key) {
         const updatedItem = {
           ...item,
           [column]: option.value,
           ShortName: option.children,
-          Uom: option.children
+          Uom: option.children,
+          TaxAmount1: 0,
+          PoRate: 0,
+          ReceivedQty: 0,
+          LineAmount: 0,
+          TotalAmount: 0
         };
         return updatedItem;
       }
       return item;
     });
     setData(newData);
+
+    const totalAmount = calculateTotalAmount(newData);
+    form1.setFieldsValue({
+      TotalAmount: totalAmount.amount,
+      GSTTax: totalAmount.taxAmount,
+      TotalPoAmount: totalAmount.totalAmount,
+    });
+    setPoAmount(totalAmount.amount)
+    setTotalPoAmount(totalAmount.totalAmount)
+    setGSTTax(totalAmount.taxAmount)
+
+    const newdataModel = dataModel.map((i) => {
+      if (i.ProductId === record.ProductId) {
+        return { ...i, ActiveFlag: false };
+      }
+      return i
+    })
+    setDataModel(newdataModel)
   };
 
   const ReplaceableChanged = (record, checked) => {
@@ -787,6 +827,7 @@ const CreateDirectGRN = () => {
             name={[record.key, "ProductName"]}
             rules={[{ required: true, message: "Required" }]}
             initialValue={record.ProductName}
+            preserve
           >
             <AutoComplete
               options={productOptions}
@@ -809,6 +850,7 @@ const CreateDirectGRN = () => {
             hidden
             name={[record.key, "ProductId"]}
             initialValue={record.ProductId}
+            preserve
           >
             <Input defaultValue={record.ProductId}></Input>
           </Form.Item>
@@ -816,6 +858,7 @@ const CreateDirectGRN = () => {
             hidden
             name={[record.key, "PoLineId"]}
             initialValue={record.PoLineId}
+            preserve
           >
             <Input defaultValue={record.PoLineId}></Input>
           </Form.Item>
@@ -823,6 +866,7 @@ const CreateDirectGRN = () => {
             hidden
             name={[record.key, "GrnLineId"]}
             initialValue={record.GrnLineId}
+            preserve
           >
             <Input defaultValue={record.GrnLineId}></Input>
           </Form.Item>
@@ -835,7 +879,7 @@ const CreateDirectGRN = () => {
       key: 'UomId',
       width: 150,
       render: (text, record, index) => (
-        <Form.Item
+        <Form.Item preserve
           name={[record.key, "UomId"]}
           rules={[{ required: true, message: "Required" }]}
           initialValue={
@@ -844,9 +888,15 @@ const CreateDirectGRN = () => {
         >
           <Select
             defaultValue={record.UomId}
-            onChange={(value, option) =>
+            onChange={(value, option) => {
               handleUomChange(option, "UomId", index, record)
-            }
+              // handleInputChange(
+              //   { target: { value } },
+              //   "UomId",
+              //   index,
+              //   record
+              // );
+            }}
           >
             {(record.UOM || []).map((option) => (
               <Option key={option.UomId} value={option.UomId}>
@@ -854,7 +904,7 @@ const CreateDirectGRN = () => {
               </Option>
             ))}
           </Select>
-        </Form.Item>
+        </Form.Item >
       ),
     },
     {
@@ -1098,13 +1148,16 @@ const CreateDirectGRN = () => {
   };
 
   const calculateTax = (amount, taxDetails, record) => {
+    debugger
     let taxAmount = 0;
     let temp = 0
     let poQuantity = record.Quantity
     const mrp = (record.MRP || 0)
+    const altUomData = alternateUoms.find(i => i.key == batchRecord.key)
+    const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == batchRecord.UomId) : undefined
     if (taxDetails.IncludeBonusQuantity) {
       poQuantity = record.Quantity || 0 + record.BatchBonusQty || 0;
-      amount = poQuantity * (batchRecord.PoRate || 0) - (batchRecord.DiscountAmount || 0);
+      amount = poQuantity * (altUom ? altUom.EquivalentUOMUnits : 1) * (batchRecord.PoRate || 0) - (batchRecord.DiscountAmount || 0);
     }
     if (true) {
       switch (taxDetails.ChargeType) {
@@ -1220,15 +1273,6 @@ const CreateDirectGRN = () => {
         currentRecord.TaxAmount2 = 0;
       }
 
-      // currentRecord.DiscountAmount = discountAmount;
-      // if (temp == 1) {
-      //   currentRecord.LineAmount = amount - parseFloat(currentRecord.TaxAmount1 || 0) - parseFloat(currentRecord.TaxAmount2 || 0);
-      //   currentRecord.TotalAmount = amount;
-      // } else {
-      //   currentRecord.LineAmount = amount;
-      //   currentRecord.TotalAmount = amount + parseFloat(currentRecord.TaxAmount1 || 0) + parseFloat(currentRecord.TaxAmount2 || 0);
-      // }
-
       form2.setFieldsValue({
         [record.key]: {
           DiscountAmount: discountAmount,
@@ -1241,17 +1285,6 @@ const CreateDirectGRN = () => {
     }
 
     setDataModel(updatedData);
-
-    // const totalSummary = calculateTotalAmount(updatedData);
-    // form1.setFieldsValue({
-    //   TotalAmount: totalSummary.TotalAmount,
-    //   TotalPoAmount: totalSummary.LineAmount,
-    //   TaxAmount1: totalSummary.GstTax,
-    // });
-
-    // setPoAmount(totalSummary.TotalAmount);
-    // setAmount(totalSummary.LineAmount);
-    // setGSTTax(totalSummary.GstTax);
   };
 
   const columnsModel = [
