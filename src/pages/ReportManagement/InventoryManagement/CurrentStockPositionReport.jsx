@@ -88,7 +88,7 @@ const CurrentStockPositionReport = () => {
 
     async function fetchReport(request) {
         const response = await fetch(
-            "http://localhost:43705/api/ReportsApi/GetCurrentStockPositionRpt",
+            "https://192.168.29.254:808/api/ReportsApi/GetCurrentStockPositionRpt",
             {
                 method: "POST",
                 headers: {
