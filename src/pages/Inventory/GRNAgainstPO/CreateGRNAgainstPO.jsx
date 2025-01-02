@@ -1615,14 +1615,14 @@ const CreateGRNAgainstPO = () => {
 
     const altUom = alternateUoms.find(i => i.AlternateUom == batchRecord.UomId)
     // let poQuantity = record.PoQuantity * (altUom ? altUom.EquivalentUOMUnits : 1)
-    let Quantity = parseInt(data[record.key].Quantity || 0);
+    let Quantity = parseInt(data[record.key].Quantity || 0) * (altUom ? altUom.EquivalentUOMUnits : 1);
     let amount = Quantity * (data[record.key].Rate || 0) - (data[record.key].DiscountAmount || 0);
     let discountAmount = data[record.key].DiscountAmount
     let mrp = data[record.key].MRP
     let taxAmount = 0;
     let temp = 0;
     if (taxDetails.IncludeBonusQuantity) {
-      Quantity = parseInt(data[record.key].Quantity || 0) * (altUom ? altUom.EquivalentUOMUnits : 1) + parseInt(record.BonusQuantity || 0);
+      Quantity = (Quantity || 0) + parseInt(record.BonusQuantity || 0);
       amount = Quantity * (data[record.key].Rate || 0) - (data[record.key].DiscountAmount || 0);
     }
     if (true) {

@@ -521,7 +521,7 @@ const CreatePurchaseOrder = () => {
     let poQuantity = record.PoQuantity * (altUom ? altUom.EquivalentUOMUnits : 1)
     const mrp = (record.MrpExpected || 0)
     if (taxDetails.IncludeBonusQuantity) {
-      poQuantity = poQuantity || 0 + record.BonusQuantity || 0;
+      poQuantity = (poQuantity || 0) + (record.BonusQuantity || 0);
       amount = poQuantity * (record.PoRate || 0) - (record.DiscountAmount || 0);
     }
     if (true) {

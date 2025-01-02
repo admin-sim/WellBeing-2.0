@@ -1151,13 +1151,14 @@ const CreateDirectGRN = () => {
     debugger
     let taxAmount = 0;
     let temp = 0
-    let poQuantity = record.Quantity
     const mrp = (record.MRP || 0)
     const altUomData = alternateUoms.find(i => i.key == batchRecord.key)
     const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == batchRecord.UomId) : undefined
+    let poQuantity = record.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)
+    amount = amount * (altUom ? altUom.EquivalentUOMUnits : 1)
     if (taxDetails.IncludeBonusQuantity) {
-      poQuantity = record.Quantity || 0 + record.BatchBonusQty || 0;
-      amount = poQuantity * (altUom ? altUom.EquivalentUOMUnits : 1) * (batchRecord.PoRate || 0) - (batchRecord.DiscountAmount || 0);
+      poQuantity = (poQuantity || 0) + (record.BatchBonusQty || 0);
+      amount = poQuantity * (batchRecord.PoRate || 0) - (batchRecord.DiscountAmount || 0);
     }
     if (true) {
       switch (taxDetails.ChargeType) {
