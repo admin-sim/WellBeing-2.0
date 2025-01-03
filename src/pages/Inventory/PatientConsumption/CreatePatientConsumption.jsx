@@ -14,6 +14,7 @@ import {
   Row,
   AutoComplete,
   message,
+  Spin,
 } from "antd";
 import Input from "antd/es/input";
 import Form from "antd/es/form";
@@ -87,7 +88,7 @@ const PatientConsumption = () => {
   const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
   const [autoCompleteProduct, setAutoCompleteProduct] = useState([]);
   const [encounter, setEncounter] = useState([]);
-  const [isDisabled, setIsDisable] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [batchDetails, setBatchDetails] = useState([]);
   const fields = form1.getFieldsValue();
   const [uhId, setUhId] = useState();
@@ -104,54 +105,61 @@ const PatientConsumption = () => {
     });
     if (issueId > 0) {
       debugger
+      setLoading(true)
       setButtonTitle("Update");
-      customAxios
-        .get(`${urlPatientConsumptionEdit}?IssueId=${issueId}`)
-        .then((response) => {
-          const apiData = response.data.data;
-          if (
-            apiData.newIndentIssueModel != null &&
-            apiData.newIndentIssueModel.length > 0
-          ) {
-            const products = apiData.newIndentIssueModel.map((item, index) => ({
-              ...item,
-              key: uuidv4(),
-              AvlQtyAtIssue: item.StockBalanceQty,
-              index: index + 1,
-            }));
-            setData(products);
-            setCounter(products.length);
-            const formdata = apiData.newPatientIssueModel;
-            setUhId(formdata.UhId)
-            form1.setFieldsValue({
-              IssueingStoreId: formdata.IssueingStoreId,
-              // IndentType: formdata.IndentType,
-              Remarks: formdata.Remarks,
-              IndentNumber: formdata.IndentNumber,
-              Status:
-                formdata.IssueStatus == "Created" ||
-                  formdata.IssueStatus == "Pending"
-                  ? undefined
-                  : formdata.IssueStatus,
-              UHID: formdata.UhId,
-              Name: formdata.PatientName,
-              Encounter: formdata.Encounter,
-              EncounterId: formdata.EncounterId,
-              PatientId: formdata.PatientId,
-              IssueId: formdata.IssueId,
+      try {
+        customAxios
+          .get(`${urlPatientConsumptionEdit}?IssueId=${issueId}`)
+          .then((response) => {
+            const apiData = response.data.data;
+            if (
+              apiData.newIndentIssueModel != null &&
+              apiData.newIndentIssueModel.length > 0
+            ) {
+              const products = apiData.newIndentIssueModel.map((item, index) => ({
+                ...item,
+                key: uuidv4(),
+                AvlQtyAtIssue: item.StockBalanceQty,
+                ReasonforConsumption: item.Remarks,
+                index: index + 1
+              }));
+              setData(products);
+              setCounter(products.length);
+              const formdata = apiData.newPatientIssueModel;
+              setUhId(formdata.UhId)
+              form1.setFieldsValue({
+                IssueingStoreId: formdata.IssueingStoreId,
+                // IndentType: formdata.IndentType,
+                Remarks: formdata.Remarks,
+                IndentNumber: formdata.IndentNumber,
+                Status:
+                  formdata.IssueStatus == "Created" ||
+                    formdata.IssueStatus == "Pending"
+                    ? undefined
+                    : formdata.IssueStatus,
+                UHID: formdata.UhId,
+                Name: formdata.PatientName,
+                Encounter: formdata.Encounter,
+                EncounterId: formdata.EncounterId,
+                PatientId: formdata.PatientId,
+                IssueId: formdata.IssueId,
+              });
+            }
+            const newData = apiData.BatchDetails.map((item) => {
+              return {
+                ...item,
+                key: uuidv4(),
+                RequestQty: item.IssueQty,
+              };
             });
-          }
-          const newData = apiData.BatchDetails.map((item) => {
-            return {
-              ...item,
-              key: uuidv4(),
-              RequestQty: item.IssueQty,
-            };
+            setDataModal(newData);
+            setLoading(false)
           });
-          setDataModal(newData);
-        });
+      } catch (error) {
+        message.error('Error at fetch data')
+        setLoading(false)
+      }
     } else if (Patient) {
-      debugger
       setUhId(Patient.UhId)
       GetEncounter(Patient.PatientId)
       form1.setFieldsValue({
@@ -253,32 +261,32 @@ const PatientConsumption = () => {
   };
 
   const handleOnFinish = async (values) => {
+    debugger
     if (!values.EncounterId) {
       message.warning("Selected Patient Encounter Is Not Created");
       return false;
     }
     const products = [];
-    for (let i = 0; i <= counter; i++) {
-      if (values[i] !== undefined) {
-        const product = {
-          ProductId: values[i].ProductId,
-          UomId: values[i].UomId,
-          RequestQty: values[i].RequestQty,
-          IssueQty: values[i].IssueQty,
-          IndentLineId: values[i].IndentLineId,
-          PatientIssueLineId: values[i].PatientIssueLineId
-            ? values[i].PatientIssueLineId
-            : 0,
-          StockId: values[i].StockId,
-          PendingQty:
-            values.IssueStatus == "Finalize"
-              ? values[i].IssueQty - values[i].PendingQty
-              : values[i].PendingQty,
-        };
-        products.push(product);
-      }
-    }
-    
+    data.forEach((it) => {
+      const product = {
+        ProductId: values[it.key].ProductId,
+        UomId: values[it.key].UomId,
+        RequestQty: values[it.key].RequestQty,
+        IssueQty: values[it.key].IssueQty,
+        IndentLineId: values[it.key].IndentLineId,
+        PatientIssueLineId: values[it.key].PatientIssueLineId
+          ? values[it.key].PatientIssueLineId
+          : 0,
+        StockId: values[it.key].StockId,
+        PendingQty:
+          values.IssueStatus == "Finalize"
+            ? values[it.key].IssueQty - values[it.key].PendingQty
+            : values[it.key].PendingQty,
+        Remarks: values[it.key].ReasonforConsumption
+      };
+      products.push(product);
+    })
+
     if (products.length === 0) {
       message.warning("Please Add Products")
       return false;
@@ -342,7 +350,6 @@ const PatientConsumption = () => {
           },
         }
       );
-
       handleCancel();
     } catch (error) {
       // Handle error
@@ -1181,126 +1188,44 @@ const PatientConsumption = () => {
   };
 
   return (
-    <Layout style={{ zIndex: "999999999" }}>
-      <div
-        style={{
-          width: "100%",
-          backgroundColor: "white",
-          minHeight: "max-content",
-          borderRadius: "10px",
-        }}
-      >
-        <PageHeader
-          title={"Create Patient Consumption"}
-          buttonLabel="Back"
-          buttonIcon={<LeftOutlined />}
-          onButtonClick={handleToPurchaseOrder}
-        />
-        <Card>
-          <Form
-            layout="vertical"
-            onFinish={handleOnFinish}
-            variant="outlined"
-            style={{
-              maxWidth: 1500,
-            }}
-            form={form1}
-            initialValues={{
-              IssueDate: dayjs(),
-            }}
-          >
-            <Row
-              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-              style={{ padding: "0.5rem 0.5rem", marginBottom: "0" }}
-              align="Bottom"
+    <Spin spinning={loading} size="large" tip="Loading...">
+      <Layout style={{ zIndex: "999999999" }}>
+        <div
+          style={{
+            width: "100%",
+            backgroundColor: "white",
+            minHeight: "max-content",
+            borderRadius: "10px",
+          }}
+        >
+          <PageHeader
+            title={"Create Patient Consumption"}
+            buttonLabel="Back"
+            buttonIcon={<LeftOutlined />}
+            onButtonClick={handleToPurchaseOrder}
+          />
+          <Card>
+            <Form
+              layout="vertical"
+              onFinish={handleOnFinish}
+              variant="outlined"
+              style={{
+                maxWidth: 1500,
+              }}
+              form={form1}
+              initialValues={{
+                IssueDate: dayjs(),
+              }}
             >
-              <Col className="gutter-row" span={6}>
-                <Form.Item
-                  label="Issue Store"
-                  name="IssueingStoreId"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input!",
-                    },
-                  ]}
-                >
-                  <Select
-                    allowClear
-                    placeholder="Select Value"
-                    onChange={handleStoreChange}
-                    disabled={!!issueId}
-                  >
-                    {DropDown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
-                        {option.LongName}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-                <Form.Item hidden name="IssueId">
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <Form.Item label="Consumption Date" name="IssueDate">
-                  <DatePicker
-                    disabled
-                    style={{ width: "100%" }}
-                    format="DD-MM-YYYY"
-                    disabledDate={(current) => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      return current && current < today;
-                    }}
-                  />
-                </Form.Item>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <div>
-                  <Form.Item label="Issue Owner" name="IssueOwner">
-                    <Input style={{ width: "100%" }} allowClear />
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={3}>
-                <div>
+              <Row
+                gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+                style={{ padding: "0.5rem 0.5rem", marginBottom: "0" }}
+                align="Bottom"
+              >
+                <Col className="gutter-row" span={6}>
                   <Form.Item
-                    label="Status"
-                    name="Status"
-                    rules={[
-                      {
-                        required: issueStatus,
-                        message: "please input",
-                      },
-                    ]}
-                  >
-                    <Select allowClear placeholder="Select Value">
-                      <Select.Option key="Draft" value="Draft"></Select.Option>
-                      <Select.Option
-                        key="Finalize"
-                        value="Finalize"
-                      ></Select.Option>
-                    </Select>
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={3}>
-                <div>
-                  <Form.Item
-                    name="SubmitCheck"
-                    style={{ marginTop: "30px" }}
-                    valuePropName="checked"
-                  >
-                    <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <div>
-                  <Form.Item
-                    label="UHID"
-                    name="UHID"
+                    label="Issue Store"
+                    name="IssueingStoreId"
                     rules={[
                       {
                         required: true,
@@ -1308,7 +1233,90 @@ const PatientConsumption = () => {
                       },
                     ]}
                   >
-                    {/* <AutoComplete
+                    <Select
+                      allowClear
+                      placeholder="Select Value"
+                      onChange={handleStoreChange}
+                      disabled={!!issueId}
+                    >
+                      {DropDown.StoreDetails.map((option) => (
+                        <Select.Option key={option.StoreId} value={option.StoreId}>
+                          {option.LongName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                  <Form.Item hidden name="IssueId">
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col className="gutter-row" span={6}>
+                  <Form.Item label="Consumption Date" name="IssueDate">
+                    <DatePicker
+                      disabled
+                      style={{ width: "100%" }}
+                      format="DD-MM-YYYY"
+                      disabledDate={(current) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return current && current < today;
+                      }}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col className="gutter-row" span={6}>
+                  <div>
+                    <Form.Item label="Issue Owner" name="IssueOwner">
+                      <Input style={{ width: "100%" }} allowClear />
+                    </Form.Item>
+                  </div>
+                </Col>
+                <Col className="gutter-row" span={3}>
+                  <div>
+                    <Form.Item
+                      label="Status"
+                      name="Status"
+                      rules={[
+                        {
+                          required: issueStatus,
+                          message: "please input",
+                        },
+                      ]}
+                    >
+                      <Select allowClear placeholder="Select Value">
+                        <Select.Option key="Draft" value="Draft"></Select.Option>
+                        <Select.Option
+                          key="Finalize"
+                          value="Finalize"
+                        ></Select.Option>
+                      </Select>
+                    </Form.Item>
+                  </div>
+                </Col>
+                <Col className="gutter-row" span={3}>
+                  <div>
+                    <Form.Item
+                      name="SubmitCheck"
+                      style={{ marginTop: "30px" }}
+                      valuePropName="checked"
+                    >
+                      <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
+                    </Form.Item>
+                  </div>
+                </Col>
+                <Col className="gutter-row" span={6}>
+                  <div>
+                    <Form.Item
+                      label="UHID"
+                      name="UHID"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please input!",
+                        },
+                      ]}
+                    >
+                      {/* <AutoComplete
                       style={{ width: "100%" }}
                       disabled={!!issueId}
                       options={autoCompleteOptions}
@@ -1317,148 +1325,149 @@ const PatientConsumption = () => {
                       value={uhId}
                       allowClear
                     /> */}
-                    <UhidSelectComponent selectedUhId={uhId} handleSelectUHID={handleSelect} />
+                      <UhidSelectComponent selectedUhId={uhId} handleSelectUHID={handleSelect} />
+                    </Form.Item>
+                  </div>
+                </Col>
+                <Col className="gutter-row" span={6}>
+                  <div>
+                    <Form.Item label="Name" name="Name">
+                      <Input style={{ width: "100%" }} disabled />
+                    </Form.Item>
+                  </div>
+                </Col>
+                <Col className="gutter-row" span={6}>
+                  <div>
+                    <Form.Item label="Encounter" name="Encounter"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please input!",
+                        },
+                      ]}
+                    >
+                      <Select disabled={encounter.length > 1 ? false : true}>
+                        {encounter.map((option) => (
+                          <Select.Option key={option.EncounterId} value={option.EncounterId}>{option.GeneratedEncounterId}</Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                    <Form.Item name="EncounterId" hidden>
+                      <Input></Input>
+                    </Form.Item>
+                    <Form.Item name="PatientId" hidden>
+                      <Input></Input>
+                    </Form.Item>
+                  </div>
+                </Col>
+                <Col className="gutter-row" span={12}>
+                  <div>
+                    <Form.Item label="Remarks" name="Remarks">
+                      <TextArea allowClear />
+                    </Form.Item>
+                  </div>
+                </Col>
+              </Row>
+              <Row justify="end" style={{ padding: "0rem 1rem" }}>
+                <Col style={{ marginRight: "10px" }}>
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      loading={isSearchLoading}
+                      htmlType="submit"
+                    >
+                      {buttonTitle}
+                    </Button>
                   </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <div>
-                  <Form.Item label="Name" name="Name">
-                    <Input style={{ width: "100%" }} disabled />
+                </Col>
+                <Col>
+                  <Form.Item>
+                    <Button type="primary" onClick={handleCancel}>
+                      Cancel
+                    </Button>
                   </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={6}>
-                <div>
-                  <Form.Item label="Encounter" name="Encounter"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input!",
-                      },
-                    ]}
-                  >
-                    <Select disabled={encounter.length > 1 ? false : true}>
-                      {encounter.map((option) => (
-                        <Select.Option key={option.EncounterId} value={option.EncounterId}>{option.GeneratedEncounterId}</Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                  <Form.Item name="EncounterId" hidden>
-                    <Input></Input>
-                  </Form.Item>
-                  <Form.Item name="PatientId" hidden>
-                    <Input></Input>
-                  </Form.Item>
-                </div>
-              </Col>
-              <Col className="gutter-row" span={12}>
-                <div>
-                  <Form.Item label="Remarks" name="Remarks">
-                    <TextArea allowClear />
-                  </Form.Item>
-                </div>
-              </Col>
-            </Row>
-            <Row justify="end" style={{ padding: "0rem 1rem" }}>
-              <Col style={{ marginRight: "10px" }}>
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    loading={isSearchLoading}
-                    htmlType="submit"
-                  >
-                    {buttonTitle}
-                  </Button>
-                </Form.Item>
-              </Col>
-              <Col>
-                <Form.Item>
-                  <Button type="primary" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                </Form.Item>
-              </Col>
-            </Row>
-            <Divider style={{ marginTop: "0" }}></Divider>
-            {/* <Table
+                </Col>
+              </Row>
+              <Divider style={{ marginTop: "0" }}></Divider>
+              {/* <Table
               columns={columns}
               dataSource={data?.filter((item) => item?.ActiveFlag != false)}
               scroll={{ x: 0 }}
             /> */}
-            <CustomTable
-              dataSource={data?.filter((item) => item.ActiveFlag != false)}
-              columns={columns}
-              isFilter={false}
-              // actionColumn={false}
-              actionColumnName={<Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleAdd}
-              ></Button>}
-              onDelete={handleDelete}
-              bordered
-            />
-          </Form>
-        </Card>
-        <ConfigProvider
-          theme={{
-            token: {
-              zIndexPopupBase: 3000,
-            },
-          }}
-        >
-          <Modal
-            title="Product Batch Details"
-            onOk={onOkModal}
-            onCancel={onCancelModel}
-            width={1100}
-            open={isModalOpen}
-            okText="Save"
-          >
-            <Form
-              name="basic"
-              labelCol={{
-                span: 8,
-              }}
-              wrapperCol={{
-                span: 16,
-              }}
-              style={{
-                width: "100%",
-              }}
-              initialValues={{
-                remember: true,
-              }}
-              onFinish={onFinishModel}
-              onFinishFailed={onFinishFailed}
-              autoComplete="off"
-              form={form2}
-            >
-              <Tag color="#1890ff">Product: {productDetails.ProductName}</Tag>{" "}
-              {/* Custom blue color */}
-              <Tag color="#52c41a">
-                Issued Quantity: {productDetails.IssueQty}
-              </Tag>{" "}
-              <Table scroll
-                columns={columnsModel}
-                dataSource={
-                  batchRecord?.ProductId
-                    ? dataModal.filter(
-                      (item) =>
-                        (item.ProductId == batchRecord.ProductId &&
-                          item.ActiveFlag) ||
-                        (item.ProductId == "" && item.ActiveFlag)
-                    )
-                    : []
-                }
-                size="small"
+              <CustomTable
+                dataSource={data?.filter((item) => item.ActiveFlag != false)}
+                columns={columns}
+                isFilter={false}
+                // actionColumn={false}
+                actionColumnName={<Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleAdd}
+                ></Button>}
+                onDelete={handleDelete}
+                bordered
               />
             </Form>
-          </Modal>
-        </ConfigProvider>
-      </div>
-    </Layout>
+          </Card>
+          <ConfigProvider
+            theme={{
+              token: {
+                zIndexPopupBase: 3000,
+              },
+            }}
+          >
+            <Modal
+              title="Product Batch Details"
+              onOk={onOkModal}
+              onCancel={onCancelModel}
+              width={1100}
+              open={isModalOpen}
+              okText="Save"
+            >
+              <Form
+                name="basic"
+                labelCol={{
+                  span: 8,
+                }}
+                wrapperCol={{
+                  span: 16,
+                }}
+                style={{
+                  width: "100%",
+                }}
+                initialValues={{
+                  remember: true,
+                }}
+                onFinish={onFinishModel}
+                onFinishFailed={onFinishFailed}
+                autoComplete="off"
+                form={form2}
+              >
+                <Tag color="#1890ff">Product: {productDetails.ProductName}</Tag>{" "}
+                {/* Custom blue color */}
+                <Tag color="#52c41a">
+                  Issued Quantity: {productDetails.IssueQty}
+                </Tag>{" "}
+                <Table scroll
+                  columns={columnsModel}
+                  dataSource={
+                    batchRecord?.ProductId
+                      ? dataModal.filter(
+                        (item) =>
+                          (item.ProductId == batchRecord.ProductId &&
+                            item.ActiveFlag) ||
+                          (item.ProductId == "" && item.ActiveFlag)
+                      )
+                      : []
+                  }
+                  size="small"
+                />
+              </Form>
+            </Modal>
+          </ConfigProvider>
+        </div>
+      </Layout>
+    </Spin>
   );
 };
 
