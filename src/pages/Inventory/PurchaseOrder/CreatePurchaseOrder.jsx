@@ -418,7 +418,6 @@ const CreatePurchaseOrder = () => {
         });
         setData(newData);
         form1.setFieldsValue({ [record.key]: { UomId: option.UomId } });
-        form1.setFieldsValue({ [record.key]: { PoRate: newData[0].PoRate } });
       });
   };
 
