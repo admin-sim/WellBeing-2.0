@@ -732,7 +732,7 @@ function InPatientManagement() {
                             )
                           }
                         })} */}
-                        {showAwaitingPatient.IncomingRequestForTransfer.map((item, index) => {
+                        {/* {showAwaitingPatient.IncomingRequestForTransfer.map((item, index) => {
                           if (item.AdtStatus === "Confirmed") {
                             return (<>
                               <Tag key={index}>
@@ -752,7 +752,7 @@ function InPatientManagement() {
                             </>
                             );
                           }
-                        })}
+                        })} */}
                       </div>
                     </Collapse.Panel>
                     <Collapse.Panel
@@ -770,7 +770,7 @@ function InPatientManagement() {
                       }
                       key="4"
                     >
-                      {showAwaitingPatient.OutgoingRequestForTransfer.map((item, index) => {
+                      {/* {showAwaitingPatient.OutgoingRequestForTransfer.map((item, index) => {
                         // if (item.AdtStatus === "Confirmed") {
                         return (<>
                           <Tag key={index}>
@@ -790,7 +790,7 @@ function InPatientManagement() {
                         //   </>
                         //   );
                         // }
-                      })}
+                      })} */}
                     </Collapse.Panel>
                   </Collapse>
                 </div>

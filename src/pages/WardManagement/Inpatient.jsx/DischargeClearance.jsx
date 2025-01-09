@@ -225,7 +225,7 @@ function DischargeClearance() {
           width: "100%",
         }}
       >
-        <PageHeader title={"Discharge Clearance"} buttonIcon={<PieChartOutlined />} onButtonClick={handleSearch} />
+        <PageHeader title={"Discharge Clearance"} buttonIcon={<PieChartOutlined />} onButtonClick={handleSearch} button={false} />
         <Spin spinning={loading}>
           <CustomTable
             columns={columns}

@@ -153,11 +153,12 @@ function AcceptRejectModal({ bed, patient, Dropdown, open, handleClose, handleDr
                                     AdtID: value.AdtID,
                                     AssignedBed: value.AssignedBed,
                                     WardID: value.AssignedWard,
-                                    ToBedID: value.BedId,
+                                    FromBedId: value.BedId,
+                                    ToBedID: value.AssignedBed,
                                     ConfirmationStatus: value.ConfirmationStatus,
                                     PatientId: value.PatientId,
                                     ExecutedStatus: flag == 1 ? 'Reject' : 'Confirmed',
-                                    RejectReason: flag == 1 ? value.ReasonForRejection : 0,
+                                    ReasonId: flag == 1 ? value.ReasonForRejection : 0,
                                     AdtStatus: flag == 1 ? 'Reject' : 'Confirmed'
                                 }
                                 const response = await customAxios.post(urlSaveAcceptOrReject, data1, {

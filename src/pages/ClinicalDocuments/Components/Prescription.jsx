@@ -16,7 +16,8 @@ import {
   Tabs,
   Tooltip,
   AutoComplete,
-  DatePicker, message
+  DatePicker, message,
+  InputNumber
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import React, { useEffect, useState } from "react";
@@ -319,7 +320,7 @@ function Prescription(Patient) {
       ),
     },
     {
-      title: "IntervalInDays",
+      title: "Interval In Days",
       dataIndex: "IntervalInDays",
       render: (text, record) => (
         <Form.Item
@@ -327,16 +328,16 @@ function Prescription(Patient) {
           style={{ marginBottom: 0 }}
           initialValue={record.Interval}
         >
-          <Input
+          <InputNumber min={0} style={{ width: '100%' }}
             value={text}
-            onChange={(e) => Interval(e.target.value, record)}
+            onChange={(value) => Interval(value, record)}
           />
         </Form.Item>
       ),
     },
     {
-      title: "TotalQty",
-      dataIndex: "TotalQty",
+      title: "Total Quantity",
+      dataIndex: "Total Qty",
       render: (text, record) => (
         <Form.Item
           name={[record.key, "TotalQty"]}
@@ -478,7 +479,7 @@ function Prescription(Patient) {
           <span style={{ fontSize: "1rem", fontWeight: 600 }}>
             Prescription
           </span>
-        </Col>        
+        </Col>
       </Row>
       <Tabs
         defaultActiveKey="1"
@@ -512,7 +513,6 @@ function Prescription(Patient) {
             layout="vertical"
             form={form}
             onFinish={async (values) => {
-              debugger
               const Drugss = [];
               await form1.validateFields();
               const obj = {
@@ -604,7 +604,6 @@ function Prescription(Patient) {
                   setDataSource(initial);
                   setTabName("New");
                   setButtonTitle('Save')
-                  // handleCancel()
                 }
               } else {
                 const response = await customAxios.post(urlIndent, IndentViewModel, {
@@ -660,7 +659,6 @@ function Prescription(Patient) {
                       setDataSource(initial);
                       setButtonTitle('Save')
                       setTabName('New')
-                      // handleCancel()
                     }
                   }
                 }

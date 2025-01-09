@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Button from 'antd/es/button';
-import { urlCreatePurchaseOrder, urlEditOpeningStock, urlUpdateOpeningStock, urlAutocompleteProduct, urlAddNewStock } from '../../../../endpoints.js';
+import { urlCreatePurchaseOrder, urlEditOpeningStock, urlUpdateOpeningStock, urlAutocompleteProduct, urlAddNewStock, urlGetProductDetailsById, urlGetTaxDetails } from '../../../../endpoints.js';
 import Select from 'antd/es/select';
 import { ConfigProvider, Typography, Checkbox, Tag, Modal, Popconfirm, message, Col, Divider, Row, Spin, AutoComplete, Card } from 'antd';
 import Input from 'antd/es/input';
@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 import customAxios from '../../../components/customAxios/customAxios.jsx';
 import CustomTable from '../../../components/customTable/index.jsx';
 import PageHeader from '../../../components/PageHeader/index.jsx';
+import { ColWithEightSpan } from '../../../components/customGridColumns/index.jsx';
 
 //import { Calculate } from '@mui/icons-material';
 
@@ -32,8 +33,7 @@ const CreateOpeningStock = () => {
   });
 
   const location = useLocation();
-  let [counter, setCounter] = useState(1);
-  let [counterModal, setCounterModal] = useState(0);
+  const [alternateUoms, setAlternateUoms] = useState([])
   const [loading, setLoading] = useState(false);
 
   const GRNHeaderId = location.state.GRNHeaderId;
@@ -65,7 +65,6 @@ const CreateOpeningStock = () => {
           ProductId: "",
           UomId: null,
           BatchBonusQty: 0,
-          MFGDate: "",
           EXPDateString: "",
           PoRate: 0,
           MRP: 0,
@@ -101,8 +100,9 @@ const CreateOpeningStock = () => {
   const [productOptions, setProductOptions] = useState()
   const [dropDownLoad, setDropDownLoad] = useState(true);
   const [buttonTitle, setButtonTitle] = useState('Save')
-
-  // const tableRef = useRef(null);
+  const [amount, setAmount] = useState()
+  const [gstTax, setGSTTax] = useState()
+  const [totalAmount, setTotalAmount] = useState()
 
   useEffect(() => {
     customAxios.get(urlCreatePurchaseOrder).then((response) => {
@@ -128,23 +128,38 @@ const CreateOpeningStock = () => {
                 ...item,
                 key: uuidv4(),
                 Replaceable: item.Replaceable == 'Y' ? true : false,
+                UOM: response.data.data.UOM.filter(m => item.ProductDetails.AlternateUoms.find(i1 => i1.AlternateUom === m.UomId) || m.UomId === item.ProductDetails.UOMPrimaryUOM),
+                LineAmount: item.ProductDetails.AlternateUoms.length > 0
+                  ? (() => {
+                    const matchedUom = item.ProductDetails.AlternateUoms.find(x => x.AlternateUom === item.UomId);
+                    return matchedUom ? item.LineAmount * matchedUom.EquivalentUOMUnits : item.LineAmount;
+                  })()
+                  : item.LineAmount
               })
             );
+            setAlternateUoms(products.flatMap(item => ({
+              key: item.key,
+              data: item.ProductDetails.AlternateUoms,
+            })));
             setData(products);
+            const totalAmount = calculateTotalAmount(products);
+            form2.setFieldsValue({
+              GSTTax: totalAmount.taxAmount,
+              TotalPoAmount: totalAmount.totalAmount,
+            });
+            setTotalAmount(totalAmount.totalAmount)
+            setGSTTax(totalAmount.taxAmount)
             const formdata = editeddata.newGRNAgainstPOModel;
-
             form1.setFieldsValue({
               // Date: formdata.GRNDate,
               ReceivingStore: formdata.StoreId,
               GRNHeaderId: formdata.GRNHeaderId,
               Remarks: formdata.Remarks,
             });
-            setCounter(products.length + 1);
             const delivery = editeddata.BatchDetails.map((item, index) => ({
               ...item,
               key: uuidv4(),
             }));
-            setCounterModal(editeddata.BatchDetails.length + 1);
             setDataModal(delivery);
             setLoading(false)
           }
@@ -156,7 +171,7 @@ const CreateOpeningStock = () => {
     fetchData();
   }, []);
 
-  const handleSearch = async (searchText) => {
+  const handleSearch = async (searchText, record) => {
     if (searchText) {
       const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${searchText}`);
       const apiData = response.data.data;
@@ -169,6 +184,7 @@ const CreateOpeningStock = () => {
         value: item.LongName,
         key: item.ProductId,
         UomId: item.UOMPrimaryUOM,
+        Uom: item.UOMPrimaryUOMname
       }));
       setProductOptions(newOptions);
     }
@@ -180,6 +196,14 @@ const CreateOpeningStock = () => {
     const form3data = form3.getFieldsValue()
     const form3Obj = Object.values(form3data)
     const TotalQty = form3Obj.reduce((sum, item) => sum + (item.Quantity || 0), 0);
+
+    const taxamt1 = form3Obj.reduce(
+      (total, item) => (item ? total + (item.TaxAmount1 || 0) : total),
+      0
+    ); const taxamt2 = form3Obj.reduce(
+      (total, item) => (item ? total + (item.TaxAmount2 || 0) : total),
+      0
+    );
 
     if (TotalQty !== productDetails.ReceivedQty) {
       message.warning('Quantities must be Equals')
@@ -193,22 +217,42 @@ const CreateOpeningStock = () => {
             BatchNo: form3data[item.key].BatchNo,
             EXPDateString: form3data[item.key].EXPDateString ? form3data[item.key].EXPDateString.format("DD-MM-YYYY") : "",
             GrnBatchId: form3data[item.key].GrnBatchId,
-            MFGDateString: form3data[item.key].MFGDate ? form3data[item.key].MFGDate.format("DD-MM-YYYY") : "",
+            MFGDateString: form3data[item.key].MFGDateString ? form3data[item.key].MFGDateString.format("DD-MM-YYYY") : "",
             MRP: form3data[item.key].MRP,
             ProductId: form3data[item.key].ProductId,
             Quantity: form3data[item.key].Quantity,
+            GrnLineId: form3data[item.key].GrnLineId ?? 0,
             StockLocator: 0,
             Rate: form3data[item.key].PoRate,
             UomId: form3data[item.key].UomId,
+            TaxType1: form3data[item.key].TaxType1 != '' ? form3data[item.key].TaxType1 : 0,
             TaxAmount1: form3data[item.key].TaxAmount1 ? form3data[item.key].TaxAmount1 : 0,
+            TaxType2: form3data[item.key].TaxType2 != '' ? form3data[item.key].TaxType2 : 0,
             TaxAmount2: form3data[item.key].TaxAmount2 ? form3data[item.key].TaxAmount2 : 0,
-            TaxType1: 0,
-            TaxType2: 0
           }
         }
         return item
       })
       setDataModal(newdatamodal)
+      const newData = data.map((item) => {
+        const key = item.key;
+        if (productDetails.key == key) {
+          return {
+            ...item,
+            TaxAmount1: taxamt1 + taxamt2
+          }
+        }
+        return item
+      })
+      form2.setFieldsValue({ [productDetails.key]: { TaxAmount1: taxamt1 + taxamt2 } });
+      setData(newData)
+      const totalAmount = calculateTotalAmount(newData);
+      form2.setFieldsValue({
+        GSTTax: totalAmount.taxAmount,
+        TotalPoAmount: totalAmount.totalAmount,
+      });
+      setTotalAmount(totalAmount.totalAmount)
+      setGSTTax(totalAmount.taxAmount)
       setIsModalOpen(false);
     }
     // onCancelModel();
@@ -238,28 +282,47 @@ const CreateOpeningStock = () => {
       return item;
     });
     setData(newData);
+    const totalAmount = calculateTotalAmount(newData);
+    form2.setFieldsValue({
+      GSTTax: totalAmount.taxAmount,
+      TotalPoAmount: totalAmount.totalAmount
+    });
+    setTotalAmount(totalAmount.totalAmount)
+    setGSTTax(totalAmount.taxAmount)
+
+    const newdataModel = dataModal.map((i) => {
+      if (i.ProductId === record.ProductId) {
+        return { ...i, ActiveFlag: false };
+      }
+      return i
+    })
+    setDataModal(newdataModel)
   };
 
   const handleOnFinish = async (values) => {
+    debugger
     await form2.validateFields()
     const form2data = form2.getFieldsValue()
     setIsSearchLoading(true);
+    // const filterData = data.filter((m) => m.ActiveFlag == true)
+
     const products = [];
-    for (let i = 0; i <= data.length; i++) {
-      if (form2data[i] !== undefined) {
-        const product = {
-          ProductId: form2data[i].ProductId,
-          UomId: form2data[i].UomId,
-          PORate: form2data[i].PoRate,
-          ReceivedQty: form2data[i].ReceivedQty,
-          LineAmount: form2data[i].LineAmount,
-          Replaceable: form2data[i].Replaceable == true ? 'Y' : 'N',
-          GrnLineId: form2data[i].GrnLineId ? form2data[i].GrnLineId : 0,
-          ActiveFlag: true
-        }
-        products.push(product);
+
+    data.forEach((s) => {
+      const product = {
+        ProductId: s.ProductId,
+        UomId: s.UomId,
+        PORate: s.PoRate,
+        ReceivedQty: s.ReceivedQty,
+        LineAmount: s.LineAmount,
+        TotalAmount: s.LineAmount,
+        TaxAmount1: s.TaxAmount1,
+        Replaceable: s.Replaceable == true ? 'Y' : 'N',
+        GrnLineId: s.GrnLineId ? s.GrnLineId : 0,
+        ActiveFlag: s.ActiveFlag
       }
-    }
+      products.push(product);
+    })
 
     const OpeningStock = {
       GRNHeaderId: values.GRNHeaderId ? values.GRNHeaderId : 0,
@@ -274,6 +337,7 @@ const CreateOpeningStock = () => {
       GRNAgainstPODetails: products,
       BatchDetails: dataModal
     }
+
     const url = GRNHeaderId == 0 ? urlAddNewStock : urlUpdateOpeningStock;
     const response = await customAxios.post(url, postData, {
       headers: {
@@ -308,47 +372,128 @@ const CreateOpeningStock = () => {
         ActiveFlag: true,
       },
     ]);
-    setCounter(counter + 1);
   };
 
   const handleSelect = async (value, option, column, record) => {
-    form2.setFieldsValue({ [record.key]: { UomId: option.UomId } });
     form2.setFieldsValue({ [record.key]: { ProductId: option.key } });
-    const newdata = data.map((item) => {
-      if (item.key === record.key) {
-        return {
-          ...item,
-          ProductId: option.key,
-          UomId: option.UomId,
-          ProductName: option.value
+    customAxios
+      .get(`${urlGetProductDetailsById}?ProductId=${option.key}`)
+      .then((response) => {
+        const apiData = response.data.data
+        let uoms = []
+        if (apiData.AlternateUoms.length > 0) {
+          setAlternateUoms((prev) => [
+            ...prev,
+            { key: record.key, data: apiData.AlternateUoms },
+          ]);
+          uoms = DropDown.UOM.filter(
+            i =>
+              apiData.AlternateUoms.find(i1 => i1.AlternateUom === i.UomId || i.UomId === option.UomId)
+          )
+        } else {
+          uoms = DropDown.UOM.filter(i => i.UomId === option.UomId)
         }
-      }
-      return item
-    })
-    setData(newdata)
+        form2.setFieldsValue({ [record.key]: { UomId: option.UomId } })
+        const newData = data.map((item) => {
+          if (item.key === record.key) {
+            const updatedItem = {
+              ...item,
+              [column]: option.value,
+              UomId: option.UomId,
+              ProductId: option.key,
+              TaxAmount1: 0,
+              Uom: option.Uom,
+              Expiry: option.Expiry,
+              UOM: uoms
+            };
+            return updatedItem
+          }
+          return item
+        });
+        setData(newData)
+      });
   };
 
-  const handleInputChange = (value, fieldName, index, record) => {
-    const formdata = form2.getFieldsValue()
-    const formObj = Object.values(formdata)
-    formObj.forEach((i) => {
-      if (i.ReceivedQty != "" && i.PoRate != "") {
-        form2.setFieldsValue({ [record.key]: { LineAmount: i.PoRate * i.ReceivedQty } })
+  function calculateTotalAmount(data) {
+    // let amount = 0;
+    let totalAmount = 0;
+    let taxAmount = 0;
+    data.forEach((item) => {
+      if (
+        item.ActiveFlag &&
+        !isNaN(item.LineAmount) &&
+        item.LineAmount !== null &&
+        item.LineAmount !== undefined
+      ) {
+        totalAmount += item.LineAmount;
+        taxAmount += item.TaxAmount1;
+        // amount += taxTemp == 0 ?
+        //   item.LineAmount + item.TaxAmount1 :
+        //   item.LineAmount - item.TaxAmount1;
       }
-    })
+    });
+    return totalAmount = {
+      // amount: amount,
+      taxAmount: taxAmount,
+      totalAmount: totalAmount,
+    };
+  }
 
-    const newData1 = data.map((item => {
-      if (record.key == item.key) {
-        return {
-          ...item,
-          PoRate: formdata[item.key].PoRate,
-          ReceivedQty: formdata[item.key].ReceivedQty,
-          LineAmount: formdata[item.key].ReceivedQty * formdata[item.key].PoRate,
+  const handleInputChange = (e, column, index, record) => {
+    debugger
+    let newData;
+    if (["ReceivedQty", "PoRate"].includes(column)) {
+      newData = data.map((item) => {
+        if (item.key === record.key) {
+          const updatedItem = { ...item, [column]: e.target.value };
+          const altUomData = alternateUoms.find(i => i.key == record.key)
+          const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == updatedItem.UomId || i1.UomId == updatedItem.UomId) : undefined
+          const recievingQty = column === "ReceivedQty" ? e.target.value : item.ReceivedQty;
+          const poRate = column === "PoRate" ? e.target.value : item.PoRate;
+
+          let amount = 0;
+          if (poRate != '' && recievingQty != '') {
+            amount = poRate * recievingQty * (altUom ? altUom.EquivalentUOMUnits : 1);
+          }
+
+          updatedItem.LineAmount = amount;
+
+          form2.setFieldsValue({ [record.key]: { TaxAmount1: item.TaxAmount1 } });
+          form2.setFieldsValue({ [record.key]: { LineAmount: amount } });
+          return updatedItem;
         }
+        return item;
+      });
+    } else {
+      newData = data.map((item) => {
+        if (item.key === record.key) {
+          const updatedItem = { ...item, [column]: e.target.value };
+          return updatedItem;
+        }
+        return item;
+      });
+    }
+
+    if (["ReceivedQty", "PoRate"].includes(column)) {
+      const totalAmount = calculateTotalAmount(newData);
+      form2.setFieldsValue({
+        // TotalAmount: totalAmount.amount,
+        GSTTax: totalAmount.taxAmount,
+        TotalPoAmount: totalAmount.totalAmount,
+      });
+      // setPoAmount(totalAmount.amount)
+      setTotalAmount(totalAmount.totalAmount)
+      setGSTTax(totalAmount.taxAmount)
+    }
+    setData(newData);
+
+    const newdataModel = dataModal.map((i) => {
+      if (i.ProductId === record.ProductId) {
+        return { ...i, ActiveFlag: false };
       }
-      return item
-    }))
-    setData(newData1);
+      return i
+    })
+    setDataModal(newdataModel)
   };
 
   const OpenBatch = async (record) => {
@@ -360,6 +505,51 @@ const CreateOpeningStock = () => {
     setProductDetails(record)
     setIsModalOpen(true)
   }
+
+  function handleUomChange(option, column, index, record) {
+    form2.setFieldsValue({ [record.key]: { UomId: option.value } });
+    form2.setFieldsValue({ [record.key]: { TaxAmount1: 0 } });
+    form2.setFieldsValue({ [record.key]: { PoRate: '' } });
+    form2.setFieldsValue({ [record.key]: { ReceivedQty: '' } });
+    form2.setFieldsValue({ [record.key]: { LineAmount: 0 } });
+    const newData = data.map((item) => {
+      if (item.key === record.key) {
+        const updatedItem = {
+          ...item,
+          [column]: option.value,
+          ShortName: option.children,
+          Uom: option.children,
+          TaxAmount1: 0,
+          PoRate: 0,
+          ReceivedQty: 0,
+          LineAmount: 0
+        };
+        return updatedItem;
+      }
+      return item;
+    });
+    setData(newData);
+    setTotalAmount(0)
+    setGSTTax(0)
+
+    const totalAmount = calculateTotalAmount(newData);
+    form2.setFieldsValue({
+      // TotalAmount: totalAmount.amount,
+      GSTTax: totalAmount.taxAmount,
+      TotalPoAmount: totalAmount.totalAmount,
+    });
+    // setPoAmount(totalAmount.amount)
+    setTotalAmount(totalAmount.totalAmount)
+    setGSTTax(totalAmount.taxAmount)
+
+    const newdataModel = dataModal.map((i) => {
+      if (i.ProductId === record.ProductId) {
+        return { ...i, ActiveFlag: false };
+      }
+      return i
+    })
+    setDataModal(newdataModel)
+  };
 
   const columns = [
     {
@@ -382,7 +572,7 @@ const CreateOpeningStock = () => {
           >
             <AutoComplete disabled={!!record.GrnLineId}
               options={productOptions}
-              onSearch={handleSearch}
+              onSearch={(value) => handleSearch(value, record)}
               onSelect={(value, option) =>
                 handleSelect(value, option, "ProductName", record)
               }
@@ -409,16 +599,20 @@ const CreateOpeningStock = () => {
     },
     {
       title: 'UOM',
-      // width: 100,
       dataIndex: 'UomId',
       key: 'UomId',
-      render: (text, record) => (
-        <Form.Item name={[record.key, 'UomId']} initialValue={record.UomId}>
-          <Select placeholder='Select Value' disabled>
-            {DropDown.UOM.map((option) => (
-              <Select.Option key={option.UomId} value={option.UomId}>
+      render: (text, record, index) => (
+        <Form.Item name={[record.key, 'UomId']} initialValue={record.ShortName == undefined ? record.UomId : record.ShortName}>
+          <Select
+            defaultValue={record.UomId}
+            onChange={(value, option) => {
+              handleUomChange(option, "UomId", index, record)
+            }}
+          >
+            {(record.UOM || []).map((option) => (
+              <Option key={option.UomId} value={option.UomId}>
                 {option.ShortName}
-              </Select.Option>
+              </Option>
             ))}
           </Select>
         </Form.Item>
@@ -427,7 +621,6 @@ const CreateOpeningStock = () => {
     {
       title: 'Quantity',
       dataIndex: 'ReceivedQty',
-      // width: 100,
       key: 'ReceivedQty',
       render: (text, record, index) => (
         <Form.Item name={[record.key, 'ReceivedQty']} initialValue={record.ReceivedQty}
@@ -440,7 +633,7 @@ const CreateOpeningStock = () => {
         >
           <InputNumber min={0} style={{ width: '100%' }}
             onChange={(value) => {
-              handleInputChange(value, "ReceivedQty", index, record);
+              handleInputChange({ target: { value } }, "ReceivedQty", index, record);
             }}
           />
         </Form.Item>
@@ -449,7 +642,6 @@ const CreateOpeningStock = () => {
     {
       title: 'Rate',
       dataIndex: 'PoRate',
-      // width: 100,
       key: 'PoRate',
       render: (text, record, index) => (
         <Form.Item name={[record.key, 'PoRate']} initialValue={record.PoRate}
@@ -462,16 +654,25 @@ const CreateOpeningStock = () => {
         >
           <InputNumber min={0} style={{ width: '100%' }}
             onChange={(value) => {
-              handleInputChange(value, "PoRate", index, record);
+              handleInputChange({ target: { value } }, "PoRate", index, record);
             }}
           />
         </Form.Item>
       )
     },
     {
+      title: 'Tax',
+      dataIndex: 'TaxAmount1',
+      key: 'TaxAmount1',
+      render: (text, record) => (
+        <Form.Item name={[record.key, 'TaxAmount1']} initialValue={text}>
+          <InputNumber min={0} disabled style={{ width: '100%' }} precision={4} />
+        </Form.Item>
+      )
+    },
+    {
       title: 'Value',
       dataIndex: 'LineAmount',
-      // width: 100,
       key: 'LineAmount',
       render: (text, record) => (
         <Form.Item name={[record.key, 'LineAmount']} initialValue={record.LineAmount}
@@ -491,7 +692,6 @@ const CreateOpeningStock = () => {
     {
       title: 'Batch',
       dataIndex: 'batch',
-      // width: 100,
       key: 'batch',
       render: (text, record) => (
         <Button type='link' onClick={() => OpenBatch(record)}>Batch</Button>
@@ -500,7 +700,6 @@ const CreateOpeningStock = () => {
     {
       title: 'Replacable',
       dataIndex: 'Replaceable',
-      // width: 120,
       key: 'Replaceable',
       render: (text, record) => (
         <Form.Item name={[record.key, 'Replaceable']} initialValue={record.Replaceable} valuePropName='checked'>
@@ -508,13 +707,6 @@ const CreateOpeningStock = () => {
         </Form.Item>
       )
     },
-    // {
-    //   title: <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}></Button>,
-    //   dataIndex: 'add',
-    //   key: 'add',
-    //   width: 50,
-    //   render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}><DeleteOutlined /></Popconfirm>
-    // }
   ];
 
   const BatchAdd = async () => {
@@ -525,10 +717,9 @@ const CreateOpeningStock = () => {
         BarCode: "",
         BatchNo: "",
         Quantity: 0,
-        ProductId: "",
+        ProductId: productDetails.ProductId,
         UomId: null,
         BatchBonusQty: 0,
-        MFGDate: "",
         EXPDateString: "",
         PoRate: 0,
         MRP: 0,
@@ -544,7 +735,138 @@ const CreateOpeningStock = () => {
         GrnBatchId: 0,
       },
     ]);
-    // setCounterModal(counterModal + 1);
+  };
+
+  const handleBatchChange = async (e, column, index, record) => {
+    const value = e.target.value;
+    let updatedData = [...dataModal];
+
+    updatedData = updatedData.map((item) => {
+      if (item.key === record.key) {
+        return { ...item, [column]: value };
+      }
+      return item;
+    });
+
+    if (["Quantity", 'MRP', "TaxType1", "TaxType2"].includes(column)) {
+      const currentRecord = updatedData.find((item) => item.key === record.key);
+
+      const poQuantity = parseFloat(currentRecord.Quantity || 0);
+      const poRate = parseFloat(productDetails.PoRate || 0);
+      const amount = poQuantity * poRate;
+      const taxType1 = currentRecord.TaxType1;
+      const taxType2 = currentRecord.TaxType2;
+
+      let taxAmount = 0;
+      let temp = 0
+      if (taxType1 != '' && taxType1) {
+        try {
+          const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${taxType1}`);
+          const taxDetails = response.data.data[0];
+          temp = taxDetails.AdditionalChargeType == 'Tax(Exclusive)' ? 0 : 1
+          taxAmount = calculateTax(amount, taxDetails, currentRecord);
+
+          currentRecord.TaxAmount1 = taxAmount.taxAmount;
+        } catch (error) {
+          console.error("Error fetching tax details:", error);
+        }
+      } else {
+        currentRecord.TaxAmount1 = 0;
+      }
+      if (taxType2 != '' && taxType2) {
+        try {
+          const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${taxType2}`);
+          const taxDetails = response.data.data[0];
+          temp = taxDetails.AdditionalChargeType == 'Tax(Exclusive)' ? 0 : 1
+          taxAmount = calculateTax(amount, taxDetails, currentRecord);
+
+          currentRecord.TaxAmount2 = taxAmount.taxAmount;
+        } catch (error) {
+          console.error("Error fetching tax details:", error);
+        }
+      } else {
+        currentRecord.TaxAmount2 = 0;
+      }
+
+      form3.setFieldsValue({
+        [record.key]: {
+          TaxAmount1: currentRecord.TaxAmount1 || 0,
+          TaxAmount2: currentRecord.TaxAmount2 || 0
+        }
+      })
+    }
+
+    setDataModal(updatedData)
+  };
+
+  const calculateTax = (amount, taxDetails, record) => {
+    let taxAmount = 0;
+    let temp = 0
+    const mrp = (record.MRP || 0)
+    const altUomData = alternateUoms.find(i => i.key == productDetails.key)
+    const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == productDetails.UomId) : undefined
+    let poQuantity = record.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)
+    amount = amount * (altUom ? altUom.EquivalentUOMUnits : 1)
+    if (taxDetails.IncludeBonusQuantity) {
+      poQuantity = (poQuantity || 0) + (record.BatchBonusQty || 0);
+      amount = poQuantity * (productDetails.PoRate || 0);
+    }
+    if (true) {
+      switch (taxDetails.ChargeType) {
+        case "Percentage":
+          if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
+            if (taxDetails.AdditionalChargeIndicator == "Gross") {
+              taxAmount = amount * taxDetails.ChargeValue / 100;
+            } else if (taxDetails.AdditionalChargeIndicator == "Net") {
+              taxAmount = amount * taxDetails.ChargeValue / 100;
+            } else {
+              taxAmount = (mrp * poQuantity) * taxDetails.ChargeValue / 100;
+            }
+          } else {
+            if (taxDetails.AdditionalChargeIndicator == "Gross") {
+              taxAmount = amount - (amount / (1 + taxDetails.ChargeValue / 100));
+              temp = 1;
+            } else if (taxDetails.AdditionalChargeIndicator == "Net") {
+              taxAmount = amount - (amount / (1 + taxDetails.ChargeValue / 100));
+              temp = 1;
+            } else {
+              taxAmount = (mrp * poQuantity) - ((mrp * poQuantity) / (1 + taxDetails.ChargeValue / 100));
+              temp = 1;
+            }
+          }
+          break;
+
+        case "Amount":
+          if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
+            if (taxDetails.AdditionalChargeIndicator == "Gross") {
+              taxAmount = amount + taxDetails.ChargeValue;
+            } else if (taxDetails.AdditionalChargeIndicator == "Net") {
+              taxAmount = amount + taxDetails.ChargeValue;
+            } else {
+              taxAmount = (mrp * poQuantity) + taxDetails.ChargeValue;
+            }
+          } else {
+            if (taxDetails.AdditionalChargeIndicator == "Gross") {
+              taxAmount = amount - taxDetails.ChargeValue;
+              temp = 1;
+            } else if (taxDetails.AdditionalChargeIndicator == "Net") {
+              taxAmount = amount - taxDetails.ChargeValue;
+              temp = 1;
+            } else {
+              taxAmount = mrp * poQuantity - taxDetails.ChargeValue;
+              temp = 1;
+            }
+          }
+          break;
+
+        default:
+          break;
+      }
+    }
+    return taxAmount = {
+      taxAmount: taxAmount,
+      temp: temp
+    };
   };
 
   const Batchmodal = [
@@ -552,7 +874,6 @@ const CreateOpeningStock = () => {
       title: "Bar Code",
       dataIndex: "BarCode",
       key: "BarCode",
-      // width: 100,
       render: (_, record) => (
         <>
           <Form.Item
@@ -600,7 +921,7 @@ const CreateOpeningStock = () => {
       title: "Quantity",
       dataIndex: "Quantity",
       key: "Quantity",
-      render: (text, record) => (
+      render: (text, record, index) => (
         <Form.Item
           name={[record.key, "Quantity"]}
           initialValue={record.Quantity}
@@ -612,6 +933,14 @@ const CreateOpeningStock = () => {
           ]}
         >
           <InputNumber
+            onChange={(value) => {
+              handleBatchChange(
+                { target: { value } },
+                "Quantity",
+                index,
+                record
+              );
+            }}
             min={0} disabled={!!record.GrnBatchId}
             style={{ width: 100 }}
           />
@@ -622,29 +951,29 @@ const CreateOpeningStock = () => {
       title: "Uom",
       dataIndex: "UomId",
       key: "UomId",
-      // width: 100,
       render: (text, record) => (
         <Form.Item name={[record.key, "UomId"]} initialValue={productDetails.UomId}>
-          <Select disabled defaultValue={productDetails.UomId} style={{ width: 100 }}>
+          <Tag color="#7C00FE">{productDetails.Uom}</Tag>
+          {/* <Select disabled defaultValue={productDetails.UomId} style={{ width: 100 }}>
             {DropDown.UOM.map((option) => (
               <Select.Option key={option.UomId} value={option.UomId}>
                 {option.ShortName}
               </Select.Option>
             ))}
-          </Select>
+          </Select> */}
         </Form.Item>
       ),
     },
     {
       title: "MFG Date",
-      dataIndex: "MFGDate",
-      key: "MFGDate",
+      dataIndex: "MFGDateString",
+      key: "MFGDateString",
       render: (text, record) => (
         <Form.Item
-          name={[record.key, "MFGDate"]}
+          name={[record.key, "MFGDateString"]}
           initialValue={
-            record.MFGDate
-              ? dayjs(record.MFGDate, "DD-MM-YYYY")
+            record.MFGDateString
+              ? dayjs(record.MFGDateString, "DD-MM-YYYY")
               : null
           }
         >
@@ -692,10 +1021,8 @@ const CreateOpeningStock = () => {
       dataIndex: "PoRate",
       key: "PoRate",
       render: (text, record) => (
-        <Form.Item
-          name={[record.key, "PoRate"]} initialValue={productDetails.PoRate}
-        >
-          <InputNumber defaultValue={productDetails.PoRate}
+        <Form.Item name={[record.key, "PoRate"]} initialValue={productDetails.PoRate}>
+          <InputNumber
             min={0}
             style={{ width: 100 }}
             disabled
@@ -707,7 +1034,7 @@ const CreateOpeningStock = () => {
       title: "MRP",
       dataIndex: "MRP",
       key: "MRP",
-      render: (text, record) => (
+      render: (text, record, index) => (
         <Form.Item
           name={[record.key, "MRP"]} initialValue={record.MRP}
           rules={[
@@ -728,6 +1055,14 @@ const CreateOpeningStock = () => {
           ]}
         >
           <InputNumber
+            onChange={(value) => {
+              handleBatchChange(
+                { target: { value } },
+                "MRP",
+                index,
+                record
+              );
+            }}
             min={0} disabled={!!record.GrnBatchId}
             style={{ width: 100 }}
             allowClear
@@ -739,9 +1074,18 @@ const CreateOpeningStock = () => {
       title: "CGST",
       dataIndex: "TaxType1",
       key: "TaxType1",
-      render: (text, record) => (
-        <Form.Item name={[record.key, "TaxType1"]}>
-          <Select allowClear placeholder='Select Tax' disabled style={{ width: 100 }}>
+      render: (text, record, index) => (
+        <Form.Item name={[record.key, "TaxType1"]} initialValue={text}>
+          <Select allowClear placeholder='Select Tax' style={{ width: 100 }}
+            onChange={(value) => {
+              handleBatchChange(
+                { target: { value } },
+                "TaxType1",
+                index,
+                record
+              );
+            }}
+          >
             {DropDown.TaxType.map((option) => (
               <Select.Option key={option.TaxType1} value={option.TaxType1}>
                 {option.TaxTypeName}
@@ -756,8 +1100,8 @@ const CreateOpeningStock = () => {
       dataIndex: "TaxAmount1",
       key: "TaxAmount1",
       render: (text, record) => (
-        <Form.Item name={[record.key, "TaxAmount1"]}>
-          <InputNumber min={0} style={{ width: 100 }} disabled />
+        <Form.Item name={[record.key, "TaxAmount1"]} initialValue={text}>
+          <InputNumber min={0} style={{ width: 100 }} disabled precision={4} />
         </Form.Item>
       ),
     },
@@ -765,9 +1109,18 @@ const CreateOpeningStock = () => {
       title: "SGST",
       dataIndex: "TaxType2",
       key: "TaxType2",
-      render: (text, record) => (
-        <Form.Item name={[record.key, "TaxType2"]} >
-          <Select allowClear placeholder='Select Tax' disabled style={{ width: 100 }}>
+      render: (text, record, index) => (
+        <Form.Item name={[record.key, "TaxType2"]} initialValue={text}>
+          <Select allowClear placeholder='Select Tax' style={{ width: 100 }}
+            onChange={(value) => {
+              handleBatchChange(
+                { target: { value } },
+                "TaxType2",
+                index,
+                record
+              );
+            }}
+          >
             {DropDown.TaxType.map((option) => (
               <Select.Option key={option.TaxType1} value={option.TaxType1}>
                 {option.TaxTypeName}
@@ -782,8 +1135,8 @@ const CreateOpeningStock = () => {
       dataIndex: "TaxAmount2",
       key: "TaxAmount2",
       render: (text, record) => (
-        <Form.Item name={[record.key, "TaxAmount2"]}>
-          <InputNumber min={0} style={{ width: 100 }} disabled />
+        <Form.Item name={[record.key, "TaxAmount2"]} initialValue={text}>
+          <InputNumber min={0} style={{ width: 100 }} disabled precision={4} />
         </Form.Item>
       ),
     },
@@ -807,7 +1160,6 @@ const CreateOpeningStock = () => {
       ),
       dataIndex: "add",
       key: "add",
-      // width: 50,
       render: (text, record) => (
         <Popconfirm
           title="Sure to delete?"
@@ -958,6 +1310,34 @@ const CreateOpeningStock = () => {
                 ></Button>}
               />
             </Spin>
+            <Row justify={"end"}>
+              <ColWithEightSpan>
+                <Form.Item
+                  label=""
+                  name="GSTTax"
+                // style={{ marginRight: "16px" }}
+                >
+                  <Row gutter={16} style={{ marginTop: "5px" }}>
+                    <Col span={12}>
+                      <span>GST Tax : </span>
+                    </Col>
+                    <Col span={12}>
+                      <InputNumber style={{ width: "100%" }} min={0} disabled value={gstTax} precision={4} />
+                    </Col>
+                  </Row>
+                </Form.Item>
+                <Form.Item label="" name="TotalAmount">
+                  <Row gutter={16} style={{ marginTop: "5px" }}>
+                    <Col span={12}>
+                      <span>Total Amount :</span>
+                    </Col>
+                    <Col span={12}>
+                      <InputNumber style={{ width: "100%" }} min={0} disabled value={totalAmount} precision={4} />
+                    </Col>
+                  </Row>
+                </Form.Item>
+              </ColWithEightSpan>
+            </Row>
           </Form>
         </Card>
         <Modal

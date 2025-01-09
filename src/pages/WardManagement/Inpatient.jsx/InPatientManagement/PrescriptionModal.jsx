@@ -14,6 +14,7 @@ import {
   AutoComplete,
   message,
   Popconfirm,
+  InputNumber,
 } from "antd";
 import React, { useState } from "react";
 import { DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
@@ -323,7 +324,7 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
       ),
     },
     {
-      title: "IntervalInDays",
+      title: "Interval In Days",
       dataIndex: "IntervalInDays",
       render: (text, record) => (
         <Form.Item
@@ -331,15 +332,15 @@ function Prescription({ bed, patient, Dropdown, open, handleClose }) {
           style={{ marginBottom: 0 }}
           initialValue={record.Interval}
         >
-          <Input
-            value={text}
-            onChange={(e) => Interval(e.target.value, record)}
+          <InputNumber style={{ width: '100%' }}
+            value={text} min={0}
+            onChange={(value) => Interval(value, record)}
           />
         </Form.Item>
       ),
     },
     {
-      title: "TotalQty",
+      title: "Total Quantity",
       dataIndex: "TotalQty",
       render: (text, record) => (
         <Form.Item

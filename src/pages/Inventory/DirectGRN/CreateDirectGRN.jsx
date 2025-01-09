@@ -751,7 +751,7 @@ const CreateDirectGRN = () => {
         key: item.ProductId,
         UomId: item.UOMPrimaryUOM,
         Expiry: item.Expiry,
-        Uom: item.UOMPrimaryUOMname,
+        Uom: item.UOMPrimaryUOMname
       }));
       setProductOptions(newOptions);
     }
@@ -890,12 +890,6 @@ const CreateDirectGRN = () => {
             defaultValue={record.UomId}
             onChange={(value, option) => {
               handleUomChange(option, "UomId", index, record)
-              // handleInputChange(
-              //   { target: { value } },
-              //   "UomId",
-              //   index,
-              //   record
-              // );
             }}
           >
             {(record.UOM || []).map((option) => (

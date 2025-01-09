@@ -347,6 +347,7 @@ const CreateGRNAgainstPO = () => {
   };
 
   const handlePoNumber = (record) => {
+    debugger
     setLoading(true);
     form1.resetFields();
     form3.resetFields();

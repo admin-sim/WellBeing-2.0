@@ -1139,7 +1139,7 @@ const CreateUrgentIssue = () => {
 
   return (
     // <Spin spinning={loading} size="large" tip="Loading..." indicator={<LoadingOutlined style={{ fontSize: 35, color: '#9190ff' }} spin />}>
-    <Spin spinning={loading} size="large" tip="Loading...">
+    // <Spin spinning={loading} size="large" tip="Loading...">
       <Layout style={{ zIndex: "999999999" }}>
         <div
           style={{
@@ -1290,7 +1290,7 @@ const CreateUrgentIssue = () => {
               </Row>
               <Divider style={{ marginTop: "0" }}></Divider>
               {istablevisible ? (
-                <CustomTable
+                <CustomTable 
                   dataSource={data?.filter((item) => item.ActiveFlag !== false)}
                   columns={columns}
                   isFilter={false}
@@ -1358,7 +1358,7 @@ const CreateUrgentIssue = () => {
                 </div> */}
                 </Col>
               </Row>
-              <Table
+              <Table 
                 columns={columnsmodal}
                 //dataSource={dataModal}
                 dataSource={
@@ -1377,7 +1377,7 @@ const CreateUrgentIssue = () => {
           </Modal>
         </div>
       </Layout>
-    </Spin>
+    // </Spin>
   );
 };
 

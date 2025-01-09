@@ -399,6 +399,7 @@ const CreatePurchaseOrder = () => {
           uoms = DropDown.UOM.filter(i => i.UomId === option.UomId)
         }
         form1.setFieldsValue({ [record.key]: { ProductId: option.key } });
+        form1.setFieldsValue({ [record.key]: { PoRate: apiData.PORate !== null ? apiData.PORate.PoRate : 0 } });
         const newData = data.map((item) => {
           if (item.key === record.key) {
             const updatedItem = {
