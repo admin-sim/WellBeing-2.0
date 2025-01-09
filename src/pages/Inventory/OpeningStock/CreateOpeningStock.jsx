@@ -1044,7 +1044,8 @@ const CreateOpeningStock = () => {
             },
             {
               validator: (_, value) => {
-                if (value < record.Rate) {
+                debugger
+                if (value < productDetails.PoRate) {
                   return Promise.reject(
                     new Error("MRP not be less than Rate.")
                   );
