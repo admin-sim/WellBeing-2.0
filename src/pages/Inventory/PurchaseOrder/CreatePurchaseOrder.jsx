@@ -1325,7 +1325,7 @@ const CreatePurchaseOrder = () => {
           <ColWithSixSpan>
             <Form.Item
               name="SubmitCheck"
-              style={{ marginTop: "30px" }}
+              // style={{ marginTop: "30px" }}
               valuePropName="checked"
             >
               <Checkbox onChange={SubmitChanged} style={{ marginTop: "33px" }}>Submit</Checkbox>

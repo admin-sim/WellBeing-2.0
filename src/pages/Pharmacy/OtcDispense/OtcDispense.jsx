@@ -1464,7 +1464,7 @@ const OtcDispense = () => {
                   <Select
                     onChange={handleBatchChange}
                     disabled={!batchOptions.length}
-                    dropdownStyle={{ minWidth: "12rem" }} // Set dropdown min width
+                    dropdownStyle={{ minWidth: "15rem" }}
                   >
                     {batchOptions.map((batch) => (
                       <Option key={batch.value} value={batch.value}>

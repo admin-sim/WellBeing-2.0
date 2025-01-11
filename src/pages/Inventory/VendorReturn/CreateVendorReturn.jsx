@@ -518,7 +518,7 @@ const CreateVendorReturn = () => {
       dataIndex: "EXPDateString",
       key: "EXPDateString",
       sorter: (a, b) => a.EXPDateString.localeCompare(b.EXPDateString),
-      sortDirections: ["descend", "ascend"],      
+      sortDirections: ["descend", "ascend"],
     },
   ];
 
@@ -650,8 +650,8 @@ const CreateVendorReturn = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <div>
-                  <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }} valuePropName='checked'>
-                    <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
+                  <Form.Item name="SubmitCheck" valuePropName='checked'>
+                    <Checkbox onChange={SubmitChanged} style={{ marginTop: "33px" }}>Submit</Checkbox>
                   </Form.Item>
                 </div>
               </Col>

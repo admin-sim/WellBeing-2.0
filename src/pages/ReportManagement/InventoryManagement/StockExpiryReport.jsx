@@ -81,13 +81,13 @@ const StockExpiryReport = () => {
         } catch (err) {
             setError(err.message);
         } finally {
-        setLoading(false);
+            setLoading(false);
         }
     };
 
     async function fetchReport(request) {
         const response = await fetch(
-            "https://192.168.29.254:808/api/ReportsApi/GetStockExpiryRpt",
+            "http://localhost:43705/api/ReportsApi/GetStockExpiryRpt",
             {
                 method: "POST",
                 headers: {
@@ -132,7 +132,8 @@ const StockExpiryReport = () => {
                 >
                     <Form
                         initialValues={{
-                            ViewStock: 0
+                            ViewStock: 0,
+                            StoreName: 1
                         }}
                         layout="vertical"
                         onFinish={onFinish}
@@ -142,8 +143,8 @@ const StockExpiryReport = () => {
                             <ColWithSixSpan>
                                 <Form.Item name="StoreName" label="Store">
                                     <Select
-                                        placeholder="Select Value"
-                                        allowClear
+                                    // placeholder="Select Value"
+                                    // allowClear
                                     >
                                         {dropDown?.StoreDetails.map((option) => (
                                             <Select.Option key={option.StoreId} value={option.StoreId}>

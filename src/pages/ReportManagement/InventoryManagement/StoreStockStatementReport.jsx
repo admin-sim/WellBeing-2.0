@@ -47,7 +47,7 @@ const StoreStockStatementReport = () => {
     const [billNumber, setBillNumber] = useState(null);
     const [dropDown, setDrpoDown] = useState();
     const [loading, setLoading] = useState(false); // State for loader visibility
-    const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
+    const [fromDate, setFromDate] = useState(dayjs());
     const [toDate, setToDate] = useState(dayjs());
 
     useEffect(() => {
@@ -84,8 +84,8 @@ const StoreStockStatementReport = () => {
 
         const request = {
             FacilityId: 1,
-            FromDate: values.FromDate.format("YYYY-MM-DD"),
-            ToDate: values.ToDate.format("YYYY-MM-DD"),
+            FromDate: values.FromDate.format("DD-MM-YYYY"),
+            ToDate: values.ToDate.format("DD-MM-YYYY"),
             PONo: values.StoreStock ? values.StoreStock : 0,
             Use: 'Admin',
         };
@@ -103,7 +103,7 @@ const StoreStockStatementReport = () => {
 
     async function fetchReport(request) {
         const response = await fetch(
-            "https://192.168.29.254:808/api/ReportsApi/GetStoreStockStatementRpt",
+            "http://localhost:43705/api/ReportsApi/GetStoreStockStatementRpt",
             {
                 method: "POST",
                 headers: {
@@ -148,9 +148,10 @@ const StoreStockStatementReport = () => {
                 >
                     <Form
                         initialValues={{
-                            FromDate: dayjs().subtract(1, 'day'),
+                            FromDate: dayjs(),
                             ToDate: dayjs(),
-                            ReportOption: '1'
+                            ReportOption: '1',
+                            StoreStock: 1
                         }}
                         layout="vertical"
                         onFinish={onFinish}
@@ -167,8 +168,8 @@ const StoreStockStatementReport = () => {
                                     ]}
                                 >
                                     <Select
-                                        placeholder="Select Value"
-                                        allowClear
+                                    // placeholder="Select Value"
+                                    // allowClear
                                     >
                                         {dropDown?.StoreDetails.map((option) => (
                                             <Select.Option key={option.StoreId} value={option.StoreId}>

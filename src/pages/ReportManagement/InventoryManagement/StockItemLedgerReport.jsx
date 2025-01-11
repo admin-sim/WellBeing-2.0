@@ -47,12 +47,28 @@ const StockItemLedgerReport = () => {
     const [blobData, setBlobData] = useState(null);
     const [loading, setLoading] = useState(false); // State for loader visibility
     const [dropDown, setDrpoDown] = useState();
-    const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
+    const [fromDate, setFromDate] = useState(dayjs());
     const [toDate, setToDate] = useState(dayjs());
+    const [users, setUsers] = useState([]);
 
     useEffect(() => {
         fetchDataHeader();
     }, []);
+
+    useEffect(() => {
+        fetchData('a')
+    }, [])
+
+    async function fetchData(search) {
+        try {
+            const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${search}`);
+            if (response.status === 200 && response.data != null) {
+                const userdetail = response.data.data;
+                setUsers(userdetail);
+            } else {
+            }
+        } catch (error) { }
+    }
 
     const fetchDataHeader = async () => {
         try {
@@ -84,10 +100,10 @@ const StockItemLedgerReport = () => {
 
         const request = {
             FacilityId: 1,
-            FromDate: values.FromDate.format("YYYY-MM-DD"),
-            ToDate: values.ToDate.format("YYYY-MM-DD"),
+            FromDate: values.FromDate.format("DD-MM-YYYY"),
+            ToDate: values.ToDate.format("DD-MM-YYYY"),
             PONo: values.StoreName,
-            ProductId: productId,
+            ProductId: values.ProductId == 'All' ? 0 : values.ProductId,
             Use: 'Admin',
         };
 
@@ -104,7 +120,7 @@ const StockItemLedgerReport = () => {
 
     async function fetchReport(request) {
         const response = await fetch(
-            "https://192.168.29.254:808/api/ReportsApi/GetStockItemLedgerRpt",
+            "http://localhost:43705/api/ReportsApi/GetStockItemLedgerRpt",
             {
                 method: "POST",
                 headers: {
@@ -170,8 +186,9 @@ const StockItemLedgerReport = () => {
                 >
                     <Form
                         initialValues={{
-                            FromDate: dayjs().subtract(1, "day"),
+                            FromDate: dayjs(),
                             ToDate: dayjs(),
+                            StoreName: 1
                         }}
                         layout="vertical"
                         onFinish={onFinish}
@@ -183,13 +200,13 @@ const StockItemLedgerReport = () => {
                                     rules={[
                                         {
                                             required: true,
-                                            message: "Please Pick Date",
+                                            message: "Please select",
                                         },
                                     ]}
                                 >
                                     <Select
-                                        placeholder="Select Value"
-                                        allowClear
+                                    // placeholder="Select Value"
+                                    // allowClear
                                     >
                                         {dropDown?.StoreDetails.map((option) => (
                                             <Select.Option key={option.StoreId} value={option.StoreId}>
@@ -208,7 +225,34 @@ const StockItemLedgerReport = () => {
                                         },
                                     ]}
                                 >
-                                    <AutoComplete
+                                    <Select
+                                        showSearch
+                                        placeholder="Select the User"
+                                        style={{ width: "100%" }}
+                                        onChange={(value) => console.log(value)}
+                                        optionFilterProp="children"
+                                        filterOption={(input, option) =>
+                                            option.children
+                                                .toLowerCase()
+                                                .includes(input.toLowerCase())
+                                        }
+                                    >
+                                        {/* "All" option as the first item */}
+                                        {/* <Select.Option key="all" value={"All"}>
+                                            All
+                                        </Select.Option> */}
+
+                                        {/* Mapping the users */}
+                                        {users?.map((response) => (
+                                            <Select.Option
+                                                key={response.ProductId}
+                                                value={response.ProductId}
+                                            >
+                                                {response.LongName}
+                                            </Select.Option>
+                                        ))}
+                                    </Select>
+                                    {/* <AutoComplete
                                         options={productOptions}
                                         placeholder='Please Search Product'
                                         onSearch={handleSearch}
@@ -223,7 +267,7 @@ const StockItemLedgerReport = () => {
                                         allowClear={{
                                             clearIcon: <CloseSquareFilled />,
                                         }}
-                                    />
+                                    /> */}
                                 </Form.Item>
                             </ColWithSixSpan>
                             <ColWithSixSpan>

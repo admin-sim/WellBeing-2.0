@@ -47,6 +47,7 @@ const CurrentStockPositionReport = () => {
     const [blobData, setBlobData] = useState(null);
     const [dropDown, setDrpoDown] = useState();
     const [loading, setLoading] = useState(false); // State for loader visibility
+    const [users, setUsers] = useState([]);
 
     useEffect(() => {
         fetchDataHeader();
@@ -63,6 +64,21 @@ const CurrentStockPositionReport = () => {
         } catch (error) { }
     };
 
+    useEffect(() => {
+        fetchData('a')
+    }, [])
+
+    async function fetchData(search) {
+        try {
+            const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${search}`);
+            if (response.status === 200 && response.data != null) {
+                const userdetail = response.data.data;
+                setUsers(userdetail);
+            } else {
+            }
+        } catch (error) { }
+    }
+
     const onFinish = async (values) => {
         debugger
         setLoading(true); // Show the loader when fetching the report
@@ -70,7 +86,7 @@ const CurrentStockPositionReport = () => {
 
         const request = {
             FacilityId: 1,
-            ProductId: productId,
+            ProductId: values.Currentstockposition == 'All' ? 0 : values.Currentstockposition,
             POStore: values.StoreName,
             ReportOption: values.ReportOption
         };
@@ -88,7 +104,7 @@ const CurrentStockPositionReport = () => {
 
     async function fetchReport(request) {
         const response = await fetch(
-            "https://192.168.29.254:808/api/ReportsApi/GetCurrentStockPositionRpt",
+            "http://localhost:43705/api/ReportsApi/GetCurrentStockPositionRpt",
             {
                 method: "POST",
                 headers: {
@@ -157,6 +173,11 @@ const CurrentStockPositionReport = () => {
                         layout="vertical"
                         onFinish={onFinish}
                         form={form}
+                        initialValues={{
+                            ReportOption: '2',
+                            Currentstockposition: 'All',
+                            StoreName: 1
+                        }}
                     >
                         <Row gutter={16} style={{ marginBottom: "12px" }}>
                             <ColWithSixSpan>
@@ -169,8 +190,8 @@ const CurrentStockPositionReport = () => {
                                     ]}
                                 >
                                     <Select
-                                        placeholder="Select Value"
-                                        allowClear
+                                    // placeholder="Select Value"
+                                    // allowClear
                                     >
                                         {dropDown?.StoreDetails.map((option) => (
                                             <Select.Option key={option.StoreId} value={option.StoreId}>
@@ -189,7 +210,34 @@ const CurrentStockPositionReport = () => {
                                         },
                                     ]}
                                 >
-                                    <AutoComplete
+                                    <Select
+                                        showSearch
+                                        placeholder="Select the User"
+                                        style={{ width: "100%" }}
+                                        onChange={(value) => console.log(value)}
+                                        optionFilterProp="children"
+                                        filterOption={(input, option) =>
+                                            option.children
+                                                .toLowerCase()
+                                                .includes(input.toLowerCase())
+                                        }
+                                    >
+                                        {/* "All" option as the first item */}
+                                        <Select.Option key="all" value={"All"}>
+                                            All
+                                        </Select.Option>
+
+                                        {/* Mapping the users */}
+                                        {users?.map((response) => (
+                                            <Select.Option
+                                                key={response.ProductId}
+                                                value={response.ProductId}
+                                            >
+                                                {response.LongName}
+                                            </Select.Option>
+                                        ))}
+                                    </Select>
+                                    {/* <AutoComplete
                                         options={productOptions}
                                         onSearch={handleSearch}
                                         placeholder='Please Search Product'
@@ -204,7 +252,7 @@ const CurrentStockPositionReport = () => {
                                         allowClear={{
                                             clearIcon: <CloseSquareFilled />,
                                         }}
-                                    />
+                                    /> */}
                                 </Form.Item>
                             </ColWithSixSpan>
                             <ColWithSixSpan>
@@ -220,7 +268,7 @@ const CurrentStockPositionReport = () => {
                                         placeholder="Select Value"
                                         allowClear
                                     >
-                                        <Select.Option key='1' value='1'>Consolidated</Select.Option>
+                                        {/* <Select.Option key='1' value='1'>Consolidated</Select.Option> */}
                                         <Select.Option key='2' value='2'>Detailed</Select.Option>
                                     </Select>
                                 </Form.Item>

@@ -87,7 +87,7 @@ const StoreStockPostionReport = () => {
 
         const request = {
             FacilityId: 1,
-            FromDate: values.Date.format("YYYY-MM-DD"),
+            FromDate: values.Date.format("DD-MM-YYYY"),
             PONo: values.StoreStock,
             Use: 'Admin',
         };
@@ -105,7 +105,7 @@ const StoreStockPostionReport = () => {
 
     async function fetchReport(request) {
         const response = await fetch(
-            "https://192.168.29.254:808/api/ReportsApi/GetStoreStockPostionRpt",
+            "http://localhost:43705/api/ReportsApi/GetStoreStockPostionRpt",
             {
                 method: "POST",
                 headers: {
@@ -151,7 +151,8 @@ const StoreStockPostionReport = () => {
                     <Form
                         initialValues={{
                             Date: dayjs(),
-                            ReportOption: '1'
+                            ReportOption: '1',
+                            StoreStock: 1
                         }}
                         layout="vertical"
                         onFinish={onFinish}
@@ -167,10 +168,7 @@ const StoreStockPostionReport = () => {
                                         },
                                     ]}
                                 >
-                                    <Select
-                                        placeholder="Select Value"
-                                        allowClear
-                                    >
+                                    <Select>
                                         {dropDown?.StoreDetails.map((option) => (
                                             <Select.Option key={option.StoreId} value={option.StoreId}>
                                                 {option.LongName}
