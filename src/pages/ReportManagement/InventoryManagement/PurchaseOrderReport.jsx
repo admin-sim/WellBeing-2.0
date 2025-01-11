@@ -86,10 +86,10 @@ const PurchaseOrderReport = () => {
             FacilityId: 1,
             FromDate: values.FromDate.format("DD-MM-YYYY"),
             ToDate: values.ToDate.format("DD-MM-YYYY"),
-            POSupplier: values.Supplier ? values.Supplier : '',
+            POSupplier: values.Supplier ? values.Supplier :0,
             PONo: values.PoNumber ? values.PoNumber : '',
-            POStore: values.POStore ? values.POStore : '',
-            POType: values.POType ? values.POType : '',
+            POStore: values.POStore ? values.POStore : 0,
+            POType: values.POType ? values.POType : 0,
             use: 'Admin',
         };
 
