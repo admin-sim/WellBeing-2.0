@@ -163,6 +163,10 @@ import CurrentStockPositionReport from "./pages/ReportManagement/InventoryManage
 import EncounterConfigFlow from "./pages/EncounterConfigFlow/index.jsx";
 import PatientRegistartionReport from "./pages/ReportManagement/IdentityManagement/PatientRegistartionReport.jsx";
 import EncounterRegistrationReport from "./pages/ReportManagement/IdentityManagement/EncounterRegistrationReport.jsx";
+import DischargeSummary from "./pages/ClinicalDocuments/DischargeSummary/index.jsx";
+import CreateDischargeSummary from "./pages/ClinicalDocuments/DischargeSummary/CreateDischargeSummary.jsx";
+import ClaimSubmission from "./pages/ClaimManagement/ClaimSubmission/index.jsx";
+import ClaimProcess from "./pages/ClaimManagement/ClaimProcess/index.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -1415,6 +1419,38 @@ function App() {
               element={
                 <ProtectedRoute>
                   <EncounterRegistrationReport />
+                </ProtectedRoute>
+              }
+            />
+              <Route
+              path="/DischargeSummary"
+              element={
+                <ProtectedRoute>
+                  <DischargeSummary />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/CreateDischargeSummary"
+              element={
+                <ProtectedRoute>
+                  <CreateDischargeSummary />
+                </ProtectedRoute>
+              }
+            />
+             <Route
+              path="/ClaimProcess"
+              element={
+                <ProtectedRoute>
+                  <ClaimProcess />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ClaimSubmission"
+              element={
+                <ProtectedRoute>
+                  <ClaimSubmission />
                 </ProtectedRoute>
               }
             />
