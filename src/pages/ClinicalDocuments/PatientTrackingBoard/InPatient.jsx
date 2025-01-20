@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useEffect,useState } from "react";
 import CustomTable from "../../../components/customTable";
-
+import { urlSearchInPatientTrackRecords } from "../../../../endpoints";
+import customAxios from "../../../components/customAxios/customAxios";
 function InPatient() {
+    const [tableData, setTableData] = useState([]);
+  const [patientTrackRecordTable, setPatientTrackRecordTable] = useState(true);
   const columns = [
     {
       title: "EncounterId",
-      dataIndex: "EncounterId",
+      dataIndex: "Encounter",
       key: "1",
     },
     {
@@ -30,7 +33,7 @@ function InPatient() {
     },
     {
       title: "Room",
-      dataIndex: "Room",
+      dataIndex: "Ward",
       key: "6",
     },
     {
@@ -40,29 +43,30 @@ function InPatient() {
     },
     {
       title: "From Date",
-      dataIndex: "FromDate",
+      dataIndex: "FromDateString",
       key: "8",
     },
     {
       title: "To Date",
-      dataIndex: "ToDate",
+      dataIndex: "ToDateString",
       key: "9",
     },
   ];
 
-  const tableData = [
-    {
-      EncounterId: "COH / IP90",
-      PatientName: "Ravi D",
-      EncounterStatus: "Discharged",
-      ServiceLocation: "First Floor",
-      Provider: "CLEMENT IYAMU",
-      Room: "Emergency Ward Ground Floor",
-      Bed: "EWGF4",
-      FromDate: "23-05-2023 12:37:16",
-      ToDate: "01-01-0001 12:00:00",
-    },
-  ];
+  useEffect(()=>{
+    async function handlePatientTrackingSearch() {
+       debugger
+       const response= await customAxios.get(`${urlSearchInPatientTrackRecords}?Flag=${1}`)
+       if(response.status==200){
+         debugger
+         setTableData(response.data.data.ClinicalDocumentTypes)
+       }
+         setPatientTrackRecordTable(true);
+     
+         console.log(values);
+       };
+     handlePatientTrackingSearch()
+   },[])
 
   return (
     <div>

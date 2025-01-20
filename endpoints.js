@@ -551,4 +551,14 @@ export const urlUpdateProduct = `${baseURL}/api/ProductDefinition/UpdateProduct`
 export const urlGetEditAssociation = `${baseURL}/api/AdditionalChargeSetup/GetEditAssociation`;
 export const urlUpdateAssociation = `${baseURL}/api/AdditionalChargeSetup/UpdateAssociation`;
 export const urlGetUnBlockedBeds = `${baseURL}/api/WardManagement/GetUnBlockedBeds`;
-
+export const urlSearchPatientTrackRecords = `${baseURL}/api/ClinicalSetup/SearchPatientTrackRecords`;
+export const urlSearchInPatientTrackRecords = `${baseURL}/api/ClinicalSetup/SearchInPatientTrackRecords`;
+export const urlIndexDischageSummarySearch = `${baseURL}/api/ClinicalSetup/IndexDischageSummarySearch`;
+export const urlAddNewDischargeSummary = `${baseURL}/api/ClinicalSetup/AddNewDischargeSummary`;
+export const urlDischageSummary = `${baseURL}/api/ClinicalSetup/DischageSummary`;
+export const urlGetDischargeSummary = `${baseURL}/api/ClinicalSetup/GetDischargeSummary`;
+export const urlGetDischargeSummaryForEdit = `${baseURL}/api/ClinicalSetup/GetDischargeSummaryForEdit`;
+export const urlGetOption = `${baseURL}/api/PatientClaim/GetOption`;
+export const urlSearchDetailedClaimRecord = `${baseURL}/api/PatientClaim/SearchDetailedClaimRecord`;
+export const urlAddNewCliamInvvoice = `${baseURL}/api/PatientClaim/AddNewCliamInvvoice`;
+export const urlPatientClaimSubmission = `${baseURL}/api/PatientClaim/PatientClaimSubmission`;
