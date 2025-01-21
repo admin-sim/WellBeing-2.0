@@ -28,6 +28,7 @@ import {
 
 function PhysicalExamination() {
   const [form] = useForm();
+  const [form1] = useForm();
 
   const UpperLimbColumns = [
     {
@@ -393,153 +394,178 @@ function PhysicalExamination() {
 
   const generalExaminationForm = (
     <>
-      <Row gutter={32}>
-        <Col span={5}>
-          <CustomRadioGroup
-            name="Conscious"
-            label="Conscious"
-            options={[
-              { value: "Y", label: "Yes" },
-              { value: "N", label: "No" },
-            ]}
-          />
-        </Col>
-        <Col span={5}>
-          <CustomRadioGroup
-            name="Cooperative"
-            label="Cooperative"
-            options={[
-              { value: "Y", label: "Yes" },
-              { value: "N", label: "No" },
-            ]}
-          />
-        </Col>
-        <Col span={5}>
-          <CustomRadioGroup
-            name="Comfortable"
-            label="Comfortable"
-            options={[
-              { value: "Y", label: "Yes" },
-              { value: "N", label: "No" },
-            ]}
-          />
-        </Col>
-        <Col span={5}>
-          <CustomRadioGroup
-            name="Toxic"
-            label="Toxic"
-            options={[
-              { value: "Y", label: "Yes" },
-              { value: "N", label: "No" },
-            ]}
-          />
-        </Col>
-        <Col span={4}>
-          <CustomRadioGroup
-            name="Dyspneic"
-            label="Dyspneic"
-            options={[
-              { value: "Y", label: "Yes" },
-              { value: "N", label: "No" },
-            ]}
-          />
-        </Col>
-        <Col span={10}>
-          <CustomRadioGroup
-            name="Build"
-            label="Build"
-            options={[
-              { value: "Moderate", label: "Moderate" },
-              { value: "Heavy", label: "Heavy" },
-              { value: "Thin", label: "Thin" },
-            ]}
-          />
-        </Col>
-        <Col span={10}>
-          <CustomRadioGroup
-            name="Nourishment"
-            label="Nourishment"
-            options={[
-              { value: "Obese", label: "Obese" },
-              { value: "Well", label: "Well" },
-              { value: "Cachectic", label: "Cachectic" },
-            ]}
-          />
-        </Col>
-        <Col span={24} style={{ margin: "0 0 0.7rem 0" }}>
-          <span style={{ fontWeight: 600, fontSize: "1rem" }}>Pickel</span>
-        </Col>
-        <Col span={5}>
-          <CustomRadioGroup
-            name="Pallor"
-            label="Pallor"
-            options={[
-              { value: "Y", label: "Yes" },
-              { value: "N", label: "No" },
-            ]}
-          />
-        </Col>
-        <Col span={5}>
-          <CustomRadioGroup
-            name="Icterus"
-            label="Icterus"
-            options={[
-              { value: "Y", label: "Yes" },
-              { value: "N", label: "No" },
-            ]}
-          />
-        </Col>
-        <Col span={5}>
-          <CustomRadioGroup
-            name="Cyanosis"
-            label="Cyanosis"
-            options={[
-              { value: "Y", label: "Yes" },
-              { value: "N", label: "No" },
-            ]}
-          />
-        </Col>
-        <Col span={5}>
-          <CustomRadioGroup
-            name="Clubbing"
-            label="Clubbing"
-            options={[
-              { value: "Y", label: "Yes" },
-              { value: "N", label: "No" },
-            ]}
-          />
-        </Col>
-        <Col span={4}>
-          <CustomRadioGroup
-            name="Koilonychia"
-            label="Koilonychia"
-            options={[
-              { value: "Y", label: "Yes" },
-              { value: "N", label: "No" },
-            ]}
-          />
-        </Col>
-        <Col span={5}>
-          <CustomRadioGroup
-            name="Lymphadenopathy"
-            label="Lymphadenopathy"
-            options={[
-              { value: "Y", label: "Yes" },
-              { value: "N", label: "No" },
-            ]}
-          />
-        </Col>
-        <Col span={5}>
-          <CustomRadioGroup
-            name="Pedal Edema"
-            label="Pedal Edema"
-            options={[
-              { value: "Y", label: "Yes" },
-              { value: "N", label: "No" },
-            ]}
-          />
-        </Col>
-      </Row>
+      <Form
+        form={form}
+        onFinish={(values) => {
+          debugger
+          console.log("Physical Examination", values);
+        }}
+        layout="vertical"
+      >
+        <Row gutter={32}>
+          <Col span={5}>
+            <CustomRadioGroup
+              name="Conscious"
+              label="Conscious"
+              options={[
+                { value: "Y", label: "Yes" },
+                { value: "N", label: "No" },
+              ]}
+            />
+          </Col>
+          <Col span={5}>
+            <CustomRadioGroup
+              name="Cooperative"
+              label="Cooperative"
+              options={[
+                { value: "Y", label: "Yes" },
+                { value: "N", label: "No" },
+              ]}
+            />
+          </Col>
+          <Col span={5}>
+            <CustomRadioGroup
+              name="Comfortable"
+              label="Comfortable"
+              options={[
+                { value: "Y", label: "Yes" },
+                { value: "N", label: "No" },
+              ]}
+            />
+          </Col>
+          <Col span={5}>
+            <CustomRadioGroup
+              name="Toxic"
+              label="Toxic"
+              options={[
+                { value: "Y", label: "Yes" },
+                { value: "N", label: "No" },
+              ]}
+            />
+          </Col>
+          <Col span={4}>
+            <CustomRadioGroup
+              name="Dyspneic"
+              label="Dyspneic"
+              options={[
+                { value: "Y", label: "Yes" },
+                { value: "N", label: "No" },
+              ]}
+            />
+          </Col>
+          <Col span={10}>
+            <CustomRadioGroup
+              name="Build"
+              label="Build"
+              options={[
+                { value: "Moderate", label: "Moderate" },
+                { value: "Heavy", label: "Heavy" },
+                { value: "Thin", label: "Thin" },
+              ]}
+            />
+          </Col>
+          <Col span={10}>
+            <CustomRadioGroup
+              name="Nourishment"
+              label="Nourishment"
+              options={[
+                { value: "Obese", label: "Obese" },
+                { value: "Well", label: "Well" },
+                { value: "Cachectic", label: "Cachectic" },
+              ]}
+            />
+          </Col>
+          <Col span={24} style={{ margin: "0 0 0.7rem 0" }}>
+            <span style={{ fontWeight: 600, fontSize: "1rem" }}>Pickel</span>
+          </Col>
+          <Col span={5}>
+            <CustomRadioGroup
+              name="Pallor"
+              label="Pallor"
+              options={[
+                { value: "Y", label: "Yes" },
+                { value: "N", label: "No" },
+              ]}
+            />
+          </Col>
+          <Col span={5}>
+            <CustomRadioGroup
+              name="Icterus"
+              label="Icterus"
+              options={[
+                { value: "Y", label: "Yes" },
+                { value: "N", label: "No" },
+              ]}
+            />
+          </Col>
+          <Col span={5}>
+            <CustomRadioGroup
+              name="Cyanosis"
+              label="Cyanosis"
+              options={[
+                { value: "Y", label: "Yes" },
+                { value: "N", label: "No" },
+              ]}
+            />
+          </Col>
+          <Col span={5}>
+            <CustomRadioGroup
+              name="Clubbing"
+              label="Clubbing"
+              options={[
+                { value: "Y", label: "Yes" },
+                { value: "N", label: "No" },
+              ]}
+            />
+          </Col>
+          <Col span={4}>
+            <CustomRadioGroup
+              name="Koilonychia"
+              label="Koilonychia"
+              options={[
+                { value: "Y", label: "Yes" },
+                { value: "N", label: "No" },
+              ]}
+            />
+          </Col>
+          <Col span={5}>
+            <CustomRadioGroup
+              name="Lymphadenopathy"
+              label="Lymphadenopathy"
+              options={[
+                { value: "Y", label: "Yes" },
+                { value: "N", label: "No" },
+              ]}
+            />
+          </Col>
+          <Col span={5}>
+            <CustomRadioGroup
+              name="Pedal Edema"
+              label="Pedal Edema"
+              options={[
+                { value: "Y", label: "Yes" },
+                { value: "N", label: "No" },
+              ]}
+            />
+          </Col>
+        </Row>
+        <Row gutter={32} justify={"end"} style={{ margin: "0 0 1rem 0" }}>
+          <Col>
+            <Button
+              size="middle"
+              type="primary"
+              onClick={() => form.submit()}
+            >
+              Save
+            </Button>
+          </Col>
+          <Col>
+            <Button size="middle" danger onClick={() => form.submit()}>
+              Cancel
+            </Button>
+          </Col>
+        </Row>
+      </Form>
     </>
   );
 
@@ -573,6 +599,16 @@ function PhysicalExamination() {
         <PiInfo style={{ fontSize: "1.2rem" }} /> &nbsp;Select the type of
         physical examination to enter details
       </div>
+      <Form
+          form={form1}
+          onFinish={(values) => {
+            debugger
+            console.log("Physical Examination", values);
+          }}
+          layout="vertical"
+        >
+          
+        </Form>
       <Row
         style={{
           display: "flex",
@@ -1036,6 +1072,25 @@ function PhysicalExamination() {
           </Row>
         </>
       )}
+      {(activeButtons.MusculoskeletalExamination || activeButtons.GastrointestinalSystem ||
+        activeButtons.CardiovascularSystem || activeButtons.Auscultation || activeButtons.Respiratory) && (
+          <Row gutter={32} justify={"end"} style={{ margin: "0 0 1rem 0" }}>
+            <Col>
+              <Button
+                size="middle"
+                type="primary"
+                onClick={() => form.submit()}
+              >
+                Save
+              </Button>
+            </Col>
+            <Col>
+              <Button size="middle" danger onClick={() => form.submit()}>
+                Cancel
+              </Button>
+            </Col>
+          </Row>
+        )}
     </>
   );
 
@@ -1093,12 +1148,13 @@ function PhysicalExamination() {
         <Form
           form={form}
           onFinish={(values) => {
+            debugger
             console.log("Physical Examination", values);
           }}
           layout="vertical"
         >
           <Collapse items={items} bordered={false} ghost size="large" />
-          <Row gutter={32} justify={"end"} style={{ margin: "0 0 1rem 0" }}>
+          {/* <Row gutter={32} justify={"end"} style={{ margin: "0 0 1rem 0" }}>
             <Col>
               <Button
                 size="middle"
@@ -1113,7 +1169,7 @@ function PhysicalExamination() {
                 Cancel
               </Button>
             </Col>
-          </Row>
+          </Row> */}
         </Form>
       </div>
     </>

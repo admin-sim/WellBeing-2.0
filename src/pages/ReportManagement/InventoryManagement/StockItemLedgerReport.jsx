@@ -100,8 +100,8 @@ const StockItemLedgerReport = () => {
 
         const request = {
             FacilityId: 1,
-            FromDate: values.FromDate.format("DD-MM-YYYY"),
-            ToDate: values.ToDate.format("DD-MM-YYYY"),
+            FromDate: values.FromDate.format("YYYY-MM-DD"),
+            ToDate: values.ToDate.format("YYYY-MM-DD"),
             PONo: values.StoreName,
             ProductId: values.ProductId == 'All' ? 0 : values.ProductId,
             Use: 'Admin',
@@ -120,7 +120,7 @@ const StockItemLedgerReport = () => {
 
     async function fetchReport(request) {
         const response = await fetch(
-            "http://localhost:43705/api/ReportsApi/GetStockItemLedgerRpt",
+            "https://192.168.29.254:808/api/ReportsApi/GetStockItemLedgerRpt",
             {
                 method: "POST",
                 headers: {

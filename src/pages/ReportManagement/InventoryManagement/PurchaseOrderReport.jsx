@@ -84,9 +84,9 @@ const PurchaseOrderReport = () => {
 
         const request = {
             FacilityId: 1,
-            FromDate: values.FromDate.format("DD-MM-YYYY"),
-            ToDate: values.ToDate.format("DD-MM-YYYY"),
-            POSupplier: values.Supplier ? values.Supplier :0,
+            FromDate: values.FromDate.format("YYYY-MM-DD"),
+            ToDate: values.ToDate.format("YYYY-MM-DD"),
+            POSupplier: values.Supplier ? values.Supplier : 0,
             PONo: values.PoNumber ? values.PoNumber : '',
             POStore: values.POStore ? values.POStore : 0,
             POType: values.POType ? values.POType : 0,
@@ -106,7 +106,7 @@ const PurchaseOrderReport = () => {
 
     async function fetchReport(request) {
         const response = await fetch(
-            "http://localhost:43705/api/ReportsApi/GetPurchaseOrderRpt",
+            "https://192.168.29.254:808/api/ReportsApi/GetPurchaseOrderRpt",
             {
                 method: "POST",
                 headers: {

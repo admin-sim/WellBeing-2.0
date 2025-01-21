@@ -87,7 +87,7 @@ const StoreStockPostionReport = () => {
 
         const request = {
             FacilityId: 1,
-            FromDate: values.Date.format("DD-MM-YYYY"),
+            FromDate: values.Date.format("YYYY-MM-DD"),
             PONo: values.StoreStock,
             Use: 'Admin',
         };
@@ -105,7 +105,7 @@ const StoreStockPostionReport = () => {
 
     async function fetchReport(request) {
         const response = await fetch(
-            "http://localhost:43705/api/ReportsApi/GetStoreStockPostionRpt",
+            "https://192.168.29.254:808/api/ReportsApi/GetStoreStockPostionRpt",
             {
                 method: "POST",
                 headers: {
