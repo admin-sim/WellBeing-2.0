@@ -23,12 +23,8 @@ import {
 } from "@ant-design/icons";
 import {
     urlAutocompleteProduct,
-    urlGetAllPatientTypeAsync,
-    urlGetAllPaymentTypesAsync,
-    urlGetAllUsers,
+    urlAutocomplete,
     urlGetPurshaseOrderDetails,
-    urlSearchPatientsForLab,
-    urlSearchUHID,
 } from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import { useNavigate } from "react-router";
@@ -65,12 +61,12 @@ const CurrentStockPositionReport = () => {
     };
 
     useEffect(() => {
-        fetchData('a')
+        fetchData()
     }, [])
 
     async function fetchData(search) {
         try {
-            const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${search}`);
+            const response = await customAxios.get(urlAutocomplete);
             if (response.status === 200 && response.data != null) {
                 const userdetail = response.data.data;
                 setUsers(userdetail);
@@ -266,7 +262,6 @@ const CurrentStockPositionReport = () => {
                                 >
                                     <Select
                                         placeholder="Select Value"
-                                        allowClear
                                     >
                                         {/* <Select.Option key='1' value='1'>Consolidated</Select.Option> */}
                                         <Select.Option key='2' value='2'>Detailed</Select.Option>

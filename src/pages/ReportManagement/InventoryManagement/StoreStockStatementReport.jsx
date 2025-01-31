@@ -226,7 +226,6 @@ const StoreStockStatementReport = () => {
                                 >
                                     <Select
                                         placeholder="Select Value"
-                                        allowClear
                                     >
                                         <Select.Option key='1' value='1'>Consolidated</Select.Option>
                                         {/* <Select.Option key='2' value='2'>Detailed</Select.Option> */}

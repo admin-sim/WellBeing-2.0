@@ -151,14 +151,29 @@ const CreatePurchaseOrder = () => {
         );
         if (response.status == 200 && response.data.data != null) {
           const editeddata = response.data.data;
-          const products = editeddata.PurchaseOrderDetails.map(
-            (item, index) => ({
+          const products = editeddata.PurchaseOrderDetails.map((item) => {
+            const key = uuidv4();
+            setAlternateUoms((prev) => [
+              ...prev,
+              { key, data: item.AlternateUoms },
+            ]);
+            return {
               ...item,
-              key: uuidv4(),
+              key,
               TotalAmount: item.LineAmount + item.TaxAmount1 + item.TaxAmount2,
-              UOM: response.data.data.UOM
-            })
-          );
+              UOM: response.data.data.UOM.filter(i =>
+                item.AlternateUoms.some(j => j.EquivalentUOM === i.UomId || j.AlternateUom === i.UomId) || item.UomId === i.UomId
+              ),
+            };
+          });
+          // const products = editeddata.PurchaseOrderDetails.map(
+          //   (item) => ({
+          //     ...item,
+          //     key: uuidv4(),
+          //     TotalAmount: item.LineAmount + item.TaxAmount1 + item.TaxAmount2,
+          //     UOM: response.data.data.UOM
+          //   })
+          // );
           setData(products);
           const formdata = editeddata.newPurchaseOrderModel;
           setPoAmount(formdata.PoPurchaseValue)
@@ -369,7 +384,7 @@ const CreatePurchaseOrder = () => {
       ) {
         sum.LineAmount += item.LineAmount;
         sum.TotalAmount += item.TotalAmount;
-        sum.GstTax += parseFloat(item.TaxAmount1) + parseFloat(item.TaxAmount2);
+        sum.GstTax += item.TaxAmount1 + item.TaxAmount2;
       }
     });
     return sum;
@@ -390,7 +405,11 @@ const CreatePurchaseOrder = () => {
         const apiData = response.data.data;
         let uoms = []
         if (apiData.AlternateUoms.length > 0) {
-          setAlternateUoms(apiData.AlternateUoms)
+          // setAlternateUoms(apiData.AlternateUoms)
+          setAlternateUoms((prev) => [
+            ...prev,
+            { key: record.key, data: apiData.AlternateUoms },
+          ]);
           uoms = DropDown.UOM.filter(
             i =>
               apiData.AlternateUoms.find(i1 => i1.AlternateUom === i.UomId || i.UomId === option.UomId)
@@ -436,12 +455,12 @@ const CreatePurchaseOrder = () => {
     if (["PoQuantity", "PoRate", 'BonusQuantity', "DiscountRate", 'MrpExpected', "TaxType1", "TaxType2", 'UomId'].includes(column)) {
       const currentRecord = updatedData.find((item) => item.key === record.key);
 
-      const altUom = alternateUoms.find(i => i.AlternateUom == currentRecord.UomId)
-      // let poQuantity = record.PoQuantity * (altUom ? altUom.EquivalentUOMUnits : 1)
+      const altUomData = alternateUoms.find(i => i.key == currentRecord.key)
+      const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == currentRecord.UomId) : undefined
 
-      const poQuantity = parseFloat(currentRecord.PoQuantity || 0) * (altUom ? altUom.EquivalentUOMUnits : 1);
-      const poRate = parseFloat(currentRecord.PoRate || 0);
-      const discountRate = parseFloat(currentRecord.DiscountRate || 0);
+      const poQuantity = (currentRecord.PoQuantity || 0) * (altUom ? altUom.EquivalentUOMUnits : 1);
+      const poRate = (currentRecord.PoRate || 0);
+      const discountRate = (currentRecord.DiscountRate || 0);
       const discountAmount = (poQuantity * poRate * discountRate) / 100;
       const amount = poQuantity * poRate - discountAmount;
       const taxType1 = currentRecord.TaxType1;
@@ -470,7 +489,6 @@ const CreatePurchaseOrder = () => {
           temp = taxDetails.AdditionalChargeType == 'Tax(Exclusive)' ? 0 : 1
           taxAmount = calculateTax(amount, taxDetails, currentRecord);
 
-          // Assign tax to the correct field
           currentRecord.TaxAmount2 = taxAmount;
         } catch (error) {
           console.error("Error fetching tax details:", error);
@@ -481,11 +499,11 @@ const CreatePurchaseOrder = () => {
 
       currentRecord.DiscountAmount = discountAmount;
       if (temp == 1) {
-        currentRecord.LineAmount = amount - parseFloat(currentRecord.TaxAmount1 || 0) - parseFloat(currentRecord.TaxAmount2 || 0);
+        currentRecord.LineAmount = amount - (currentRecord.TaxAmount1 || 0) - (currentRecord.TaxAmount2 || 0);
         currentRecord.TotalAmount = amount;
       } else {
         currentRecord.LineAmount = amount;
-        currentRecord.TotalAmount = amount + parseFloat(currentRecord.TaxAmount1 || 0) + parseFloat(currentRecord.TaxAmount2 || 0);
+        currentRecord.TotalAmount = amount + (currentRecord.TaxAmount1 || 0) + (currentRecord.TaxAmount2 || 0);
       }
 
       form1.setFieldsValue({
@@ -517,7 +535,9 @@ const CreatePurchaseOrder = () => {
     debugger
     let taxAmount = 0;
     let temp = 0
-    const altUom = alternateUoms.find(i => i.AlternateUom == record.UomId)
+    // const altUom = alternateUoms.find(i => i.AlternateUom == record.UomId)
+    const altUomData = alternateUoms.find(i => i.key == record.key)
+    const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == record.UomId) : undefined
     let poQuantity = record.PoQuantity * (altUom ? altUom.EquivalentUOMUnits : 1)
     const mrp = (record.MrpExpected || 0)
     if (taxDetails.IncludeBonusQuantity) {

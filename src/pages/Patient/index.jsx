@@ -216,7 +216,7 @@ const Patient = () => {
 
   const handleOk = async () => {
     //
-debugger;
+    debugger;
     try {
       await form.validateFields(); // Trigger form validation
       const values = form.getFieldsValue();
@@ -264,7 +264,7 @@ debugger;
           }
         );
 
-        if (response.data!=false) {
+        if (response.data != false) {
           setIsSubmitLoader(false);
           const Patients = response.data.data.Patients.map((obj, index) => {
             return { ...obj, key: index + 1 };
@@ -513,7 +513,7 @@ debugger;
     //   width: 200,
     //   render: (text, record) => (
     //     <>
-  
+
     //       <div>
     //         <p>
     //           <a
@@ -662,7 +662,7 @@ debugger;
             type="card" // This will make the tabs appear as cards
           >
             {/* Tab for "List of Patients in Visit" */}
-            <TabPane tab="List of Patients in Visit Toady" key="1">
+            <TabPane tab="List of Patients in Visit Today" key="1">
               <Spin spinning={isLoading}>
                 <Row gutter={16} style={{ padding: "0.5rem" }}>
                   <Col span={24}>
@@ -695,7 +695,7 @@ debugger;
           </Tabs>
         </div>
       </Layout>
-   
+
       <ConfigProvider
         theme={{
           token: {

@@ -23,12 +23,8 @@ import {
 } from "@ant-design/icons";
 import {
     urlAutocompleteProduct,
-    urlGetAllPatientTypeAsync,
-    urlGetAllPaymentTypesAsync,
-    urlGetAllUsers,
-    urlGetPurshaseOrderDetails,
-    urlSearchPatientsForLab,
-    urlSearchUHID,
+    urlAutocomplete,
+    urlGetPurshaseOrderDetails
 } from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import { useNavigate } from "react-router";
@@ -56,12 +52,12 @@ const StockItemLedgerReport = () => {
     }, []);
 
     useEffect(() => {
-        fetchData('a')
+        fetchData()
     }, [])
 
-    async function fetchData(search) {
+    async function fetchData() {
         try {
-            const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${search}`);
+            const response = await customAxios.get(urlAutocomplete);
             if (response.status === 200 && response.data != null) {
                 const userdetail = response.data.data;
                 setUsers(userdetail);

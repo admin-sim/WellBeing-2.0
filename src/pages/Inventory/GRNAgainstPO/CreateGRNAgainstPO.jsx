@@ -144,7 +144,6 @@ const CreateGRNAgainstPO = () => {
   };
 
   const disableToDate = (current) => {
-    // Disable dates that are before the selected fromDate or after today
     return (
       current &&
       (current.isBefore(fromDate, "day") ||
@@ -153,6 +152,7 @@ const CreateGRNAgainstPO = () => {
   };
 
   const fetchData = async () => {
+    debugger
     if (GrnHeaderId > 0) {
       setButtonTitle("Update");
       setLoading(true);
@@ -163,7 +163,7 @@ const CreateGRNAgainstPO = () => {
         if (response.status == 200 && response.data.data != null) {
           const editeddata = response.data.data;
           const products = editeddata.GRNAgainstPODetails.map(
-            (item, index) => ({
+            (item) => ({
               ...item,
               key: uuidv4(),
             })
@@ -231,6 +231,8 @@ const CreateGRNAgainstPO = () => {
 
   function calculateTotalAmount(data) {
     let totalAmount = 0;
+    let amount = 0;
+    let taxAmount = 0;
     data.forEach((item) => {
       if (
         item.ActiveFlag &&
@@ -238,10 +240,16 @@ const CreateGRNAgainstPO = () => {
         item.LineAmount !== null &&
         item.LineAmount !== undefined
       ) {
-        totalAmount += parseFloat(item.LineAmount);
+        totalAmount += item.TotalAmount;
+        amount += item.LineAmount;
+        taxAmount += item.TaxAmount1;
       }
     });
-    return totalAmount;
+    return totalAmount = {
+      totalAmount,
+      amount,
+      taxAmount
+    };
   }
 
   const handleInputChange = (e, column, index, record) => {
@@ -249,9 +257,13 @@ const CreateGRNAgainstPO = () => {
     if (["ReceivedQty", "PoRate", "DiscountRate"].includes(column)) {
       newData = data.map((item) => {
         if (item.key === record.key) {
-          const altUom = alternateUoms.find(i => i.AlternateUom == record.UomId)
+          // const altUom = alternateUoms.find(i => i.AlternateUom == record.UomId)
           // let poQuantity = record.PoQuantity * (altUom ? altUom.EquivalentUOMUnits : 1)
           const updatedItem = { ...item, [column]: e.target.value };
+
+          const altUomData = alternateUoms.find(i => i.key == record.key)
+          const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == updatedItem.UomId) : undefined
+
           const recievingQty =
             column === "ReceivedQty" ? e.target.value : item.ReceivedQty;
           const poRate = column === "PoRate" ? e.target.value : item.PoRate;
@@ -293,11 +305,13 @@ const CreateGRNAgainstPO = () => {
     if (["ReceivedQty", "PoRate", "DiscountRate"].includes(column)) {
       const totalAmount = calculateTotalAmount(newData);
       form1.setFieldsValue({
-        TotalAmount: totalAmount,
-        TotalPoAmount: totalAmount,
+        TotalAmount: totalAmount.amount,
+        TotalPoAmount: totalAmount.totalAmount,
+        TaxAmount: totalAmount.taxAmount
       });
-      setAmount(totalAmount)
-      setPoAmount(totalAmount)
+      setAmount(totalAmount.amount)
+      setTax(totalAmount.taxAmount)
+      setPoAmount(totalAmount.totalAmount)
     }
     setData(newData);
   };
@@ -357,7 +371,7 @@ const CreateGRNAgainstPO = () => {
     const postData = {
       PoHeaderId: record.PoHeaderId,
       Supplier: record.SupplierId,
-      Store: record.ProcurementStoreId,
+      Store: record.ProcurementStoreId
     };
     try {
       customAxios
@@ -366,15 +380,31 @@ const CreateGRNAgainstPO = () => {
         )
         .then((response) => {
           const apiData = response.data.data;
-          const products = apiData.ProductDetails.map((item, index) => ({
-            ...item,
-            key: uuidv4(),
-            LineAmount: 0,
-            TaxAmount1: 0,
-            TotalAmount: 0,
-            Uom: item.ShortName
-          }));
-          setAlternateUoms(apiData.ProductDetails[0].AlternateUoms)
+          const products = apiData.ProductDetails.map((item) => {
+            const key = uuidv4();
+            setAlternateUoms((prev) => [
+              ...prev,
+              { key, data: item.AlternateUoms }
+            ]);
+            return {
+              ...item,
+              key,
+              LineAmount: 0,
+              TaxAmount1: 0,
+              TotalAmount: 0,
+              Uom: item.ShortName,
+              temp: item.TaxTypeName == 'Tax(Inclusive)' ? 1 : 0
+            };
+          });
+          // const products = apiData.ProductDetails.map((item, index) => ({
+          //   ...item,
+          //   key: uuidv4(),
+          //   LineAmount: 0,
+          //   TaxAmount1: 0,
+          //   TotalAmount: 0,
+          //   Uom: item.ShortName
+          // }));
+          // setAlternateUoms(apiData.ProductDetails[0].AlternateUoms)
           setData(products);
           const formdata = apiData.POProducts;
           form1.setFieldsValue({
@@ -824,31 +854,69 @@ const CreateGRNAgainstPO = () => {
         return item;
       });
       setdataBatchModal(updatedBatch);
+      batchRecord.LineAmount = (batchRecord.LineAmount || 0)
+      batchRecord.TotalAmount = (batchRecord.TotalAmount || 0)
+      const altUomData = alternateUoms.find(i => i.key == batchRecord.key)
+      const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == batchRecord.UomId) : undefined
+      batchRecord.LineAmount = updatedBatch.reduce((total, item) => {
+        if (item.ProductId == batchRecord.ProductId && item.ActiveFlag) {
+          const taxAdjustment = batchRecord.temp === 0 ? 0 : (item.TaxAmount1 || 0) + (item.TaxAmount2 || 0);
+          return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.Rate - taxAdjustment;
+        }
+
+        return total;
+      }, 0);
+
+      batchRecord.TotalAmount = updatedBatch.reduce((total, item) => {
+        if (item.ProductId == batchRecord.ProductId && item.ActiveFlag) {
+          if (batchRecord.temp === 0) {
+            return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.Rate + ((item.TaxAmount1 || 0) + (item.TaxAmount2 || 0));
+          } else {
+            return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.Rate;
+          }
+        }
+
+        return total;
+      }, 0);
 
       // Update Product Line
       const form3d = form3.getFieldsValue()
       const form3do = Object.values(form3d)
       const totalTaxAmount1 = form3do.reduce((sum, item) => sum + (item.TaxAmount1 + item.TaxAmount2 || 0), 0);
 
-      const newdata = data.map((item => {
-        if (item.ProductId === batchRecord.ProductId) {
-          return {
-            ...item,
-            TaxAmount1: totalTaxAmount1,
-            LineAmount: item.TotalAmount - totalTaxAmount1
-          }
-        }
-        return item
-      }))
+      // const newdata = data.map((item => {
+      //   if (item.ProductId === batchRecord.ProductId) {
+      //     return {
+      //       ...item,
+      //       TaxAmount1: totalTaxAmount1,
+      //       LineAmount: batchRecord.LineAmount,
+      //       TotalAmount: batchRecord.TotalAmount
+      //     }
+      //   }
+      //   return item
+      // }))
 
-      form1.setFieldsValue({ [batchRecord.key]: { LineAmount: poAmount - totalTaxAmount1 } })
-      form1.setFieldsValue({ 'TotalAmount': poAmount - totalTaxAmount1 })
-      form1.setFieldsValue({ 'TaxAmount': totalTaxAmount1 })
+      const newdata = (data || []).map(item =>
+        item.ProductId === batchRecord?.ProductId
+          ? { ...item, TaxAmount1: totalTaxAmount1, LineAmount: batchRecord.LineAmount, TotalAmount: batchRecord.TotalAmount }
+          : item
+      );
+      setData(newdata)
+
+      form1.setFieldsValue({ [batchRecord.key]: { LineAmount: batchRecord.LineAmount } })
+      form1.setFieldsValue({ [batchRecord.key]: { TotalAmount: batchRecord.TotalAmount } })
       form1.setFieldsValue({ [batchRecord.key]: { TaxAmount1: totalTaxAmount1 } })
 
-      setData(newdata)
-      setTax(totalTaxAmount1)
-      setAmount(poAmount - totalTaxAmount1)
+      const totalAmount = calculateTotalAmount(newdata);
+      form1.setFieldsValue({
+        TotalAmount: totalAmount.amount,
+        TotalPoAmount: totalAmount.totalAmount,
+        TaxAmount: totalAmount.taxAmount
+      });
+      setAmount(totalAmount.amount)
+      setTax(totalAmount.taxAmount)
+      setPoAmount(totalAmount.totalAmount)
+
       setIsBatchModalOpen(false);
     } else {
       message.warning("Quantity shold be equal to Recieved Quantity");
@@ -1613,10 +1681,11 @@ const CreateGRNAgainstPO = () => {
   async function CalculateTax(data, record) {
     const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${data[record.key].TaxType1}`);
     const taxDetails = response.data.data[0];
-
-    const altUom = alternateUoms.find(i => i.AlternateUom == batchRecord.UomId)
+    const altUomData = alternateUoms.find(i => i.key == batchRecord.key)
+    const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == batchRecord.UomId) : undefined
+    // const altUom = alternateUoms.find(i => i.AlternateUom == batchRecord.UomId)
     // let poQuantity = record.PoQuantity * (altUom ? altUom.EquivalentUOMUnits : 1)
-    let Quantity = parseInt(data[record.key].Quantity || 0) * (altUom ? altUom.EquivalentUOMUnits : 1);
+    let Quantity = (data[record.key].Quantity || 0) * (altUom ? altUom.EquivalentUOMUnits : 1);
     let amount = Quantity * (data[record.key].Rate || 0) - (data[record.key].DiscountAmount || 0);
     let discountAmount = data[record.key].DiscountAmount
     let mrp = data[record.key].MRP

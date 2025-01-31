@@ -196,7 +196,6 @@ const StoreStockPostionReport = () => {
                                 <Form.Item name="ReportOption" label="Report Option">
                                     <Select
                                         placeholder="Select Value"
-                                        allowClear
                                     >
                                         <Select.Option key='1' value='1'>
                                             Consolidated

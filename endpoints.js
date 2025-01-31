@@ -562,3 +562,4 @@ export const urlGetOption = `${baseURL}/api/PatientClaim/GetOption`;
 export const urlSearchDetailedClaimRecord = `${baseURL}/api/PatientClaim/SearchDetailedClaimRecord`;
 export const urlAddNewCliamInvvoice = `${baseURL}/api/PatientClaim/AddNewCliamInvvoice`;
 export const urlPatientClaimSubmission = `${baseURL}/api/PatientClaim/PatientClaimSubmission`;
+export const urlAutocomplete = `${baseURL}/api/Store/Autocomplete`;

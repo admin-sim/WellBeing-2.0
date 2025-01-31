@@ -225,7 +225,7 @@ const IndentIssue = () => {
           <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>
         ) : null;
       },
-    },    
+    },
   ];
 
   const handleReport = async (value, record) => {

@@ -160,14 +160,32 @@ const CreateDirectGRN = () => {
         );
         if (response.status == 200 && response.data.data != null) {
           const editeddata = response.data.data;
-          const products = editeddata.GRNAgainstPODetails.map(
-            (item, index) => ({
+          const products = editeddata.GRNAgainstPODetails.map((item) => {
+            const key = uuidv4();
+            setAlternateUoms((prev) => [
+              ...prev,
+              { key, data: item.AlternateUoms },
+            ]);
+            return {
               ...item,
-              key: index + 1,
+              key,
               Replaceable: item.Replaceable === "Y" ? true : false,
-              UOM: response.data.data.UOM
-            })
-          );
+              UOM: response.data.data.UOM.filter(i =>
+                item.AlternateUoms.some(j => j.EquivalentUOM === i.UomId || j.AlternateUom === i.UomId) || item.UomId === i.UomId
+              ),
+            };
+          });
+
+          // const products = editeddata.GRNAgainstPODetails.map(
+          //   (item) => {{
+          //     ...item,
+          //     key: uuidv4(),
+          //     Replaceable: item.Replaceable === "Y" ? true : false,
+          //     UOM: response.data.data.UOM.filter(i =>
+          //       item.AlternateUoms.some(j => j.EquivalentUOM === i.UomId || j.AlternateUom === i.UomId)
+          //     )              
+          //   }}
+          // );
           setData(products);
           const formdata = editeddata.newGRNAgainstPOModel;
           setPoAmount(formdata.TotalAmount)
@@ -205,10 +223,8 @@ const CreateDirectGRN = () => {
           const batch = editeddata.BatchDetails.map((item, index) => ({
             ...item,
             key: uuidv4(),
-
+            temp: item.PoStatus == 'Tax(Inclusive)' ? 1 : 0
           }));
-          const temp = editeddata.BatchDetails.find((i) => i.PoStatus == 'Tax(Inclusive)')
-          setTaxTemp(temp?.PoStatus == 'Tax(Inclusive)' ? 1 : 0)
           setDataModel(batch);
           setCounterModel(editeddata.BatchDetails.length + 1);
           setLoading(false);
@@ -231,11 +247,9 @@ const CreateDirectGRN = () => {
         item.LineAmount !== null &&
         item.LineAmount !== undefined
       ) {
-        totalAmount += item.LineAmount;
+        totalAmount += taxTemp == 0 ? item.LineAmount + item.TaxAmount1 : item.TotalAmount;
         taxAmount += item.TaxAmount1;
-        amount += taxTemp == 0 ?
-          item.LineAmount + item.TaxAmount1 :
-          item.LineAmount - item.TaxAmount1;
+        amount += item.LineAmount
       }
     });
     return totalAmount = {
@@ -385,12 +399,39 @@ const CreateDirectGRN = () => {
         return item;
       });
       setDataModel(updatedBatch);
+      batchRecord.LineAmount = (batchRecord.LineAmount || 0)
+      batchRecord.TotalAmount = (batchRecord.TotalAmount || 0)
+      const altUomData = alternateUoms.find(i => i.key == batchRecord.key)
+      const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == batchRecord.UomId) : undefined
+      batchRecord.LineAmount = updatedBatch.reduce((total, item) => {
+        if (item.ProductId == batchRecord.ProductId && item.ActiveFlag) {
+          const taxAdjustment = item.temp === 0 ? 0 : (item.TaxAmount1 || 0) + (item.TaxAmount2 || 0);
+          return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.rate - taxAdjustment;
+        }
+
+        return total;
+      }, 0);
+
+      batchRecord.TotalAmount = updatedBatch.reduce((total, item) => {
+        if (item.ProductId == batchRecord.ProductId && item.ActiveFlag) {
+          if (item.temp === 0) {
+            return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.rate + ((item.TaxAmount1 || 0) + (item.TaxAmount2 || 0));
+          } else {
+            return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.rate;
+          }
+        }
+
+        return total;
+      }, 0);
+
       const newData = data.map((item) => {
         const key = item.key;
         if (batchRecord.key == key) {
           return {
             ...item,
-            TaxAmount1: taxamt1 + taxamt2
+            TaxAmount1: taxamt1 + taxamt2,
+            LineAmount: batchRecord.LineAmount,
+            TotalAmount: batchRecord.TotalAmount
           }
         }
         return item
@@ -398,9 +439,8 @@ const CreateDirectGRN = () => {
       form1.setFieldsValue({ [batchRecord.key]: { TaxAmount1: taxamt1 + taxamt2 } });
       form1.setFieldsValue({
         [batchRecord.key]: {
-          LineAmount: taxTemp == 0 ?
-            batchRecord.LineAmount + taxamt1 + taxamt2 :
-            batchRecord.LineAmount - taxamt1 - taxamt2
+          LineAmount: batchRecord.LineAmount,
+          TotalAmount: batchRecord.TotalAmount
         }
       });
       setData(newData)
@@ -646,7 +686,6 @@ const CreateDirectGRN = () => {
   };
 
   const handleSelect = (value, option, column, record) => {
-    debugger
     form1.setFieldsValue({ [record.key]: { ProductId: option.key } });
     customAxios
       .get(`${urlGetProductDetailsById}?ProductId=${option.key}`)
@@ -685,23 +724,6 @@ const CreateDirectGRN = () => {
         setData(newData);
         form1.setFieldsValue({ [record.key]: { UomId: option.UomId } });
       });
-    // const newData = data.map((item) => {
-    //   if (item.key === record.key) {
-    //     const updatedItem = {
-    //       ...item,
-    //       [column]: option.key,
-    //       ProductName: option.value,
-    //       UomId: option.UomId,
-    //       ProductId: option.key,
-    //       Expiry: option.Expiry,
-    //       Uom: option.Uom,
-    //     };
-    //     return updatedItem;
-    //   }
-    //   return item;
-    // });
-    // setData(newData);
-    // form1.setFieldsValue({ [record.key]: { UomId: option.UomId } });
   };
 
   const handleAdd = async () => {
@@ -758,7 +780,6 @@ const CreateDirectGRN = () => {
   };
 
   function handleUomChange(option, column, index, record) {
-    debugger
     form1.setFieldsValue({ [record.key]: { UomId: option.value } });
     form1.setFieldsValue({ [record.key]: { TaxAmount1: 0 } });
     form1.setFieldsValue({ [record.key]: { PoRate: '' } });
@@ -1142,8 +1163,7 @@ const CreateDirectGRN = () => {
   };
 
   const calculateTax = (amount, taxDetails, record) => {
-    debugger
-    let taxAmount = 0;
+    let taxAmount = 0
     let temp = 0
     const mrp = (record.MRP || 0)
     const altUomData = alternateUoms.find(i => i.key == batchRecord.key)
@@ -1241,11 +1261,11 @@ const CreateDirectGRN = () => {
         try {
           const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${taxType1}`);
           const taxDetails = response.data.data[0];
-          temp = taxDetails.AdditionalChargeType == 'Tax(Exclusive)' ? 0 : 1
+          // currentRecord.temp = taxDetails.AdditionalChargeType == 'Tax(Exclusive)' ? 0 : 1
           taxAmount = calculateTax(amount, taxDetails, currentRecord);
 
           currentRecord.TaxAmount1 = taxAmount.taxAmount;
-          setTaxTemp(taxAmount.temp)
+          currentRecord.temp = taxAmount.temp
         } catch (error) {
           console.error("Error fetching tax details:", error);
         }
@@ -1256,11 +1276,11 @@ const CreateDirectGRN = () => {
         try {
           const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${taxType2}`);
           const taxDetails = response.data.data[0];
-          temp = taxDetails.AdditionalChargeType == 'Tax(Exclusive)' ? 0 : 1
+          // currentRecord.temp = taxDetails.AdditionalChargeType == 'Tax(Exclusive)' ? 0 : 1
           taxAmount = calculateTax(amount, taxDetails, currentRecord);
 
           currentRecord.TaxAmount2 = taxAmount.taxAmount;
-          setTaxTemp(taxAmount.temp)
+          currentRecord.temp = taxAmount.temp
         } catch (error) {
           console.error("Error fetching tax details:", error);
         }

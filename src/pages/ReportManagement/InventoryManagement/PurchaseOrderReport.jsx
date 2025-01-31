@@ -167,7 +167,6 @@ const PurchaseOrderReport = () => {
                                 <Form.Item name="Supplier" label="Supplier">
                                     <Select
                                         placeholder="Select Value"
-                                        allowClear
                                     >
                                         <Select.Option key="all" value={""}>
                                             All
@@ -184,7 +183,6 @@ const PurchaseOrderReport = () => {
                                 <Form.Item name="PoNumber" label="Po Number">
                                     <Select
                                         placeholder="Select Value"
-                                        allowClear
                                     >
                                         <Select.Option key="all" value={""}>
                                             All
@@ -234,7 +232,6 @@ const PurchaseOrderReport = () => {
                                 <Form.Item name="POType" label="PO Type">
                                     <Select
                                         placeholder="Select Value"
-                                        allowClear
                                     >
                                         <Select.Option key="all" value={""}>
                                             All
@@ -251,7 +248,6 @@ const PurchaseOrderReport = () => {
                                 <Form.Item name="POStore" label="PO Store">
                                     <Select
                                         placeholder="Select Value"
-                                        allowClear
                                     >
                                         <Select.Option key="all" value={""}>
                                             All
