@@ -117,16 +117,11 @@ const Report = () => {
     }
   };
 
-
-  
-
   const columns = [
     { title: "Test Name", dataIndex: "TestName", key: "TestName" },
     { title: "Amount", dataIndex: "PatientNetAmount", key: "PatientNetAmount" },
     { title: "Lab Number", dataIndex: "LabNumber", key: "LabNumber" },
   ];
-
-  
 
   const handleTemplateClick = async (record) => {
     // Handle the click event, you can log the record or perform other actions

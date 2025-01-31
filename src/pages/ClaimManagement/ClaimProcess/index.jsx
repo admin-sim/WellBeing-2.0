@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import Layout from "antd/es/layout/layout";
+import CustomTable from "../../../components/customTable/index.jsx";
 import {
   Form,
   Input,
@@ -12,16 +13,54 @@ import {
   Typography,
   Table,
   Checkbox,
+  Spin,
 } from 'antd';
 import { urlGetOption,
   urlPatientClaimSubmission,
+  urlSearchDetailedClaimRecord,
 
  } from '../../../../endpoints.js';
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import UhidSelectComponent from "../../../components/UhidSelectComponent/index.jsx";
 
-
+const columns = [
+  // {
+  //   title: "Action",
+  //   dataIndex: "action",
+  //   key: "action",
+  //   render: (_, record) => (
+  //     <a
+  //       href="#"
+  //       onClick={() => showModal(record)}
+  //       style={{ textDecoration: "none" }}
+  //     >
+  //       <EditOutlined />
+  //     </a>
+  //   ),
+  // },
+  { title: "Payer", dataIndex: "PayerName", key: "Payer" },
+  { title: "UHID", dataIndex: "UhID", key: "Uhid" },
+  { title: "Name", dataIndex: "PatientFullName", key: "PatientName" },
+  {
+    title: "Bill Number",
+    dataIndex: "BillNumber",
+    key: "BillNumber",
+    render: (text, record) => (
+      <a href={`/bill-details/${record.BillNumber}`} target="_blank" rel="noopener noreferrer">
+        {text}
+      </a>
+    ),
+  }, 
+  { title: "Bill Amount", dataIndex: "BillAmount", key: "BillAmount" },
+  { title: "Bill Date", dataIndex: "BillDatestring", key: "BillDate" },
+  { title: "Original Claim Amount", dataIndex: "OrginalCliamAmount", key: "OriginalClaimAmount" },
+  { title: "Agreed Amount", dataIndex: "ClaimAgreedAmount", key: "AgreedAmount" },
+  { title: "Denied Amount", dataIndex: "ClaimDeniedAmount", key: "DeniedAmount" },
+  { title: "Pending Amount", dataIndex: "ClaimPendingAmount", key: "PendingAmount" },
+  { title: "Claim Amount", dataIndex: "ClaimAmount", key: "ClaimAmount" },
+  { title: "Claim Status", dataIndex: "BillStatus", key: "ClaimStatus" },
+];
 const { Option } = Select;
 
 const PatientClaimSubmission = () => {
@@ -29,7 +68,7 @@ const PatientClaimSubmission = () => {
    const [selectedUhId, setSelectedUhId] = useState(null);
    const [status, setStatus] = useState([]);
    const [dropDownLoad, setDropDownLoading] = useState(true);
-   
+   const [filteredData, setFilteredData] = useState([]); // Store API data
    const [payerOptions, setPayerOptions] = useState([]);
    const [claimStatusOptions, setClaimStatusOptions] = useState([]);
    const [actionStatusOptions, setActionStatusOptions] = useState([]);
@@ -57,9 +96,39 @@ const PatientClaimSubmission = () => {
   useEffect(() => {
     fetchOptions();
   }, []);
-
-  const handleSearch = (values) => {
-    console.log('Form Values:', values);
+  const handleSearch = async (values) => {
+    debugger
+    setLoading(true);
+    try {
+      const searchParams = {
+        Uhid: values.Uhid || null,
+        Patientid: form.getFieldValue("patientId") || 0,
+        PatientName:  values.PatientName  ? values.PatientName : null,
+        StatusType: values.status || 0,
+        PayerType: values.payerName || 0,
+        FromDate: values.fromDate ? values.fromDate.format("DD-MM-YYYY") : '',
+        ToDate: values.toDate ? values.toDate.format("DD-MM-YYYY") : '',
+        cliamnumber: form.getFieldValue("claimNumber") || '',
+        Type: form.getFieldValue("type") || 0,
+      };
+  
+      const response = await customAxios.get(
+        `${urlSearchDetailedClaimRecord}?Uhid=${searchParams.Uhid}&Patientid=${searchParams.Patientid}&PatientName=${searchParams.PatientName}&StatusType=${searchParams.StatusType}&PayerType=${searchParams.PayerType}&FromDate=${searchParams.FromDate}&ToDate=${searchParams.ToDate}&cliamnumber=${searchParams.cliamnumber}&Type=${searchParams.Type}`
+      );
+      
+  
+      if (response.status === 200 && response.data.data) {
+        const resultData = response.data.data.PatientClaim.map((item, index) => ({
+          ...item,
+          key: index + 1, // Ensure each row has a unique key
+        }));
+        setFilteredData(resultData); // Update table data
+      }
+    } catch (error) {
+      console.error("Error during search:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReset = () => {
@@ -158,7 +227,7 @@ const PatientClaimSubmission = () => {
             >
               <Select placeholder="Select Payer">
                 {payerOptions.map((payer) => (
-                  <Option key={payer.PayerId} value={payer.PayerTypeId}>
+                  <Option key={payer.PayerId} value={payer.PayerId}>
                     {payer.PayerName}
                   </Option>
                 ))}
@@ -191,6 +260,15 @@ const PatientClaimSubmission = () => {
           </Col>
         </Row>
       </Form>
+      <Spin spinning={loading}>
+        <CustomTable
+          dataSource={filteredData}
+          columns={columns}
+          actionColumn={false}
+          isFilter={true}
+          scroll={{ x: 1000 }}
+        />
+      </Spin>
     </Layout>
   );
 };

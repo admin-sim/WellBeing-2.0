@@ -89,7 +89,7 @@ const [PatientName, setPatientName] = useState(null);
       render: (text) => {
         let color = "";
         let label = "";
-    
+
         if (text === "Discharged") {
           color = "red";
           label = "Discharged";
@@ -100,15 +100,18 @@ const [PatientName, setPatientName] = useState(null);
           color = "orange";
           label = "Discharge Initiated";
         }
-    
+
         return (
-          <Tag color={color} style={{ borderRadius: "8px", fontWeight: "bold" }}>
+          <Tag
+            color={color}
+            style={{ borderRadius: "8px", fontWeight: "bold" }}
+          >
             {label}
           </Tag>
         );
       },
     },
-    
+
     {
       title: "Service Location",
       dataIndex: "ServiceLocation",
@@ -135,33 +138,44 @@ const [PatientName, setPatientName] = useState(null);
       key: "8",
     },
     {
-      title: "Date of Discharge",
-      dataIndex: "ToDateString",
+      title: "Date of Discharge ",
+      dataIndex: "ToDischargeDateStr",
       key: "9",
-      align: "center", // Aligns text to center
-      render: (text, record) =>
-        record.EncounterStatus === "Discharged" ? (
-          text
-        ) : (
-          <span style={{ color: "red", fontWeight: "bold", fontSize: "14px" }}>-</span>
-        ),
-    }     
+      align: "center",
+      render: (text, record) => {
+        if (record.EncounterStatus === "Discharged") {
+          if (text) {
+            // return text;
+            return (
+              <Tag
+                color="red"
+                style={{ borderRadius: "8px", fontWeight: "bold" }}
+              >
+                {text}
+              </Tag>
+            );
+          } else {
+            return (
+              <span
+                style={{ color: "blue", fontWeight: "bold", fontSize: "14px" }}
+              >
+                Not yet discharged
+              </span>
+            );
+          }
+        } else {
+          return (
+            <span
+              style={{ color: "red", fontWeight: "bold", fontSize: "14px" }}
+            >
+              -
+            </span>
+          );
+        }
+      },
+    },
   ];
 
-
-//   const tableData = [
-//     {
-//       EncounterId: "COH / IP90",
-//       PatientName: " Santhosh",
-//       EncounterStatus: "Discharged",
-//       ServiceLocation: "Grounnd Floor ",
-//       Provider: "CLEMENT IYAMU",
-//       Room: "Emergency Ward Ground Floor",
-//       Bed: "EWGF4",
-//       FromDate: "23-05-2023 12:37:16",
-//       ToDate: "01-01-0001 12:00:00",
-//     },
-//   ];
 
 // Fetch Patient Header Details
 const fetchDataHeader = async () => {
@@ -180,6 +194,27 @@ const fetchDataHeader = async () => {
 };
 
 // Handle Patient Tracking Search
+
+// const handlePatientTrackingSearch = async (values) => {
+//   try {
+//     debugger;
+//     const response = await customAxios.get(
+//       `${urlSearchPatientTrackRecords}?PatientId=${selectedPatientId || PatientId}&EncounterId=${generatedEncounter || encounter}`
+//     );
+
+//     if (response.status === 200) {
+//       debugger;
+//       setTableData(response.data.data.ClinicalDocumentTypes);
+//       setPatientTrackRecordTable(true);
+
+//       // Fetch the patient header after the search is successful
+//       await fetchDataHeader();
+//     }
+//   } catch (error) {
+//     console.error("Failed to search patient tracking records:", error);
+//   }
+// };
+// new patient search?
 const handlePatientTrackingSearch = async (values) => {
   try {
     debugger;
@@ -189,7 +224,9 @@ const handlePatientTrackingSearch = async (values) => {
 
     if (response.status === 200) {
       debugger;
-      setTableData(response.data.data.ClinicalDocumentTypes);
+      // Remove duplicate records before setting the table data
+      const uniqueData = removeDuplicates(response.data.data.ClinicalDocumentTypes);
+      setTableData(uniqueData);
       setPatientTrackRecordTable(true);
 
       // Fetch the patient header after the search is successful
@@ -200,6 +237,18 @@ const handlePatientTrackingSearch = async (values) => {
   }
 };
 
+// Function to remove duplicates based on EncounterId
+const removeDuplicates = (data) => {
+  const uniqueEncounters = new Map();
+  data.forEach((item) => {
+    if (!uniqueEncounters.has(item.Encounter)) {
+      uniqueEncounters.set(item.Encounter, item);
+    }
+  });
+  return Array.from(uniqueEncounters.values());
+};
+
+// end of nmew ?
 //   const handlePatientTrackingSearch = async(values) => {
 //   debugger
 //   const response= await customAxios.get(`${urlSearchPatientTrackRecords}?PatientId=${PatientId}&EncounterId=${0}`)

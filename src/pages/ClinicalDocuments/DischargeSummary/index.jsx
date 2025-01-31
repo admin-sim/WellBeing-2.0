@@ -48,7 +48,8 @@ const DischargeSummary = (details) => {
     SupplierList: [],
     DateFormat: [],
   });
-  
+
+ 
   const [selectedPatientType, setSelectedPatientType] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [departments, setDepartments] = useState([]);
@@ -247,11 +248,16 @@ async function handleSelectPatient(params) {
       {
         title: "Name",
         dataIndex: "PatientName",
-        key: 'PatientName',
-        // sorter: (a, b) => a.PatientName.localeCompare(b.PatientName),
-        // sortDirections: ["descend", "ascend"],
-        render: (text, record) => <p>{record.PatientName}</p>,
+        key: "PatientName",
       },
+      // {
+      //   title: "Name",
+      //   dataIndex: "PatientName",
+      //   key: 'PatientName',
+      //   // sorter: (a, b) => a.PatientName.localeCompare(b.PatientName),
+      //   // sortDirections: ["descend", "ascend"],
+      //   render: (text, record) => {record.PatientName},
+      // },
       {
         title: "Encounter ID",
         dataIndex: "GeneratedEncounterId",
@@ -324,7 +330,7 @@ async function handleSelectPatient(params) {
     {
       render: (_, row) => {
         // Check if KinName is 'done' and only then display the Report button
-        return row.KinName === "done" ? (
+        return row.KinName === "Done" ? (
           <Button type="link">Report</Button>
         ) : null;  // Return null if KinName is not 'done', so no button is shown
       },
@@ -734,7 +740,7 @@ async function handleSelectPatient(params) {
                 },
               ]}
             >
-              {/* <DatePicker
+              <DatePicker
                 value={fromDate}
                 onChange={(date) => setFromDate(date)}
                 disabledDate={(current) => current > moment()}
@@ -742,14 +748,14 @@ async function handleSelectPatient(params) {
                 format="DD-MM-YYYY"
                 placeholder="DD-MM-YYYY"
                 allowClear
-              /> */}
-              <DatePicker
+              />
+              {/* <DatePicker
                 style={{ width: "100%" }}
                 format={"DD-MM-YYYY"}
                 disabledDate={disabledDate}
                 placeholder="DD-MM-YYYY"
                 allowClear
-              />
+              /> */}
             </Form.Item>
           </ColWithSixSpan>
           <ColWithSixSpan>
@@ -762,7 +768,7 @@ async function handleSelectPatient(params) {
                 },
               ]}
             >
-              {/* <DatePicker
+              <DatePicker
                 value={toDate}
                 onChange={(date) => setToDate(date)}
                 disabledDate={(current) => current < fromDate} // disable dates before fromDate
@@ -770,14 +776,14 @@ async function handleSelectPatient(params) {
                 format="DD-MM-YYYY"
                 placeholder="DD-MM-YYYY"
                 allowClear
-              /> */}
-              <DatePicker
+              />
+              {/* <DatePicker
                 style={{ width: "100%" }}
                 format={"DD-MM-YYYY"}
                 disabledDate={disabledDate}
                 placeholder="DD-MM-YYYY"
                 allowClear
-              />
+              /> */}
             </Form.Item>
           </ColWithSixSpan>
           <ColWithSixSpan>
