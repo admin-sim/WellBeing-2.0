@@ -2,6 +2,7 @@ import React, { useEffect,useState } from "react";
 import CustomTable from "../../../components/customTable";
 import { urlSearchInPatientTrackRecords } from "../../../../endpoints";
 import customAxios from "../../../components/customAxios/customAxios";
+import { Tag } from "antd";
 function Emergency() {
     const [tableData, setTableData] = useState([]);
   const [patientTrackRecordTable, setPatientTrackRecordTable] = useState(true);
@@ -17,9 +18,30 @@ function Emergency() {
       key: "2",
     },
     {
-      title: "EncounterStatus",
+      title: "Encounter Status",
       dataIndex: "EncounterStatus",
       key: "3",
+      render: (text) => {
+        let color = "";
+        let label = "";
+    
+        if (text === "Discharged") {
+          color = "red";
+          label = "Discharged";
+        } else if (text === "Open") {
+          color = "green";
+          label = "Open";
+        } else if (text === "DischargeInitiated") {
+          color = "orange";
+          label = "Discharge Initiated";
+        }
+    
+        return (
+          <Tag color={color} style={{ borderRadius: "8px", fontWeight: "bold" }}>
+            {label}
+          </Tag>
+        );
+      },
     },
     {
       title: "ServiceLocation",
@@ -42,15 +64,23 @@ function Emergency() {
       key: "7",
     },
     {
-      title: "From Date",
+      title: "Date of Admission",
       dataIndex: "FromDateString",
       key: "8",
     },
     {
-      title: "To Date",
+      title: "Date of Discharge",
       dataIndex: "ToDateString",
       key: "9",
-    },
+      align: "center", // Aligns text to center
+      render: (text, record) =>
+        record.EncounterStatus === "Discharged" ? (
+          text
+        ) : (
+          <span style={{ color: "red", fontWeight: "bold", fontSize: "14px" }}>-</span>
+        ),
+    }
+    
   ];
   
   useEffect(()=>{

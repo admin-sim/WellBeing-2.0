@@ -11,6 +11,7 @@ import {
   Spin,
   Table,
   Tabs,
+Tag,
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import PatientHeader from "../../../components/PatientHeader";
@@ -71,52 +72,81 @@ const [PatientName, setPatientName] = useState(null);
   const [form2] = useForm();
 
   const columns = [
-    {
-      title: "Encounter Id",
-      dataIndex: "Encounter",
-      key: "1",
-    },
-    {
-      title: "Patient Name",
-      dataIndex: "PatientName",
-      key: "2",
-    },
-    {
-      title: "Encounter Status",
-      dataIndex: "EncounterStatus",
-      key: "3",
-    },
-    {
-      title: "Service Location",
-      dataIndex: "ServiceLocation",
-      key: "4",
-    },
-    {
-      title: "Provider",
-      dataIndex: "Provider",
-      key: "5",
-    },
-    {
-      title: "Room",
-      dataIndex: "Ward",
-      key: "6",
-    },
-    {
-      title: "Bed",
-      dataIndex: "Bed",
-      key: "7",
-    },
-    {
-      title: "From Date",
-      dataIndex: "FromDateString",
-      key: "8",
-    },
-    {
-      title: "To Date",
-      dataIndex: "ToDateString",
-      key: "9",
-    },
-  ];
+    {
+      title: "Encounter Id",
+      dataIndex: "Encounter",
+      key: "1",
+    },
+    {
+      title: "Patient Name",
+      dataIndex: "PatientName",
+      key: "2",
+    },
+    {
+      title: "Encounter Status",
+      dataIndex: "EncounterStatus",
+      key: "3",
+      render: (text) => {
+        let color = "";
+        let label = "";
+    
+        if (text === "Discharged") {
+          color = "red";
+          label = "Discharged";
+        } else if (text === "Open") {
+          color = "green";
+          label = "Open";
+        } else if (text === "DischargeInitiated") {
+          color = "orange";
+          label = "Discharge Initiated";
+        }
+    
+        return (
+          <Tag color={color} style={{ borderRadius: "8px", fontWeight: "bold" }}>
+            {label}
+          </Tag>
+        );
+      },
+    },
+    
+    {
+      title: "Service Location",
+      dataIndex: "ServiceLocation",
+      key: "4",
+    },
+    {
+      title: "Provider",
+      dataIndex: "Provider",
+      key: "5",
+    },
+    {
+      title: "Room",
+      dataIndex: "Ward",
+      key: "6",
+    },
+    {
+      title: "Bed",
+      dataIndex: "Bed",
+      key: "7",
+    },
+    {
+      title: "Date of Admission",
+      dataIndex: "FromDateString",
+      key: "8",
+    },
+    {
+      title: "Date of Discharge",
+      dataIndex: "ToDateString",
+      key: "9",
+      align: "center", // Aligns text to center
+      render: (text, record) =>
+        record.EncounterStatus === "Discharged" ? (
+          text
+        ) : (
+          <span style={{ color: "red", fontWeight: "bold", fontSize: "14px" }}>-</span>
+        ),
+    }     
+  ];
 
 
 //   const tableData = [
