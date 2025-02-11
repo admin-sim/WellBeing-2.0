@@ -482,7 +482,8 @@ const CreateGRNAgainstPO = () => {
       render: (text, record) => (
         <Form.Item
           name={[record.key, "PoBalanceQty"]}
-          initialValue={record.PoBalanceQty + record.PoBalanceBonusQty}
+          initialValue={record.PoBalanceQty}
+        // initialValue={record.PoBalanceQty + record.PoBalanceBonusQty}
         >
           <InputNumber min={0} disabled />
         </Form.Item>
@@ -1109,7 +1110,9 @@ const CreateGRNAgainstPO = () => {
       if (values.TotalPoAmount == values.InvoiceAmount) {
         if (values[i.key] !== undefined) {
           if (
-            values[i.key].ReceivedQty + values[i.key].BonusQuantity <=
+            // values[i.key].ReceivedQty + values[i.key].BonusQuantity <=
+            // values[i.key].PoBalanceQty
+            values[i.key].ReceivedQty <=
             values[i.key].PoBalanceQty
           ) {
             const product = {
@@ -1127,8 +1130,13 @@ const CreateGRNAgainstPO = () => {
               TaxAmount1: values[i.key].TaxAmount1 ?? 0,
               TotalAmount: values[i.key].TotalAmount,
               Replaceable: values[i.key].Replaceable === true ? "Y" : "N",
+              // PoStatus:
+              //   values[i.key].ReceivedQty + values[i.key].BonusQuantity ==
+              //     values[i.key].PoBalanceQty
+              //     ? "Completed"
+              //     : "Pending",
               PoStatus:
-                values[i.key].ReceivedQty + values[i.key].BonusQuantity ==
+                values[i.key].ReceivedQty ==
                   values[i.key].PoBalanceQty
                   ? "Completed"
                   : "Pending",
