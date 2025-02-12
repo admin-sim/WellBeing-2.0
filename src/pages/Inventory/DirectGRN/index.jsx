@@ -89,7 +89,7 @@ const DirectGRN = () => {
     setLoading(true)
     try {
       const request = {
-        PONO: record.GRNNumber,
+        PONo: record.GRNNumber,
         use: 'admin',
         FileType: "pdf", // or 'excel'
       };
