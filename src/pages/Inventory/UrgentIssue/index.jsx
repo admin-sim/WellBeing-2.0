@@ -156,7 +156,7 @@ const UrgentIssue = () => {
     setLoading(true)
     try {
       const request = {
-        PONO: record.IndentNumber,
+        PONo: record.IssueNumber,
         use: 'admin',
         FileType: "pdf", // or 'excel'
       };
@@ -188,7 +188,7 @@ const UrgentIssue = () => {
     }
 
     const blob = await response.blob();
-    const url = URL.createObjectURL(blob); s
+    const url = URL.createObjectURL(blob);
     setLoading(false)
     return { url, blob };
   }

@@ -209,7 +209,12 @@ const PatientIssue = () => {
       },
     },
     {
-      render: (_, record) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
+      // render: (_, record) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
+      render: (_, record) => {
+        return record.IssueNumber ? (
+          <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>
+        ) : null;
+      }
     },
   ];
 

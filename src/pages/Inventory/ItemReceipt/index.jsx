@@ -225,7 +225,7 @@ const ItemReceipt = () => {
     setLoading(true)
     try {
       const request = {
-        PONo: record.IssueNumber,
+        PONo: record.ReceiptNumber,
         use: 'admin',
         FileType: "pdf", // or 'excel'
       };
