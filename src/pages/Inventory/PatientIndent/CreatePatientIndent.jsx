@@ -464,6 +464,7 @@ const CreatePatientIndent = () => {
     };
 
     const handleOnFinish = async (values) => {
+        setLoading(true)
         await form2.validateFields()
         const products = [];
         if (data.length == 0) {
@@ -755,7 +756,7 @@ const CreatePatientIndent = () => {
                         <Row justify="end" style={{ padding: '0rem 1rem' }}>
                             <Col style={{ marginRight: '10px' }}>
                                 <Form.Item>
-                                    <Button type="primary" htmlType="submit">
+                                    <Button type="primary" htmlType="submit" disabled={loading}>
                                         {buttonTitle}
                                     </Button>
                                 </Form.Item>
@@ -848,7 +849,7 @@ const CreatePatientIndent = () => {
                         height={"auto"}
                         centered
                         title={
-                            <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>                                
+                            <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>
                                 View Doctor Note
                             </span>
                         }

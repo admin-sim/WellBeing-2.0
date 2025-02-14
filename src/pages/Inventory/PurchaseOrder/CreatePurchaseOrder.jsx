@@ -65,7 +65,6 @@ const CreatePurchaseOrder = () => {
   const navigate = useNavigate();
 
   const [counter, setCounter] = useState(2);
-  const [isProdhasAlternateUom, setIsProdhasAlternateUom] = useState(true);
   const [counterDelivery, setCounterDelivery] = useState(2);
   const [buttonTitle, setButtonTitle] = useState("Save");
   const [productOptions, setProductOptions] = useState([]);
@@ -211,7 +210,7 @@ const CreatePurchaseOrder = () => {
   };
 
   const handleOnFinish = async (values) => {
-    debugger
+    setLoading(true)
     const products = data
       .filter((item) => item !== undefined)
       .map((item) => ({
@@ -256,6 +255,7 @@ const CreatePurchaseOrder = () => {
     );
     if (activeProducts.length === 0) {
       message.warning("Please Add Product");
+      setLoading(false)
       return false;
     }
 
@@ -1355,7 +1355,7 @@ const CreatePurchaseOrder = () => {
         <Row justify="end" gutter={16}>
           <Col>
             <Form.Item>
-              <Button type="primary" loading={loading} htmlType="submit">
+              <Button type="primary" disabled={loading} htmlType="submit">
                 {buttonTitle}
               </Button>
             </Form.Item>

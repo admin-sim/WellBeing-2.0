@@ -1986,7 +1986,7 @@ const CreateDirectGRN = () => {
         <Row justify="end" gutter={16}>
           <Col>
             <Form.Item>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" disabled={loading}>
                 {buttonTitle}
               </Button>
             </Form.Item>

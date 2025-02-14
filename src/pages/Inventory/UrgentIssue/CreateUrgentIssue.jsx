@@ -453,14 +453,13 @@ const CreateUrgentIssue = () => {
   };
 
   const handleOnFinish = async (values) => {
-    debugger;
-
+    setLoading(true)
     const newdata = data.filter((item) => item.ProductId && item.ActiveFlag);
     if (newdata.length === 0) {
       message.warning("Please Add Product");
+      setLoading(false)
       return false;
     }
-
     const products = newdata
       .filter((item) => item !== undefined)
       .map((item) => ({
@@ -477,6 +476,7 @@ const CreateUrgentIssue = () => {
     const result = checkActiveBatches(activeProducts, dataModal);
     if (!result.allActiveProductsHaveActiveBatch) {
       message.warning("Please Add BatchDeatils");
+      setLoading(false)
       return false;
     }
     const sumItems = (items, key) =>
@@ -496,6 +496,7 @@ const CreateUrgentIssue = () => {
 
     if (totalReceivedQty !== totalBatchQuantity) {
       message.warning("Please enter valid batch details..");
+      setLoading(false)
       return false;
     }
 
@@ -535,7 +536,7 @@ const CreateUrgentIssue = () => {
 
       Batch: issueId === 0 ? activeItems : filteredBatchDataModel,
     };
-    console.log("postData", postData);
+
     try {
       const response = await customAxios.post(
         urlAddNewUrgentIssue,
@@ -551,7 +552,6 @@ const CreateUrgentIssue = () => {
     } catch (error) {
       // Handle error
     }
-
   };
 
   const onFinishModel = async () => {
@@ -1140,204 +1140,204 @@ const CreateUrgentIssue = () => {
   return (
     // <Spin spinning={loading} size="large" tip="Loading..." indicator={<LoadingOutlined style={{ fontSize: 35, color: '#9190ff' }} spin />}>
     // <Spin spinning={loading} size="large" tip="Loading...">
-      <Layout style={{ zIndex: "999999999" }}>
-        <div
-          style={{
-            width: "100%",
-            backgroundColor: "white",
-            minHeight: "max-content",
-            borderRadius: "10px",
-          }}
-        >
-          <PageHeader
-            title={"Create Urgent Issue"}
-            buttonLabel="Back"
-            buttonIcon={<LeftOutlined />}
-            onButtonClick={handleCancel}
-          />
-          <Card>
-            <Form
-              layout="vertical"
-              onFinish={handleOnFinish}
-              variant="outlined"
-              style={{
-                maxWidth: 1500,
-              }}
-              name="trigger"
-              form={form1}
-              initialValues={{
-                IssuingDate: dayjs(),
-                SubmitCheck: false,
-              }}
-            >
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-                style={{ padding: "1rem 0.5rem", marginBottom: "0" }}
-                align="Bottom">
-                <Col className="gutter-row" span={4}>
-                  <Form.Item label="Issuing Date" name="IssuingDate">
-                    <DatePicker
-                      style={{ width: "100%" }}
-                      disabled
-                      format="DD-MM-YYYY"
-                    />
-                  </Form.Item>
-                  <Form.Item name="IssueId" hidden>
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col className="gutter-row" span={4}>
-                  <Form.Item
-                    label="Issuing Store"
-                    name="IssueingStoreId"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input!",
-                      },
-                    ]}
-                  >
-                    <Select
-                      //allowClear
-                      placeholder="Select Value"
-                      onChange={handleStore}
-                      disabled={!!issueId}
-                    >
-                      {DropDown.StoreDetails.map((option) => (
-                        <Select.Option key={option.StoreId} value={option.StoreId}>
-                          {option.LongName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col className="gutter-row" span={4}>
-                  <Form.Item
-                    label="Requesting Location"
-                    name="RequestingStoreId"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input!",
-                      },
-                    ]}
-                  >
-                    <Select
-                      //allowClear
-                      placeholder="Select Value"
-                      onChange={handleStore}
-                      disabled={!!issueId}
-                    >
-                      {DropDown.StoreDetails.map((option) => (
-                        <Select.Option key={option.StoreId} value={option.StoreId}>
-                          {option.LongName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col className="gutter-row" span={6}>
-                  <Form.Item label="Issue Owner" name="IssueOwner">
-                    <Input style={{ width: "100%" }} allowClear />
-                  </Form.Item>
-                </Col>
-                <Col className="gutter-row" span={3}>
-                  <Form.Item
-                    label="Issue Status"
-                    name="IssueStatus"
-                    rules={[
-                      {
-                        required: issueStatus,
-                        message: "Please input!",
-                      },
-                    ]}
-                  >
-                    <Select allowClear placeholder="Select Value">
-                      <Option value="Draft">Draft</Option>
-                      <Option value="Finalize">Finalize</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col className="gutter-row" span={3}>
-                  <Form.Item
-                    name="SubmitCheck"
-                    style={{ marginTop: "30px" }}
-                    valuePropName="checked"
-                  >
-                    <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
-                  </Form.Item>
-                </Col>
-                <Col className="gutter-row" span={9}>
-                  <Form.Item label="Remarks" name="Remarks">
-                    <TextArea />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row justify="end" style={{ padding: "0rem 1rem" }}>
-                <Col style={{ marginRight: "10px" }}>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                      {buttonTitle}
-                    </Button>
-                  </Form.Item>
-                </Col>
-                <Col>
-                  <Form.Item>
-                    <Button type="primary" onClick={handleCancel}>
-                      Cancel
-                    </Button>
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Divider style={{ marginTop: "0" }}></Divider>
-              {istablevisible ? (
-                <CustomTable 
-                  dataSource={data?.filter((item) => item.ActiveFlag !== false)}
-                  columns={columns}
-                  isFilter={false}
-                  // actionColumn={false}
-                  bordered
-                  actionColumnName={<Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={AddProduct}
-                  ></Button>}
-                  onDelete={handleDelete}
-                />
-              ) : null}
-            </Form>
-          </Card>
-          <Modal
-            width={1000}
-            maskClosable={false}
-            title="Product Batch Details"
-            open={isModelOpen}
-            onOk={handleSaveModal}
-            onCancel={handleCloseModal}
-            okText={"Save"}
+    <Layout style={{ zIndex: "999999999" }}>
+      <div
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <PageHeader
+          title={"Create Urgent Issue"}
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleCancel}
+        />
+        <Card>
+          <Form
+            layout="vertical"
+            onFinish={handleOnFinish}
+            variant="outlined"
+            style={{
+              maxWidth: 1500,
+            }}
+            name="trigger"
+            form={form1}
+            initialValues={{
+              IssuingDate: dayjs(),
+              SubmitCheck: false,
+            }}
           >
-            <Form
-              name="basic"
-              labelCol={{
-                span: 8,
-              }}
-              wrapperCol={{
-                span: 16,
-              }}
-              style={{
-                width: "100%",
-              }}
-              initialValues={{
-                remember: true,
-              }}
-              onFinish={onFinishModel}
-              onFinishFailed={onFinishFailed}
-              autoComplete="off"
-              form={form2}
-            >
-              <Row>
-                <Col className="gutter-row" span={8}>
-                  <Tag color="#1890ff">Product: {productDetails?.ProductName}</Tag>
-                  {/* <div>
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+              style={{ padding: "1rem 0.5rem", marginBottom: "0" }}
+              align="Bottom">
+              <Col className="gutter-row" span={4}>
+                <Form.Item label="Issuing Date" name="IssuingDate">
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    disabled
+                    format="DD-MM-YYYY"
+                  />
+                </Form.Item>
+                <Form.Item name="IssueId" hidden>
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={4}>
+                <Form.Item
+                  label="Issuing Store"
+                  name="IssueingStoreId"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Select
+                    //allowClear
+                    placeholder="Select Value"
+                    onChange={handleStore}
+                    disabled={!!issueId}
+                  >
+                    {DropDown.StoreDetails.map((option) => (
+                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                        {option.LongName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={4}>
+                <Form.Item
+                  label="Requesting Location"
+                  name="RequestingStoreId"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Select
+                    //allowClear
+                    placeholder="Select Value"
+                    onChange={handleStore}
+                    disabled={!!issueId}
+                  >
+                    {DropDown.StoreDetails.map((option) => (
+                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                        {option.LongName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={6}>
+                <Form.Item label="Issue Owner" name="IssueOwner">
+                  <Input style={{ width: "100%" }} allowClear />
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={3}>
+                <Form.Item
+                  label="Issue Status"
+                  name="IssueStatus"
+                  rules={[
+                    {
+                      required: issueStatus,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Select allowClear placeholder="Select Value">
+                    <Option value="Draft">Draft</Option>
+                    <Option value="Finalize">Finalize</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={3}>
+                <Form.Item
+                  name="SubmitCheck"
+                  style={{ marginTop: "30px" }}
+                  valuePropName="checked"
+                >
+                  <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
+                </Form.Item>
+              </Col>
+              <Col className="gutter-row" span={9}>
+                <Form.Item label="Remarks" name="Remarks">
+                  <TextArea />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row justify="end" style={{ padding: "0rem 1rem" }}>
+              <Col style={{ marginRight: "10px" }}>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit" disabled={loading}>
+                    {buttonTitle}
+                  </Button>
+                </Form.Item>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button type="primary" onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Divider style={{ marginTop: "0" }}></Divider>
+            {istablevisible ? (
+              <CustomTable
+                dataSource={data?.filter((item) => item.ActiveFlag !== false)}
+                columns={columns}
+                isFilter={false}
+                // actionColumn={false}
+                bordered
+                actionColumnName={<Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={AddProduct}
+                ></Button>}
+                onDelete={handleDelete}
+              />
+            ) : null}
+          </Form>
+        </Card>
+        <Modal
+          width={1000}
+          maskClosable={false}
+          title="Product Batch Details"
+          open={isModelOpen}
+          onOk={handleSaveModal}
+          onCancel={handleCloseModal}
+          okText={"Save"}
+        >
+          <Form
+            name="basic"
+            labelCol={{
+              span: 8,
+            }}
+            wrapperCol={{
+              span: 16,
+            }}
+            style={{
+              width: "100%",
+            }}
+            initialValues={{
+              remember: true,
+            }}
+            onFinish={onFinishModel}
+            onFinishFailed={onFinishFailed}
+            autoComplete="off"
+            form={form2}
+          >
+            <Row>
+              <Col className="gutter-row" span={8}>
+                <Tag color="#1890ff">Product: {productDetails?.ProductName}</Tag>
+                {/* <div>
                   <span>
                     Product :{" "}
                     <b style={{ color: "#1677ff" }}>
@@ -1345,10 +1345,10 @@ const CreateUrgentIssue = () => {
                     </b>{" "}
                   </span>
                 </div> */}
-                </Col>
-                <Col className="gutter-row" span={12}>
-                  <Tag color="#52c41a">Recieved Qty: {productDetails?.IssueQty}</Tag>
-                  {/* <div>
+              </Col>
+              <Col className="gutter-row" span={12}>
+                <Tag color="#52c41a">Recieved Qty: {productDetails?.IssueQty}</Tag>
+                {/* <div>
                   <span>
                     Issued Quantity :{" "}
                     <b style={{ color: "#1677ff" }}>
@@ -1356,27 +1356,27 @@ const CreateUrgentIssue = () => {
                     </b>{" "}
                   </span>
                 </div> */}
-                </Col>
-              </Row>
-              <Table 
-                columns={columnsmodal}
-                //dataSource={dataModal}
-                dataSource={
-                  batchRecord?.ProductId
-                    ? dataModal.filter(
-                      (item) =>
-                        (item.ProductId == batchRecord.ProductId &&
-                          item.ActiveFlag) ||
-                        (item.ProductId == "" && item.ActiveFlag)
-                    )
-                    : []
-                }
-                size="small"
-              />
-            </Form>
-          </Modal>
-        </div>
-      </Layout>
+              </Col>
+            </Row>
+            <Table
+              columns={columnsmodal}
+              //dataSource={dataModal}
+              dataSource={
+                batchRecord?.ProductId
+                  ? dataModal.filter(
+                    (item) =>
+                      (item.ProductId == batchRecord.ProductId &&
+                        item.ActiveFlag) ||
+                      (item.ProductId == "" && item.ActiveFlag)
+                  )
+                  : []
+              }
+              size="small"
+            />
+          </Form>
+        </Modal>
+      </div>
+    </Layout>
     // </Spin>
   );
 };

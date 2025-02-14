@@ -1092,17 +1092,20 @@ const CreateGRNAgainstPO = () => {
   // const onFinishBatchFailed = () => {};
 
   const handleOnFinish = async (values) => {
+    setLoading(true)
     const isAnyIdNotNull = dataBatchModal.some(
       (item) => item.ProductId !== "" && item.ActiveFlag
     );
 
     if (!isAnyIdNotNull) {
       message.warning("Please add Batch details");
+      setLoading(false)
       return false;
     }
 
     if (values.TotalPoAmount !== values.InvoiceAmount) {
       message.warning("Invoice Amount Must be equal to Total Po Amount");
+      setLoading(false)
       return false;
     }
     const products = [];
@@ -1145,11 +1148,13 @@ const CreateGRNAgainstPO = () => {
             products.push(product);
           } else {
             message.warning("Recieved Qty must not Greater than PoPending Qty");
+            setLoading(false)
             return false;
           }
         }
       } else {
         message.warning("Invoice Amount Must be equals to Total Po Amount");
+        setLoading(false)
         return false;
       }
     })
@@ -2061,7 +2066,7 @@ const CreateGRNAgainstPO = () => {
         <Row justify="end" gutter={16}>
           <Col>
             <Form.Item>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" disabled={loading}>
                 {buttonTitle}
               </Button>
             </Form.Item>

@@ -69,7 +69,7 @@ const StockExpiryReport = () => {
         setError(null); // Reset previous errors
 
         const request = {
-            FacilityId: 1,
+            // FacilityId: 1,
             POStore: values.StoreName,
             use: values.ViewStock,
         };
@@ -87,7 +87,7 @@ const StockExpiryReport = () => {
 
     async function fetchReport(request) {
         const response = await fetch(
-            "https://192.168.29.254:808/api/ReportsApi/GetStockExpiryRpt",
+            "http://localhost:43705/api/ReportsApi/GetStockExpiryRpt",
             {
                 method: "POST",
                 headers: {
