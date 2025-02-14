@@ -781,6 +781,7 @@ const CreateGRNAgainstPO = () => {
   };
 
   const onOkBatchModal = async () => {
+    debugger
     await form3.validateFields();
     const values = form3.getFieldsValue();
     const valuesArray = Object.values(values);
@@ -857,6 +858,7 @@ const CreateGRNAgainstPO = () => {
       setdataBatchModal(updatedBatch);
       batchRecord.LineAmount = (batchRecord.LineAmount || 0)
       batchRecord.TotalAmount = (batchRecord.TotalAmount || 0)
+      batchRecord.DiscountAmount = (batchRecord.DiscountAmount || 0)
       const altUomData = alternateUoms.find(i => i.key == batchRecord.key)
       const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == batchRecord.UomId) : undefined
       batchRecord.LineAmount = updatedBatch.reduce((total, item) => {
@@ -865,7 +867,7 @@ const CreateGRNAgainstPO = () => {
           return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.Rate - taxAdjustment;
         }
 
-        return total;
+        return total - batchRecord.DiscountAmount;
       }, 0);
 
       batchRecord.TotalAmount = updatedBatch.reduce((total, item) => {
@@ -877,7 +879,7 @@ const CreateGRNAgainstPO = () => {
           }
         }
 
-        return total;
+        return total - batchRecord.DiscountAmount;
       }, 0);
 
       // Update Product Line
@@ -885,27 +887,15 @@ const CreateGRNAgainstPO = () => {
       const form3do = Object.values(form3d)
       const totalTaxAmount1 = form3do.reduce((sum, item) => sum + (item.TaxAmount1 + item.TaxAmount2 || 0), 0);
 
-      // const newdata = data.map((item => {
-      //   if (item.ProductId === batchRecord.ProductId) {
-      //     return {
-      //       ...item,
-      //       TaxAmount1: totalTaxAmount1,
-      //       LineAmount: batchRecord.LineAmount,
-      //       TotalAmount: batchRecord.TotalAmount
-      //     }
-      //   }
-      //   return item
-      // }))
-
       const newdata = (data || []).map(item =>
         item.ProductId === batchRecord?.ProductId
-          ? { ...item, TaxAmount1: totalTaxAmount1, LineAmount: batchRecord.LineAmount, TotalAmount: batchRecord.TotalAmount }
+          ? { ...item, TaxAmount1: totalTaxAmount1, LineAmount: batchRecord.LineAmount - batchRecord.DiscountAmount, TotalAmount: batchRecord.TotalAmount - batchRecord.DiscountAmount }
           : item
       );
       setData(newdata)
 
-      form1.setFieldsValue({ [batchRecord.key]: { LineAmount: batchRecord.LineAmount } })
-      form1.setFieldsValue({ [batchRecord.key]: { TotalAmount: batchRecord.TotalAmount } })
+      form1.setFieldsValue({ [batchRecord.key]: { LineAmount: batchRecord.LineAmount - batchRecord.DiscountAmount } })
+      form1.setFieldsValue({ [batchRecord.key]: { TotalAmount: batchRecord.TotalAmount - batchRecord.DiscountAmount } })
       form1.setFieldsValue({ [batchRecord.key]: { TaxAmount1: totalTaxAmount1 } })
 
       const totalAmount = calculateTotalAmount(newdata);
@@ -964,132 +954,6 @@ const CreateGRNAgainstPO = () => {
   const onFinishBatchmodal = () => { };
 
   const onFinishBatchFailed = () => { };
-  // const handleOnFinish = async (values) => {
-  //
-  //   const products = [];
-  //   for (let i = 0; i <= data.length; i++) {
-  //     if (values.TotalPoAmount == values.InvoiceAmount) {
-  //       if (values[i] !== undefined) {
-  //         if (
-  //           values[i].ReceivedQty + values[i].BonusQuantity <=
-  //           values[i].PoBalanceQty
-  //         ) {
-  //           const product = {
-  //             ProductId: values[i].ProductId,
-  //             UomId: values[i].UomId,
-  //             ReceivedQty: values[i].ReceivedQty,
-  //             PoQuantity: values[i].PoBalanceQty,
-  //            // PoBalanceQty: values[i].PoBalanceQty,
-  //             BonusQuantity: values[i].BonusQuantity,
-  //             PoLineId: values[i].PoLineId,
-  //             GrnLineId: values[i].GrnLineId,
-  //             // QuantityTobeIssued: values[i].discount === "" ? 0 : values[i].discount,
-  //             PoRate: values[i].PoRate,
-  //             DiscountRate: values[i].DiscountRate,
-  //             DiscountAmount:
-  //               values[i].DiscountAmount == undefined
-  //                 ? 0
-  //                 : values[i].DiscountAmount,
-  //             LineAmount: values[i].LineAmount,
-  //             TaxAmount1:
-  //               values[i].TaxAmount1 == undefined ? 0 : values[i].TaxAmount1,
-  //             TotalAmount: values[i].LineAmount,
-  //             Replaceable: values[i].Replaceable === true ? "Y" : "N",
-  //             PoStatus:
-  //               values[i].ReceivedQty + values[i].BonusQuantity ==
-  //               values[i].PoBalanceQty
-  //                 ? "Completed"
-  //                 : "Pending",
-  //             ActiveFlag: true,
-  //           };
-  //           products.push(product);
-  //         } else {
-  //           message.warning("Recieved Qty must not Greater than PoPending Qty");
-  //           return false;
-  //         }
-  //       }
-  //     } else {
-  //       message.warning("Invoice Amount Must be equals to Total Po Amount");
-  //       return false;
-  //     }
-  //   }
-
-  //   const GRNAgainstPO = {
-  //     GRNHeaderId: values.GRNHeaderId,
-  //     PoHeaderId: values.PoHeaderId,
-  //     SupplierId: values.SupplierId,
-  //     StoreId: values.StoreId,
-  //     DocumentType:
-  //       values.DocumentType === undefined ? "" : values.DocumentType,
-  //     // GrnNumber: values.PODate === undefined ? dayjs(`${currentDate}`).format(dateFormat) : values.PODate,
-  //     // GRNDatestring: values.GRNDate === undefined ? null : (values.GRNDate.$D.toString().padStart(2, '0') + '-' + (values.GRNDate.$M + 1).toString().padStart(2, '0') + '-' + values.GRNDate.$y).toString(),
-  //     DCChallanDateString: values.DCChallanDateString
-  //       ? values.DCChallanDateString.format("DD-MM-YYYY")
-  //       : "",
-  //     GRNDatestring: values.GRNDatestring.format("DD-MM-YYYY"),
-  //     InvoiceDateString: values.InvoiceDateString.format("DD-MM-YYYY"),
-  //     ReceivingDateString: values.ReceivingDateString.format("DD-MM-YYYY"),
-  //     Remarks: values.Remarks === undefined ? null : values.Remarks,
-  //     GrnStatus: values.GRNStatus === undefined ? "Created" : values.GRNStatus,
-  //     InvoiceNumber:
-  //       values.InvoiceNumber === undefined ? null : values.InvoiceNumber,
-  //     InvoiceAmount:
-  //       values.InvoiceAmount === undefined ? 0 : values.InvoiceAmount,
-  //     DCChallanNumber: values.DCChallanNumber,
-  //     TotalAmount: values.TotalAmount,
-  //     TaxAmount1: values.TaxAmount == undefined ? 0 : values.TaxAmount,
-  //     RoundOff: values.RoundOff == undefined ? 0 : values.RoundOff,
-  //     TotalPoAmount: values.TotalPoAmount,
-  //     // GrnType: values.PoTaxAmount === undefined ? 0 : values.PoTaxAmount,
-  //   };
-  //   batches.forEach((item, index) => {
-  //     form1.getFieldValue([index, "POReceivedQty"]);
-  //   });
-  //   // const activeData = dataBatchModal.filter(
-  //   //   (item) => item.ActiveFlag === true && item.ProductId
-  //   // );
-
-  //   const result = checkActiveBatches(products, dataBatchModal);
-  //   if (!result.allActiveProductsHaveActiveBatch) {
-  //     message.warning("Please Add BatchDeatils");
-  //     return false;
-  //   }
-
-  //   const filteredbatch = dataBatchModal.filter((item) => item.ProductId);
-
-  //   const postData = {
-  //     newGRNAgainstPOModel: GRNAgainstPO,
-  //     GRNAgainstPODetails: products,
-  //     BatchDetails: filteredbatch === undefined ? [] : filteredbatch,
-  //   };
-  //   console.log('input',postData);
-  //   if (GrnHeaderId > 0) {
-  //     const response = await customAxios.post(urlUpdateGRNAgainstPO, postData, {
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //     });
-  //     if (response != false && response.status == 200) {
-  //       message.success("Updated Successfully");
-  //     } else {
-  //       message.error("Updated Failure");
-  //     }
-  //   } else {
-  //     const response = await customAxios.post(urlAddNewGRNAgainstPO, postData, {
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //     });
-  //     if (response != false && response.status == 200) {
-  //       message.success("Created Successfully");
-  //     } else {
-  //       message.error("Create Failure");
-  //     }
-  //   }
-  //   handleCancel();
-  // };
-
-  // const onFinishBatchFailed = () => {};
 
   const handleOnFinish = async (values) => {
     setLoading(true)
