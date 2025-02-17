@@ -86,19 +86,22 @@ const [PatientName, setPatientName] = useState(null);
       title: "Encounter Status",
       dataIndex: "EncounterStatus",
       key: "3",
-      render: (text) => {
+      render: (text, record) => {
         let color = "";
         let label = "";
 
-        if (text === "Discharged") {
-          color = "red";
-          label = "Discharged";
-        } else if (text === "Open") {
+        // Check EncounterStatus and ToDischargeDateStr conditions
+        if (text === "Open") {
           color = "green";
           label = "Open";
-        } else if (text === "DischargeInitiated") {
-          color = "orange";
-          label = "Discharge Initiated";
+        } else if (text === "Discharged") {
+          if (record.ToDischargeDateStr) {
+            color = "red";
+            label = "Discharged";
+          } else {
+            color = "orange";
+            label = "Discharge Initiated";
+          }
         }
 
         return (
@@ -111,7 +114,6 @@ const [PatientName, setPatientName] = useState(null);
         );
       },
     },
-
     {
       title: "Service Location",
       dataIndex: "ServiceLocation",
