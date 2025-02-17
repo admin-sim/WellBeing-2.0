@@ -401,6 +401,7 @@ const CreateDirectGRN = () => {
       setDataModel(updatedBatch);
       batchRecord.LineAmount = (batchRecord.LineAmount || 0)
       batchRecord.TotalAmount = (batchRecord.TotalAmount || 0)
+      batchRecord.DiscountAmount = (batchRecord.DiscountAmount || 0)
       const altUomData = alternateUoms.find(i => i.key == batchRecord.key)
       const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == batchRecord.UomId) : undefined
       batchRecord.LineAmount = updatedBatch.reduce((total, item) => {
@@ -430,8 +431,8 @@ const CreateDirectGRN = () => {
           return {
             ...item,
             TaxAmount1: taxamt1 + taxamt2,
-            LineAmount: batchRecord.LineAmount,
-            TotalAmount: batchRecord.TotalAmount
+            LineAmount: batchRecord.LineAmount - batchRecord.DiscountAmount,
+            TotalAmount: batchRecord.TotalAmount - batchRecord.DiscountAmount
           }
         }
         return item
@@ -439,8 +440,8 @@ const CreateDirectGRN = () => {
       form1.setFieldsValue({ [batchRecord.key]: { TaxAmount1: taxamt1 + taxamt2 } });
       form1.setFieldsValue({
         [batchRecord.key]: {
-          LineAmount: batchRecord.LineAmount,
-          TotalAmount: batchRecord.TotalAmount
+          LineAmount: batchRecord.LineAmount - batchRecord.DiscountAmount,
+          TotalAmount: batchRecord.TotalAmount - batchRecord.DiscountAmount
         }
       });
       setData(newData)
