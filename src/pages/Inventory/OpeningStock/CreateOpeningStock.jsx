@@ -124,7 +124,7 @@ const CreateOpeningStock = () => {
           if (response.status == 200 && response.data.data != null) {
             const editeddata = response.data.data;
             const products = editeddata.GRNAgainstPODetails.map(
-              (item, index) => ({
+              (item) => ({
                 ...item,
                 key: uuidv4(),
                 Replaceable: item.Replaceable == 'Y' ? true : false,
@@ -299,9 +299,31 @@ const CreateOpeningStock = () => {
     setDataModal(newdataModel)
   };
 
+  const checkActiveBatches = (products, batches) => {
+    const allActiveProductsHaveActiveBatch = products.every((product) =>
+      batches.some(
+        (batch) => batch.ProductId === product.ProductId && batch.ActiveFlag
+      )
+    );
+
+    return {
+      allActiveProductsHaveActiveBatch,
+    };
+  };
+
   const handleOnFinish = async (values) => {
     debugger
+    // setLoading(true)
     await form2.validateFields()
+    const isAnyIdNotNull = dataModal.some(
+      (item) => item.ProductId !== "" && item.ActiveFlag
+    );
+
+    if (!isAnyIdNotNull) {
+      message.warning("Please add Batch details");
+      setLoading(false)
+      return false;
+    }
     const form2data = form2.getFieldsValue()
     setIsSearchLoading(true);
     // const filterData = data.filter((m) => m.ActiveFlag == true)
@@ -324,6 +346,15 @@ const CreateOpeningStock = () => {
       products.push(product);
     })
 
+    const activeProducts = products.filter((product) => product.ActiveFlag);
+
+    const result = checkActiveBatches(activeProducts, dataModal);
+    if (!result.allActiveProductsHaveActiveBatch) {
+      message.warning("Please Add BatchDeatils");
+      setLoading(false);
+      return false;
+    }
+
     const OpeningStock = {
       GRNHeaderId: values.GRNHeaderId ? values.GRNHeaderId : 0,
       StoreId: values.ReceivingStore,
@@ -332,10 +363,27 @@ const CreateOpeningStock = () => {
       Remarks: values.Remarks,
     }
 
+    const filteredBatch = dataModal.filter((item) => item.ProductId);
+    const filteredBatchwithactive = dataModal.filter(
+      (item) => item.ProductId && item.ActiveFlag
+    );
+
+    const sumItems = (items, key) =>
+      items.reduce((sum, item) => sum + parseInt(item[key] || 0, 10), 0);
+
+    const totalReceivedQty = sumItems(activeProducts, "ReceivedQty");
+    const totalBatchQuantity = sumItems(filteredBatchwithactive, "Quantity");
+
+    if (totalReceivedQty !== totalBatchQuantity) {
+      message.warning("Total ReceivedQty does not match total Batch Quantity.");
+      setLoading(false);
+      return false;
+    }
+
     const postData = {
       newGRNAgainstPOModel: OpeningStock,
       GRNAgainstPODetails: products,
-      BatchDetails: dataModal
+      BatchDetails: GRNHeaderId === 0 ? filteredBatchwithactive : filteredBatch
     }
 
     const url = GRNHeaderId == 0 ? urlAddNewStock : urlUpdateOpeningStock;
@@ -440,7 +488,6 @@ const CreateOpeningStock = () => {
   }
 
   const handleInputChange = (e, column, index, record) => {
-    debugger
     let newData;
     if (["ReceivedQty", "PoRate"].includes(column)) {
       newData = data.map((item) => {
@@ -1044,7 +1091,6 @@ const CreateOpeningStock = () => {
             },
             {
               validator: (_, value) => {
-                debugger
                 if (value < productDetails.PoRate) {
                   return Promise.reject(
                     new Error("MRP not be less than Rate.")
