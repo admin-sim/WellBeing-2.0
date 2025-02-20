@@ -861,25 +861,28 @@ const CreateGRNAgainstPO = () => {
       batchRecord.DiscountAmount = (batchRecord.DiscountAmount || 0)
       const altUomData = alternateUoms.find(i => i.key == batchRecord.key)
       const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == batchRecord.UomId) : undefined
-      batchRecord.LineAmount = updatedBatch.reduce((total, item) => {
+
+      let lineAmount = batchRecord.LineAmount
+      lineAmount = updatedBatch.reduce((total, item) => {
         if (item.ProductId == batchRecord.ProductId && item.ActiveFlag) {
-          const taxAdjustment = batchRecord.temp === 0 ? 0 : (item.TaxAmount1 || 0) + (item.TaxAmount2 || 0);
-          return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.Rate - taxAdjustment;
+          const taxAdjustment = batchRecord.temp === 0 ? 0 : (item.TaxAmount1 || 0) + (item.TaxAmount2 || 0) - (batchRecord.DiscountAmount || 0);
+          return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.Rate - taxAdjustment - (batchRecord.DiscountAmount || 0);
         }
 
-        return total - batchRecord.DiscountAmount;
+        return total
       }, 0);
 
-      batchRecord.TotalAmount = updatedBatch.reduce((total, item) => {
+      let TotalAmount = batchRecord.TotalAmount
+      TotalAmount = updatedBatch.reduce((total, item) => {
         if (item.ProductId == batchRecord.ProductId && item.ActiveFlag) {
           if (batchRecord.temp === 0) {
-            return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.Rate + ((item.TaxAmount1 || 0) + (item.TaxAmount2 || 0));
+            return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.Rate + ((item.TaxAmount1 || 0) + (item.TaxAmount2 || 0)) - (batchRecord.DiscountAmount || 0);
           } else {
-            return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.Rate;
+            return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.Rate - (batchRecord.DiscountAmount || 0);
           }
         }
 
-        return total - batchRecord.DiscountAmount;
+        return total
       }, 0);
 
       // Update Product Line
@@ -889,13 +892,13 @@ const CreateGRNAgainstPO = () => {
 
       const newdata = (data || []).map(item =>
         item.ProductId === batchRecord?.ProductId
-          ? { ...item, TaxAmount1: totalTaxAmount1, LineAmount: batchRecord.LineAmount - batchRecord.DiscountAmount, TotalAmount: batchRecord.TotalAmount - batchRecord.DiscountAmount }
+          ? { ...item, TaxAmount1: totalTaxAmount1, LineAmount: lineAmount, TotalAmount: TotalAmount }
           : item
       );
       setData(newdata)
 
-      form1.setFieldsValue({ [batchRecord.key]: { LineAmount: batchRecord.LineAmount - batchRecord.DiscountAmount } })
-      form1.setFieldsValue({ [batchRecord.key]: { TotalAmount: batchRecord.TotalAmount - batchRecord.DiscountAmount } })
+      form1.setFieldsValue({ [batchRecord.key]: { LineAmount: lineAmount } })
+      form1.setFieldsValue({ [batchRecord.key]: { TotalAmount: TotalAmount } })
       form1.setFieldsValue({ [batchRecord.key]: { TaxAmount1: totalTaxAmount1 } })
 
       const totalAmount = calculateTotalAmount(newdata);
@@ -1505,6 +1508,7 @@ const CreateGRNAgainstPO = () => {
   ];
 
   const handleInputChangeModal = async (e, column, index, record) => {
+    debugger
     let newData;
     const form3data = form3.getFieldsValue()
     let newRecord = await CalculateTax(form3data, record)
@@ -1556,6 +1560,7 @@ const CreateGRNAgainstPO = () => {
   };
 
   async function CalculateTax(data, record) {
+    debugger
     const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${data[record.key].TaxType1}`);
     const taxDetails = response.data.data[0];
     const altUomData = alternateUoms.find(i => i.key == batchRecord.key)
@@ -1569,7 +1574,7 @@ const CreateGRNAgainstPO = () => {
     let taxAmount = 0;
     let temp = 0;
     if (taxDetails.IncludeBonusQuantity) {
-      Quantity = (Quantity || 0) + parseInt(record.BonusQuantity || 0);
+      Quantity = (Quantity || 0) + (data[record.key].BatchBonusQty || 0);
       amount = Quantity * (data[record.key].Rate || 0) - (data[record.key].DiscountAmount || 0);
     }
     if (true) {
@@ -1577,15 +1582,15 @@ const CreateGRNAgainstPO = () => {
         case "Percentage":
           if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
-              taxAmount = (parseInt(amount) + parseInt(discountAmount)) * taxDetails.ChargeValue / 100;
+              taxAmount = (amount + discountAmount) * taxDetails.ChargeValue / 100;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
               taxAmount = amount * taxDetails.ChargeValue / 100;
             } else {
-              taxAmount = (parseInt(mrp) * parseInt(Quantity)) * taxDetails.ChargeValue / 100;
+              taxAmount = (mrp * Quantity) * taxDetails.ChargeValue / 100;
             }
           } else {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
-              taxAmount = (parseInt(amount) + parseInt(discountAmount)) - ((parseInt(amount) + parseInt(discountAmount)) / (1 + taxDetails.ChargeValue / 100));
+              taxAmount = (amount + discountAmount) - ((amount + discountAmount) / (1 + taxDetails.ChargeValue / 100));
               temp = 1;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
               taxAmount = amount - (amount / (1 + taxDetails.ChargeValue / 100));
@@ -1600,21 +1605,21 @@ const CreateGRNAgainstPO = () => {
         case "Amount":
           if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
-              taxAmount = (parseInt(amount) + parseInt(record.DiscountAmount)) + parseInt(taxDetails.ChargeValue);
+              taxAmount = (amount + record.DiscountAmount) + taxDetails.ChargeValue;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
-              taxAmount = parseInt(amount) + parseInt(taxDetails.ChargeValue);
+              taxAmount = amount + taxDetails.ChargeValue;
             } else {
-              taxAmount = (mrp * Quantity) + parseInt(taxDetails.ChargeValue);
+              taxAmount = (mrp * Quantity) + taxDetails.ChargeValue;
             }
           } else {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
-              taxAmount = (parseInt(amount) + parseInt(discountAmount)) - taxDetails.ChargeValue;
+              taxAmount = (amount + discountAmount) - taxDetails.ChargeValue;
               temp = 1;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
               taxAmount = amount - taxDetails.ChargeValue;
               temp = 1;
             } else {
-              taxAmount = parseInt(mrp * Quantity) - taxDetails.ChargeValue;
+              taxAmount = (mrp * Quantity) - taxDetails.ChargeValue;
               temp = 1;
             }
           }

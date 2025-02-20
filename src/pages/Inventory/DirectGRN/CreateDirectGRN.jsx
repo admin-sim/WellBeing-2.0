@@ -61,8 +61,8 @@ const CreateDirectGRN = () => {
     TaxType: [],
     DateFormat: [],
   });
-  let [idCounter, setCounter] = useState(2);
-  let [idCounterModel, setCounterModel] = useState(2);
+  // let [idCounter, setCounter] = useState(2);
+  // let [idCounterModel, setCounterModel] = useState(2);
   const location = useLocation();
   const grnHeaderId = location.state.GRNHeaderId;
   const [batchRecord, setBatchRecord] = useState([]);
@@ -90,7 +90,7 @@ const CreateDirectGRN = () => {
           TaxAmount1: 0,
           TotalAmount: 0,
           Replaceable: true,
-          ActiveFlag: true,
+          ActiveFlag: true
         },
       ]
       : [];
@@ -219,14 +219,14 @@ const CreateDirectGRN = () => {
             GRNHeaderId: formdata.GRNHeaderId,
             PoHeaderId: formdata.PoHeaderId,
           });
-          setCounter(products.length + 1);
+          // setCounter(products.length + 1);
           const batch = editeddata.BatchDetails.map((item, index) => ({
             ...item,
             key: uuidv4(),
             temp: item.PoStatus == 'Tax(Inclusive)' ? 1 : 0
           }));
           setDataModel(batch);
-          setCounterModel(editeddata.BatchDetails.length + 1);
+          // setCounterModel(editeddata.BatchDetails.length + 1);
           setLoading(false);
         }
       } catch (error) {
@@ -728,12 +728,26 @@ const CreateDirectGRN = () => {
   };
 
   const handleAdd = async () => {
+    debugger
     setProductOptions([]);
+    // const allFields = form1.getFieldsValue();
+    // const excludeFields = ["InvoiceAmount", "InvoiceNumber"];
+    // const fieldsToValidate = Object.keys(allFields).filter(
+    //   (field) => !excludeFields.includes(field)
+    // );
+
     const allFields = form1.getFieldsValue();
     const excludeFields = ["InvoiceAmount", "InvoiceNumber"];
-    const fieldsToValidate = Object.keys(allFields).filter(
-      (field) => !excludeFields.includes(field)
-    );
+
+    const fieldsToValidate = Object.keys(allFields).flatMap((key) => {
+      if (typeof allFields[key] === "object") {
+        return Object.keys(allFields[key])
+          .filter((field) => !excludeFields.includes(field))
+          .map((field) => [key, field]);
+      } else {
+        return excludeFields.includes(key) ? [] : key;
+      }
+    });
 
     await form1.validateFields(fieldsToValidate);
     setData([
@@ -753,7 +767,7 @@ const CreateDirectGRN = () => {
         TaxAmount1: 0,
         TotalAmount: 0,
         Replaceable: true,
-        ActiveFlag: true,
+        ActiveFlag: true
       },
     ]);
   };

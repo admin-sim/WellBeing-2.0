@@ -165,6 +165,7 @@ const CreateOpeningStock = () => {
           }
         } catch (error) {
           console.error("Error fetching data:", error);
+          setLoading(false)
         }
       }
     };
@@ -255,7 +256,6 @@ const CreateOpeningStock = () => {
       setGSTTax(totalAmount.taxAmount)
       setIsModalOpen(false);
     }
-    // onCancelModel();
   }
 
   const onFinishModel = (values) => { }
@@ -313,7 +313,7 @@ const CreateOpeningStock = () => {
 
   const handleOnFinish = async (values) => {
     debugger
-    // setLoading(true)
+    setLoading(true)
     await form2.validateFields()
     const isAnyIdNotNull = dataModal.some(
       (item) => item.ProductId !== "" && item.ActiveFlag
@@ -326,7 +326,6 @@ const CreateOpeningStock = () => {
     }
     const form2data = form2.getFieldsValue()
     setIsSearchLoading(true);
-    // const filterData = data.filter((m) => m.ActiveFlag == true)
 
     const products = [];
 
@@ -395,7 +394,6 @@ const CreateOpeningStock = () => {
 
     if (response.status == 200) {
       message.success(`Stock ${GRNHeaderId == 0 ? "Created" : "Updated"} Successfully`);
-      // handleCancel();
       handleOpeningStock()
     } else {
       message.error("Something went wrong");
@@ -1312,7 +1310,7 @@ const CreateOpeningStock = () => {
             <Row justify="end" style={{ padding: '0rem 1rem' }}>
               <Col style={{ marginRight: '10px' }}>
                 <Form.Item>
-                  <Button type="primary" htmlType="submit">
+                  <Button type="primary" htmlType="submit" disabled={loading}>
                     {buttonTitle}
                   </Button>
                 </Form.Item>
