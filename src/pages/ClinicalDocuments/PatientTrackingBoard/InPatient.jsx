@@ -1,10 +1,10 @@
-import React, { useEffect,useState } from "react";
+import React, { useEffect, useState } from "react";
 import CustomTable from "../../../components/customTable";
 import { urlSearchInPatientTrackRecords } from "../../../../endpoints";
 import customAxios from "../../../components/customAxios/customAxios";
-import { Tag,  } from "antd";
+import { Tag } from "antd";
 function InPatient() {
-    const [tableData, setTableData] = useState([]);
+  const [tableData, setTableData] = useState([]);
   const [patientTrackRecordTable, setPatientTrackRecordTable] = useState(true);
   const columns = [
     {
@@ -24,7 +24,7 @@ function InPatient() {
       render: (text, record) => {
         let color = "";
         let label = "";
-    
+
         // Check EncounterStatus and ToDischargeDateStr conditions
         if (text === "Open") {
           color = "green";
@@ -38,14 +38,17 @@ function InPatient() {
             label = "Discharge Initiated";
           }
         }
-    
+
         return (
-          <Tag color={color} style={{ borderRadius: "8px", fontWeight: "bold" }}>
+          <Tag
+            color={color}
+            style={{ borderRadius: "8px", fontWeight: "bold" }}
+          >
             {label}
           </Tag>
         );
       },
-    },    
+    },
     {
       title: "ServiceLocation",
       dataIndex: "ServiceLocation",
@@ -75,33 +78,40 @@ function InPatient() {
       title: "Date of Discharge ",
       dataIndex: "ToDischargeDateStr",
       key: "9",
-      align: "center", 
+      align: "center",
       render: (text, record) => {
         if (record.EncounterStatus === "Discharged") {
           if (text) {
-            // return text; 
+            // return text;
             return (
-              <Tag color = "red"  style={{ borderRadius: "8px", fontWeight: "bold" }}>
+              <Tag
+                color="red"
+                style={{ borderRadius: "8px", fontWeight: "bold" }}
+              >
                 {text}
               </Tag>
             );
           } else {
             return (
-              <span style={{ color: "blue", fontWeight: "bold", fontSize: "14px" }}>
-                Not yet discharged
-              </span>
+              <Tag
+                color="green"
+                style={{ borderRadius: "8px", fontWeight: "bold" }}
+              >
+                Active
+              </Tag>
             );
           }
         } else {
           return (
-            <span style={{ color: "red", fontWeight: "bold", fontSize: "14px" }}>
+            <span
+              style={{ color: "red", fontWeight: "bold", fontSize: "14px" }}
+            >
               -
             </span>
-          ); 
+          );
         }
       },
-    }
-        
+    },
   ];
 
   // useEffect(()=>{
@@ -113,14 +123,16 @@ function InPatient() {
   //        setTableData(response.data.data.ClinicalDocumentTypes)
   //      }
   //        setPatientTrackRecordTable(true);
-     
+
   //   //      console.log(values);
   //      };
   //    handlePatientTrackingSearch()
   //  },[])
   useEffect(() => {
     async function handlePatientTrackingSearch() {
-      const response = await customAxios.get(`${urlSearchInPatientTrackRecords}?Flag=${1}`);
+      const response = await customAxios.get(
+        `${urlSearchInPatientTrackRecords}?Flag=${1}`
+      );
       if (response.status === 200) {
         const data = response.data.data.ClinicalDocumentTypes;
         const uniqueData = removeDuplicates(data); // Apply deduplication
@@ -128,10 +140,10 @@ function InPatient() {
       }
       setPatientTrackRecordTable(true);
     }
-  
+
     handlePatientTrackingSearch();
   }, []);
-  
+
   // Function to remove duplicates based on EncounterId
   const removeDuplicates = (data) => {
     const uniqueEncounters = new Map();
@@ -142,7 +154,7 @@ function InPatient() {
     });
     return Array.from(uniqueEncounters.values());
   };
-  
+
   return (
     <div>
       <CustomTable

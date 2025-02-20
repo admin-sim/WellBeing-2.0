@@ -158,11 +158,13 @@ const [PatientName, setPatientName] = useState(null);
             );
           } else {
             return (
-              <span
-                style={{ color: "blue", fontWeight: "bold", fontSize: "14px" }}
-              >
-                Not yet discharged
-              </span>
+             
+               <Tag
+               color="green"
+               style={{ borderRadius: "8px", fontWeight: "bold" }}
+             >
+               Active
+             </Tag>
             );
           }
         } else {

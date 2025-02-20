@@ -51,7 +51,8 @@ function PhysicalExamination(Patient) {
   const [form1] = useForm();
   const [patientId, setPatientId] = useState(null);
   const [encounterId, setEncounterId] = useState(null);
-
+  const [generaldataexist, setgeneraldataexist] = useState(null);
+  const [systemicdataexist, setsystemicdataexist] = useState(null);
   useEffect(() => {
     debugger;
     if (Patient?.Patient?.PatientId && Patient?.Patient?.Encounter) {
@@ -72,6 +73,7 @@ function PhysicalExamination(Patient) {
   const fetchGeneralExaminationData = async () => {
     try {
       debugger;
+      
       const range = getRangeFromPreviousDetails(previousDetails); // Convert range text to DateTime
       // const response = await customAxios.get("urlGetAllGE", {
       //   params: { PatientId: patientId, EncounterId: encounterId, Range: range },
@@ -80,15 +82,18 @@ function PhysicalExamination(Patient) {
         `${urlGetAllGE}?PatientId=${patientId}&EncounterId=${encounterId}&Range=${range}`
       );
 
-      if (response?.data?.data?.PatientGeneralExamination) {
+      if (response?.data?.data?.PatientGeneralExamination) {  
+        setgeneraldataexist(true);
         setGeneralData(response.data.data.PatientGeneralExamination);
         setPickleData(response.data.data.PatientGeneralExamination);
       } else {
         message.warning("No data found.");
+      
         setGeneralData([]);
         setPickleData([]);
       }
     } catch (error) {
+      
       console.error("Error fetching data:", error);
       message.error("Failed to fetch data.");
     }
@@ -333,6 +338,7 @@ function PhysicalExamination(Patient) {
       if (response.data) {
         message.success("General examination saved successfully!");
         form.resetFields();
+        setgeneraldataexist(false);
       } else {
         message.error("Failed to save general examination.");
         form.resetFields();
@@ -347,10 +353,7 @@ function PhysicalExamination(Patient) {
     <>
       <Form
         form={form}
-        onFinish={(values) => {
-          debugger;
-          console.log("Physical Examination", values);
-        }}
+        // onFinish={handleSave}
         layout="vertical"
       >
         <Row gutter={32} justify={"end"} style={{ marginBottom: "1rem" }}>
@@ -521,11 +524,18 @@ function PhysicalExamination(Patient) {
       <Row gutter={32} justify={"end"} style={{ margin: "1rem 0 0 0" }}>
         <Col>
           <Button size="middle" type="primary" onClick={handleSave}>
-            Save
+            {generaldataexist ? "Update" : "Save"}
           </Button>
         </Col>
         <Col>
-          <Button size="middle" danger onClick={() => form.resetFields()}>
+          <Button
+            size="middle"
+            danger
+            onClick={() => {
+              form.resetFields();
+              setgeneraldataexist(false); // Set the flag to false after resetting the form
+            }}
+          >
             Cancel
           </Button>
         </Col>
@@ -659,10 +669,11 @@ function PhysicalExamination(Patient) {
       console.log("PatientId:", PatientId, "EncounterId:", EncounterId); // Debugging
 
       // Convert values to URL-encoded format and populate formData
-      sections.forEach(({ name, fields }) => {
+      sections.forEach(({ name, idField,fields }) => {
         const params = new URLSearchParams();
         let hasData = false;
-        params.append("id", "0");
+        const formId = editData?.[idField] || "0";
+        params.append("id", formId);
         fields.forEach((field) => {
           const value = values[field];
           if (value !== undefined && value !== null && value !== "") {
@@ -699,6 +710,7 @@ function PhysicalExamination(Patient) {
         message.success("Physical Examination Saved Successfully!");
         form1.resetFields();
         form.resetFields();
+        setsystemicdataexist(false);
       }
     } catch (error) {
       console.error("Save failed:", error);
@@ -1000,8 +1012,6 @@ function PhysicalExamination(Patient) {
     },
   ];
 
-  function hj() {}
-  function hu() {}
   const musculoskeletalLeftUpperLimbElbow = [
     { title: "Elbow Reflex", dataIndex: "LULERef", key: "LULERef" },
     { title: "Elbow Sensory", dataIndex: "LULESen", key: "LULESen" },
@@ -1032,47 +1042,7 @@ function PhysicalExamination(Patient) {
     { title: "Shoulder Range of Motion", dataIndex: "LULSRM", key: "LULHRM" },
   ];
 
-  // const handleEditPE = async (type, id) => {
-  //   try {
-  //     const response = await customAxios.get(
-  //       `${urlEditPE}?id=${id}&type=${type}`
-  //     );
-
-  //     if (response?.data) {
-  //       const editData = response.data.data;
-
-  //       // Close the modal
-  //       handleCloseModal();
-
-  //       // Set form values
-  //       form.setFieldsValue(editData);
-
-  //       // If you need to maintain edit data in state
-  //       setEditData(editData);
-
-  //       // If you need to activate specific sections based on response
-  //       // Example: activate Respiratory section if data exists
-  //       if (editData.RespiratoryRate1) {
-  //         setActiveButtons(prev => ({...prev, Respiratory: true}));
-  //       }
-  //       if (editData.LConAuscultation) {
-  //         setActiveButtons(prev => ({...prev, Auscultation: true}));
-  //       }
-  //       if (editData.PulseRate) {
-  //         setActiveButtons(prev => ({...prev, CardiovascularSystem: true}));
-  //       }
-  //       if (editData.Inspection) {
-  //         setActiveButtons(prev => ({...prev, GastrointestinalSystem: true}));
-  //       }
-  //       if (editData.Ambulatory) {
-  //         setActiveButtons(prev => ({...prev, MusculoskeletalExamination: true}));
-  //       }
-
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching edit data:", error);
-  //   }
-  // };
+ 
   const handleEditPE = async (record, type) => {
     debugger;
     try {
@@ -1178,7 +1148,8 @@ function PhysicalExamination(Patient) {
       key: "1",
       label: "Respiratory",
       children: (
-        <CustomTable
+       
+           <CustomTable
           columns={respiratoryColumns}
           dataSource={respiratoryData}
           rowKey="slNo"
@@ -1188,13 +1159,16 @@ function PhysicalExamination(Patient) {
           onEdit={(record) => handleEditPE(record.RespiratoryId, "RESP")}
           onDelete={(record) => handleDeletePE(record.RespiratoryId, "RESP")}
         />
+     
+       
       ),
     },
     {
       key: "2",
       label: "Auscultation",
       children: (
-        <CustomTable
+        
+            <CustomTable
           columns={auscultationColumns}
           rowKey="slNo"
           dataSource={asculationData}
@@ -1204,12 +1178,15 @@ function PhysicalExamination(Patient) {
           onEdit={(record) => handleEditPE(record.AuscultationId,"AUSC" )}
           onDelete={(record) => handleDeletePE(record.AuscultationId,"AUSC" )}
         />
+   
+      
       ),
     },
     {
       key: "3",
       label: "Cardiovascular",
       children: (
+        
         <CustomTable
           columns={cardiovascularColumns}
           rowKey="slNo"
@@ -1219,12 +1196,14 @@ function PhysicalExamination(Patient) {
           onDelete={(record) => handleDeletePE(record.CardiovascularId,"CARD")}
           bordered
         />
+     
       ),
     },
     {
       key: "4",
       label: "Gastrointestinal System",
       children: (
+       
         <CustomTable
           dataSource={gastrointestinalData}
           rowKey="slNo"
@@ -1236,6 +1215,7 @@ function PhysicalExamination(Patient) {
           onEdit={(record) => handleEditPE(record.GastrointestinalId,"GAST")}
           onDelete={(record) => handleDeletePE(record.GastrointestinalId,"GAST")}
         />
+       
       ),
     },
     {
@@ -1243,6 +1223,7 @@ function PhysicalExamination(Patient) {
       label: "Musculoskeletal Examination",
       children: (
         <>
+    
           <CustomTable
             columns={musculoskeletalBasicDetails}
             dataSource={musculatoryData}
@@ -1321,6 +1302,7 @@ function PhysicalExamination(Patient) {
             actionColumn={false}
             bordered
           />
+          
         </>
       ),
     },
@@ -1333,6 +1315,7 @@ function PhysicalExamination(Patient) {
   const fetchSystemicExaminationData = async () => {
     try {
       debugger
+     
       const range = getRangeFromPreviousDetails(previousDetails); // Convert range text to DateTime
 
       const response = await customAxios.get(
@@ -1341,6 +1324,7 @@ function PhysicalExamination(Patient) {
 
       if (response?.data?.data) {
         debugger;
+        setsystemicdataexist(true);
         const newColumnData = response.data.data.Musculosceletals.map(
           (obj, index) => {
             return { ...obj, key: index + 1 };
@@ -1373,9 +1357,11 @@ function PhysicalExamination(Patient) {
         setAsculationData(newColumnData3);
         setRespiratoryData(newColumnData4);
       } else {
+       
         message.warning("No data found.");
       }
     } catch (error) {
+      
       console.error("Error fetching data:", error);
       message.error("Failed to fetch data.");
     }
@@ -2851,49 +2837,6 @@ function PhysicalExamination(Patient) {
               </Col>
                          {" "}
             </Row>
-            {/* <Col span={24}>
-              <Table
-                columns={UpperLimbColumns}
-                dataSource={UpperLimbData}
-                pagination={false}
-              />
-            </Col>
-            <Col span={24} style={{ margin: "1.5rem 0 0.7rem 0" }}>
-              <span style={{ fontWeight: 600, fontSize: "1rem" }}>
-                Left Upper Limb
-              </span>
-            </Col>
-            <Col span={24}>
-              <Table
-                columns={UpperLimbColumns}
-                dataSource={UpperLimbData}
-                pagination={false}
-              />
-            </Col>
-            <Col span={24} style={{ margin: "1.5rem 0 0.7rem 0" }}>
-              <span style={{ fontWeight: 600, fontSize: "1rem" }}>
-                Right Lower Limb
-              </span>
-            </Col>
-            <Col span={24}>
-              <Table
-                columns={LowerLimbColumns}
-                dataSource={LowerLimbData}
-                pagination={false}
-              />
-            </Col>
-            <Col span={24} style={{ margin: "1.5rem 0 0.7rem 0" }}>
-              <span style={{ fontWeight: 600, fontSize: "1rem" }}>
-                Left Lower Limb
-              </span>
-            </Col>
-            <Col span={24}>
-              <Table
-                columns={LowerLimbColumns}
-                dataSource={LowerLimbData}
-                pagination={false}
-              />
-            </Col> */}
             <ColWithSixSpan>
               <Form.Item
                 style={{ marginTop: "1rem" }}
@@ -2918,11 +2861,18 @@ function PhysicalExamination(Patient) {
         <Row gutter={32} justify={"end"} style={{ margin: "0 0 1rem 0" }}>
           <Col>
             <Button size="middle" type="primary" htmlType="submit">
-              Submit
+              {systemicdataexist ? "Update" : "Submit"}
             </Button>
           </Col>
           <Col>
-            <Button size="middle" danger onClick={() => form.resetFields()}>
+            <Button
+              size="middle"
+              danger
+              onClick={() => {
+                form.resetFields();
+                setsystemicdataexist(false); // Set the flag to false after resetting the form
+              }}
+            >
               Abort
             </Button>
           </Col>

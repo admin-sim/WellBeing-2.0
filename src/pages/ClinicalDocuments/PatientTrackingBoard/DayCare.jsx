@@ -97,11 +97,12 @@ function DayCare() {
             );
           } else {
             return (
-              <span
-                style={{ color: "blue", fontWeight: "bold", fontSize: "14px" }}
+              <Tag
+                color="green"
+                style={{ borderRadius: "8px", fontWeight: "bold" }}
               >
-                Not yet discharged
-              </span>
+                Active
+              </Tag>
             );
           }
         } else {

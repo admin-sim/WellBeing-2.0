@@ -96,13 +96,18 @@ const NewPatient = () => {
   const [encounterId, setEncounterId] = useState();
   const [messageApi, contextHolder] = message.useMessage();
 
-  const handleImageUpload = (base64data) => {
-    debugger;
-    setUploadedImage(base64data);
-    console.log(base64data);
-  };
+  // const handleImageUpload = (base64data) => {
+  //   debugger;
+  //   setUploadedImage(base64data);
+  //   console.log(base64data);
+  // };
   //Default Patient data
-
+  const handleImageUpload = (base64data) => {
+    console.log("Full Base64 Image Data Length:", base64data.length); // Log the length
+    setUploadedImage(base64data); // Ensure full data is set
+  };
+  
+  
   const disabledDate = (current) => {
     // Disable dates that are in the future
     return current && current > new Date();
@@ -349,7 +354,7 @@ const NewPatient = () => {
     debugger;
     setLoadings(true);
     console.log("Received values from form: ", values);
-
+     
     values.dob = selecteddob;
     const patientDetails = {
       PatientTitle: values.title === undefined ? null : values.title,
@@ -419,7 +424,7 @@ const NewPatient = () => {
         values.permanentPinCode === undefined || values.permanentPinCode === ""
           ? null
           : values.permanentPinCode,
-      // PhotoUrl: uploadedImage,
+      PhotoUrl: uploadedImage,
       PresentCountryId: values?.presentCountryId,
       PresentStateId: values.presentStateId,
       PresentPlaceId: values.presentPlaceId,

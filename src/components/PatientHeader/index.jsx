@@ -13,6 +13,8 @@ import {
 import { FcDocument, FcInfo } from "react-icons/fc";
 import { DollarTwoTone, FolderOpenTwoTone } from "@ant-design/icons";
 import male from "../../assets/m.png";
+import female from "../../assets/f.png";
+import defaultPic from "../../assets/defaultPic.png";
 import { isMobile } from "react-device-detect";
 import CustomTable from "../customTable/index";
 import { urlShowAllPendingBills } from "../../../endpoints";
@@ -20,6 +22,7 @@ import customAxios from "../customAxios/customAxios";
 
 function PatientHeader({ patient, encounterId, style }) {
  
+debugger;
 
   const [billModalOpen, setBillModalOpen] = useState(false);
   const displayEncounterId = patient?.GeneratedEncounterId || encounterId;
@@ -96,7 +99,16 @@ function PatientHeader({ patient, encounterId, style }) {
     },
   ];
 
-
+ function showGenderPic(Gender) {
+    if (Gender === 7) {
+      return male;
+    }
+    if (Gender === 8) {
+      return female;
+    } else {
+      return defaultPic;
+    }
+  }
 
   return (
     <div>
@@ -116,16 +128,39 @@ function PatientHeader({ patient, encounterId, style }) {
                   span={6}
                   style={{
                     display: "flex",
-                    justifyContent: "start",
+                    justifyContent: "center", // Ensure content is centered
                     alignItems: "center",
                   }}
                 >
-                  <Avatar
-                    shape="square"
-                    size={50}
-                    src={<img src={male} alt="avatar" />}
-                  />
+               
+                  {/* Render the image or avatar */}
+                  {patient?.PhotoUrl &&
+                  patient?.PhotoUrl.startsWith("data:image/") ? (
+                    <img
+                      src={patient?.PhotoUrl}
+                      alt="Patient"
+                      style={{
+                        width: "60px",
+                        height: "60px",
+                        objectFit: "cover",
+                        borderRadius: "50%", // Circular image
+                        border: "2px solid #ccc",
+                      }}
+                    />
+                  ) : (
+                    <Avatar
+                      src={showGenderPic(patient?.Gender)}
+                      size="large"
+                      style={{
+                        width: "60px",
+                        height: "60px",
+                        borderRadius: "50%",
+                        border: "2px solid #ccc",
+                      }}
+                    />
+                  )}
                 </Col>
+
                 <Col span={18}>
                   <Row>
                     <Col span={24}>
@@ -271,13 +306,42 @@ function PatientHeader({ patient, encounterId, style }) {
         >
           <Col span={18}>
             <Row gutter={16}>
-              <Col span={3}>
-                <Avatar
-                  shape="square"
-                  size={50}
-                  src={<img src={male} alt="avatar" />}
-                />
-              </Col>
+            <Col
+                  span={3}
+                  style={{
+                    display: "flex",
+                    justifyContent: "center", // Ensure content is centered
+                    alignItems: "center",
+                  }}
+                >
+               
+                  {/* Render the image or avatar */}
+                  {patient?.PhotoUrl &&
+                  patient?.PhotoUrl.startsWith("data:image/") ? (
+                    <img
+                      src={patient?.PhotoUrl}
+                      alt="Patient"
+                      style={{
+                        width: "60px",
+                        height: "60px",
+                        objectFit: "cover",
+                        borderRadius: "50%", // Circular image
+                        border: "2px solid #ccc",
+                      }}
+                    />
+                  ) : (
+                    <Avatar
+                      src={showGenderPic(patient?.Gender)}
+                      size="large"
+                      style={{
+                        width: "60px",
+                        height: "60px",
+                        borderRadius: "50%",
+                        border: "2px solid #ccc",
+                      }}
+                    />
+                  )}
+                </Col>
               <Col span={9}>
                 <Row>
                   <Col span={24}>

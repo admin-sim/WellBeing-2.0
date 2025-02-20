@@ -223,82 +223,103 @@ async function handleSelectPatient(params) {
       key: "key",
     },
     {
-        title: "UHID",
-        dataIndex: "Uhid",
-        sorter: (a, b) => {
-          const numA = parseInt(a.UhId.split("/")[1], 10);
-          const numB = parseInt(b.UhId.split("/")[1], 10);
-          return numA - numB;
-        },
-        sortDirections: ["descend", "ascend"],
-        render: (text, record) => (
-          <a
-            // style={{ fontWeight: "bold" }}
-            
-            onClick={(e) => {
-              e.preventDefault();
-              
+      title: "UH ID",
+      dataIndex: "UhId",
+      key: "UhId",
+      // sorter: (a, b) => a.UhId - b.UhId,
+      // sortDirections: ['descend', 'ascend'],
+      render: (text, record) => (
+        <Tag
+          color="blue"
+          style={{ fontWeight: "bold", borderWidth: "5px", fontSize: "15px" }}
+        >
+          {record.UhId}
+        </Tag>
+      ),
+    },        
+    {
+      title: "Name",
+      dataIndex: "PatientName",
+      key: "PatientName",
+    },
+    {
+      title: "Encounter ID",
+      dataIndex: "GeneratedEncounterId",
+      key: "Encounter",
+      sortDirections: ["descend", "ascend"],
+      render: (text, record) => (
+        <a
+          // style={{ fontWeight: "bold" }}
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+          }}
+        >
+          <Button type="link" onClick={() => handleSelectPatient(record)}>
+            {record.GeneratedEncounterId}
+          </Button>
+        </a>
+      ),
+    },
+    {
+      title: "Patient Type",
+      dataIndex: "PatientTypeName",
+      key: "Patient Type",
+      sorter: (a, b) => a.SupplierName.localeCompare(b.SupplierName),
+      sortDirections: ["descend", "ascend"],
+      render: (text) => {
+        let backgroundColor = "";
+        let borderColor = "";
+    
+        // Define named colors for each patient type
+        switch (text) {
+          case "Day Care":
+            backgroundColor = "lightcyan"; // Background color
+            borderColor = "darkcyan"; // Border color
+            break;
+          case "Emergency":
+            backgroundColor = "lightcoral"; // Background color
+            borderColor = "darkred"; // Border color
+            break;
+          case "InPatient":
+            backgroundColor = "lavender"; // Background color
+            borderColor = "purple"; // Border color
+            break;
+          default:
+            backgroundColor = "lightgrey"; // Default background
+            borderColor = "grey"; // Default border
+            break;
+        }
+    
+        return (
+          <Tag
+            style={{
+              backgroundColor: backgroundColor,
+              color: borderColor,
+              border: `1px solid ${borderColor}`,
+              borderRadius: "8px",
+              fontWeight: "bold",
             }}
           >
-            {record.UhId}
-          </a>
-        ),
-        
+            {text}
+          </Tag>
+        );
       },
-      {
-        title: "Name",
-        dataIndex: "PatientName",
-        key: "PatientName",
-      },
-      // {
-      //   title: "Name",
-      //   dataIndex: "PatientName",
-      //   key: 'PatientName',
-      //   // sorter: (a, b) => a.PatientName.localeCompare(b.PatientName),
-      //   // sortDirections: ["descend", "ascend"],
-      //   render: (text, record) => {record.PatientName},
-      // },
-      {
-        title: "Encounter ID",
-        dataIndex: "GeneratedEncounterId",
-        key: "Encounter",
-        sortDirections: ["descend", "ascend"],
-        render: (text, record) => (
-          <a
-            // style={{ fontWeight: "bold" }}
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-             
-            }}
-          >
-             <Button type="link" onClick={() => handleSelectPatient(record)}>{record.GeneratedEncounterId}</Button>
-           
-          </a>
-        ),
-       
-      },
-      {
-        title: "Patient Type",
-        dataIndex: "PatientTypeName",
-        key: "Patient Type",
-        sorter: (a, b) => a.SupplierName.localeCompare(b.SupplierName),
-        sortDirections: ["descend", "ascend"],
-      },
-      {
-        title: "Admitted  Date",
-        dataIndex: "FromDateString",
-        key: "PoDateString",
-        sorter: (a, b) => new Date(a.PoDateString) - new Date(b.PoDateString),
-        sortDirections: ["descend", "ascend"],
-      },
-      {
-        title: "Discharge Date",
-        dataIndex: "ToDateString",
-        key: "PoDateString",
-        sorter: (a, b) => new Date(a.PoDateString) - new Date(b.PoDateString),
-        sortDirections: ["descend", "ascend"],
-      },
+    },    
+    {
+      title: "Admitted  Date",
+      dataIndex: "FromDateString",
+      key: "PoDateString",
+      sorter: (a, b) => new Date(a.PoDateString) - new Date(b.PoDateString),
+      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Discharge Date",
+      dataIndex: "ToDateString",
+      key: "PoDateString",
+      sorter: (a, b) => new Date(a.PoDateString) - new Date(b.PoDateString),
+      sortDirections: ["descend", "ascend"],
+    },
     {
       title: "Admtted Under",
       dataIndex: "ProviderName",
@@ -311,7 +332,7 @@ async function handleSelectPatient(params) {
       sorter: (a, b) => a.Department.localeCompare(b.Department),
       sortDirections: ["descend", "ascend"],
     },
-    
+
     {
       title: "Admission Status",
       dataIndex: "PatientStatus",
@@ -326,16 +347,15 @@ async function handleSelectPatient(params) {
       // sorter: (a, b) => a.PurchaseOrderId.localeCompare(b.PurchaseOrderId),
       sortDirections: ["descend", "ascend"],
     },
-    
+
     {
       render: (_, row) => {
         // Check if KinName is 'done' and only then display the Report button
         return row.KinName === "Done" ? (
           <Button type="link">Report</Button>
-        ) : null;  // Return null if KinName is not 'done', so no button is shown
+        ) : null; // Return null if KinName is not 'done', so no button is shown
       },
     },
-    
   ];
  
  
@@ -354,38 +374,7 @@ async function handleSelectPatient(params) {
     fetchDataHeader();
   }, []);
 
-  // useEffect(() => {
-  //   debugger
-  //   const fetchDataHeader = async () => {
-  //     try {
-  //       debugger
-  //       const response = await customAxios.get(urlDischageSummary)
-  //       debugger
-  //       if (response.status === 200 && response.data.data != null) {
-  //         const ptype= response.data.data.PatientIdentificationType;
-  //         setPtype(ptype);
-  //       }
-  //     } catch (error) {}
-  //   };
-  //   fetchDataHeader();
-  // }, []);
-
-  // useEffect(() => {
-  //   const fetchDataHeader = async () => {
-  //     try {
-  //       debugger
-  //       const response = await customAxios.get(
-  //         `${urlIndexDischageSummarySearch}?DSsearch=${Patient.PatientId}&Encounter=${Patient.Encounter}`
-  //       );
-  //       debugger
-  //       if (response.status === 200 && response.data.data != null) {
-  //         const detailsheader = response.data.data.EncounterModel;
-  //         setPatientData(detailsheader);
-  //       }
-  //     } catch (error) {}
-  //   };
-  //   fetchDataHeader();
-  // }, []);
+ 
   useEffect(() => {
     setLoading(true);
     customAxios.get(urlGetPatientDetail).then((response) => {
@@ -501,18 +490,18 @@ async function handleSelectPatient(params) {
 
   const handleSelectUHID = (value, option) => {
     setSelectedUhId(value);
-
+   debugger
     if (option) {
       const selectedPatientData = option;
       console.log("Selected Patient Data:", selectedPatientData);
     }
     form.setFieldsValue({
       Uhid: option?.data?.UhId,
-      // PatientName: option?.data?.PatientFirstName,
+      PatientName: option?.data?.PatientFirstName + " " + option?.data?.PatientLastName,
       patientId: option?.data?.PatientId,
     });
 
-    setIsEncounterDisabled(false);
+    // setIsEncounterDisabled(false);
     getencounters(option?.data?.PatientId);
     window.scrollTo({
       top: 0,
@@ -538,7 +527,7 @@ async function handleSelectPatient(params) {
     try {
       const postData1 = {
         UHID: values.Uhid ? values.Uhid : null ,
-        Name:  values.PatientName  ? values.PatientName : null,
+        Name:  values.Name  ? values.Name : null,
         ProviderId: values.ProviderId   ? values.ProviderId : 0,
         DepartmentId: values.Department ?  values.Department :0 ,
         FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : null,
@@ -595,7 +584,8 @@ async function handleSelectPatient(params) {
     }
   };
   
-
+ 
+  
   const onReset = () => {
     form.resetFields();
   };

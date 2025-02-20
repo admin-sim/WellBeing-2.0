@@ -363,12 +363,45 @@ const Patient = () => {
     },
     {
       title: "Image",
-      dataIndex: "Gender",
-      key: "Gender",
-      render: (text, record) => (
-        <Avatar src={showGenderPic(record.Gender)} size="large" />
-      ),
-    },
+      dataIndex: "PhotoUrl",
+      key: "photo",
+      render: (text, record) => {
+        return (
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "center", 
+            alignItems: "center",
+            height: "60px" // Ensures vertical centering
+          }}>
+            {/* If PhotoUrl exists and is a valid base64 image */}
+            {text && text.startsWith("data:image/") ? (
+              <img
+                src={text} // Using the base64 data as the image source
+                // alt="Patient"
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  objectFit: "cover",
+                  borderRadius: "50%", // Circular image
+                  border: "2px solid #ccc",
+                }}
+              />
+            ) : (
+              <Avatar 
+                src={showGenderPic(record.Gender)} 
+                size="large"
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  borderRadius: "50%",
+                  border: "2px solid #ccc",
+                }}
+              />
+            )}
+          </div>
+        );
+      },
+    }, 
     {
       title: "Patient Details",
       dataIndex: "PatientName",
@@ -479,15 +512,47 @@ const Patient = () => {
         </Tag>
       ),
     },
-
     {
       title: "Image",
-      dataIndex: "Gender",
-      key: "Gender",
-      render: (text, record) => (
-        <Avatar src={showGenderPic(record.Gender)} size="large" />
-      ),
-    },
+      dataIndex: "PhotoUrl",
+      key: "photo",
+      render: (text, record) => {
+        return (
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "center", 
+            alignItems: "center",
+            height: "60px" // Ensures vertical centering
+          }}>
+            {/* If PhotoUrl exists and is a valid base64 image */}
+            {text && text.startsWith("data:image/") ? (
+              <img
+                src={text} // Using the base64 data as the image source
+                // alt="Patient"
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  objectFit: "cover",
+                  borderRadius: "50%", // Circular image
+                  border: "2px solid #ccc",
+                }}
+              />
+            ) : (
+              <Avatar 
+                src={showGenderPic(record.Gender)} 
+                size="large"
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  borderRadius: "50%",
+                  border: "2px solid #ccc",
+                }}
+              />
+            )}
+          </div>
+        );
+      },
+    },       
     {
       title: "Patient Details",
       dataIndex: "PatientName",
@@ -537,7 +602,7 @@ const Patient = () => {
     console.log("Tab changed:", key);
     setActiveTab(key);
     setIsLoading(true);
-
+  debugger
     customAxios.get(urlGetAllPatientsRegisteredToady).then((response) => {
       const Patients = response.data.data.Patients.map((obj, index) => {
         return { ...obj, key: index + 1 };
