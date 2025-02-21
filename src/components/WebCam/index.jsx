@@ -240,7 +240,7 @@ function WebcamImage({ onImageUpload }) {
                 Retake Photo
               </Button>
             </Col>
-            <Col offset={4} span={20}>
+            {/* <Col offset={4} span={20}>
               <Upload {...props} fileList={fileList}>
                 <Button
                   size="middle"
@@ -258,7 +258,7 @@ function WebcamImage({ onImageUpload }) {
                   Upload (&lt;1MB)
                 </Button>
               </Upload>
-            </Col>
+            </Col> */}
           </Row>
         </>
       )}
