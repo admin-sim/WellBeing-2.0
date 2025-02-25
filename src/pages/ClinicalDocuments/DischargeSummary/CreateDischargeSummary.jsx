@@ -487,10 +487,8 @@ import {
         ClinicalFinding: values.clinicalFindings,
         CourseInHospital: values.courseInHospital,
         Advice: values.adviceOnDischarge,
-        Surgery: values.surgeryDate ? values.surgeryDate.toDate() : null, // If date exists, use it
-        // : dayjs().format("DD-MM-YYYY"), // Use current date in DD-MM-YYYY format if no date is provided
-        FollowUpDate: values.followUpDate ? values.followUpDate.toDate() : null, // If date exists, use it
-        // : dayjs().format("DD-MM-YYYY"), // Use current date in DD-MM-YYYY format if no date is provided
+        Surgery: values.surgeryDate ? values.surgeryDate.toDate() : null, 
+        FollowUpDate: values.followUpDate ? values.followUpDate.toDate() : null, 
         FollowUpDate1: values.followUpDate
           ? values.followUpDate.format("DD-MM-YYYY")
           : null,
