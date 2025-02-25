@@ -299,6 +299,14 @@ function PhysicalExamination(Patient) {
       // Validate fields and get values
       const values = await form1.validateFields();
       console.log("Form Values:", values);
+      const isFormEmpty = Object.values(values).every(value => 
+        value === undefined || value === null || value === ""
+      );
+  
+      if (isFormEmpty) {
+        message.error("Please fill the values before saving.");
+        return; // Stop execution if form is empty
+      }
       values.PatientId = patientId;
       values.EncounterId = encounterId;
 
@@ -699,7 +707,6 @@ function PhysicalExamination(Patient) {
       if (response.data) {
         message.success("Physical Examination Saved Successfully!");
         form2.resetFields();
-        form1.resetFields();
         setsystemicdataexist(false);
       }
     } catch (error) {
@@ -2903,7 +2910,7 @@ function PhysicalExamination(Patient) {
                 size="middle"
                 danger
                 onClick={() => {
-                  form.resetFields();
+                  form2.resetFields();
                   setsystemicdataexist(false); // Set the flag to false after resetting the form
                 }}
               >
