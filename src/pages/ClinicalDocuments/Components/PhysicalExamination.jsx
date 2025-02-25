@@ -53,6 +53,7 @@ function PhysicalExamination(Patient) {
   const [encounterId, setEncounterId] = useState(null);
   const [generaldataexist, setgeneraldataexist] = useState(null);
   const [systemicdataexist, setsystemicdataexist] = useState(null);
+
   useEffect(() => {
     debugger;
     if (Patient?.Patient?.PatientId && Patient?.Patient?.Encounter) {
@@ -60,6 +61,7 @@ function PhysicalExamination(Patient) {
       setEncounterId(Patient.Patient.Encounter);
     }
   }, [Patient]);
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { Title } = Typography;
 
@@ -1090,7 +1092,7 @@ function PhysicalExamination(Patient) {
             editData.Murphysign ||
             editData.McBurneypoint
           ),
-           MusculoskeletalExamination : !!(
+          MusculoskeletalExamination: !!(
             editData.Ambulatory ||
             editData.Assistant ||
             editData.Wheelchair ||
@@ -1144,7 +1146,7 @@ function PhysicalExamination(Patient) {
             editData.LULESen ||
             editData.SLR
           ),
-          
+
         };
 
         // Update the state to activate the respective buttons
@@ -1165,7 +1167,7 @@ function PhysicalExamination(Patient) {
 
       if (response.status === 200 && response.data) {
         message.success("Record deleted successfully!");
-        // handleCloseModal();
+        fetchSystemicExaminationData();
       } else {
         message.error("Failed to delete the record.");
       }
@@ -1338,11 +1340,13 @@ function PhysicalExamination(Patient) {
       ),
     },
   ];
+
   useEffect(() => {
     if (isPreviousExamModalVisible) {
       fetchSystemicExaminationData();
     }
   }, [isPreviousExamModalVisible]);
+
   const fetchSystemicExaminationData = async () => {
     try {
       debugger
@@ -1397,6 +1401,7 @@ function PhysicalExamination(Patient) {
       message.error("Failed to fetch data.");
     }
   };
+
   const systemicExamination = (
     <>
       <Row
@@ -2138,13 +2143,13 @@ function PhysicalExamination(Patient) {
           <Row>
 
             <Row gutter={[16, 16]}>
-           {/* Upper Limb Section */}                         
+              {/* Upper Limb Section */}
               <Col span={24} style={{ margin: "0 0 0.7rem 0" }}>
-                           
+
                 <span style={{ fontWeight: 600, fontSize: "1rem" }}>
-               Upper Limb            
+                  Upper Limb
                 </span>
-                         
+
               </Col>
               <Col span={24}>
                 <Row
@@ -2163,353 +2168,353 @@ function PhysicalExamination(Patient) {
                   <Col span={4}>Reflexes</Col>
                 </Row>
               </Col>
-           {/* Shoulder */}           
+              {/* Shoulder */}
               <Col span={24}>
-            
+
                 <Row gutter={16}>
-                
+
                   <Col span={4}>
-                       <label>Shoulder</label>               
+                    <label>Shoulder</label>
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbSRM">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Flexion">Flexion</Option>               
-                                <Option value="">to be add</Option>             
-                             
+
+                        <Option value="Flexion">Flexion</Option>
+                        <Option value="">to be add</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbSStr">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Grading0">Grading 0</Option>             
-                                  <Option value="Grading1">Grading 1</Option>   
-                      
+
+                        <Option value="Grading0">Grading 0</Option>
+                        <Option value="Grading1">Grading 1</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbSWast">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="+">+</Option>                     
-                        <Option value="-">-</Option>                   
+
+                        <Option value="+">+</Option>
+                        <Option value="-">-</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbSSen">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbSRef">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-              
+
                 </Row>
-                           
+
               </Col>
-           {/* Elbow */}           
+              {/* Elbow */}
               <Col span={24}>
-            
+
                 <Row gutter={16}>
-                
+
                   <Col span={4}>
-                       <label>Elbow</label>               
+                    <label>Elbow</label>
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlinbERM">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="flexiod">flexiod</Option>               
-                                <Option value="">to be add</Option>             
-                             
+
+                        <Option value="flexiod">flexiod</Option>
+                        <Option value="">to be add</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbEStr">
-                        
+
                       <Select placeholder="Select">
-                                                  
-                        <Option value="Grading0">Grading 0</Option>             
-                                  <Option value="Grading1">Grading 1</Option>   
-                      
+
+                        <Option value="Grading0">Grading 0</Option>
+                        <Option value="Grading1">Grading 1</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbEWast">
-                        
+
                       <Select placeholder="Select">
-                                                  
-                        <Option value="+">+</Option>                     
-                        <Option value="-">-</Option>                   
+
+                        <Option value="+">+</Option>
+                        <Option value="-">-</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbESen">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbERef">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-              
+
                 </Row>
-                           
+
               </Col>
-           {/* Wrist */}           
+              {/* Wrist */}
               <Col span={24}>
-            
+
                 <Row gutter={16}>
-                
+
                   <Col span={4}>
-                       <label>Wrist</label>               
+                    <label>Wrist</label>
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbWRM">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="flexiod">flexiod</Option>               
-                                <Option value="">to be add</Option>             
-                             
+
+                        <Option value="flexiod">flexiod</Option>
+                        <Option value="">to be add</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbWStr">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Grading0">Grading 0</Option>             
-                                  <Option value="Grading1">Grading 1</Option>   
-                      
+
+                        <Option value="Grading0">Grading 0</Option>
+                        <Option value="Grading1">Grading 1</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbWWast">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="+">+</Option>                     
-                        <Option value="-">-</Option>                   
+
+                        <Option value="+">+</Option>
+                        <Option value="-">-</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbWSen">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbWRef">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-              
+
                 </Row>
-                           
+
               </Col>
-           {/* Hand */}           
+              {/* Hand */}
               <Col span={24}>
-            
+
                 <Row gutter={16}>
-                
+
                   <Col span={4}>
-                       <label>Hand</label>               
+                    <label>Hand</label>
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbHRM">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="flexiod">flexiod</Option>               
-                                <Option value="">to be add</Option>             
-                             
+
+                        <Option value="flexiod">flexiod</Option>
+                        <Option value="">to be add</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbHStr">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Grading0">Grading 0</Option>             
-                                  <Option value="Grading1">Grading 1</Option>   
-                      
+
+                        <Option value="Grading0">Grading 0</Option>
+                        <Option value="Grading1">Grading 1</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbHWast">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="+">+</Option>                     
-                        <Option value="-">-</Option>                   
+
+                        <Option value="+">+</Option>
+                        <Option value="-">-</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbHSen">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="UlimbHRef">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-              
+
                 </Row>
-                           
+
               </Col>
-                       
+
             </Row>
 
             <Row gutter={[16, 16]}>
-           {/* Upper Limb Section */}                         
+              {/* Upper Limb Section */}
               <Col span={24} style={{ margin: "0 0 0.7rem 0" }}>
-                           
+
                 <span style={{ fontWeight: 600, fontSize: "1rem" }}>
-               Lower Limb            
+                  Lower Limb
                 </span>
-                         
+
               </Col>
               <Col span={24}>
                 <Row
@@ -2528,343 +2533,343 @@ function PhysicalExamination(Patient) {
                   <Col span={4}>Reflexes</Col>
                 </Row>
               </Col>
-           {/* Shoulder */}           
+              {/* Shoulder */}
               <Col span={24}>
-            
+
                 <Row gutter={16}>
-                
+
                   <Col span={4}>
-                       <label>Shoulder</label>               
+                    <label>Shoulder</label>
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULSRM">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Flexion">Flexion</Option>               
-                                <Option value="">to be add</Option>             
-                             
+
+                        <Option value="Flexion">Flexion</Option>
+                        <Option value="">to be add</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULSStr">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Grading0">Grading 0</Option>             
-                                  <Option value="Grading1">Grading 1</Option>   
-                      
+
+                        <Option value="Grading0">Grading 0</Option>
+                        <Option value="Grading1">Grading 1</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULSWast">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="+">+</Option>                     
-                        <Option value="-">-</Option>                   
+
+                        <Option value="+">+</Option>
+                        <Option value="-">-</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULSSen">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULSRef">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-              
+
                 </Row>
-                           
+
               </Col>
-           {/* Elbow */}           
+              {/* Elbow */}
               <Col span={24}>
-            
+
                 <Row gutter={16}>
-                
+
                   <Col span={4}>
-                       <label>Elbow</label>               
+                    <label>Elbow</label>
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULERM">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="flexiod">flexiod</Option>               
-                                <Option value="">to be add</Option>             
-                             
+
+                        <Option value="flexiod">flexiod</Option>
+                        <Option value="">to be add</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULEStr">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Grading0">Grading 0</Option>             
-                                  <Option value="Grading1">Grading 1</Option>   
-                      
+
+                        <Option value="Grading0">Grading 0</Option>
+                        <Option value="Grading1">Grading 1</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULEWast">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="+">+</Option>                     
-                        <Option value="-">-</Option>                   
+
+                        <Option value="+">+</Option>
+                        <Option value="-">-</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULESen">
-                        
+
                       <Select placeholder="Select">
-                                                  
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULERef">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-              
+
                 </Row>
-                           
+
               </Col>
-           {/* Wrist */}           
+              {/* Wrist */}
               <Col span={24}>
-            
+
                 <Row gutter={16}>
-                
+
                   <Col span={4}>
-                       <label>Wrist</label>               
+                    <label>Wrist</label>
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULWRM">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="flexiod">flexiod</Option>               
-                                <Option value="">to be add</Option>             
-                             
+
+                        <Option value="flexiod">flexiod</Option>
+                        <Option value="">to be add</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULWStr">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Grading0">Grading 0</Option>             
-                                  <Option value="Grading1">Grading 1</Option>   
-                      
+
+                        <Option value="Grading0">Grading 0</Option>
+                        <Option value="Grading1">Grading 1</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULWWast">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="+">+</Option>                     
-                        <Option value="-">-</Option>                   
+
+                        <Option value="+">+</Option>
+                        <Option value="-">-</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULWSen">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULWRef">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-              
+
                 </Row>
-                           
+
               </Col>
-           {/* Hand */}           
+              {/* Hand */}
               <Col span={24}>
-            
+
                 <Row gutter={16}>
-                
+
                   <Col span={4}>
-                       <label>Hand</label>               
+                    <label>Hand</label>
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULHRM">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="flexiod">flexiod</Option>               
-                                <Option value="">to be add</Option>             
-                             
+
+                        <Option value="flexiod">flexiod</Option>
+                        <Option value="">to be add</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULHStr">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Grading0">Grading 0</Option>             
-                                  <Option value="Grading1">Grading 1</Option>   
-                      
+
+                        <Option value="Grading0">Grading 0</Option>
+                        <Option value="Grading1">Grading 1</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULHWast">
-                        
+
                       <Select placeholder="Select">
-                                  <Option value="+">+</Option> 
-                          <Option value="-">-</Option>         
-                                 
+                        <Option value="+">+</Option>
+                        <Option value="-">-</Option>
+
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULHSen">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-                
+
                   <Col span={4}>
-                    
+
                     <Form.Item name="LULHRef">
-                        
+
                       <Select placeholder="Select">
-                                                    
-                        <Option value="Yes">Yes</Option>                     
-                        <Option value="No">No</Option>                   
+
+                        <Option value="Yes">Yes</Option>
+                        <Option value="No">No</Option>
                       </Select>
-                      
+
                     </Form.Item>
-                  
+
                   </Col>
-              
+
                 </Row>
-                           
+
               </Col>
-                       
+
             </Row>
             <ColWithSixSpan>
               <Form.Item
