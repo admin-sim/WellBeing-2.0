@@ -106,8 +106,8 @@ const NewPatient = () => {
     console.log("Full Base64 Image Data Length:", base64data.length); // Log the length
     setUploadedImage(base64data); // Ensure full data is set
   };
-  
-  
+
+
   const disabledDate = (current) => {
     // Disable dates that are in the future
     return current && current > new Date();
@@ -354,7 +354,7 @@ const NewPatient = () => {
     debugger;
     setLoadings(true);
     console.log("Received values from form: ", values);
-     
+
     values.dob = selecteddob;
     const patientDetails = {
       PatientTitle: values.title === undefined ? null : values.title,
@@ -364,7 +364,7 @@ const NewPatient = () => {
           : values.PatientFirstName,
       PatientMiddleName:
         values.PatientMiddleName === undefined ||
-        values.PatientMiddleName === ""
+          values.PatientMiddleName === ""
           ? null
           : values.PatientMiddleName,
       PatientLastName:
@@ -381,7 +381,7 @@ const NewPatient = () => {
           : values.titleFatherHusband,
       FatherHusbandName:
         values.FatherHusbandName === undefined ||
-        values.FatherHusbandName === ""
+          values.FatherHusbandName === ""
           ? null
           : values.FatherHusbandName,
       MaritalStatus:
@@ -413,7 +413,7 @@ const NewPatient = () => {
       ReligionId: values.Religion === undefined ? null : values.Religion,
       PermanentAddress1:
         values.permanentAddress1 === undefined ||
-        values.permanentAddress1 === ""
+          values.permanentAddress1 === ""
           ? null
           : values.permanentAddress1,
       PermanentCountryId: values?.permanentCountryId,
@@ -452,12 +452,12 @@ const NewPatient = () => {
           : values.BirthPlace,
       BirthIdentification1:
         values.birthIdentification1 === undefined ||
-        values.birthIdentification1 === ""
+          values.birthIdentification1 === ""
           ? null
           : values.birthIdentification1,
       BirthIdentification2:
         values.birthIdentification2 === undefined ||
-        values.birthIdentification2 === ""
+          values.birthIdentification2 === ""
           ? null
           : values.birthIdentification2,
     };
@@ -483,7 +483,7 @@ const NewPatient = () => {
 
       console.log("Response data: ", data);
 
-    
+
 
       setLoadings(false);
       // After receiving the response and generating the report
@@ -678,29 +678,29 @@ const NewPatient = () => {
       setSelectedRecord(record);
       setIsVisitCreated(false);
       setModalLoader(true);
-  
+
       // Fetch encounter details
       const [response, response1] = await Promise.all([
         customAxios.get(`${urlGetEncounterDetails}?PatientId=${record.PatientId}&PatientType=0&AppointmentId=0`),
         customAxios.get(`${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}`)
       ]);
-  
+
       // Check if responses are valid before setting data
       if (response.data && response1.data) {
         setPatientHeaderDetails(response1.data.data.EncounterModel);
         setVisitDropdown(response.data.data);
-       // setEncounterTypeId(response.data.data.EncounterTypeId);
-        
+        // setEncounterTypeId(response.data.data.EncounterTypeId);
+
         // Set the form field values
         form1.setFieldsValue({
           EncounterType: response.data.data.EncounterTypeId,
         });
-        
+
         setIsVisitModalVisible(true); // Open modal only after data is set
       } else {
         message.error("Failed to fetch visit details. Please try again.");
       }
-  
+
     } catch (error) {
       console.error("Error fetching visit modal data:", error);
       message.error("An error occurred while loading visit details. Please try again.");
@@ -725,7 +725,7 @@ const NewPatient = () => {
       await form1.validateFields();
       const values = form1.getFieldsValue();
       setIsVisitCreated(true);
-     // setIsSubmitLoader(true);
+      // setIsSubmitLoader(true);
       const postData = {
         PatientId: selectedRecord.PatientId,
         PatientType: values.PatientType,
@@ -754,7 +754,7 @@ const NewPatient = () => {
       });
 
       if (response.data != null) {
-      //  setIsSubmitLoader(false);
+        //  setIsSubmitLoader(false);
         if (response.data.EncounterResult != null) {
           messageApi.warning({
             type: "warning",
@@ -769,7 +769,7 @@ const NewPatient = () => {
           });
         }
       } else {
-      //  setIsSubmitLoader(false);
+        //  setIsSubmitLoader(false);
         messageApi.open({
           type: "error",
           content: `Visit Creation Unsuccessful`,
@@ -777,9 +777,9 @@ const NewPatient = () => {
         form1.resetFields();
       }
 
-   
+
     } catch (error) {
-     // setIsSubmitLoader(false);
+      // setIsSubmitLoader(false);
       if (error.errorFields) {
         // Highlight the fields with errors
         form1.scrollToField(error.errorFields[0].name, {
@@ -1449,7 +1449,7 @@ const NewPatient = () => {
             <Row justify="end" style={{ marginTop: "1rem" }}>
               <Col style={{ marginRight: "1rem" }}>
                 <Form.Item>
-                  <Button type="primary" htmlType="submit" size="middle">
+                  <Button type="primary" disabled={loadings} htmlType="submit" size="middle">
                     Submit
                   </Button>
                 </Form.Item>
@@ -1548,8 +1548,8 @@ const NewPatient = () => {
           },
         }}
       >
-       
-       {contextHolder}
+
+        {contextHolder}
         {isVisitModalVisible && visitsDropdown.PatientType !== undefined && (
           <VisitModal
             open={isVisitModalVisible}
