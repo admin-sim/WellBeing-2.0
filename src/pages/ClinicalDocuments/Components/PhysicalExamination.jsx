@@ -321,7 +321,7 @@ function PhysicalExamination(Patient) {
           }
           return acc;
         }, {});
-
+        
       // Construct the payload for the API
       const payload = {
         GeneralExamination: generalExamination,
@@ -1452,7 +1452,7 @@ function PhysicalExamination(Patient) {
             <Option value="Last One Week">Last One Week</Option>
             <Option value="Last One Month">Last One Month</Option>
             <Option value="Last Six Months">Last Six Months</Option>
-            <Option value="Last Six Months">Last One Year</Option>
+            <Option value="Last One Year">Last One Year</Option>
           </Select>
           <Tabs
             defaultActiveKey="1"
@@ -2188,7 +2188,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbSRM">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Flexion">Flexion</Option>
                         <Option value="">to be add</Option>
@@ -2203,7 +2203,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbSStr">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Grading0">Grading 0</Option>
                         <Option value="Grading1">Grading 1</Option>
@@ -2218,7 +2218,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbSWast">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="+">+</Option>
                         <Option value="-">-</Option>
@@ -2232,7 +2232,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbSSen">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2246,7 +2246,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbSRef">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2272,7 +2272,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlinbERM">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="flexiod">flexiod</Option>
                         <Option value="">to be add</Option>
@@ -2287,7 +2287,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbEStr">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Grading0">Grading 0</Option>
                         <Option value="Grading1">Grading 1</Option>
@@ -2302,7 +2302,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbEWast">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="+">+</Option>
                         <Option value="-">-</Option>
@@ -2316,7 +2316,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbESen">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2330,7 +2330,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbERef">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2356,7 +2356,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbWRM">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="flexiod">flexiod</Option>
                         <Option value="">to be add</Option>
@@ -2371,7 +2371,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbWStr">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select"  allowClear>
 
                         <Option value="Grading0">Grading 0</Option>
                         <Option value="Grading1">Grading 1</Option>
@@ -2386,7 +2386,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbWWast">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="+">+</Option>
                         <Option value="-">-</Option>
@@ -2400,7 +2400,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbWSen">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2414,7 +2414,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbWRef">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2440,7 +2440,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbHRM">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select"  allowClear>
 
                         <Option value="flexiod">flexiod</Option>
                         <Option value="">to be add</Option>
@@ -2455,7 +2455,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbHStr">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Grading0">Grading 0</Option>
                         <Option value="Grading1">Grading 1</Option>
@@ -2470,7 +2470,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbHWast">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="+">+</Option>
                         <Option value="-">-</Option>
@@ -2484,7 +2484,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbHSen">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2498,7 +2498,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="UlimbHRef">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2553,7 +2553,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULSRM">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Flexion">Flexion</Option>
                         <Option value="">to be add</Option>
@@ -2568,7 +2568,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULSStr">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Grading0">Grading 0</Option>
                         <Option value="Grading1">Grading 1</Option>
@@ -2583,7 +2583,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULSWast">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select"  allowClear>
 
                         <Option value="+">+</Option>
                         <Option value="-">-</Option>
@@ -2597,7 +2597,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULSSen">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select"  allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2611,7 +2611,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULSRef">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select"  allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2637,7 +2637,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULERM">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="flexiod">flexiod</Option>
                         <Option value="">to be add</Option>
@@ -2652,7 +2652,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULEStr">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Grading0">Grading 0</Option>
                         <Option value="Grading1">Grading 1</Option>
@@ -2667,7 +2667,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULEWast">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="+">+</Option>
                         <Option value="-">-</Option>
@@ -2681,7 +2681,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULESen">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select"  allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2695,7 +2695,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULERef">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2721,7 +2721,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULWRM">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="flexiod">flexiod</Option>
                         <Option value="">to be add</Option>
@@ -2736,7 +2736,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULWStr">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Grading0">Grading 0</Option>
                         <Option value="Grading1">Grading 1</Option>
@@ -2751,7 +2751,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULWWast">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="+">+</Option>
                         <Option value="-">-</Option>
@@ -2765,7 +2765,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULWSen">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2779,7 +2779,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULWRef">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2805,7 +2805,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULHRM">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="flexiod">flexiod</Option>
                         <Option value="">to be add</Option>
@@ -2820,7 +2820,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULHStr">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Grading0">Grading 0</Option>
                         <Option value="Grading1">Grading 1</Option>
@@ -2835,7 +2835,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULHWast">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
                         <Option value="+">+</Option>
                         <Option value="-">-</Option>
 
@@ -2849,7 +2849,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULHSen">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select"allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2863,7 +2863,7 @@ function PhysicalExamination(Patient) {
 
                     <Form.Item name="LULHRef">
 
-                      <Select placeholder="Select">
+                      <Select placeholder="Select" allowClear>
 
                         <Option value="Yes">Yes</Option>
                         <Option value="No">No</Option>
@@ -2984,7 +2984,7 @@ function PhysicalExamination(Patient) {
                 <Option value="Last One Week">Last One Week</Option>
                 <Option value="Last One Month">Last One Month</Option>
                 <Option value="Last Six Months">Last Six Months</Option>
-                <Option value="Last Six Months">Last One Year</Option>
+                <Option value="Last One Year">Last One Year</Option>
               </Select>
             </div>
             <Table

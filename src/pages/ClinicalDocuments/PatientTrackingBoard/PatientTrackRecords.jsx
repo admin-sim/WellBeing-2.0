@@ -6,6 +6,7 @@ import {
   DatePicker,
   Form,
   Input,
+  message,
   Row,
   Select,
   Spin,
@@ -194,31 +195,10 @@ function PatientTrackRecords() {
       }
     } catch (error) {
       console.error("Failed to fetch patient header details:", error);
+      message.error("Encounter Not yet created for the patient");
     }
   };
 
-  // Handle Patient Tracking Search
-
-  // const handlePatientTrackingSearch = async (values) => {
-  //   try {
-  //     debugger;
-  //     const response = await customAxios.get(
-  //       `${urlSearchPatientTrackRecords}?PatientId=${selectedPatientId || PatientId}&EncounterId=${generatedEncounter || encounter}`
-  //     );
-
-  //     if (response.status === 200) {
-  //       debugger;
-  //       setTableData(response.data.data.ClinicalDocumentTypes);
-  //       setPatientTrackRecordTable(true);
-
-  //       // Fetch the patient header after the search is successful
-  //       await fetchDataHeader();
-  //     }
-  //   } catch (error) {
-  //     console.error("Failed to search patient tracking records:", error);
-  //   }
-  // };
-  // new patient search?
   const handlePatientTrackingSearch = async (values) => {
     try {
       debugger;
@@ -238,6 +218,7 @@ function PatientTrackRecords() {
       }
     } catch (error) {
       console.error("Failed to search patient tracking records:", error);
+      message.error("Encounter Not yet created for the patient");
     }
   };
 
