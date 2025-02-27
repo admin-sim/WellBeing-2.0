@@ -468,9 +468,6 @@ import {
       navigate("/DischargeSummary");
     };
   
-   
-    
-    
     const handleSubmit = async (values) => {
       debugger;
       const Drugss = [];
@@ -558,7 +555,7 @@ import {
         }
       }
       
-  
+
       const Summary = {
         DischargeSummaryModel: Drugss,
         DischargeSummary: mapValues,

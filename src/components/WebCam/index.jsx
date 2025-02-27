@@ -115,130 +115,90 @@ function WebcamImage({ onImageUpload }) {
     <div
       style={{
         display: "flex",
-        border: "1px solid lavender",
-        width: "100%",
-        justifyContent: "center",
-        borderRadius: "1rem",
-        padding: "0.5rem",
+        flexDirection: "column",
         alignItems: "center",
-        flexDirection: "column", // Stack elements vertically
+        width: "200px", // Set a fixed width
+        minHeight: "220px", // Set a minimum height to prevent shifting
+        border: "1px solid lavender",
+        borderRadius: "1rem",
+        padding: "1rem",
       }}
     >
-      {loading ? (
-        <Spin tip="Loading camera..." />
-      ) : (
-        <>
-          {/* Display Camera or Captured Image */}
-          {img === null ? (
-            hasCameraPermission ? (
-              <Webcam
-                audio={false}
-                mirrored={true}
-                height={150}
-                width={"auto"}
-                ref={webcamRef}
-                screenshotFormat="image/jpeg"
-                videoConstraints={videoConstraints}
-                onUserMediaError={handleUserMediaError}
-                onUserMedia={() => setLoading(false)}
-              />
-            ) : (
-              <div
-                style={{
-                  backgroundColor: "#E5D4FF",
-                  textAlign: "center",
-                  height: "150px",
-                  width: "150px",
-                }}
-              >
-                <p>Camera permission is not given. Please allow access.</p>
-                <Button
-                  onClick={() =>
-                    message.info(
-                      "Please go to your browser settings and allow camera access."
-                    )
-                  }
-                >
-                  Give Permission
-                </Button>
-              </div>
-            )
-          ) : (
-            <div style={{ display: "flex", justifyContent: "center" }}>
-              <img src={img} alt="PatientPhoto" width={150} height={150} />
-            </div>
-          )}
-  
-          {/* Capture Photo Button */}
-          {img === null && hasCameraPermission && (
-            <Button
-              size="middle"
-              style={{
-                width: "6rem",
-                borderColor: "green",
-                marginTop: "0.5rem",
-                textAlign: "center",
-                padding: "0.5rem 0",
-              }}
-              onClick={capture}
-            >
-              Capture Photo
-            </Button>
-          )}
-  
-          {/* Upload Photo & Retake Photo in Same Row */}
-          <div
+      {/* Image Placeholder */}
+      <div
+        style={{
+          width: "150px",
+          height: "150px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          border: "1px solid #ddd",
+          borderRadius: "8px",
+          overflow: "hidden",
+          marginBottom: "1rem",
+        }}
+      >
+        {img ? (
+          <img
+            src={img}
+            alt="Patient Photo"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : hasCameraPermission ? (
+          <Webcam
+            audio={false}
+            mirrored={true}
+            height={150}
+            width={150}
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            videoConstraints={videoConstraints}
+            onUserMediaError={handleUserMediaError}
+          />
+        ) : (
+          <p>No Camera Access</p>
+        )}
+      </div>
+
+      {/* Upload & Retake Buttons */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        <Upload
+          {...props}
+          fileList={fileList}
+          onChange={({ fileList }) => {
+            setFileList(fileList);
+            if (fileList.length > 0) {
+              setImg(fileList[0].thumbUrl || fileList[0].url);
+            }
+          }}
+        >
+          <Button
+            size="middle"
             style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "0.5rem",
-              marginTop: "0.5rem",
+              width: "100%",
+              borderColor: "brown",
+              fontSize: "0.85rem",
+              padding: "0.5rem 0",
+            }}
+            icon={<UploadOutlined />}
+          >
+            Upload Photo
+          </Button>
+        </Upload>
+
+        {img || fileList.length > 0 ? (
+          <Button
+            size="middle"
+            style={{ width: "100%", borderColor: "red" }}
+            onClick={() => {
+              setImg(null);
+              setFileList([]);
             }}
           >
-            {/* Upload Photo (Mandatory) */}
-            <Upload
-              {...props}
-              fileList={fileList}
-              onChange={({ fileList }) => {
-                setFileList(fileList);
-                if (fileList.length > 0) {
-                  setImg(fileList[0].thumbUrl || fileList[0].url); // Store uploaded photo as image
-                }
-              }}
-            >
-              <Button
-                size="middle"
-                style={{
-                  width: "6rem",
-                  borderColor: "brown",
-                  fontSize: "0.65rem",
-                  padding: "0.5rem 0",
-                }}
-                icon={<UploadOutlined />}
-              >
-                Upload (&lt;1MB)
-              </Button>
-            </Upload>
-  
-            {/* Retake Photo (Only After Capturing/Uploading) */}
-            {img || fileList.length > 0 ? (
-              <Button
-                size="middle"
-                style={{
-                  width: "6rem",
-                  borderColor: "red",
-                }}
-                onClick={() => {
-                  setImg(null);
-                  setFileList([]);
-                }}
-              >
-                Retake Photo
-              </Button>
-            ) : null}
-          </div>
-        </>
-      )}
+            Retake Photo
+          </Button>
+        ) : null}
+      </div>
     </div>
   );  
 }
