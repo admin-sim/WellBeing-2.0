@@ -77,8 +77,13 @@ function PatientHeader({ patient, encounterId, style }) {
   };
   
   const handleNavigate = () => {
-    debugger
-    navigate(`/AssignedPlan`);
+    debugger; // Optional: for debugging
+    navigate("/CreateAssignedPlan", {
+      state: {
+        patientId: patient?.PatientId,
+        encounterId: patient?.EncounterId,
+      },
+    });
   };
   const uploadProps = {
     onRemove: (file) => {

@@ -70,8 +70,6 @@ const DischargeSummary = (details) => {
 
   // const [form1] = Form.useForm();
   const [departmentLoader, setDepartmentLoader] = useState(false);
-
-
   const navigate = useNavigate();
   const SelectPatient = (record) => {
     debugger
