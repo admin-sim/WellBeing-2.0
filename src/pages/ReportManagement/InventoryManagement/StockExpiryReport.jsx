@@ -70,8 +70,10 @@ const StockExpiryReport = () => {
 
         const request = {
             // FacilityId: 1,
-            POStore: values.StoreName,
-            use: values.ViewStock,
+            // POStore: values.StoreName,
+            // use: values.ViewStock,
+            PONo: values.StoreName,
+            ReportOption: values.ViewStock,
         };
 
         try {
@@ -87,7 +89,7 @@ const StockExpiryReport = () => {
 
     async function fetchReport(request) {
         const response = await fetch(
-            "https://192.168.29.254:808/api/ReportsApi/GetStockExpiryRpt",
+            "http://localhost:43705/api/ReportsApi/GetStockExpiryRpt",
             {
                 method: "POST",
                 headers: {
