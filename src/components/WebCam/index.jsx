@@ -131,61 +131,54 @@ function WebcamImage({ onImageUpload }) {
         )}
       </div>
 
-      {/* ✅ FIXED: Correct Filename Display (No Attachment Icon) */}
-      {/* {fileName && (
-        <div
-          style={{
-            maxWidth: "180px",
-            display: "block",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            fontSize: "0.85rem",
-            color: "gray",
-            textAlign: "center",
-            marginBottom: "0.5rem",
-            borderBottom: "1px solid #ddd", // Light separator
-            paddingBottom: "5px",
-          }}
-          title={fileName} // Full name on hover
-        >
-          {fileName}
-        </div>
-      )} */}
-
       {/* Buttons */}
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <Upload {...props} showUploadList={false}> {/* ✅ Hides the unwanted attachment icon */}
-          <Button size="middle" icon={<UploadOutlined />} style={{ width: "100%" }}>
-            Upload Photo
-          </Button>
-        </Upload>
+        {!img ? (
+          <>
+            <Upload {...props} showUploadList={false}>
+              <Button size="middle" icon={<UploadOutlined />} style={{ width: "100%" }}>
+                Upload Photo
+              </Button>
+            </Upload>
 
-        {hasCameraPermission && (
-          <Button
-            size="middle"
-            icon={<CameraOutlined />}
-            style={{ width: "100%", borderColor: "green" }}
-            onClick={capture}
-          >
-            Capture Photo
-          </Button>
-        )}
+            {hasCameraPermission && (
+              <Button
+                size="middle"
+                icon={<CameraOutlined />}
+                style={{ width: "100%", borderColor: "green" }}
+                onClick={capture}
+              >
+                Capture Photo
+              </Button>
+            )}
+          </>
+        ) : (
+          <>
+            <Button
+              size="middle"
+              icon={<DeleteOutlined />}
+              style={{ width: "100%", borderColor: "red" }}
+              onClick={() => {
+                setImg(null);
+                setFileList([]);
+                setFileName("");
+                onImageUpload(null);
+              }}
+            >
+              Remove Photo
+            </Button>
 
-        {img && (
-          <Button
-            size="middle"
-            icon={<DeleteOutlined />}
-            style={{ width: "100%", borderColor: "red" }}
-            onClick={() => {
-              setImg(null);
-              setFileList([]);
-              setFileName("");
-              onImageUpload(null);
-            }}
-          >
-            Remove Photo
-          </Button>
+            {hasCameraPermission && (
+              <Button
+                size="middle"
+                icon={<CameraOutlined />}
+                style={{ width: "100%", borderColor: "green" }}
+                onClick={capture}
+              >
+                Retake Photo
+              </Button>
+            )}
+          </>
         )}
       </div>
     </div>

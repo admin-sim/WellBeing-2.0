@@ -9,6 +9,8 @@ import {
   Modal,
   Row,
   Tooltip,
+  Upload,
+  message,
 } from "antd";
 import { FcDocument, FcInfo } from "react-icons/fc";
 import { DollarTwoTone, FolderOpenTwoTone } from "@ant-design/icons";
@@ -19,38 +21,80 @@ import { isMobile } from "react-device-detect";
 import CustomTable from "../customTable/index";
 import { urlShowAllPendingBills } from "../../../endpoints";
 import customAxios from "../customAxios/customAxios";
+import { useNavigate } from "react-router-dom";
+const { Dragger } = Upload;
 
 function PatientHeader({ patient, encounterId, style }) {
- 
-debugger;
-
   const [billModalOpen, setBillModalOpen] = useState(false);
+  const [fileList, setFileList] = useState([]);
+  const [uploading, setUploading] = useState(false);
   const displayEncounterId = patient?.GeneratedEncounterId || encounterId;
   const [data, setData] = useState([]);
-  const handleBillClick =async()=> {
+  const navigate = useNavigate();
+  const handleBillClick = async () => {
     const response = await customAxios.get(
       `${urlShowAllPendingBills}?PatientId=${patient.PatientId}`
     );
     if (response.status === 200 && response.data != null) {
-      // Extract patient-specific information
       const { UhId, PatientName, GeneratedEncounterId } = patient;
-      
-      // Add patient data to each element of ReceiptAllocations
       const updatedReceiptAllocations = response.data.ReceiptAllocations.map((item) => ({
         ...item,
         UhId,
         PatientName,
         GeneratedEncounterId,
       }));
-  
-      // Set the updated data into state
       setData(updatedReceiptAllocations);
       setBillModalOpen(true);
     }
-    
+  };
 
-  }
-   
+  const handleUpload = async (options) => {
+    const { file, onSuccess, onError } = options;
+    setUploading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await customAxios.post("/upload-endpoint", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.status === 200) {
+        message.success(`${file.name} file uploaded successfully`);
+        onSuccess(response.data, file);
+      } else {
+        throw new Error("Upload failed");
+      }
+    } catch (error) {
+      message.error(`${file.name} file upload failed.`);
+      onError(error);
+    } finally {
+      setUploading(false);
+    }
+  };
+  
+  const handleNavigate = () => {
+    debugger
+    navigate(`/AssignedPlan`);
+  };
+  const uploadProps = {
+    onRemove: (file) => {
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+    },
+    beforeUpload: (file) => {
+      setFileList([...fileList, file]);
+      return false; // Prevent automatic upload
+    },
+    fileList,
+    customRequest: handleUpload,
+  };
+
   const columns = [
     {
       title: "UHID",
@@ -91,23 +135,14 @@ debugger;
       title: "OutStandingAmount",
       dataIndex: "OutStandingAmount",
       key: "OutStandingAmount",
-      render: (text) => (
-        <span style={{ color: "red" }}>
-          {text}
-        </span>
-      ),
+      render: (text) => <span style={{ color: "red" }}>{text}</span>,
     },
   ];
 
- function showGenderPic(Gender) {
-    if (Gender === 7) {
-      return male;
-    }
-    if (Gender === 8) {
-      return female;
-    } else {
-      return defaultPic;
-    }
+  function showGenderPic(Gender) {
+    if (Gender === 7) return male;
+    if (Gender === 8) return female;
+    return defaultPic;
   }
 
   return (
@@ -128,12 +163,10 @@ debugger;
                   span={6}
                   style={{
                     display: "flex",
-                    justifyContent: "center", // Ensure content is centered
+                    justifyContent: "center",
                     alignItems: "center",
                   }}
                 >
-               
-                  {/* Render the image or avatar */}
                   {patient?.PhotoUrl &&
                   patient?.PhotoUrl.startsWith("data:image/") ? (
                     <img
@@ -143,7 +176,7 @@ debugger;
                         width: "60px",
                         height: "60px",
                         objectFit: "cover",
-                        borderRadius: "50%", // Circular image
+                        borderRadius: "50%",
                         border: "2px solid #ccc",
                       }}
                     />
@@ -182,13 +215,7 @@ debugger;
                       <span>{patient?.PatientGender}</span>
                     </Col>
                     <Col span={24}>
-                      {/* <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  VisitId&nbsp;:
-                </span>
-                <span>{patient?.GeneratedEncounterId}</span> */}
-
                       <span style={{ fontWeight: "bold" }}>
-                        {/* {displayEncounterId ? "Encounter" : ""}&nbsp;: */}
                         Encounter&nbsp;:
                       </span>
                       {displayEncounterId && (
@@ -198,7 +225,6 @@ debugger;
                               encounterId && !patient?.GeneratedEncounterId
                                 ? "green"
                                 : "inherit",
-                            // padding: "0 1px",
                             color:
                               encounterId && !patient?.GeneratedEncounterId
                                 ? "White"
@@ -241,12 +267,14 @@ debugger;
                   style={{ marginBottom: "0.5rem" }}
                 >
                   <Tooltip title="Browse Files">
-                    <Button
-                      type="link"
-                      icon={
-                        <FolderOpenTwoTone style={{ fontSize: "1.8rem" }} />
-                      }
-                    />
+                    <Upload {...uploadProps}>
+                      <Button
+                        type="link"
+                        icon={
+                          <FolderOpenTwoTone style={{ fontSize: "1.8rem" }} />
+                        }
+                      />
+                    </Upload>
                   </Tooltip>
                 </Col>
                 <Col
@@ -259,6 +287,7 @@ debugger;
                     <Button
                       type="link"
                       icon={<FcDocument style={{ fontSize: "1.8rem" }} />}
+                      onClick={handleNavigate} // Navigate to the page
                     />
                   </Tooltip>
                 </Col>
@@ -306,42 +335,40 @@ debugger;
         >
           <Col span={18}>
             <Row gutter={16}>
-            <Col
-                  span={3}
-                  style={{
-                    display: "flex",
-                    justifyContent: "center", // Ensure content is centered
-                    alignItems: "center",
-                  }}
-                >
-               
-                  {/* Render the image or avatar */}
-                  {patient?.PhotoUrl &&
-                  patient?.PhotoUrl.startsWith("data:image/") ? (
-                    <img
-                      src={patient?.PhotoUrl}
-                      alt="Patient"
-                      style={{
-                        width: "60px",
-                        height: "60px",
-                        objectFit: "cover",
-                        borderRadius: "50%", // Circular image
-                        border: "2px solid #ccc",
-                      }}
-                    />
-                  ) : (
-                    <Avatar
-                      src={showGenderPic(patient?.Gender)}
-                      size="large"
-                      style={{
-                        width: "60px",
-                        height: "60px",
-                        borderRadius: "50%",
-                        border: "2px solid #ccc",
-                      }}
-                    />
-                  )}
-                </Col>
+              <Col
+                span={3}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                {patient?.PhotoUrl &&
+                patient?.PhotoUrl.startsWith("data:image/") ? (
+                  <img
+                    src={patient?.PhotoUrl}
+                    alt="Patient"
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      objectFit: "cover",
+                      borderRadius: "50%",
+                      border: "2px solid #ccc",
+                    }}
+                  />
+                ) : (
+                  <Avatar
+                    src={showGenderPic(patient?.Gender)}
+                    size="large"
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      borderRadius: "50%",
+                      border: "2px solid #ccc",
+                    }}
+                  />
+                )}
+              </Col>
               <Col span={9}>
                 <Row>
                   <Col span={24}>
@@ -367,15 +394,7 @@ debugger;
                     <span>{patient?.PatientGender}</span>
                   </Col>
                   <Col span={24}>
-                    {/* <span style={{ fontWeight: "bold", marginRight: "8px" }}>
-                  VisitId&nbsp;:
-                </span>
-                <span>{patient?.GeneratedEncounterId}</span> */}
-
-                    <span style={{ fontWeight: "bold" }}>
-                      {/* {displayEncounterId ? "Encounter" : ""}&nbsp;: */}
-                      Encounter&nbsp;:
-                    </span>
+                    <span style={{ fontWeight: "bold" }}>Encounter&nbsp;:</span>
                     {displayEncounterId && (
                       <span
                         style={{
@@ -427,10 +446,14 @@ debugger;
               </Col>
               <Col offset={2} span={3}>
                 <Tooltip title="Browse Files">
-                  <Button
-                    type="link"
-                    icon={<FolderOpenTwoTone style={{ fontSize: "1.8rem" }} />}
-                  />
+                  <Upload {...uploadProps}>
+                    <Button
+                      type="link"
+                      icon={
+                        <FolderOpenTwoTone style={{ fontSize: "1.8rem" }} />
+                      }
+                    />
+                  </Upload>
                 </Tooltip>
               </Col>
               <Col offset={2} span={3}>
@@ -438,6 +461,7 @@ debugger;
                   <Button
                     type="link"
                     icon={<FcDocument style={{ fontSize: "1.8rem" }} />}
+                    onClick={handleNavigate} 
                   />
                 </Tooltip>
               </Col>

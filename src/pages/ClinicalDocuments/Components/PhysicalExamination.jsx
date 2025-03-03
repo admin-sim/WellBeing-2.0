@@ -2691,12 +2691,6 @@ function PhysicalExamination(Patient) {
 
   return (
     <>
-      <Row
-        style={{ display: "flex", justifyContent: "space-between" }}
-        gutter={32}
-      >
-        <Col style={{ fontSize: "1rem" }}>Physical Examination</Col>
-      </Row>
       <Layout
         style={{
           width: "100%",
