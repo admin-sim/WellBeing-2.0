@@ -168,6 +168,7 @@ import DischargeSummary from "./pages/ClinicalDocuments/DischargeSummary/index.j
 import CreateDischargeSummary from "./pages/ClinicalDocuments/DischargeSummary/CreateDischargeSummary.jsx";
 import ClaimSubmission from "./pages/ClaimManagement/ClaimSubmission/index.jsx";
 import ClaimProcess from "./pages/ClaimManagement/ClaimProcess/index.jsx";
+import EditPriceTariffRevision from "./pages/Masters/GeneralMasters/AccountManagement/EditPriceTariffRevision.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -1340,6 +1341,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PharamcyPrescriptionIndex />
+                </ProtectedRoute>
+              }
+            />
+              <Route
+              path="/EditPriceTariffRevision"
+              element={
+                <ProtectedRoute>
+                  <EditPriceTariffRevision />
                 </ProtectedRoute>
               }
             />
