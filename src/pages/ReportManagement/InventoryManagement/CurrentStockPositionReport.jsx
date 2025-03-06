@@ -23,12 +23,8 @@ import {
 } from "@ant-design/icons";
 import {
     urlAutocompleteProduct,
-    urlGetAllPatientTypeAsync,
-    urlGetAllPaymentTypesAsync,
-    urlGetAllUsers,
+    urlAutocomplete,
     urlGetPurshaseOrderDetails,
-    urlSearchPatientsForLab,
-    urlSearchUHID,
 } from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import { useNavigate } from "react-router";
@@ -36,6 +32,7 @@ import PageHeader from "../../../components/PageHeader/index.jsx";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import { useSelector } from "react-redux";
 
 const CurrentStockPositionReport = () => {
     const navigate = useNavigate();
@@ -48,6 +45,7 @@ const CurrentStockPositionReport = () => {
     const [dropDown, setDrpoDown] = useState();
     const [loading, setLoading] = useState(false); // State for loader visibility
     const [users, setUsers] = useState([]);
+    const userContext = useSelector((state) => state.userContext.value);
 
     useEffect(() => {
         fetchDataHeader();
@@ -65,12 +63,12 @@ const CurrentStockPositionReport = () => {
     };
 
     useEffect(() => {
-        fetchData('a')
+        fetchData()
     }, [])
 
     async function fetchData(search) {
         try {
-            const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${search}`);
+            const response = await customAxios.get(urlAutocomplete);
             if (response.status === 200 && response.data != null) {
                 const userdetail = response.data.data;
                 setUsers(userdetail);
@@ -88,7 +86,8 @@ const CurrentStockPositionReport = () => {
             FacilityId: 1,
             ProductId: values.Currentstockposition == 'All' ? 0 : values.Currentstockposition,
             POStore: values.StoreName,
-            ReportOption: values.ReportOption
+            ReportOption: values.ReportOption,
+            AppUser: userContext.AppUserName
         };
 
         try {
@@ -266,7 +265,6 @@ const CurrentStockPositionReport = () => {
                                 >
                                     <Select
                                         placeholder="Select Value"
-                                        allowClear
                                     >
                                         {/* <Select.Option key='1' value='1'>Consolidated</Select.Option> */}
                                         <Select.Option key='2' value='2'>Detailed</Select.Option>

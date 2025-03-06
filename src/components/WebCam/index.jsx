@@ -1,56 +1,60 @@
-import { UploadOutlined } from "@ant-design/icons";
-import { Button, Col, Row, Upload, message, Spin } from "antd";
-import React, { useCallback, useRef, useState } from "react";
-import { useEffect } from "react";
+import { UploadOutlined, CameraOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Button, Upload, message, Spin } from "antd";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import Webcam from "react-webcam";
 
 function WebcamImage({ onImageUpload }) {
   const [img, setImg] = useState(null);
   const webcamRef = useRef(null);
-  const [up, setUp] = useState(null);
-  const [hasCameraPermission, setHasCameraPermission] = useState(true);
   const [fileList, setFileList] = useState([]);
-  const [loading, setLoading] = useState(true); // New state for loader
+  const [loading, setLoading] = useState(true);
+  const [hasCameraPermission, setHasCameraPermission] = useState(true);
+  const [fileName, setFileName] = useState("");
 
   const handleUserMediaError = (error) => {
-    console.log(error);
+    console.error(error);
     setHasCameraPermission(false);
-    setLoading(false); // Stop loader if there's an error
+    setLoading(false);
   };
+
+  useEffect(() => {
+    if (hasCameraPermission) {
+      setLoading(false);
+    }
+  }, [hasCameraPermission]);
+
+  // Truncate File Name
+  const shortenFileName = (name) => (name.length > 12 ? name.substring(0, 12) + "..." : name);
+
+  // Capture Image
+  const capture = useCallback(() => {
+    const imageSrc = webcamRef.current.getScreenshot();
+    setImg(imageSrc);
+    setFileList([]);
+    setFileName("");
+    onImageUpload(imageSrc);
+  }, [webcamRef]);
 
   const props = {
     name: "patient",
-    headers: {
-      authorization: "authorization-text",
-    },
     maxCount: 1,
     accept: "image/*",
-    fileList: fileList,
+    fileList,
     beforeUpload: (file) => {
       const isImage = file.type.startsWith("image/");
-      if (!isImage) {
-        message.error("You can only upload image files!");
-      }
       const isLt1M = file.size / 1024 / 1024 < 1;
-      if (!isLt1M) {
-        message.error("Image must be smaller than 1MB!");
-      }
+      if (!isImage) message.error("Only image files are allowed!");
+      if (!isLt1M) message.error("Image must be smaller than 1MB!");
       return isImage && isLt1M;
     },
     onRemove: () => {
       setImg(null);
       setFileList([]);
+      setFileName("");
       onImageUpload(null);
     },
     customRequest: async ({ file, onSuccess, onError }) => {
       try {
-        console.log("Uploading file:", file);
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        onSuccess("ok");
-        message.success(`${file.name} file uploaded successfully.`);
-
         let reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onloadend = function () {
@@ -59,209 +63,124 @@ function WebcamImage({ onImageUpload }) {
           onImageUpload(base64data);
         };
 
+        const shortName = shortenFileName(file.name);
+        setFileName(shortName);
         setFileList([file]);
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        onSuccess("ok");
+        message.success(`${shortName} uploaded successfully.`);
       } catch (error) {
         console.error("Upload error:", error);
         onError(error);
-        message.error(`${file.name} file upload failed.`);
+        message.error("File upload failed.");
         setFileList([]);
-      }
-    },
-    onChange: (info) => {
-      const { status } = info.file;
-
-      if (status === "uploading") {
-        console.log("Uploading...");
-      } else if (status === "done") {
-        console.log("Upload completed");
-      } else if (status === "error") {
-        console.log("Upload failed");
-        if (info.file.response && info.file.response.errorMessage) {
-          message.error(`Error: ${info.file.response.errorMessage}`);
-        } else {
-          message.error(
-            "An unknown error occurred during upload. Please try again."
-          );
-        }
-        setFileList([]);
+        setFileName("");
       }
     },
   };
-
-  useEffect(() => {
-    if (up?.length <= 0) {
-      setImg(null);
-    }
-  }, [up]);
-
-  useEffect(() => {
-    if (hasCameraPermission) {
-      setLoading(false); // Stop loader when the webcam is ready
-    }
-  }, [hasCameraPermission]);
-
-  const videoConstraints = {
-    width: 720,
-    height: 720,
-    facingMode: "user",
-  };
-
-  const capture = useCallback(() => {
-    const imageSrc = webcamRef.current.getScreenshot();
-    setImg(imageSrc);
-  }, [webcamRef]);
 
   return (
     <div
       style={{
         display: "flex",
-        border: "1px solid lavender",
-        width: "100%",
-        justifyContent: "center",
-        borderRadius: "1rem",
-        padding: "0.5rem",
+        flexDirection: "column",
         alignItems: "center",
+        width: "250px",
+        minHeight: "250px",
+        border: "1px solid lavender",
+        borderRadius: "1rem",
+        padding: "1rem",
       }}
     >
-      {loading ? (
-        <Spin tip="Loading camera..." />
-      ) : img === null ? (
-        <>
-          {hasCameraPermission ? (
-            <Webcam
-              audio={false}
-              mirrored={true}
-              height={150}
-              width={"auto"}
-              ref={webcamRef}
-              screenshotFormat="image/jpeg"
-              videoConstraints={videoConstraints}
-              onUserMediaError={handleUserMediaError}
-              onUserMedia={() => setLoading(false)} // Set loading false when media is ready
-            />
-          ) : (
-            <div
-              style={{
-                backgroundColor: "#E5D4FF",
-                textAlign: "center",
-                height: "150px",
-                width: "150px",
-              }}
-            >
-              <p>
-                Camera permission is not given. Please give permission to access
-                the camera.
-              </p>
-              <Button
-                onClick={() =>
-                  message.info(
-                    "Please go to your browser settings and allow camera access for this site."
-                  )
-                }
-              >
-                Give Permission
+      {/* Image Display / Webcam */}
+      <div
+        style={{
+          width: "160px",
+          height: "160px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          border: "1px solid #ddd",
+          borderRadius: "8px",
+          overflow: "hidden",
+          marginBottom: "1rem",
+        }}
+      >
+        {loading ? (
+          <Spin tip="Loading camera..." />
+        ) : img ? (
+          <img
+            src={img}
+            alt="Captured"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : hasCameraPermission ? (
+          <Webcam
+            audio={false}
+            mirrored={true}
+            height={160}
+            width={160}
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            videoConstraints={{ width: 720, height: 720, facingMode: "user" }}
+            onUserMediaError={handleUserMediaError}
+          />
+        ) : (
+          <p>No Camera Access</p>
+        )}
+      </div>
+
+      {/* Buttons */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        {!img ? (
+          <>
+            <Upload {...props} showUploadList={false}>
+              <Button size="middle" icon={<UploadOutlined />} style={{ width: "100%" }}>
+                Upload Photo
               </Button>
-            </div>
-          )}
-          <Row
-            gutter={0}
-            style={{
-              display: "flex",
-              justifyContent: "space-around",
-              marginTop: "0.5rem",
-            }}
-          >
+            </Upload>
+
             {hasCameraPermission && (
-              <Col offset={4} span={20}>
-                <Button
-                  size="middle"
-                  style={{
-                    width: "6rem",
-                    borderColor: "green",
-                    marginBottom: "0.5rem",
-                    textAlign: "center",
-                    whiteSpace: "nowrap", // Prevents text wrapping
-                    padding: "0.5rem 0", // Adjust padding for button height
-                  }}
-                  onClick={capture}
-                >
-                  Capture Photo
-                </Button>
-              </Col>
-            )}
-            <Col offset={4} span={20}>
-              <Upload {...props}>
-                <Button
-                  size="middle"
-                  style={{
-                    width: "6rem",
-                    borderColor: "brown",
-                    marginBottom: "0.5rem",
-                    textAlign: "center",
-                    fontSize: "0.65rem", // Adjusted font size to fit the text within the width
-                    padding: "0.5rem 0", // Adjust padding for height
-                    lineHeight: "1", // Adjust line height to keep the content vertically centered
-                  }}
-                  icon={<UploadOutlined />}
-                >
-                  Upload (&lt;1MB)
-                </Button>
-              </Upload>
-            </Col>
-          </Row>
-        </>
-      ) : (
-        <>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <img src={img} alt="PatientPhoto" width={150} height={150} />
-          </div>
-          <Row
-            className="py-1"
-            style={{
-              display: "flex",
-              justifyContent: "space-around",
-              marginTop: "0.5rem",
-            }}
-          >
-            <Col offset={4} span={20}>
               <Button
                 size="middle"
-                style={{
-                  height: "min-content",
-                  width: "6rem",
-                  borderColor: "green",
-                  marginBottom: "0.5rem",
-                }}
-                onClick={() => {
-                  setImg(null);
-                  setFileList([]);
-                }}
+                icon={<CameraOutlined />}
+                style={{ width: "100%", borderColor: "green" }}
+                onClick={capture}
+              >
+                Capture Photo
+              </Button>
+            )}
+          </>
+        ) : (
+          <>
+            <Button
+              size="middle"
+              icon={<DeleteOutlined />}
+              style={{ width: "100%", borderColor: "red" }}
+              onClick={() => {
+                setImg(null);
+                setFileList([]);
+                setFileName("");
+                onImageUpload(null);
+              }}
+            >
+              Remove Photo
+            </Button>
+
+            {hasCameraPermission && (
+              <Button
+                size="middle"
+                icon={<CameraOutlined />}
+                style={{ width: "100%", borderColor: "green" }}
+                onClick={capture}
               >
                 Retake Photo
               </Button>
-            </Col>
-            <Col offset={4} span={20}>
-              <Upload {...props} fileList={fileList}>
-                <Button
-                  size="middle"
-                  style={{
-                    width: "6rem",
-                    borderColor: "brown",
-                    marginBottom: "0.5rem",
-                    textAlign: "center",
-                    fontSize: "0.65rem", // Adjusted font size to fit the text within the width
-                    padding: "0.5rem 0", // Adjust padding for height
-                    lineHeight: "1",
-                  }}
-                  icon={<UploadOutlined />}
-                >
-                  Upload (&lt;1MB)
-                </Button>
-              </Upload>
-            </Col>
-          </Row>
-        </>
-      )}
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

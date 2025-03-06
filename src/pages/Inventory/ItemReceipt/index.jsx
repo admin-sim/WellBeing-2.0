@@ -34,6 +34,7 @@ import { Option } from "antd/es/mentions";
 import { render } from "react-dom";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import CustomTable from "../../../components/customTable/index.jsx";
+import { useSelector } from "react-redux";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -57,6 +58,7 @@ const ItemReceipt = () => {
   const [error, setError] = useState(null);
   const [reportUrl, setReportUrl] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const userContext = useSelector((state) => state.userContext.value);
 
   useEffect(() => {
     try {
@@ -204,17 +206,31 @@ const ItemReceipt = () => {
       dataIndex: "actions",
       key: "actions",
       width: 60,
-      render: (_, record) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
+      // render: (_, record) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
+      render: (_, record) => {
+        return record.ReceiptNumber ? (
+          <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>
+        ) : null;
+      }
     },
+    // {
+    //   width: 80,
+    //   render: (_, record) => {
+    //     return record.ReceiptNumber ? (
+    //       <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>
+    //     ) : null;
+    //   },
+    // },
   ];
 
   const handleReport = async (value, record) => {
     setLoading(true)
     try {
       const request = {
-        PONO: record.IssueNumber,
+        PONo: record.ReceiptNumber,
         use: 'admin',
         FileType: "pdf", // or 'excel'
+        AppUser: userContext.AppUserName
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);
@@ -228,7 +244,7 @@ const ItemReceipt = () => {
 
   async function fetchReport(request) {
     const response = await fetch(
-      "https://192.168.29.254:808/api/ReportsApi/GetPatientConsumptionRpt",
+      "https://192.168.29.254:808/api/ReportsApi/GetItemRecieptRpt",
       {
         method: "POST",
         headers: {

@@ -150,6 +150,7 @@ import OtcDispense from "./pages/Pharmacy/OtcDispense/OtcDispense.jsx";
 import OtcReturn from "./pages/Pharmacy/OtcReturn/index.jsx";
 import PharamcyPrescriptionIndex from "./pages/Pharmacy/PharmacyPrescription/index.jsx";
 import DailyCollectionReport from "./pages/ReportManagement/AccountManagementReport/DailyCollectionReport.jsx";
+import RevenueAnalysisReport from "./pages/ReportManagement/AccountManagementReport/RevenueAnalysisReport.jsx";
 import AccomodationCharge from "./pages/Masters/GeneralMasters/AccountManagement/AccomodationCharge.jsx";
 import CreateAccomodationCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAccomodationCharge.jsx";
 import ReccuringCharge from "./pages/Masters/GeneralMasters/AccountManagement/ReccuringCharge.jsx";
@@ -1351,6 +1352,14 @@ function App() {
               }
             />
             <Route
+              path="/RevenueAnalysisReport"
+              element={
+                <ProtectedRoute>
+                  <RevenueAnalysisReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/PurchaseOrderReport"
               element={
                 <ProtectedRoute>
@@ -1422,7 +1431,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-              <Route
+            <Route
               path="/DischargeSummary"
               element={
                 <ProtectedRoute>
@@ -1438,7 +1447,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-             <Route
+            <Route
               path="/ClaimProcess"
               element={
                 <ProtectedRoute>

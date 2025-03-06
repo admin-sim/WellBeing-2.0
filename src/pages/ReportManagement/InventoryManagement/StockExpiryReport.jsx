@@ -34,6 +34,7 @@ import PageHeader from "../../../components/PageHeader/index.jsx";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import { useSelector } from "react-redux";
 
 const StockExpiryReport = () => {
     const navigate = useNavigate();
@@ -47,6 +48,7 @@ const StockExpiryReport = () => {
     const [dropDown, setDrpoDown] = useState();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [loading, setLoading] = useState(false); // State for loader visibility
+    const userContext = useSelector((state) => state.userContext.value);
 
     useEffect(() => {
         fetchDataHeader();
@@ -69,9 +71,12 @@ const StockExpiryReport = () => {
         setError(null); // Reset previous errors
 
         const request = {
-            FacilityId: 1,
-            POStore: values.StoreName,
-            use: values.ViewStock,
+            // FacilityId: 1,
+            // POStore: values.StoreName,
+            // use: values.ViewStock,
+            PONo: values.StoreName,
+            ReportOption: values.ViewStock,
+            AppUser: userContext.AppUserName
         };
 
         try {

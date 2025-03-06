@@ -144,7 +144,6 @@ const CreateGRNAgainstPO = () => {
   };
 
   const disableToDate = (current) => {
-    // Disable dates that are before the selected fromDate or after today
     return (
       current &&
       (current.isBefore(fromDate, "day") ||
@@ -153,6 +152,7 @@ const CreateGRNAgainstPO = () => {
   };
 
   const fetchData = async () => {
+    debugger
     if (GrnHeaderId > 0) {
       setButtonTitle("Update");
       setLoading(true);
@@ -163,7 +163,7 @@ const CreateGRNAgainstPO = () => {
         if (response.status == 200 && response.data.data != null) {
           const editeddata = response.data.data;
           const products = editeddata.GRNAgainstPODetails.map(
-            (item, index) => ({
+            (item) => ({
               ...item,
               key: uuidv4(),
             })
@@ -231,6 +231,8 @@ const CreateGRNAgainstPO = () => {
 
   function calculateTotalAmount(data) {
     let totalAmount = 0;
+    let amount = 0;
+    let taxAmount = 0;
     data.forEach((item) => {
       if (
         item.ActiveFlag &&
@@ -238,10 +240,16 @@ const CreateGRNAgainstPO = () => {
         item.LineAmount !== null &&
         item.LineAmount !== undefined
       ) {
-        totalAmount += parseFloat(item.LineAmount);
+        totalAmount += item.TotalAmount;
+        amount += item.LineAmount;
+        taxAmount += item.TaxAmount1;
       }
     });
-    return totalAmount;
+    return totalAmount = {
+      totalAmount,
+      amount,
+      taxAmount
+    };
   }
 
   const handleInputChange = (e, column, index, record) => {
@@ -249,9 +257,13 @@ const CreateGRNAgainstPO = () => {
     if (["ReceivedQty", "PoRate", "DiscountRate"].includes(column)) {
       newData = data.map((item) => {
         if (item.key === record.key) {
-          const altUom = alternateUoms.find(i => i.AlternateUom == record.UomId)
+          // const altUom = alternateUoms.find(i => i.AlternateUom == record.UomId)
           // let poQuantity = record.PoQuantity * (altUom ? altUom.EquivalentUOMUnits : 1)
           const updatedItem = { ...item, [column]: e.target.value };
+
+          const altUomData = alternateUoms.find(i => i.key == record.key)
+          const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == updatedItem.UomId) : undefined
+
           const recievingQty =
             column === "ReceivedQty" ? e.target.value : item.ReceivedQty;
           const poRate = column === "PoRate" ? e.target.value : item.PoRate;
@@ -293,11 +305,13 @@ const CreateGRNAgainstPO = () => {
     if (["ReceivedQty", "PoRate", "DiscountRate"].includes(column)) {
       const totalAmount = calculateTotalAmount(newData);
       form1.setFieldsValue({
-        TotalAmount: totalAmount,
-        TotalPoAmount: totalAmount,
+        TotalAmount: totalAmount.amount,
+        TotalPoAmount: totalAmount.totalAmount,
+        TaxAmount: totalAmount.taxAmount
       });
-      setAmount(totalAmount)
-      setPoAmount(totalAmount)
+      setAmount(totalAmount.amount)
+      setTax(totalAmount.taxAmount)
+      setPoAmount(totalAmount.totalAmount)
     }
     setData(newData);
   };
@@ -357,7 +371,7 @@ const CreateGRNAgainstPO = () => {
     const postData = {
       PoHeaderId: record.PoHeaderId,
       Supplier: record.SupplierId,
-      Store: record.ProcurementStoreId,
+      Store: record.ProcurementStoreId
     };
     try {
       customAxios
@@ -366,15 +380,31 @@ const CreateGRNAgainstPO = () => {
         )
         .then((response) => {
           const apiData = response.data.data;
-          const products = apiData.ProductDetails.map((item, index) => ({
-            ...item,
-            key: uuidv4(),
-            LineAmount: 0,
-            TaxAmount1: 0,
-            TotalAmount: 0,
-            Uom: item.ShortName
-          }));
-          setAlternateUoms(apiData.ProductDetails[0].AlternateUoms)
+          const products = apiData.ProductDetails.map((item) => {
+            const key = uuidv4();
+            setAlternateUoms((prev) => [
+              ...prev,
+              { key, data: item.AlternateUoms }
+            ]);
+            return {
+              ...item,
+              key,
+              LineAmount: 0,
+              TaxAmount1: 0,
+              TotalAmount: 0,
+              Uom: item.ShortName,
+              temp: item.TaxTypeName == 'Tax(Inclusive)' ? 1 : 0
+            };
+          });
+          // const products = apiData.ProductDetails.map((item, index) => ({
+          //   ...item,
+          //   key: uuidv4(),
+          //   LineAmount: 0,
+          //   TaxAmount1: 0,
+          //   TotalAmount: 0,
+          //   Uom: item.ShortName
+          // }));
+          // setAlternateUoms(apiData.ProductDetails[0].AlternateUoms)
           setData(products);
           const formdata = apiData.POProducts;
           form1.setFieldsValue({
@@ -452,7 +482,8 @@ const CreateGRNAgainstPO = () => {
       render: (text, record) => (
         <Form.Item
           name={[record.key, "PoBalanceQty"]}
-          initialValue={record.PoBalanceQty + record.PoBalanceBonusQty}
+          initialValue={record.PoBalanceQty}
+        // initialValue={record.PoBalanceQty + record.PoBalanceBonusQty}
         >
           <InputNumber min={0} disabled />
         </Form.Item>
@@ -750,6 +781,7 @@ const CreateGRNAgainstPO = () => {
   };
 
   const onOkBatchModal = async () => {
+    debugger
     await form3.validateFields();
     const values = form3.getFieldsValue();
     const valuesArray = Object.values(values);
@@ -824,31 +856,61 @@ const CreateGRNAgainstPO = () => {
         return item;
       });
       setdataBatchModal(updatedBatch);
+      batchRecord.LineAmount = (batchRecord.LineAmount || 0)
+      batchRecord.TotalAmount = (batchRecord.TotalAmount || 0)
+      batchRecord.DiscountAmount = (batchRecord.DiscountAmount || 0)
+      const altUomData = alternateUoms.find(i => i.key == batchRecord.key)
+      const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == batchRecord.UomId) : undefined
+
+      let lineAmount = batchRecord.LineAmount
+      lineAmount = updatedBatch.reduce((total, item) => {
+        if (item.ProductId == batchRecord.ProductId && item.ActiveFlag) {
+          const taxAdjustment = batchRecord.temp === 0 ? 0 : (item.TaxAmount1 || 0) + (item.TaxAmount2 || 0) - (batchRecord.DiscountAmount || 0);
+          return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.Rate - taxAdjustment - (batchRecord.DiscountAmount || 0);
+        }
+
+        return total
+      }, 0);
+
+      let TotalAmount = batchRecord.TotalAmount
+      TotalAmount = updatedBatch.reduce((total, item) => {
+        if (item.ProductId == batchRecord.ProductId && item.ActiveFlag) {
+          if (batchRecord.temp === 0) {
+            return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.Rate + ((item.TaxAmount1 || 0) + (item.TaxAmount2 || 0)) - (batchRecord.DiscountAmount || 0);
+          } else {
+            return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.Rate - (batchRecord.DiscountAmount || 0);
+          }
+        }
+
+        return total
+      }, 0);
 
       // Update Product Line
       const form3d = form3.getFieldsValue()
       const form3do = Object.values(form3d)
       const totalTaxAmount1 = form3do.reduce((sum, item) => sum + (item.TaxAmount1 + item.TaxAmount2 || 0), 0);
 
-      const newdata = data.map((item => {
-        if (item.ProductId === batchRecord.ProductId) {
-          return {
-            ...item,
-            TaxAmount1: totalTaxAmount1,
-            LineAmount: item.TotalAmount - totalTaxAmount1
-          }
-        }
-        return item
-      }))
+      const newdata = (data || []).map(item =>
+        item.ProductId === batchRecord?.ProductId
+          ? { ...item, TaxAmount1: totalTaxAmount1, LineAmount: lineAmount, TotalAmount: TotalAmount }
+          : item
+      );
+      setData(newdata)
 
-      form1.setFieldsValue({ [batchRecord.key]: { LineAmount: poAmount - totalTaxAmount1 } })
-      form1.setFieldsValue({ 'TotalAmount': poAmount - totalTaxAmount1 })
-      form1.setFieldsValue({ 'TaxAmount': totalTaxAmount1 })
+      form1.setFieldsValue({ [batchRecord.key]: { LineAmount: lineAmount } })
+      form1.setFieldsValue({ [batchRecord.key]: { TotalAmount: TotalAmount } })
       form1.setFieldsValue({ [batchRecord.key]: { TaxAmount1: totalTaxAmount1 } })
 
-      setData(newdata)
-      setTax(totalTaxAmount1)
-      setAmount(poAmount - totalTaxAmount1)
+      const totalAmount = calculateTotalAmount(newdata);
+      form1.setFieldsValue({
+        TotalAmount: totalAmount.amount,
+        TotalPoAmount: totalAmount.totalAmount,
+        TaxAmount: totalAmount.taxAmount
+      });
+      setAmount(totalAmount.amount)
+      setTax(totalAmount.taxAmount)
+      setPoAmount(totalAmount.totalAmount)
+
       setIsBatchModalOpen(false);
     } else {
       message.warning("Quantity shold be equal to Recieved Quantity");
@@ -895,145 +957,22 @@ const CreateGRNAgainstPO = () => {
   const onFinishBatchmodal = () => { };
 
   const onFinishBatchFailed = () => { };
-  // const handleOnFinish = async (values) => {
-  //
-  //   const products = [];
-  //   for (let i = 0; i <= data.length; i++) {
-  //     if (values.TotalPoAmount == values.InvoiceAmount) {
-  //       if (values[i] !== undefined) {
-  //         if (
-  //           values[i].ReceivedQty + values[i].BonusQuantity <=
-  //           values[i].PoBalanceQty
-  //         ) {
-  //           const product = {
-  //             ProductId: values[i].ProductId,
-  //             UomId: values[i].UomId,
-  //             ReceivedQty: values[i].ReceivedQty,
-  //             PoQuantity: values[i].PoBalanceQty,
-  //            // PoBalanceQty: values[i].PoBalanceQty,
-  //             BonusQuantity: values[i].BonusQuantity,
-  //             PoLineId: values[i].PoLineId,
-  //             GrnLineId: values[i].GrnLineId,
-  //             // QuantityTobeIssued: values[i].discount === "" ? 0 : values[i].discount,
-  //             PoRate: values[i].PoRate,
-  //             DiscountRate: values[i].DiscountRate,
-  //             DiscountAmount:
-  //               values[i].DiscountAmount == undefined
-  //                 ? 0
-  //                 : values[i].DiscountAmount,
-  //             LineAmount: values[i].LineAmount,
-  //             TaxAmount1:
-  //               values[i].TaxAmount1 == undefined ? 0 : values[i].TaxAmount1,
-  //             TotalAmount: values[i].LineAmount,
-  //             Replaceable: values[i].Replaceable === true ? "Y" : "N",
-  //             PoStatus:
-  //               values[i].ReceivedQty + values[i].BonusQuantity ==
-  //               values[i].PoBalanceQty
-  //                 ? "Completed"
-  //                 : "Pending",
-  //             ActiveFlag: true,
-  //           };
-  //           products.push(product);
-  //         } else {
-  //           message.warning("Recieved Qty must not Greater than PoPending Qty");
-  //           return false;
-  //         }
-  //       }
-  //     } else {
-  //       message.warning("Invoice Amount Must be equals to Total Po Amount");
-  //       return false;
-  //     }
-  //   }
-
-  //   const GRNAgainstPO = {
-  //     GRNHeaderId: values.GRNHeaderId,
-  //     PoHeaderId: values.PoHeaderId,
-  //     SupplierId: values.SupplierId,
-  //     StoreId: values.StoreId,
-  //     DocumentType:
-  //       values.DocumentType === undefined ? "" : values.DocumentType,
-  //     // GrnNumber: values.PODate === undefined ? dayjs(`${currentDate}`).format(dateFormat) : values.PODate,
-  //     // GRNDatestring: values.GRNDate === undefined ? null : (values.GRNDate.$D.toString().padStart(2, '0') + '-' + (values.GRNDate.$M + 1).toString().padStart(2, '0') + '-' + values.GRNDate.$y).toString(),
-  //     DCChallanDateString: values.DCChallanDateString
-  //       ? values.DCChallanDateString.format("DD-MM-YYYY")
-  //       : "",
-  //     GRNDatestring: values.GRNDatestring.format("DD-MM-YYYY"),
-  //     InvoiceDateString: values.InvoiceDateString.format("DD-MM-YYYY"),
-  //     ReceivingDateString: values.ReceivingDateString.format("DD-MM-YYYY"),
-  //     Remarks: values.Remarks === undefined ? null : values.Remarks,
-  //     GrnStatus: values.GRNStatus === undefined ? "Created" : values.GRNStatus,
-  //     InvoiceNumber:
-  //       values.InvoiceNumber === undefined ? null : values.InvoiceNumber,
-  //     InvoiceAmount:
-  //       values.InvoiceAmount === undefined ? 0 : values.InvoiceAmount,
-  //     DCChallanNumber: values.DCChallanNumber,
-  //     TotalAmount: values.TotalAmount,
-  //     TaxAmount1: values.TaxAmount == undefined ? 0 : values.TaxAmount,
-  //     RoundOff: values.RoundOff == undefined ? 0 : values.RoundOff,
-  //     TotalPoAmount: values.TotalPoAmount,
-  //     // GrnType: values.PoTaxAmount === undefined ? 0 : values.PoTaxAmount,
-  //   };
-  //   batches.forEach((item, index) => {
-  //     form1.getFieldValue([index, "POReceivedQty"]);
-  //   });
-  //   // const activeData = dataBatchModal.filter(
-  //   //   (item) => item.ActiveFlag === true && item.ProductId
-  //   // );
-
-  //   const result = checkActiveBatches(products, dataBatchModal);
-  //   if (!result.allActiveProductsHaveActiveBatch) {
-  //     message.warning("Please Add BatchDeatils");
-  //     return false;
-  //   }
-
-  //   const filteredbatch = dataBatchModal.filter((item) => item.ProductId);
-
-  //   const postData = {
-  //     newGRNAgainstPOModel: GRNAgainstPO,
-  //     GRNAgainstPODetails: products,
-  //     BatchDetails: filteredbatch === undefined ? [] : filteredbatch,
-  //   };
-  //   console.log('input',postData);
-  //   if (GrnHeaderId > 0) {
-  //     const response = await customAxios.post(urlUpdateGRNAgainstPO, postData, {
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //     });
-  //     if (response != false && response.status == 200) {
-  //       message.success("Updated Successfully");
-  //     } else {
-  //       message.error("Updated Failure");
-  //     }
-  //   } else {
-  //     const response = await customAxios.post(urlAddNewGRNAgainstPO, postData, {
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //     });
-  //     if (response != false && response.status == 200) {
-  //       message.success("Created Successfully");
-  //     } else {
-  //       message.error("Create Failure");
-  //     }
-  //   }
-  //   handleCancel();
-  // };
-
-  // const onFinishBatchFailed = () => {};
 
   const handleOnFinish = async (values) => {
+    setLoading(true)
     const isAnyIdNotNull = dataBatchModal.some(
       (item) => item.ProductId !== "" && item.ActiveFlag
     );
 
     if (!isAnyIdNotNull) {
       message.warning("Please add Batch details");
+      setLoading(false)
       return false;
     }
 
     if (values.TotalPoAmount !== values.InvoiceAmount) {
       message.warning("Invoice Amount Must be equal to Total Po Amount");
+      setLoading(false)
       return false;
     }
     const products = [];
@@ -1041,7 +980,9 @@ const CreateGRNAgainstPO = () => {
       if (values.TotalPoAmount == values.InvoiceAmount) {
         if (values[i.key] !== undefined) {
           if (
-            values[i.key].ReceivedQty + values[i.key].BonusQuantity <=
+            // values[i.key].ReceivedQty + values[i.key].BonusQuantity <=
+            // values[i.key].PoBalanceQty
+            values[i.key].ReceivedQty <=
             values[i.key].PoBalanceQty
           ) {
             const product = {
@@ -1059,8 +1000,13 @@ const CreateGRNAgainstPO = () => {
               TaxAmount1: values[i.key].TaxAmount1 ?? 0,
               TotalAmount: values[i.key].TotalAmount,
               Replaceable: values[i.key].Replaceable === true ? "Y" : "N",
+              // PoStatus:
+              //   values[i.key].ReceivedQty + values[i.key].BonusQuantity ==
+              //     values[i.key].PoBalanceQty
+              //     ? "Completed"
+              //     : "Pending",
               PoStatus:
-                values[i.key].ReceivedQty + values[i.key].BonusQuantity ==
+                values[i.key].ReceivedQty ==
                   values[i.key].PoBalanceQty
                   ? "Completed"
                   : "Pending",
@@ -1069,11 +1015,13 @@ const CreateGRNAgainstPO = () => {
             products.push(product);
           } else {
             message.warning("Recieved Qty must not Greater than PoPending Qty");
+            setLoading(false)
             return false;
           }
         }
       } else {
         message.warning("Invoice Amount Must be equals to Total Po Amount");
+        setLoading(false)
         return false;
       }
     })
@@ -1560,6 +1508,7 @@ const CreateGRNAgainstPO = () => {
   ];
 
   const handleInputChangeModal = async (e, column, index, record) => {
+    debugger
     let newData;
     const form3data = form3.getFieldsValue()
     let newRecord = await CalculateTax(form3data, record)
@@ -1611,19 +1560,21 @@ const CreateGRNAgainstPO = () => {
   };
 
   async function CalculateTax(data, record) {
+    debugger
     const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${data[record.key].TaxType1}`);
     const taxDetails = response.data.data[0];
-
-    const altUom = alternateUoms.find(i => i.AlternateUom == batchRecord.UomId)
+    const altUomData = alternateUoms.find(i => i.key == batchRecord.key)
+    const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == batchRecord.UomId) : undefined
+    // const altUom = alternateUoms.find(i => i.AlternateUom == batchRecord.UomId)
     // let poQuantity = record.PoQuantity * (altUom ? altUom.EquivalentUOMUnits : 1)
-    let Quantity = parseInt(data[record.key].Quantity || 0) * (altUom ? altUom.EquivalentUOMUnits : 1);
+    let Quantity = (data[record.key].Quantity || 0) * (altUom ? altUom.EquivalentUOMUnits : 1);
     let amount = Quantity * (data[record.key].Rate || 0) - (data[record.key].DiscountAmount || 0);
     let discountAmount = data[record.key].DiscountAmount
     let mrp = data[record.key].MRP
     let taxAmount = 0;
     let temp = 0;
     if (taxDetails.IncludeBonusQuantity) {
-      Quantity = (Quantity || 0) + parseInt(record.BonusQuantity || 0);
+      Quantity = (Quantity || 0) + (data[record.key].BatchBonusQty || 0);
       amount = Quantity * (data[record.key].Rate || 0) - (data[record.key].DiscountAmount || 0);
     }
     if (true) {
@@ -1631,15 +1582,15 @@ const CreateGRNAgainstPO = () => {
         case "Percentage":
           if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
-              taxAmount = (parseInt(amount) + parseInt(discountAmount)) * taxDetails.ChargeValue / 100;
+              taxAmount = (amount + discountAmount) * taxDetails.ChargeValue / 100;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
               taxAmount = amount * taxDetails.ChargeValue / 100;
             } else {
-              taxAmount = (parseInt(mrp) * parseInt(Quantity)) * taxDetails.ChargeValue / 100;
+              taxAmount = (mrp * Quantity) * taxDetails.ChargeValue / 100;
             }
           } else {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
-              taxAmount = (parseInt(amount) + parseInt(discountAmount)) - ((parseInt(amount) + parseInt(discountAmount)) / (1 + taxDetails.ChargeValue / 100));
+              taxAmount = (amount + discountAmount) - ((amount + discountAmount) / (1 + taxDetails.ChargeValue / 100));
               temp = 1;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
               taxAmount = amount - (amount / (1 + taxDetails.ChargeValue / 100));
@@ -1654,21 +1605,21 @@ const CreateGRNAgainstPO = () => {
         case "Amount":
           if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
-              taxAmount = (parseInt(amount) + parseInt(record.DiscountAmount)) + parseInt(taxDetails.ChargeValue);
+              taxAmount = (amount + record.DiscountAmount) + taxDetails.ChargeValue;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
-              taxAmount = parseInt(amount) + parseInt(taxDetails.ChargeValue);
+              taxAmount = amount + taxDetails.ChargeValue;
             } else {
-              taxAmount = (mrp * Quantity) + parseInt(taxDetails.ChargeValue);
+              taxAmount = (mrp * Quantity) + taxDetails.ChargeValue;
             }
           } else {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
-              taxAmount = (parseInt(amount) + parseInt(discountAmount)) - taxDetails.ChargeValue;
+              taxAmount = (amount + discountAmount) - taxDetails.ChargeValue;
               temp = 1;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
               taxAmount = amount - taxDetails.ChargeValue;
               temp = 1;
             } else {
-              taxAmount = parseInt(mrp * Quantity) - taxDetails.ChargeValue;
+              taxAmount = (mrp * Quantity) - taxDetails.ChargeValue;
               temp = 1;
             }
           }
@@ -1984,7 +1935,7 @@ const CreateGRNAgainstPO = () => {
         <Row justify="end" gutter={16}>
           <Col>
             <Form.Item>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" disabled={loading}>
                 {buttonTitle}
               </Button>
             </Form.Item>

@@ -208,8 +208,8 @@ const NewPatient = () => {
   }, [patientDetails]);
 
   const handleImageUpload = (base64data) => {
-    setUploadedImage(base64data);
-    console.log(base64data);
+    console.log("Full Base64 Image Data Length:", base64data.length); // Log the length
+    setUploadedImage(base64data); // Ensure full data is set
   };
   //Default Patient data
 
@@ -526,7 +526,7 @@ const NewPatient = () => {
         values.permanentPinCode === undefined || values.permanentPinCode === ""
           ? null
           : values.permanentPinCode,
-      // PhotoUrl: uploadedImage,
+      PhotoUrl: uploadedImage,
       PresentCountryId: values?.presentCountryId,
       PresentStateId: values.presentStateId,
       PresentPlaceId: values.presentPlaceId,

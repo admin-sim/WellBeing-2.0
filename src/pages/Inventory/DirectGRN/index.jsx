@@ -26,6 +26,7 @@ import customAxios from "../../../components/customAxios/customAxios";
 import CustomTable from "../../../components/customTable/index.jsx";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
+import { useSelector } from "react-redux";
 
 const DirectGRN = () => {
   const [DirectGRNDropdown, setDirectGRNDropDown] = useState({
@@ -44,6 +45,7 @@ const DirectGRN = () => {
   const [error, setError] = useState(null);
   const [reportUrl, setReportUrl] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const userContext = useSelector((state) => state.userContext.value);
 
   useEffect(() => {
     try {
@@ -89,9 +91,10 @@ const DirectGRN = () => {
     setLoading(true)
     try {
       const request = {
-        PONO: record.GRNNumber,
+        PONo: record.GRNNumber,
         use: 'admin',
         FileType: "pdf", // or 'excel'
+        AppUser: userContext.AppUserName
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);

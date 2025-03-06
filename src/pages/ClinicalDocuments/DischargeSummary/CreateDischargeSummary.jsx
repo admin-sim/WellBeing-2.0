@@ -378,16 +378,12 @@ import {
         ),
       },
       {
-        title: (
+        title:
+         (
           <Button type="link" onClick={handleAddRow}>
             <PlusCircleOutlined />
           </Button>
         ),
-        // render: (_, record) => (
-        //   <Button type="link" danger onClick={() => handleDeleteRow(record.key)}>
-        //     <DeleteOutlined />
-        //   </Button>
-        // ),
         render: (_, record) => (
           <Popconfirm
             danger
@@ -444,10 +440,7 @@ import {
       borderRadius: "4px",
       border: "1px solid #ccc",
     };
-    // const handleInputChangeOR = (e) => {
-    //   const { name, value } = e.target;
-    //   setFormData((prev) => ({ ...prev, [name]: value }));
-    // };
+  
     const handleSave = async () => {
       try {
         // Get form values
@@ -470,143 +463,11 @@ import {
         message.error("An error occurred while saving data.");
       }
     };
-    // useEffect(() => {
-    //   const handleSave = async () => {
-    //     try {
-    //       if (!saveTriggered) return; // Exit if save isn't triggered
-  
-    //       // Get form values
-    //       const formData = form.getFieldsValue();
-  
-    //       // Make an API call to save data
-    //       const response = await axios.post(urlAddNewDischargeSummary, formData);
-  
-    //       if (response.status === 200 || response.status === 201) {
-    //         message.success("Data saved successfully!");
-    //         form.resetFields(); // Reset the form after successful save
-    //       } else {
-    //         message.error("Failed to save data. Please try again.");
-    //       }
-    //     } catch (error) {
-    //       console.error("Error saving data:", error);
-    //       message.error("An error occurred while saving data.");
-    //     } finally {
-    //       setSaveTriggered(false); // Reset the save trigger
-    //     }
-    //   };
-  
-    //   handleSave();
-    // }, [saveTriggered]); // Only re-run when `saveTriggered` changes
-  
-    // // Function to trigger the save process
-    // const triggerSave = () => {
-    //   setSaveTriggered(true);
-    // };
   
     const handleCancel = () => {
       navigate("/DischargeSummary");
     };
   
-    // const handleMedicationChange = (index, e) => {
-    //   const { name, value } = e.target;
-    //   const medications = [...formData.dischargeMedication];
-    //   medications[index][name] = value;
-    //   setFormData((prev) => ({ ...prev, dischargeMedication: medications }));
-    // };
-  
-    // const addMedication = () => {
-    //   setFormData((prev) => ({
-    //     ...prev,
-    //     dischargeMedication: [
-    //       ...prev.dischargeMedication,
-    //       { drug: '', route: 'IV', frequency: '0-0-1', intervalDays: 2, instruction: '' },
-    //     ],
-    //   }));
-    // };
-    // const removeMedication = (index) => {
-    //   setFormData((prev) => ({
-    //     ...prev,
-    //     dischargeMedication: prev.dischargeMedication.filter((_, i) => i !== index),
-    //   }));
-    // };
-    const handleOnFinish = async (values) => {
-      try {
-        // Log form values for debugging
-        console.log("Form Values Submitted:", values);
-  
-        // Make API call to save form data
-        const response = await customAxios.post(
-          urlAddNewDischargeSummary,
-          values
-        );
-  
-        if (response.status === 200 || response.status === 201) {
-          message.success("Data saved successfully!");
-          form.resetFields(); // Reset the form fields on successful submission
-        } else {
-          message.error("Failed to save data. Please try again.");
-        }
-      } catch (error) {
-        console.error("Error saving data:", error);
-        message.error("An error occurred while saving data.");
-      }
-    };
-  
-    const handleUpdate = () => {
-      console.log("Form data:", formData);
-      alert("Form updated successfully!");
-    };
-  
-    // // Handler for Follow-Up Checkbox
-    // const handleFollowUpCheck = (event) => {
-    //   debugger;
-    //   setFormData((prev) => ({
-    //     ...prev,
-    //     showFollowUpDate: event.target.checked,
-    //   }));
-    //   form.setFieldsValue({
-    //     followUpDate: event.target.checked ? dayjs() : null,
-    //   });
-    // };
-  
-    // // Handler for Surgery Checkbox
-    // const handleSurgeryCheck = (event) => {
-    //   debugger;
-    //   setFormData((prev) => ({
-    //     ...prev,
-    //     showSurgeryDate: event.target.checked,
-    //   }));
-    //   form.setFieldsValue({
-    //     surgeryDate: event.target.checked ? dayjs() : null,
-    //   });
-    // };
-   
-    // useEffect(() => {
-    //   const initialValues = form.getFieldsValue();
-    //   setFormData({
-    //     showFollowUpDate: initialValues.FollowUpCheck || false,
-    //     showSurgeryDate: initialValues.SurgeryCheck || false,
-    //   });
-    // }, [form]);
-    
-    // Follow-Up Checkbox Handler
-    // const handleFollowUpCheck = (event) => {
-    //   setFormData((prev) => ({
-    //     ...prev,
-    //     showFollowUpDate: event.target.checked,
-    //   }));
-     
-    // };
-    
-    // // Surgery Checkbox Handler
-    // const handleSurgeryCheck = (event) => {
-    //   setFormData((prev) => ({
-    //     ...prev,
-    //     showSurgeryDate: event.target.checked,
-    //   }));
-    
-    // };
-    
     const handleSubmit = async (values) => {
       debugger;
       const Drugss = [];
@@ -623,10 +484,8 @@ import {
         ClinicalFinding: values.clinicalFindings,
         CourseInHospital: values.courseInHospital,
         Advice: values.adviceOnDischarge,
-        Surgery: values.surgeryDate ? values.surgeryDate.toDate() : null, // If date exists, use it
-        // : dayjs().format("DD-MM-YYYY"), // Use current date in DD-MM-YYYY format if no date is provided
-        FollowUpDate: values.followUpDate ? values.followUpDate.toDate() : null, // If date exists, use it
-        // : dayjs().format("DD-MM-YYYY"), // Use current date in DD-MM-YYYY format if no date is provided
+        Surgery: values.surgeryDate ? values.surgeryDate.toDate() : null, 
+        FollowUpDate: values.followUpDate ? values.followUpDate.toDate() : null, 
         FollowUpDate1: values.followUpDate
           ? values.followUpDate.format("DD-MM-YYYY")
           : null,
@@ -661,8 +520,7 @@ import {
             (form2data[dataSource[i].key] || {}).PrescriptionLineId
         ) {
           const Drug = {
-            DischargeSummaryMedicationId:
-              dsModel?.DischargeSummaryMedicationId ?? 0, // Nullish coalescing to default if undefined or null
+            DischargeSummaryMedicationId: dsModel?.DischargeSummaryMedicationId ?? 0, // Nullish coalescing to default if undefined or null
             DischargeSummaryID: dsModel?.DischargeSummaryID ?? 0,
             DrugId: item.DrugId || 0, // default to 0 if DrugId is null or undefined
             UomId: item.UomId || 0, // default to 0 if UomId is null or undefined
@@ -697,7 +555,7 @@ import {
         }
       }
       
-  
+
       const Summary = {
         DischargeSummaryModel: Drugss,
         DischargeSummary: mapValues,
@@ -717,24 +575,13 @@ import {
       );
   
       if (response.status === 200) {
-        // const Prescription = Drugss.map((item) => ({
-        //   ...item,
-        //   IndentId: response.data.data.IndentId,
-        //   IndentNumber: response.data.data.IndentNumber,
-        //   Stock: item.Stock ? item.Stock : 0,
-        // }));
-        // message.success("Success");
         message.success("Success");
         form1.resetFields();
         form.resetFields();
         setDataSource(initial);
         navigate("/DischargeSummary");
   
-        // const response1 = await customAxios.post(urlPres, Prescription, {
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        // });
+    
   
         if (response1.status === 200 && response1.data === "Success") {
           message.success("Success");
@@ -785,10 +632,7 @@ import {
         showFollowUpDate: checked,
       }));
     
-      // Update followUpDate based on checkbox state
-      // form.setFieldsValue({
-      //   followUpDate: checked ? form.getFieldValue('followUpDate')
-      // });
+     
     };
     
     const handleSurgeryCheck = (event) => {
@@ -797,11 +641,6 @@ import {
         ...prev,
         showSurgeryDate: checked,
       }));
-    
-      // Update surgeryDate based on checkbox state
-      // form.setFieldsValue({
-      //   surgeryDate: checked ? form.getFieldValue('surgeryDate') 
-      // });
     };
     
     useEffect(() => {
@@ -815,8 +654,7 @@ import {
           if (response.status === 200 && response.data.data) {
             const data = response.data.data.dsModel || [];
             const medications = response.data.data.dsModel;
-  
-            // Prefill form fields with API data
+    
             form.setFieldsValue({
               diagnosis: data[0]?.DiaProcedure || "",
               symptoms: data[0]?.Symptoms || "",
@@ -831,28 +669,7 @@ import {
               SurgeryCheck: data[0]?.SurgeryCheck,
             });
   
-            // Map medication data to the format for table rows
-            // Save deleted medication keys to localStorage
-            // const medicationData = medications
-            // .map((med, index) => {
-            //   // Create the medication object with possible nulls replaced by default values
-            //   const medication = {
-            //     key: index,
-            //     DrugName: med.DrugName || null,
-            //     Route: med?.Route ? parseInt(med.Route) : null,
-            //     FrequencyId: med?.FrequencyId || null,
-            //     Interval: med?.Interval || null,
-            //     Instruction: med?.Instruction || null,
-            //   };
-          
-            //   // Check if any of the properties are null or empty, return null if so
-            //   if (Object.values(medication).some(value => value === null || value === "")) {
-            //     return null; // Skip this medication if any field is null or empty
-            //   }
-          
-            //   return medication;
-            // })
-            // .filter(medication => medication !== null); // Remove any null values from the result
+           
             const medicationData = medications.map((med, index) => ({
               key: index,
               DrugName: med.DrugName || null,

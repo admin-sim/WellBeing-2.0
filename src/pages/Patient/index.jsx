@@ -216,7 +216,7 @@ const Patient = () => {
 
   const handleOk = async () => {
     //
-debugger;
+    debugger;
     try {
       await form.validateFields(); // Trigger form validation
       const values = form.getFieldsValue();
@@ -264,7 +264,7 @@ debugger;
           }
         );
 
-        if (response.data!=false) {
+        if (response.data != false) {
           setIsSubmitLoader(false);
           const Patients = response.data.data.Patients.map((obj, index) => {
             return { ...obj, key: index + 1 };
@@ -363,12 +363,45 @@ debugger;
     },
     {
       title: "Image",
-      dataIndex: "Gender",
-      key: "Gender",
-      render: (text, record) => (
-        <Avatar src={showGenderPic(record.Gender)} size="large" />
-      ),
-    },
+      dataIndex: "PhotoUrl",
+      key: "photo",
+      render: (text, record) => {
+        return (
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "center", 
+            alignItems: "center",
+            height: "60px" // Ensures vertical centering
+          }}>
+            {/* If PhotoUrl exists and is a valid base64 image */}
+            {text && text.startsWith("data:image/") ? (
+              <img
+                src={text} // Using the base64 data as the image source
+                // alt="Patient"
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  objectFit: "cover",
+                  borderRadius: "50%", // Circular image
+                  border: "2px solid #ccc",
+                }}
+              />
+            ) : (
+              <Avatar 
+                src={showGenderPic(record.Gender)} 
+                size="large"
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  borderRadius: "50%",
+                  border: "2px solid #ccc",
+                }}
+              />
+            )}
+          </div>
+        );
+      },
+    }, 
     {
       title: "Patient Details",
       dataIndex: "PatientName",
@@ -479,15 +512,47 @@ debugger;
         </Tag>
       ),
     },
-
     {
       title: "Image",
-      dataIndex: "Gender",
-      key: "Gender",
-      render: (text, record) => (
-        <Avatar src={showGenderPic(record.Gender)} size="large" />
-      ),
-    },
+      dataIndex: "PhotoUrl",
+      key: "photo",
+      render: (text, record) => {
+        return (
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "center", 
+            alignItems: "center",
+            height: "60px" // Ensures vertical centering
+          }}>
+            {/* If PhotoUrl exists and is a valid base64 image */}
+            {text && text.startsWith("data:image/") ? (
+              <img
+                src={text} // Using the base64 data as the image source
+                // alt="Patient"
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  objectFit: "cover",
+                  borderRadius: "50%", // Circular image
+                  border: "2px solid #ccc",
+                }}
+              />
+            ) : (
+              <Avatar 
+                src={showGenderPic(record.Gender)} 
+                size="large"
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  borderRadius: "50%",
+                  border: "2px solid #ccc",
+                }}
+              />
+            )}
+          </div>
+        );
+      },
+    },       
     {
       title: "Patient Details",
       dataIndex: "PatientName",
@@ -513,7 +578,7 @@ debugger;
     //   width: 200,
     //   render: (text, record) => (
     //     <>
-  
+
     //       <div>
     //         <p>
     //           <a
@@ -537,7 +602,7 @@ debugger;
     console.log("Tab changed:", key);
     setActiveTab(key);
     setIsLoading(true);
-
+  debugger
     customAxios.get(urlGetAllPatientsRegisteredToady).then((response) => {
       const Patients = response.data.data.Patients.map((obj, index) => {
         return { ...obj, key: index + 1 };
@@ -662,7 +727,7 @@ debugger;
             type="card" // This will make the tabs appear as cards
           >
             {/* Tab for "List of Patients in Visit" */}
-            <TabPane tab="List of Patients in Visit Toady" key="1">
+            <TabPane tab="List of Patients in Visit Today" key="1">
               <Spin spinning={isLoading}>
                 <Row gutter={16} style={{ padding: "0.5rem" }}>
                   <Col span={24}>
@@ -695,7 +760,7 @@ debugger;
           </Tabs>
         </div>
       </Layout>
-   
+
       <ConfigProvider
         theme={{
           token: {

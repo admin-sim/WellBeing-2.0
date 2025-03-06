@@ -23,12 +23,8 @@ import {
 } from "@ant-design/icons";
 import {
     urlAutocompleteProduct,
-    urlGetAllPatientTypeAsync,
-    urlGetAllPaymentTypesAsync,
-    urlGetAllUsers,
-    urlGetPurshaseOrderDetails,
-    urlSearchPatientsForLab,
-    urlSearchUHID,
+    urlAutocomplete,
+    urlGetPurshaseOrderDetails
 } from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import { useNavigate } from "react-router";
@@ -36,6 +32,7 @@ import PageHeader from "../../../components/PageHeader/index.jsx";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import { useSelector } from "react-redux";
 
 const StockItemLedgerReport = () => {
     const navigate = useNavigate();
@@ -50,18 +47,19 @@ const StockItemLedgerReport = () => {
     const [fromDate, setFromDate] = useState(dayjs());
     const [toDate, setToDate] = useState(dayjs());
     const [users, setUsers] = useState([]);
+    const userContext = useSelector((state) => state.userContext.value);
 
     useEffect(() => {
         fetchDataHeader();
     }, []);
 
     useEffect(() => {
-        fetchData('a')
+        fetchData()
     }, [])
 
-    async function fetchData(search) {
+    async function fetchData() {
         try {
-            const response = await customAxios.get(`${urlAutocompleteProduct}?Product=${search}`);
+            const response = await customAxios.get(urlAutocomplete);
             if (response.status === 200 && response.data != null) {
                 const userdetail = response.data.data;
                 setUsers(userdetail);
@@ -105,6 +103,7 @@ const StockItemLedgerReport = () => {
             PONo: values.StoreName,
             ProductId: values.ProductId == 'All' ? 0 : values.ProductId,
             Use: 'Admin',
+            AppUser: userContext.AppUserName
         };
 
         try {

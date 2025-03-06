@@ -26,7 +26,7 @@ import { asyncThunkCreator } from "@reduxjs/toolkit";
 
 function ClinicalChart() {
   const location = useLocation();
-  const Patient = location.state.record;
+  const Patient = location?.state?.record;
   const [patientData, setPatientData] = useState()
   const [initialData, setInitialData] = useState({
     ChiefList: [],

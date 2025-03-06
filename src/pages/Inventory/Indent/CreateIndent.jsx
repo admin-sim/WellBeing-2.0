@@ -566,7 +566,7 @@ const CreateIndent = () => {
   // };
 
   const handleOnFinish = async (values) => {
-    debugger;
+    setLoading(true)
     const newdata = data.filter(item => item.ProductId)
     const products = newdata
       .filter((item, index) => index <= newdata.length && item !== undefined)
@@ -584,6 +584,7 @@ const CreateIndent = () => {
 
     if (products.length === 0 || !products.some(product => product.ActiveFlag)) {
       message.warning("Please Add Products");
+      setLoading(false)
       return false;
     }
     const activeProducts = products.filter((product) => product.ActiveFlag);
@@ -818,7 +819,7 @@ const CreateIndent = () => {
             <Row justify="end" style={{ padding: "0rem 1rem" }}>
               <Col style={{ marginRight: "10px" }}>
                 <Form.Item>
-                  <Button type="primary" htmlType="submit">
+                  <Button type="primary" htmlType="submit" disabled={loading}>
                     {buttonTitle}
                   </Button>
                 </Form.Item>

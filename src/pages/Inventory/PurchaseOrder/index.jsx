@@ -27,6 +27,7 @@ import CustomTable from "../../../components/customTable/index.jsx";
 import moment from "moment";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
+import { useSelector } from "react-redux";
 
 const PurchaseOrder = () => {
   const [purchaseOrderDropdown, setPurchaseOrderDropDown] = useState({
@@ -45,6 +46,7 @@ const PurchaseOrder = () => {
   const [error, setError] = useState(null);
   const [reportUrl, setReportUrl] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const userContext = useSelector((state) => state.userContext.value);
 
   useEffect(() => {
     try {
@@ -212,6 +214,7 @@ const PurchaseOrder = () => {
       const request = {
         PONo: record.PONumber,
         FileType: "pdf", // or 'excel'
+        AppUser: userContext.AppUserName
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);

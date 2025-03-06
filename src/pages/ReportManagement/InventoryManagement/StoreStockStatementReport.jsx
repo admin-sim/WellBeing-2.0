@@ -34,6 +34,7 @@ import PageHeader from "../../../components/PageHeader/index.jsx";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import { useSelector } from "react-redux";
 
 const StoreStockStatementReport = () => {
     const navigate = useNavigate();
@@ -49,6 +50,7 @@ const StoreStockStatementReport = () => {
     const [loading, setLoading] = useState(false); // State for loader visibility
     const [fromDate, setFromDate] = useState(dayjs());
     const [toDate, setToDate] = useState(dayjs());
+    const userContext = useSelector((state) => state.userContext.value);
 
     useEffect(() => {
         fetchDataHeader();
@@ -88,6 +90,7 @@ const StoreStockStatementReport = () => {
             ToDate: values.ToDate.format("YYYY-MM-DD"),
             PONo: values.StoreStock ? values.StoreStock : 0,
             Use: 'Admin',
+            AppUser: userContext.AppUserName
         };
 
         try {
@@ -226,7 +229,6 @@ const StoreStockStatementReport = () => {
                                 >
                                     <Select
                                         placeholder="Select Value"
-                                        allowClear
                                     >
                                         <Select.Option key='1' value='1'>Consolidated</Select.Option>
                                         {/* <Select.Option key='2' value='2'>Detailed</Select.Option> */}

@@ -18,33 +18,29 @@ function Configuration() {
   }, []);
 
   const fetchDataHeader = async () => {
-    debugger;
     try {
       const response = await customAxios.get(
         `${urlGetAllConfiguartions}`
       );
-      if (response.status === 200 ) {
+      if (response.status === 200) {
         const configurations =
-        response.data.data.ConfigurationModels.map((obj, index) => {
-          return { ...obj, key: index + 1 };
-        });
+          response.data.data.ConfigurationModels.map((obj, index) => {
+            return { ...obj, key: index + 1 };
+          });
 
         const facilities = response.data.data.Facilities;
         setConfigurations(configurations);
         setFacilities(facilities);
-        
+
       } else {
       }
-    } catch (error) {}
+    } catch (error) { }
   };
-
-
-
 
   const columns = [
     {
       title: "Sl No",
-      dataIndex:"key",
+      dataIndex: "key",
       width: 80,
     },
     {
@@ -85,9 +81,7 @@ function Configuration() {
     },
   ];
 
-  
   const handleEdit = (record) => {
-    debugger;
     setCurrentRecord(record);
     setCreateWardModal(true);
   };
@@ -100,42 +94,39 @@ function Configuration() {
   const handleDelete = (record) => {
     console.log(record);
   };
-  const handleSubmit = async(record) => {
-    debugger;
-    console.log(record);
 
-    record.Suffix=record.Suffix ? record.Suffix : "";
-    record.Prefix=record.Prefix ? record.Prefix : "";
-    record.IsSimpleNumber=record.IsSimpleNumber ? "Y" : "N";
+  const handleSubmit = async (record) => {
+    record.Suffix = record.Suffix ? record.Suffix : "";
+    record.Prefix = record.Prefix ? record.Prefix : "";
+    record.IsSimpleNumber = record.IsSimpleNumber ? "Y" : "N";
 
-    if(record.ConfigurationId>0){
+    if (record.ConfigurationId > 0) {
       const response = await customAxios.post(urlUpdateConfiguration, record, {
         headers: {
           "Content-Type": "application/json",
           // Add any other required headers here
         },
       });
-      if(response.status===200){
-        var message1=response.data.data;
+      if (response.status === 200) {
+        var message1 = response.data.data;
         message.success(message1);
       }
       setCreateWardModal(false);
-    }else{
+      fetchDataHeader()
+    } else {
       const response = await customAxios.post(urlAddNewConfiguration, record, {
         headers: {
           "Content-Type": "application/json",
           // Add any other required headers here
         },
       });
-      if(response.status===200){
-        var message1=response.data.data;
+      if (response.status === 200) {
+        var message1 = response.data.data;
         message.success(message1);
       }
       setCreateWardModal(false);
+      fetchDataHeader()
     }
-
-
-  
   };
 
   return (

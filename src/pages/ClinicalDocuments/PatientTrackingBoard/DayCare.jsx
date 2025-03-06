@@ -1,6 +1,7 @@
 import React, { useEffect,useState } from "react";
 import CustomTable from "../../../components/customTable";
 import { urlSearchInPatientTrackRecords } from "../../../../endpoints";
+import { Tag } from "antd";
 import {
     urlGetPatientDetail,
     urlSearchPatientRecord,
@@ -14,7 +15,7 @@ function DayCare() {
   const [patientTrackRecordTable, setPatientTrackRecordTable] = useState(true);
   const columns = [
     {
-      title: "EncounterId",
+      title: "Encounter",
       dataIndex: "Encounter",
       key: "1",
     },
@@ -24,10 +25,34 @@ function DayCare() {
       key: "2",
     },
     {
-      title: "EncounterStatus",
+      title: "Encounter Status",
       dataIndex: "EncounterStatus",
       key: "3",
-    },
+      render: (text, record) => {
+        let color = "";
+        let label = "";
+    
+        // Check EncounterStatus and ToDischargeDateStr conditions
+        if (text === "Open") {
+          color = "green";
+          label = "Open";
+        } else if (text === "Discharged") {
+          if (record.ToDischargeDateStr) {
+            color = "red";
+            label = "Discharged";
+          } else {
+            color = "orange";
+            label = "Discharge Initiated";
+          }
+        }
+    
+        return (
+          <Tag color={color} style={{ borderRadius: "8px", fontWeight: "bold" }}>
+            {label}
+          </Tag>
+        );
+      },
+    }, 
     {
       title: "ServiceLocation",
       dataIndex: "ServiceLocation",
@@ -49,32 +74,89 @@ function DayCare() {
       key: "7",
     },
     {
-      title: "From Date",
+      title: "Date of Admission",
       dataIndex: "FromDateString",
       key: "8",
     },
     {
-      title: "To Date",
-      dataIndex: "ToDateString",
+      title: "Date of Discharge ",
+      dataIndex: "ToDischargeDateStr",
       key: "9",
+      align: "center",
+      render: (text, record) => {
+        if (record.EncounterStatus === "Discharged") {
+          if (text) {
+            // return text;
+            return (
+              <Tag
+                color="red"
+                style={{ borderRadius: "8px", fontWeight: "bold" }}
+              >
+                {text}
+              </Tag>
+            );
+          } else {
+            return (
+              <Tag
+                color="green"
+                style={{ borderRadius: "8px", fontWeight: "bold" }}
+              >
+                Active
+              </Tag>
+            );
+          }
+        } else {
+          return (
+            <span
+              style={{ color: "red", fontWeight: "bold", fontSize: "14px" }}
+            >
+              -
+            </span>
+          );
+        }
+      },
     },
   ];
 
-  useEffect(()=>{
-   async function handlePatientTrackingSearch() {
-      debugger
-      const response= await customAxios.get(`${urlSearchInPatientTrackRecords}?Flag=${2}`)
-      if(response.status==200){
-        debugger
-        setTableData(response.data.data.ClinicalDocumentTypes)
-      }
-        setPatientTrackRecordTable(true);
+  // useEffect(()=>{
+  //  async function handlePatientTrackingSearch() {
+  //     debugger
+  //     const response= await customAxios.get(`${urlSearchInPatientTrackRecords}?Flag=${2}`)
+  //     if(response.status==200){
+  //       debugger
+  //       setTableData(response.data.data.ClinicalDocumentTypes)
+  //     }
+  //       setPatientTrackRecordTable(true);
     
-        console.log(values);
-      };
-    handlePatientTrackingSearch()
-  },[])
-
+  //       console.log(values);
+  //     };
+  //   handlePatientTrackingSearch()
+  // },[])
+  useEffect(() => {
+    async function handlePatientTrackingSearch() {
+      const response = await customAxios.get(`${urlSearchInPatientTrackRecords}?Flag=${2}`);
+      if (response.status === 200) {
+        const data = response.data.data.ClinicalDocumentTypes;
+        const uniqueData = removeDuplicates(data); // Apply deduplication
+        setTableData(uniqueData);
+      }
+      setPatientTrackRecordTable(true);
+    }
+  
+    handlePatientTrackingSearch();
+  }, []);
+  
+  // Function to remove duplicates based on EncounterId
+  const removeDuplicates = (data) => {
+    const uniqueEncounters = new Map();
+    data.forEach((item) => {
+      if (!uniqueEncounters.has(item.Encounter)) {
+        uniqueEncounters.set(item.Encounter, item);
+      }
+    });
+    return Array.from(uniqueEncounters.values());
+  };
+  
     
   
 

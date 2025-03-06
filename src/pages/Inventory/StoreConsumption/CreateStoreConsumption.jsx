@@ -90,7 +90,7 @@ const CreateStoreConsumption = () => {
   const [batchDetails, setBatchDetails] = useState([]);
   const [productDetails, setProductDetails] = useState({});
   const [dataModal, setDataModal] = useState([]);
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  // const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [isTable, setIsTable] = useState(false);
   const [issueStatus, setIssueStatus] = useState()
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -103,7 +103,6 @@ const CreateStoreConsumption = () => {
       setDropDown(apiData);
     });
     if (StoreConsupmtionId > 0) {
-      debugger
       setLoading(true)
       setButtonTitle('Update')
       customAxios.get(`${urlStoreConsumptionEdit}?StoreConsumptionId=${StoreConsupmtionId}`).then((response) => {
@@ -144,7 +143,6 @@ const CreateStoreConsumption = () => {
   }
 
   const onFinishModel = async () => {
-    debugger;
     await form3.validateFields();
     const values = form3.getFieldsValue();
     // Extract the values from the object as an array
@@ -243,7 +241,7 @@ const CreateStoreConsumption = () => {
   };
 
   const handleOnFinish = async (values) => {
-    debugger;
+    setLoading(true)
     await form2.validateFields()
     const form2data = form2.getFieldsValue()
     const form2new = Object.values(form2data)
@@ -272,14 +270,14 @@ const CreateStoreConsumption = () => {
     })
     if (products.length === 0) {
       message.warning("Please Add Products")
+      setLoading(false)
       return false;
     }
-
-    // const filteredBatch = dataModal.filter(item => products.find(item1 => item.ProductId == item1.ProductId))
 
     const result = checkActiveBatches(products, dataModal);
     if (!result.allActiveProductsHaveActiveBatch) {
       message.warning("Please Add BatchDeatils");
+      setLoading(false)
       return false;
     }
     const sumItems = (items, key) =>
@@ -292,34 +290,9 @@ const CreateStoreConsumption = () => {
 
     if (totalReceivedQty !== totalBatchQuantity) {
       message.warning("Please enter valid batch details..");
+      setLoading(false)
       return false;
-    }
-    // if (dataModal.length == 0) {
-    //   message.warning('Please Add Batch Details!')
-    //   return false
-    // }
-    // for (const item of data) {
-    //   const match = dataModal.find(item1 => item.ProductId === item1.ProductId && item.IssueQty === item1.IssueQty);
-    //   if (!match) {
-    //     message.warning('Please Add Batch Details!');
-    //     return false;
-    //   }
-    // }
-
-    // setIsSearchLoading(true);
-    // const products = [];
-    // for (let i = 0; i <= data.length; i++) {
-    //   if (data[i] !== undefined) {
-    //     const product = {
-    //       ProductId: data[i].ProductId,
-    //       UomId: data[i].UomId,
-    //       IssueQty: data[i].IssueQty,
-    //       Remarks: form2data[i].ReasonforConsumption,
-    //       PatientIssueLineId: data[i].PatientIssueLineId
-    //     }
-    //     products.push(product);
-    //   }
-    // }
+    }    
 
     const StoreConsumption = {
       IssueingStoreId: values.IssuingStore,
@@ -348,7 +321,6 @@ const CreateStoreConsumption = () => {
   };
 
   const handleSelect = (value, option, column, record) => {
-    debugger;
     customAxios
       .get(`${urlGetProductDetailsById}?ProductId=${option.key}`)
       .then((response) => {
@@ -613,7 +585,6 @@ const CreateStoreConsumption = () => {
   }
 
   const OpenBatch = async (record) => {
-    debugger
     await form1.validateFields()
     await form2.validateFields()
 
@@ -738,7 +709,6 @@ const CreateStoreConsumption = () => {
   }
 
   const ModelAdd = async () => {
-    debugger;
     await form3.validateFields();
     setDataModal([
       ...dataModal,
@@ -965,7 +935,6 @@ const CreateStoreConsumption = () => {
   ]
 
   const BatchSelect = (selectedStockId, recordKey) => {
-    debugger
     const existingBatch = dataModal.find(
       (item) => item.StockId === selectedStockId && item.ActiveFlag === true
     );
@@ -1158,7 +1127,7 @@ const CreateStoreConsumption = () => {
             <Row justify="end" style={{ padding: '0rem 1rem' }}>
               <Col style={{ marginRight: '10px' }}>
                 <Form.Item>
-                  <Button type="primary" loading={isSearchLoading} htmlType="submit">
+                  <Button type="primary" disabled={loading} htmlType="submit">
                     {buttonTitle}
                   </Button>
                 </Form.Item>
@@ -1196,16 +1165,6 @@ const CreateStoreConsumption = () => {
                 ></Button>}
                 onDelete={handleDelete}
               />
-              //  <Table
-              //   bordered
-              //   columns={columns}
-              //   size="small"
-              //   dataSource={data.filter((item) => item.ActiveFlag !== false)}
-              //   locale={{ emptyText: "nodata " }}
-              //   scroll={{
-              //     x: 0,
-              //   }}
-              // />
             }
           </Form>
         </Card>
@@ -1280,30 +1239,6 @@ const CreateStoreConsumption = () => {
                   : []
               }
             />
-            {/* <Table
-              columns={columnsModel}
-              size="small"
-              locale={{ emptyText: "Nodata " }}
-              dataSource={
-                batchDetails?.ProductId
-                  ? dataModal.filter(
-                    (item) =>
-                      (item.ProductId == batchDetails.ProductId &&
-                        item.ActiveFlag) ||
-                      (item.ProductId == "" && item.ActiveFlag)
-                  )
-                  : []
-              }
-            //   deliveryRecord.ProductId
-            //     ? schedule.filter(
-            //       (item) =>
-            //         (item.ProductId === deliveryRecord.ProductId &&
-            //           item.ActiveFlag) ||
-            //         (item.ProductId === "" && item.ActiveFlag)
-            //     )
-            //     : initialDeliveryDataSource
-            // }
-            /> */}
           </Form>
         </Modal>
       </div>
