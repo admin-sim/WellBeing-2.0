@@ -27,6 +27,7 @@ import { urlGetPurshaseOrderDetails, urlSearchStock } from "../../../../endpoint
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import CustomTable from "../../../components/customTable/index.jsx";
+import { useSelector } from "react-redux";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -48,6 +49,7 @@ const OpeningStock = () => {
   const [error, setError] = useState(null);
   const [reportUrl, setReportUrl] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const userContext = useSelector((state) => state.userContext.value);
 
   useEffect(() => {
     try {
@@ -166,6 +168,7 @@ const OpeningStock = () => {
         PONO: record.GRNNumber,
         use: 'admin',
         FileType: "pdf", // or 'excel'
+        AppUser: userContext.AppUserName
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);

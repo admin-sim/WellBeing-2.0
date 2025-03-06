@@ -34,6 +34,7 @@ import { Option } from "antd/es/mentions";
 import { render } from "react-dom";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import CustomTable from "../../../components/customTable/index.jsx";
+import { useSelector } from "react-redux";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -57,6 +58,7 @@ const ItemReceipt = () => {
   const [error, setError] = useState(null);
   const [reportUrl, setReportUrl] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const userContext = useSelector((state) => state.userContext.value);
 
   useEffect(() => {
     try {
@@ -228,6 +230,7 @@ const ItemReceipt = () => {
         PONo: record.ReceiptNumber,
         use: 'admin',
         FileType: "pdf", // or 'excel'
+        AppUser: userContext.AppUserName
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);

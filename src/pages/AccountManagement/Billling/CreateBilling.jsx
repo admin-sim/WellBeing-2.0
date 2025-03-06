@@ -111,7 +111,7 @@ const CreateBilling = () => {
         setPatientData(detailsheader);
       } else {
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   useEffect(() => {
@@ -119,7 +119,7 @@ const CreateBilling = () => {
   }, []);
 
 
- 
+
   const fetchData = async () => {
     debugger;
     setTableLoading(true);
@@ -424,7 +424,7 @@ const CreateBilling = () => {
         {
           title: "ChargeAmt",
           dataIndex: "ChargeAmount",
-         // render: (value) => value.toFixed(2), // Format with toFixed
+          // render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "Qty",
@@ -434,17 +434,17 @@ const CreateBilling = () => {
         {
           title: "NetAmt",
           dataIndex: "NetAmount",
-        //  render: (value) => value.toFixed(2), // Format with toFixed
+          //  render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "InsAmt",
           dataIndex: "InsuranceCoveredAmount",
-        //  render: (value) => value.toFixed(2), // Format with toFixed
+          //  render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "TaxAmt",
           dataIndex: "PatientTaxAmount",
-        //  render: (value) => value.toFixed(2), // Format with toFixed
+          //  render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "NetInsAmt",
@@ -463,7 +463,7 @@ const CreateBilling = () => {
         {
           title: "Charge",
           dataIndex: "PatientChargeAmount",
-       //   render: (value) => value.toFixed(2), // Format with toFixed
+          //   render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "Discount",
@@ -471,19 +471,19 @@ const CreateBilling = () => {
           //render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
-          title: "Tax",
+          title: "Tax%",
           dataIndex: "PatientTaxRate",
-         // render: (value) => value.toFixed(2), // Format with toFixed
+          // render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "NetAmt",
           dataIndex: "PatientNetAmount",
-         // render: (value) => value.toFixed(2), // Format with toFixed
+          // render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "AdjAmt",
           dataIndex: "AdjustedAmount",
-         // render: (value) => value.toFixed(2), // Format with toFixed
+          // render: (value) => value.toFixed(2), // Format with toFixed
         },
         {
           title: "LL Disc",
@@ -648,7 +648,7 @@ const CreateBilling = () => {
               },
             },
           ]}
-          // initialValue={record.LookupDescription} // Set initial value of the field to UomId
+        // initialValue={record.LookupDescription} // Set initial value of the field to UomId
         >
           <Select
             onChange={(value) =>
@@ -692,7 +692,7 @@ const CreateBilling = () => {
               },
             },
           ]}
-          //  initialValue={record.InstrumentAmount}
+        //  initialValue={record.InstrumentAmount}
         >
           <InputNumber
             style={{ width: "100%" }}
@@ -732,7 +732,7 @@ const CreateBilling = () => {
         <Form.Item
           name={["BranchName", record.key - 1]}
           style={{ width: "100%" }}
-          // initialValue={record.Branch}
+        // initialValue={record.Branch}
         >
           <Input
             // disabled
@@ -753,7 +753,7 @@ const CreateBilling = () => {
         <Form.Item
           name={["IFSC", record.key - 1]}
           style={{ width: "100%" }}
-          //initialValue={record.IfscCode}
+        //initialValue={record.IfscCode}
         >
           <Input
             min={0}
@@ -761,7 +761,7 @@ const CreateBilling = () => {
             onChange={(e) =>
               handleInputChange(e.target.value, "IFSC", record.key)
             }
-            // disabled
+          // disabled
           />
         </Form.Item>
       ),
@@ -774,7 +774,7 @@ const CreateBilling = () => {
         <Form.Item
           name={["AuthorizationReference", record.key - 1]}
           style={{ width: "100%" }}
-          //initialValue={record.AuthRefNo}
+        //initialValue={record.AuthRefNo}
         >
           <Input
             // disabled
@@ -805,10 +805,10 @@ const CreateBilling = () => {
               validator: (_, value) =>
                 value && value.isBefore(dayjs(), "month")
                   ? Promise.reject(
-                      new Error(
-                        "Expiry date cannot be earlier than the current month"
-                      )
+                    new Error(
+                      "Expiry date cannot be earlier than the current month"
                     )
+                  )
                   : Promise.resolve(),
             },
           ]}
@@ -855,8 +855,8 @@ const CreateBilling = () => {
               validator: (_, value) =>
                 value && value.isBefore(dayjs(), "day")
                   ? Promise.reject(
-                      new Error("Date cannot be earlier than today")
-                    )
+                    new Error("Date cannot be earlier than today")
+                  )
                   : Promise.resolve(),
             },
           ]}
@@ -1320,7 +1320,8 @@ const CreateBilling = () => {
                     taxamt += PatientTaxAmount;
                     netinsamt += NetInsurenceAmount;
                     discamt += PatientDiscountAmount;
-                    taxrate += PatientTaxRate;
+                    // taxrate += PatientTaxRate;
+                    taxrate = 0
                     patientnetamt += PatientNetAmount;
                     adjamt += AdjustedAmount;
                   }

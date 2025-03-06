@@ -33,6 +33,7 @@ import PageHeader from "../../../components/PageHeader/index.jsx";
 import CustomTable from "../../../components/customTable/index.jsx";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import UhidSelectComponent from "../../../components/UhidSelectComponent/index.jsx";
+import { useSelector } from "react-redux";
 //import { format } from 'prettier';
 //import { useLocation } from 'react-router-dom';
 
@@ -59,6 +60,7 @@ const PatientConsumption = () => {
   const [error, setError] = useState(null);
   const [reportUrl, setReportUrl] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const userContext = useSelector((state) => state.userContext.value);
 
   useEffect(() => {
     try {
@@ -194,6 +196,7 @@ const PatientConsumption = () => {
         PONO: record.IssueNumber,
         use: 'admin',
         FileType: "pdf", // or 'excel'
+        AppUser: userContext.AppUserName
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);

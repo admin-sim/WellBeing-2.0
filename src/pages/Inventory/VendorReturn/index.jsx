@@ -25,6 +25,7 @@ import { urlGetPurshaseOrderDetails, urlSearchVendorReturn } from "../../../../e
 import CustomTable from "../../../components/customTable/index.jsx";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
+import { useSelector } from "react-redux";
 
 const VendorReturn = () => {
   const [Dropdown, setDropDown] = useState({
@@ -45,6 +46,7 @@ const VendorReturn = () => {
   const [error, setError] = useState(null);
   const [reportUrl, setReportUrl] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const userContext = useSelector((state) => state.userContext.value);
 
   useEffect(() => {
     try {
@@ -153,6 +155,7 @@ const VendorReturn = () => {
         PONO: record.ReturnHeaderId,
         use: 'admin',
         FileType: "pdf", // or 'excel'
+        AppUser: userContext.AppUserName
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);

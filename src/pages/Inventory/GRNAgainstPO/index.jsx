@@ -23,6 +23,7 @@ import {
 import CustomTable from "../../../components/customTable/index.jsx";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
+import { useSelector } from "react-redux";
 
 const GRNAgainstPO = () => {
   const [Dropdown, setDropDown] = useState({
@@ -40,6 +41,7 @@ const GRNAgainstPO = () => {
   const [error, setError] = useState(null);
   const [reportUrl, setReportUrl] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const userContext = useSelector((state) => state.userContext.value);
 
   useEffect(() => {
     try {
@@ -228,6 +230,7 @@ const GRNAgainstPO = () => {
         PONO: record.GRNNumber,
         use: 'admin',
         FileType: "pdf", // or 'excel'
+        AppUser: userContext.AppUserName
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);

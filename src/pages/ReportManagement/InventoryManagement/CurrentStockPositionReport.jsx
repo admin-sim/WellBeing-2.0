@@ -32,6 +32,7 @@ import PageHeader from "../../../components/PageHeader/index.jsx";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import { useSelector } from "react-redux";
 
 const CurrentStockPositionReport = () => {
     const navigate = useNavigate();
@@ -44,6 +45,7 @@ const CurrentStockPositionReport = () => {
     const [dropDown, setDrpoDown] = useState();
     const [loading, setLoading] = useState(false); // State for loader visibility
     const [users, setUsers] = useState([]);
+    const userContext = useSelector((state) => state.userContext.value);
 
     useEffect(() => {
         fetchDataHeader();
@@ -84,7 +86,8 @@ const CurrentStockPositionReport = () => {
             FacilityId: 1,
             ProductId: values.Currentstockposition == 'All' ? 0 : values.Currentstockposition,
             POStore: values.StoreName,
-            ReportOption: values.ReportOption
+            ReportOption: values.ReportOption,
+            AppUser: userContext.AppUserName
         };
 
         try {

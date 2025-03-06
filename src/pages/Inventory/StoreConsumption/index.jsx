@@ -19,6 +19,7 @@ import CustomTable from "../../../components/customTable/index.jsx";
 import { urlGetPurshaseOrderDetails, urlSearchStoreConsumption } from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import PageHeader from "../../../components/PageHeader/index.jsx";
+import { useSelector } from "react-redux";
 
 const StoreConsumption = () => {
   const [Dropdown, setDropDown] = useState({
@@ -37,6 +38,7 @@ const StoreConsumption = () => {
   const [error, setError] = useState(null);
   const [reportUrl, setReportUrl] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const userContext = useSelector((state) => state.userContext.value);
 
   useEffect(() => {
     try {
@@ -204,6 +206,7 @@ const StoreConsumption = () => {
         PONO: record.IssueNumber,
         use: 'admin',
         FileType: "pdf", // or 'excel'
+        AppUser: userContext.AppUserName
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);

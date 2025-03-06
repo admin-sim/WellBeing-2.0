@@ -32,6 +32,7 @@ import {
 } from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import CustomTable from "../../../components/customTable/index.jsx";
+import { useSelector } from "react-redux";
 
 const IndentIssue = () => {
   const [IndentIssueDropdown, setIndentIssueDropDown] = useState({
@@ -52,6 +53,7 @@ const IndentIssue = () => {
   const [error, setError] = useState(null);
   const [reportUrl, setReportUrl] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const userContext = useSelector((state) => state.userContext.value);
 
   useEffect(() => {
     try {
@@ -236,6 +238,7 @@ const IndentIssue = () => {
         PONO: record.IssueNumber,
         use: 'admin',
         FileType: "pdf", // or 'excel'
+        AppUser: userContext.AppUserName
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);

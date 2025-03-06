@@ -34,6 +34,7 @@ import PageHeader from "../../../components/PageHeader/index.jsx";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import { useSelector } from "react-redux";
 
 const PurchaseOrderReport = () => {
     const navigate = useNavigate();
@@ -49,6 +50,7 @@ const PurchaseOrderReport = () => {
     const [loading, setLoading] = useState(false); // State for loader visibility
     const [fromDate, setFromDate] = useState(dayjs());
     const [toDate, setToDate] = useState(dayjs());
+    const userContext = useSelector((state) => state.userContext.value);
 
     useEffect(() => {
         fetchDataHeader();
@@ -91,6 +93,7 @@ const PurchaseOrderReport = () => {
             POStore: values.POStore ? values.POStore : 0,
             POType: values.POType ? values.POType : 0,
             use: 'Admin',
+            AppUser: userContext.AppUserName
         };
 
         try {

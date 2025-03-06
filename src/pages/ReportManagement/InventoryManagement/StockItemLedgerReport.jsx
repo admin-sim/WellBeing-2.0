@@ -32,6 +32,7 @@ import PageHeader from "../../../components/PageHeader/index.jsx";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import { useSelector } from "react-redux";
 
 const StockItemLedgerReport = () => {
     const navigate = useNavigate();
@@ -46,6 +47,7 @@ const StockItemLedgerReport = () => {
     const [fromDate, setFromDate] = useState(dayjs());
     const [toDate, setToDate] = useState(dayjs());
     const [users, setUsers] = useState([]);
+    const userContext = useSelector((state) => state.userContext.value);
 
     useEffect(() => {
         fetchDataHeader();
@@ -101,6 +103,7 @@ const StockItemLedgerReport = () => {
             PONo: values.StoreName,
             ProductId: values.ProductId == 'All' ? 0 : values.ProductId,
             Use: 'Admin',
+            AppUser: userContext.AppUserName
         };
 
         try {
