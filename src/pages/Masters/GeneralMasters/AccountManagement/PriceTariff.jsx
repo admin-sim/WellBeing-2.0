@@ -81,6 +81,11 @@ function PriceTariff() {
         debugger;
         navigate("/CreatePriceTariff", { state: { PriceTariffId: record.PriceTariffId } });
     };
+
+    const handleRevision = (record) => {
+        debugger;
+        navigate("/EditPriceTariffRevision", { state: { EditedPricetariffId: record.PriceTariffId ,revision:record.BillPriceTariffLines[0].RevisionNo} });
+    };
     
 
     
@@ -129,6 +134,7 @@ function PriceTariff() {
                             actionColumn={true}
                             isFilter={true}
                             onEdit={handleEdit}
+                            onRevision={handleRevision}
                         />
                     </Spin>
                     

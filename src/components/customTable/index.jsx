@@ -14,6 +14,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   SearchOutlined,
+  IeCircleFilled,
 } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import { debounce } from "lodash";
@@ -24,6 +25,7 @@ const CustomTable = ({
   isFilter,
   onDelete,
   onEdit,
+  onRevision,
   onView,
   size,
   actionColumn = true,
@@ -116,6 +118,13 @@ const CustomTable = ({
               size="small"
               onClick={() => onEdit(record)}
               icon={<EditOutlined style={{ fontSize: "0.9rem" }} />}
+            ></Button>
+          )}
+           {onRevision && (
+            <Button
+              size="small"
+              onClick={() => onRevision(record)}
+              icon={<IeCircleFilled style={{ fontSize: "0.9rem" }} />}
             ></Button>
           )}
           {onDelete && (
