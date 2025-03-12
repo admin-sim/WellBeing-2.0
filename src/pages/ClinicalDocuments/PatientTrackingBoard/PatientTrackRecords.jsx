@@ -202,12 +202,14 @@ function PatientTrackRecords() {
   const handlePatientTrackingSearch = async (values) => {
     try {
       debugger;
+      setLoading(true);
       const response = await customAxios.get(
         `${urlSearchPatientTrackRecords}?PatientId=${selectedPatientId || PatientId}&EncounterId=${generatedEncounter || encounter}`
       );
 
       if (response.status === 200) {
         debugger;
+        setLoading(false);
         // Remove duplicate records before setting the table data
         const uniqueData = removeDuplicates(response.data.data.ClinicalDocumentTypes);
         setTableData(uniqueData);
@@ -217,6 +219,7 @@ function PatientTrackRecords() {
         await fetchDataHeader();
       }
     } catch (error) {
+      setLoading(false);
       console.error("Failed to search patient tracking records:", error);
       message.error("Encounter Not yet created for the patient");
     }
@@ -678,8 +681,12 @@ function PatientTrackRecords() {
                         <Row gutter={16} justify={isMobile && "end"}>
                           <Col>
                             <Form.Item label={!isMobile && " "}>
-                              <Button htmlType="submit" type="primary">
-                                Search
+                              <Button
+                                type="primary"
+                                htmlType="submit"
+                                disabled={loading}
+                              >
+                                {loading ? "Searching..." : "Search"}
                               </Button>
                             </Form.Item>
                           </Col>

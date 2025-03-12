@@ -332,84 +332,90 @@ const PatientSearch = () => {
     setIsMoreModalVisible(true);
   };
 
+ 
+
   const handleOk = async () => {
-    debugger;
-
-    try {
-      await form1.validateFields();
-      const values = form1.getFieldsValue();
-      setIsVisitCreated(true);
-      setIsSubmitLoader(true);
-      const postData = {
-        PatientId: selectedRecord.PatientId,
-        PatientType: values.PatientType,
-        FacilityDepartmentId: values.Department,
-        FacilityDepartmentServiceLocationId: values.ServiceLocation,
-        ProviderId: values.Provider,
-        EncounterTypeId: values.EncounterType,
-        EncounterReasonId: values.EncounterReason,
-        KinTitle: values.KinTitle,
-        KinName: values.KinName,
-        KinAddress: values.KinAddress,
-        KinContactNo: values.KinContactNo,
-        ReferredBy: values.referredBy,
-        AttendingProviderId: values.admittedUnder,
-        WardCategoryId: values.WardCategory,
-        WardId: values.Ward,
-        BedId: values.Bed,
-      };
-
-      // Send a POST request to the server
-      const response = await customAxios.post(urlAddNewVisit1, postData, {
-        headers: {
-          "Content-Type": "application/json",
-          // Add any other required headers here
-        },
-      });
-
-      if (response.data != null) {
-        setIsSubmitLoader(false);
-        if (response.data.EncounterResult != null) {
-          messageApi.warning({
-            type: "warning",
-            content: response.data.EncounterResult
-          });
-        } else {
-          const genVisitId = response.data.GeneratedEncounterId;
-          setEncounterId(genVisitId);
-          messageApi.open({
-            type: "success",
-            content: `Successfully  visit created for patient.`,
-          });
-        }
-      } else {
-        setIsSubmitLoader(false);
-        messageApi.open({
-          type: "error",
-          content: `Visit Creation Unsuccessful`,
-        });
-        form1.resetFields();
-      }
-
-    
-      // form1.resetFields();
-
-      // Additional logic after the asynchronous operation
-    } catch (error) {
-      setIsSubmitLoader(false);
-      if (error.errorFields) {
-        // Highlight the fields with errors
-        form1.scrollToField(error.errorFields[0].name, {
-          behavior: "smooth",
-        });
-        message.error("Please fill all required fields.");
-      } else {
-        console.error("Failed to send data to server: ", error);
-        message.error(`Error creating visit for patient: ${error.message}.`);
-        form1.resetFields();
-      }
-    }
-  };
+     debugger;
+ 
+   
+     try {
+       await form1.validateFields();
+       const values = form1.getFieldsValue();
+       setIsVisitCreated(true);
+       setIsSubmitLoader(true);
+   
+       const postData = {
+         PatientId: selectedRecord.PatientId,
+         PatientType: values.PatientType,
+         FacilityDepartmentId: values.Department,
+         FacilityDepartmentServiceLocationId: values.ServiceLocation,
+         ProviderId: values.Provider,
+         EncounterTypeId: values.EncounterType,
+         EncounterReasonId: values.EncounterReason,
+         KinTitle: values.KinTitle,
+         KinName: values.KinName,
+         KinAddress: values.KinAddress,
+         KinContactNo: values.KinContactNo,
+         ReferredBy: values.referredBy,
+         AttendingProviderId: values.admittedUnder,
+         WardCategoryId: values.WardCategory,
+         WardId: values.Ward,
+         BedId: values.Bed,
+       };
+   
+       // Send a POST request to the server
+       const response = await customAxios.post(urlAddNewVisit1, postData, {
+         headers: {
+           "Content-Type": "application/json",
+         },
+       });
+   
+       if (response.data != null) {
+         setIsSubmitLoader(false);
+         if (response.data.EncounterResult != null) {
+           messageApi.warning({
+             type: "warning",
+             content: response.data.EncounterResult,
+           });
+         } else {
+           const genVisitId = response.data.GeneratedEncounterId;
+           setEncounterId(genVisitId);
+           messageApi.open({
+             type: "success",
+             content: `Successfully visit created for patient.`,
+           });
+   
+           // ✅ Navigate to CreateBilling with state
+           navigate("/CreateBilling", {
+             state: {
+               patientId: response.data.PatientId,
+               encounterId: response.data.EncounterId,
+             },
+           });
+         }
+       } else {
+         setIsSubmitLoader(false);
+         messageApi.open({
+           type: "error",
+           content: `Visit Creation Unsuccessful`,
+         });
+         form1.resetFields();
+       }
+     } catch (error) {
+       setIsSubmitLoader(false);
+       if (error.errorFields) {
+         form1.scrollToField(error.errorFields[0].name, {
+           behavior: "smooth",
+         });
+         message.error("Please fill all required fields.");
+       } else {
+         console.error("Failed to send data to server: ", error);
+         message.error(`Error creating visit for patient: ${error.message}.`);
+         form1.resetFields();
+       }
+     }
+   };
+  
 
   const handleVisitModalCancel = () => {
     setIsVisitModalVisible(false);
@@ -427,10 +433,6 @@ const PatientSearch = () => {
 
   const columns = [
     {
-      title: "Sl No",
-      dataIndex: "key",
-    },
-    {
       title: "UHID",
       dataIndex: "UhId",
       key: "UhId",
@@ -441,77 +443,63 @@ const PatientSearch = () => {
       },
       sortDirections: ["descend", "ascend"],
       render: (text, record) => (
-        <span style={{ fontWeight: "bold" }}>{record.UhId}</span>
-      ),
-    },
-    {
-      title: "PatientDetails",
-      dataIndex: "PatientName",
-      key: "PatientName",
-      sorter: (a, b) => a.PatientName.localeCompare(b.PatientName),
-      sortDirections: ["descend", "ascend"],
-      render: (text, record) => (
-        <div>
-          <p>
-            <strong>Name:</strong> {record.PatientName}
-            <br />
-            <strong>Gender:</strong> {record.PatientGender}
-            <br />
-            <strong>Mob No:</strong> {record.MobileNumber}
-            <br />
-            <strong>Dob:</strong> {formatDatefortable(record.DateOfBirth)}{" "}
-          </p>
-        </div>
-      ),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      width: 200,
-      render: (text, record) => (
-        <>
-          <div>
-            <p>
-              <a
+        <a
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
                   handlevisitmodal(record);
                 }}
               >
-                Create Visit
+               {record.UhId}
               </a>
-            </p>
-          </div>
-          <div>
-            <p>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleEditRegistrationsDetails(record);
-                }}
-              >
-                Edit Registration Details
-              </a>
-            </p>
-          </div>
-          <div>
-            <p>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handlemoredetailsmodal(record);
-                }}
-              >
-                More Details
-              </a>
-            </p>
-          </div>
-        </>
+        // <span style={{ fontWeight: "bold" }}></span>
       ),
     },
+    {
+      title: "Patient Name",
+      dataIndex: "PatientName",
+      key: "PatientName",
+      sorter: (a, b) => a.PatientName.localeCompare(b.PatientName),
+      sortDirections: ["descend", "ascend"],
+      render: (text) => <strong>{text}</strong>,
+    },
+    {
+      title: "Gender",
+      dataIndex: "PatientGender",
+      key: "PatientGender",
+      render: (text) => <span>{text || "N/A"}</span>,
+    },
+    {
+      title: "Mobile Number",
+      dataIndex: "MobileNumber",
+      key: "MobileNumber",
+      render: (text) => <span>{text || "N/A"}</span>,
+    },
+    {
+      title: "Date of Birth",
+      dataIndex: "DateOfBirth",
+      key: "DateOfBirth",
+      render: (date) => (
+        <span>{date ? formatDatefortable(date) : "N/A"}</span>
+      ),
+    },
+    {
+      title: "Age",
+      dataIndex: "Age",
+      key: "Age",
+    },
+    {
+      title: "City",
+      dataIndex: "AreaName",
+      key: "Area",
+    },
+    {
+      title: "State",
+      dataIndex: "StateName",
+      key: "State",
+      key: "DateOfBirth",
+    },
+   
   ];
 
   return (
