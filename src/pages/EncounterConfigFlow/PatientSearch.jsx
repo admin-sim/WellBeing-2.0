@@ -246,33 +246,7 @@ const PatientSearch = () => {
   };
 
   const [selectedRecord, setSelectedRecord] = useState(null); // New state variable to store selected record
-
-  // const handlevisitmodal = async (record) => {
-  //   debugger;
-  //   setSelectedRecord(record);
-
-  //   setIsVisitCreated(false);
-  //   setModalLoader(true);
-  //   const response = await customAxios.get(
-  //     `${urlGetEncounterDetails}?PatientId=${
-  //       record.PatientId
-  //     }&PatientType=${0}&AppointmentId=${0}`
-  //   );
-  //   const response1 = await customAxios.get(
-  //     `${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}`
-  //   );
-
-  //   if (response.data !== null && response1.data !== null) {
-  //     setPatientHeaderDetails(response1.data.data.EncounterModel);
-  //     setModalLoader(false);
-  //     setVisitDropdown(response.data.data);
-  //     setEncounterTypeId(response.data.data.EncounterTypeId);
-  //     form1.setFieldsValue({
-  //       EncounterType: response.data.data.EncounterTypeId,
-  //     });
-  //     setIsVisitModalVisible(true);
-  //   }
-  // };
+  
 
   const handlevisitmodal = async (record) => {
     try {

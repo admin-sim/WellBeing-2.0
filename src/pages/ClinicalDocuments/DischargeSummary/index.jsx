@@ -609,8 +609,70 @@ const DischargeSummary = (details) => {
     });
   };
 
+  // const onFinish = async (values) => {
+  //   debugger
+  //   setLoading(true);
+  //   try {
+  //     const postData1 = {
+  //       UHID: values.Uhid || null,
+  //       Name: values.Name || null,
+  //       ProviderId: values.ProviderId || 0,
+  //       DepartmentId: values.Department || 0,
+  //       FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : null,
+  //       ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : null,
+  //       PatientType: values.PatientType || 0,
+  //       Reportstatus: values.ReportStatus || "",
+  //       Admissionstatus: values.AdmissionStatus || "",
+  //       patientId: form.getFieldValue("patientId") || 0,
+  //       DischargeToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
+  //     };
+  
+  //     // Construct the query string with only the parameters that have values
+  //     const queryParams = Object.fromEntries(
+  //       Object.entries(postData1).filter(([_, value]) => value !== null && value !== "")
+  //     );
+  
+  //     // Make API request with the constructed queryParams
+  //     const response = await customAxios.get(`${urlIndexDischageSummarySearch}`, {
+  //       params: queryParams,
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+  
+  //     if (response.status === 200) {
+  //       // ✅ Remove duplicate records based on EncounterId
+  //       const uniqueData = removeDuplicates(response.data.data);
+  //       setFilteredData(
+  //         uniqueData.map((obj, index) => ({
+  //           ...obj,
+  //           key: index + 1,
+  //         }))
+  //       );
+  //       // setCurrentPage1(1);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //     message.error("Failed to load data.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  
+  // // ✅ Function to remove duplicates based on EncounterId
+  // const removeDuplicates = (data) => {
+  //   const seen = new Set();
+  //   return data.filter((item) => {
+  //     const encounter = item.EncounterId ? item.EncounterId.toString().trim() : "";
+  //     if (!seen.has(encounter)) {
+  //       seen.add(encounter);
+  //       return true;
+  //     }
+  //     return false;
+  //   });
+  // };
+  
   const onFinish = async (values) => {
-    debugger
     setLoading(true);
     try {
       const postData1 = {
@@ -641,15 +703,14 @@ const DischargeSummary = (details) => {
       });
   
       if (response.status === 200) {
-        // ✅ Remove duplicate records based on EncounterId
-        const uniqueData = removeDuplicates(response.data.data);
+        // ✅ Remove duplicate records based on EncounterId (Keep latest record)
+        const latestData = getLatestRecords(response.data.data);
         setFilteredData(
-          uniqueData.map((obj, index) => ({
+          latestData.map((obj, index) => ({
             ...obj,
             key: index + 1,
           }))
         );
-        // setCurrentPage1(1);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -659,20 +720,22 @@ const DischargeSummary = (details) => {
     }
   };
   
-  // ✅ Function to remove duplicates based on EncounterId
-  const removeDuplicates = (data) => {
-    const seen = new Set();
-    return data.filter((item) => {
-      const encounter = item.EncounterId ? item.EncounterId.toString().trim() : "";
-      if (!seen.has(encounter)) {
-        seen.add(encounter);
-        return true;
+  // ✅ Function to remove duplicates and keep only the latest record based on EncounterId
+  const getLatestRecords = (data) => {
+    const map = new Map();
+  
+    data.forEach((item) => {
+      const encounter = item.EncounterId ? item.EncounterId.toString().trim() : null;
+  
+      if (encounter) {
+        // ✅ Always overwrite with the latest record based on EncounterId
+        map.set(encounter, item);
       }
-      return false;
     });
+  
+    return Array.from(map.values());
   };
   
- 
 
 
   const onReset = () => {

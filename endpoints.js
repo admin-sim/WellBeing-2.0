@@ -580,3 +580,4 @@ export const urlGetAllService = `${baseURL}/api/Service/GetAllService`;
 export const urlPatientClaimAuthorisation = `${baseURL}/api/PatientClaim/PatientClaimAuthorisation`;
 export const urlAddNewCliamAuthInvvoice = `${baseURL}/api/PatientClaim/AddNewCliamAuthInvvoice`;
 
+export const urlCreate= `${baseURL}/api/WorkFlow/Create`;

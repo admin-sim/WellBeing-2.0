@@ -4,14 +4,35 @@ import { Button, Checkbox, Col, Form, Input, Row, Select } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import {
   ColWithEightSpan,
   ColWithSixSpan,
 } from "../../../../components/customGridColumns";
-
+import {urlCreate} from "../../../../../endpoints.js";
 function CreateEditWorkFlow() {
   const [form] = useForm();
   const [lists, setLists] = useState({});
+
+  const [facilityOptions, setFacilityOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchFacilities = async () => {
+      try {
+        debugger
+        const response = await customAxios.get(urlCreate);
+        if (response.status === 200 && response.data?.data?.Facility) {
+          // Extract Facility data and set state
+          setFacilityOptions(response.data.data.Facility);
+        }
+      } catch (error) {
+        console.error("Failed to fetch facilities:", error);
+      }
+    };
+
+    fetchFacilities();
+  }, []);
 
   useEffect(() => {
     setLists({
@@ -75,7 +96,16 @@ function CreateEditWorkFlow() {
               label="Facility Name"
               rules={[{ required: true, message: "Please enter Facility" }]}
             >
-              <Select />
+              <Select placeholder="Select Facility">
+                {facilityOptions.map((option) => (
+                  <Select.Option
+                    key={option.FacilityId}
+                    value={option.FacilityId}
+                  >
+                    {option.FacilityName}
+                  </Select.Option>
+                ))}
+              </Select>
             </Form.Item>
           </ColWithSixSpan>
           <ColWithSixSpan>
