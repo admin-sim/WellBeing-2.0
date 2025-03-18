@@ -47,48 +47,6 @@ const PharamcyPrescriptionIndex = () => {
   const { TabPane } = Tabs;
 
   
-
-  // const didFetch = useRef(false);
-
-  // useEffect(() => {
-  //   if (!didFetch.current) {
-  //     didFetch.current = true;
-  //     fetchData();
-  //   }
-  // }, []);
-  
-  // const fetchData = async () => {
-  //   try {
-  //     debugger
-  //     console.log(`Requesting: ${urlPharmacyPrescription}`);
-  //     const response = await customAxios.get(`${urlPharmacyPrescription}`);
-  
-  //     if (response?.data?.data) {
-  //       const newColumnData =
-  //         response.data.data.PatientAccountCharges?.map((obj, index) => ({
-  //           ...obj,
-  //           key: index + 1,
-  //         })) || [];
-  
-  //       const existingprescription =
-  //         response.data.data.ExistingPrescriptionModel?.map((obj, index) => ({
-  //           ...obj,
-  //           key: index + 1,
-  //         })) || [];
-  
-  //       if (newColumnData.length > 0) {
-  //         setPatientAccountCharges(newColumnData);
-  //       }
-  
-  //       if (existingprescription.length > 0) {
-  //         setPrescriptionDetails(existingprescription);
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error("Failed to fetch data:", error);
-  //   }
-  // };
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -292,7 +250,6 @@ const PharamcyPrescriptionIndex = () => {
           <div style={{ margin: "20px" }}>
             <Tabs type="card" defaultActiveKey="1">
               <TabPane tab="Prescription" key="1">
-                {/* Your prescription content goes here */}
                 <PageHeader title={"Pharmacy Prescription Details"} button={false} />
                 <Form
                   form={form}
@@ -314,7 +271,6 @@ const PharamcyPrescriptionIndex = () => {
                 </Form>
               </TabPane>
               <TabPane tab="Billing" key="2">
-                {/* Your billing content goes here */}
                 <PageHeader title={"Pharmacy Bill Details"} button={false} />
                 <Spin spinning={loading}>
                   <Row gutter={16}>
