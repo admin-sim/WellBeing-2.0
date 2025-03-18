@@ -135,6 +135,7 @@ function PublishCalender() {
             ToDate: parsedEndDate,
           });
           setFromDate(calenderData.StartDate);
+          setToDate(calenderData.EndDate)
           setDisabledToFromDate(parsedEndDate);
           setLoading(false);
         }
@@ -176,6 +177,7 @@ function PublishCalender() {
   };
 
   const handleSubmit = async () => {
+    debugger
     form.validateFields();
     const values = form.getFieldsValue();
 
