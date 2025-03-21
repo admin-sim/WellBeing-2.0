@@ -158,7 +158,14 @@ const ClinicalSetup = () => {
   
   
   return (
-    <div className="container bg-white p-4 rounded">
+    <div
+    style={{
+      width: "100%",
+      backgroundColor: "white",
+      minHeight: "max-content",
+      borderRadius: "10px",
+    }}
+  >
       {/* Clinical Setup Header */}
       <PageHeader title="Clinical Setup" button={false} />
   
