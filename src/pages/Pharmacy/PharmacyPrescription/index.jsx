@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef  } from "react";
 import {
   Button,
   Col,
@@ -18,6 +18,7 @@ import {
   Empty,
   Spin,
   Modal,
+   Tag,
 } from "antd";
 import {
   DeleteOutlined,
@@ -31,6 +32,7 @@ import { Tabs } from "antd";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
 import CustomTable from "../../../components/customTable/index.jsx";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
+import PageHeader from "../../../components/PageHeader/index.jsx";
 import { urlPharmacyPrescription } from "../../../../endpoints.js";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -39,39 +41,49 @@ const PharamcyPrescriptionIndex = () => {
   const [loading, setLoading] = useState(false);
   const [prescriptionDetails, setPrescriptionDetails] = useState([]);
   const [PatientAccountCharges, setPatientAccountCharges] = useState([]);
-
+  
   const handleOnFinish = () => {};
   const handlePatientTrackingSearch = () => {};
   const { TabPane } = Tabs;
 
+  
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    debugger;
-    try {
-      const response = await customAxios.get(`${urlPharmacyPrescription}`);
-
-      if (response.data != null) {
-        const newColumnData = response.data.data.PatientAccountCharges.map(
-          (obj, index) => {
-            return { ...obj, key: index + 1 };
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        console.log(`Requesting: ${urlPharmacyPrescription}`);
+        const response = await customAxios.get(`${urlPharmacyPrescription}`);
+    
+        if (response?.data?.data) {
+          setLoading(false);
+          const newColumnData =
+            response.data.data.PatientAccountCharges?.map((obj, index) => ({
+              ...obj,
+              key: index + 1,
+            })) || [];
+    
+          const existingprescription =
+            response.data.data.ExistingPrescriptionModel?.map((obj, index) => ({
+              ...obj,
+              key: index + 1,
+            })) || [];
+    
+          if (newColumnData.length > 0) {
+            setPatientAccountCharges(newColumnData);
           }
-        );
-        setPatientAccountCharges(newColumnData);
-
-        const existingprescription =
-          response.data.data.ExistingPrescriptionModel.map((obj, index) => {
-            return { ...obj, key: index + 1 };
-          });
-        setPrescriptionDetails(existingprescription);
+    
+          if (existingprescription.length > 0) {
+            setPrescriptionDetails(existingprescription);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        setLoading(false);
       }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
+    };
+    fetchData(); 
+  }, []); 
+  
   const navigate = useNavigate();
 
   const handleNavigate = (values) => {
@@ -111,10 +123,30 @@ const PharamcyPrescriptionIndex = () => {
     {
       title: "Order Date",
       dataIndex: "OrderDateString",
+      render: (text, record) => ( <Tag
+        style={{
+          backgroundColor: "white",
+          color: "green",
+          border: "1px solid green",
+          borderRadius: "8px",
+          fontWeight: "bold",
+        }}
+      >
+        {text}
+      </Tag>
+      ),
     },
     {
       title: "UHID",
       dataIndex: "Uhid",
+      render: (text, record) => (
+        <Tag
+          color="blue"
+          style={{ fontWeight: "bold", borderWidth: "5px", fontSize: "15px" }}
+        >
+          {record.Uhid}
+        </Tag>
+      ),
     },
     {
       title: "Encounter ID",
@@ -147,10 +179,30 @@ const PharamcyPrescriptionIndex = () => {
     {
       title: "Order Date",
       dataIndex: "StrServiceDate",
+      render: (text, record) => ( <Tag
+        style={{
+          backgroundColor: "white",
+          color: "green",
+          border: "1px solid green",
+          borderRadius: "8px",
+          fontWeight: "bold",
+        }}
+      >
+        {text}
+      </Tag>
+    ),
     },
     {
       title: "UHID",
       dataIndex: "Uhid",
+      render: (text, record) => (
+        <Tag
+          color="blue"
+          style={{ fontWeight: "bold", borderWidth: "5px", fontSize: "15px" }}
+        >
+          {record.Uhid}
+        </Tag>
+      ),
     },
     {
       title: "Encounter ID",
@@ -198,8 +250,7 @@ const PharamcyPrescriptionIndex = () => {
           <div style={{ margin: "20px" }}>
             <Tabs type="card" defaultActiveKey="1">
               <TabPane tab="Prescription" key="1">
-                {/* Your prescription content goes here */}
-                <p>This is the Prescription tab content.</p>
+                <PageHeader title={"Pharmacy Prescription Details"} button={false} />
                 <Form
                   form={form}
                   onFinish={handlePatientTrackingSearch}
@@ -220,8 +271,7 @@ const PharamcyPrescriptionIndex = () => {
                 </Form>
               </TabPane>
               <TabPane tab="Billing" key="2">
-                {/* Your billing content goes here */}
-                <p>This is the Billing tab content.</p>
+                <PageHeader title={"Pharmacy Bill Details"} button={false} />
                 <Spin spinning={loading}>
                   <Row gutter={16}>
                     <Col span={24} style={{ padding: "0" }}>
