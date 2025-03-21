@@ -202,6 +202,7 @@ const ClinicalSetup = () => {
           loading={loading}
           pagination={false}
           actionColumn={false}
+          isFilter={true}
         />
       )}
     </div>
