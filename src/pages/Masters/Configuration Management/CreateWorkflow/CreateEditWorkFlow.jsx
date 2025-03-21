@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader";
-import { Button, Checkbox, Col, Form, Input, Row, Select } from "antd";
+import { Button, Checkbox, Col, Form, Input, message, Row, Select, Spin } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
@@ -9,50 +9,102 @@ import {
   ColWithEightSpan,
   ColWithSixSpan,
 } from "../../../../components/customGridColumns";
-import {urlCreate} from "../../../../../endpoints.js";
+import { urlCreate, urlEditWorkFlow, urlSaveWorkFlow, urlUpdateWorkFlow } from "../../../../../endpoints.js";
 function CreateEditWorkFlow() {
   const [form] = useForm();
   const [lists, setLists] = useState({});
-
+  const location = useLocation();
+  const navigate = useNavigate();
+  const record = location.state;
   const [facilityOptions, setFacilityOptions] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchFacilities = async () => {
-      try {
-        debugger
-        const response = await customAxios.get(urlCreate);
-        if (response.status === 200 && response.data?.data?.Facility) {
-          // Extract Facility data and set state
-          setFacilityOptions(response.data.data.Facility);
+      setLoading(true)
+      if (record ?? false) {
+        try {
+          const response = await customAxios.get(`${urlEditWorkFlow}?WorkFlowId=${record.WorkFlowId}`);
+          if (response.status === 200 && response.data?.data) {
+            const Model = response.data.data
+            setFacilityOptions(Model);
+            form.setFieldsValue({ 'FacilityId': Model.NewWorkFlowModel.FacilityId })
+            form.setFieldsValue({ 'WorkFlowName': Model.NewWorkFlowModel.WorkFlowName })
+            form.setFieldsValue({ 'WorkFlowId': Model.NewWorkFlowModel.WorkFlowId })
+            form.setFieldsValue({ 'WorkFlowDescription': Model.NewWorkFlowModel.WorkFlowDescription })
+            form.setFieldsValue({ 'IsWalkInPatient': Model.NewWorkFlowModel.IsWalkInPatient })
+          }
+        } catch (error) {
+          console.error("Failed to fetch:", error);
         }
-      } catch (error) {
-        console.error("Failed to fetch facilities:", error);
+        setLoading(false)
+      } else {
+        try {
+          const response = await customAxios.get(urlCreate);
+          if (response.status === 200 && response.data?.data) {
+            const Model = response.data.data
+            setFacilityOptions(Model);
+          }
+        } catch (error) {
+          console.error("Failed to fetch:", error);
+        }
+        setLoading(false)
       }
     };
-
     fetchFacilities();
   }, []);
 
+  // useEffect(() => {
+  //   setLists({
+  //     list1: [
+  //       { id: "1", content: "Patient Registration" },
+  //       { id: "2", content: "Appointment Search" },
+  //       { id: "3", content: "Encounter" },
+  //       { id: "4", content: "Patient Search" },
+  //       { id: "5", content: "Billing" },
+  //     ],
+  //     list2: [],
+  //   });
+  // }, []);
+
   useEffect(() => {
-    setLists({
-      list1: [
-        { id: "1", content: "Patient Registration" },
-        { id: "2", content: "Appointment Search" },
-        { id: "3", content: "Encounter" },
-        { id: "4", content: "Patient Search" },
-        { id: "5", content: "Billing" },
-      ],
-      list2: [],
+    if (facilityOptions?.Screen) {
+      const newScreen = facilityOptions?.Screen?.filter(
+        (item) =>
+          !facilityOptions?.WorkFlowScreens?.some((item1) => item.ScreenId === item1.ScreenId)
+      );
+      setLists({
+        list1: newScreen ?? [],
+        list2: facilityOptions.WorkFlowScreens ?? [],
+      });
+    }
+  }, [facilityOptions]);
+
+
+  async function handleSubmit(values) {
+    debugger
+    setLoading(true);
+    const PostData = {
+      NewWorkFlowModel: values,
+      WorkFlowModel: lists.list1,
+      WorkFlowModel1: lists.list2
+    }
+    const url = values.WorkFlowId === undefined ? urlSaveWorkFlow : urlUpdateWorkFlow;
+    const response = await customAxios.post(url, PostData, {
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
-  }, []);
-  const location = useLocation();
-  const navigate = useNavigate();
 
-  const record = location.state;
-
-  function handleSubmit(values) {
-    console.log(values);
+    if (response.status == 200) {
+      if (response.data === 'Exists') {
+        message.warning('WorkFlow Already Exists')
+      } else {
+        message.success(`WorkFlow ${values.WorkFlowId === undefined ? "Created" : "Updated"} Successfully`);
+        setLoading(false);
+        navigate("/Workflow");
+      }
+    }
   }
 
   const onDragEnd = (result) => {
@@ -69,9 +121,22 @@ function CreateEditWorkFlow() {
       0,
       reorderedItem
     );
-
     setLists(newLists);
   };
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#f0f2f5'
+      }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -92,12 +157,12 @@ function CreateEditWorkFlow() {
         <Row gutter={16}>
           <ColWithSixSpan>
             <Form.Item
-              name="FacilityName"
+              name="FacilityId"
               label="Facility Name"
               rules={[{ required: true, message: "Please enter Facility" }]}
             >
               <Select placeholder="Select Facility">
-                {facilityOptions.map((option) => (
+                {facilityOptions?.Facility?.map((option) => (
                   <Select.Option
                     key={option.FacilityId}
                     value={option.FacilityId}
@@ -116,6 +181,9 @@ function CreateEditWorkFlow() {
             >
               <Input />
             </Form.Item>
+            <Form.Item hidden name="WorkFlowId">
+              <Input />
+            </Form.Item>
           </ColWithSixSpan>
           <ColWithSixSpan>
             <Form.Item
@@ -132,7 +200,7 @@ function CreateEditWorkFlow() {
             </Form.Item>
           </ColWithSixSpan>
         </Row>
-        <DragDropContext onDragEnd={onDragEnd}>
+        <DragDropContext onDragEnd={onDragEnd} loading={loading}>
           <Row
             style={{
               height: "fit-content",
@@ -162,9 +230,9 @@ function CreateEditWorkFlow() {
                     >
                       {items?.map((item, index) => (
                         <Draggable
-                          draggableId={item.id}
+                          draggableId={item.ScreenId.toString()}
                           index={index}
-                          key={item.id}
+                          key={item.ScreenId.toString()}
                         >
                           {(provided, snapshot) => (
                             <div
@@ -187,7 +255,8 @@ function CreateEditWorkFlow() {
                                 ...provided.dragHandleProps.style,
                               }}
                             >
-                              {item.content}
+                              {item.ScreenName}
+                              {/* {item.content} */}
                             </div>
                           )}
                         </Draggable>
@@ -200,7 +269,6 @@ function CreateEditWorkFlow() {
             ))}
           </Row>
         </DragDropContext>
-
         <Row gutter={16} justify="end" style={{ marginTop: "2rem" }}>
           <Col>
             <Form.Item>

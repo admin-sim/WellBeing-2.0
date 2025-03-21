@@ -579,5 +579,11 @@ export const urlGetAllProducts = `${baseURL}/api/ProductDefinition/GetAllProduct
 export const urlGetAllService = `${baseURL}/api/Service/GetAllService`;
 export const urlPatientClaimAuthorisation = `${baseURL}/api/PatientClaim/PatientClaimAuthorisation`;
 export const urlAddNewCliamAuthInvvoice = `${baseURL}/api/PatientClaim/AddNewCliamAuthInvvoice`;
+export const urlWorkFlowIndex = `${baseURL}/api/WorkFlow/WorkFlowIndex`;
+export const urlEditWorkFlow = `${baseURL}/api/WorkFlow/EditWorkFlow`;
+export const urlSaveWorkFlow = `${baseURL}/api/WorkFlow/SaveWorkFlow`;
+export const urlUpdateWorkFlow = `${baseURL}/api/WorkFlow/UpdateWorkFlow`;
+export const urlCreate = `${baseURL}/api/WorkFlow/Create`;
+export const urlDeleteSelectedWorkFlow = `${baseURL}/api/WorkFlow/DeleteSelectedWorkFlow`;
+export const urlWorkFlow = `${baseURL}/api/WorkFlow/WorkFlow`;
 
-export const urlCreate= `${baseURL}/api/WorkFlow/Create`;

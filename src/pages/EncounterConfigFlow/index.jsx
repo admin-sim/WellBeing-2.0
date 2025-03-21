@@ -13,6 +13,8 @@ import AppointmentSearch from "./Appointment";
 import PatientRegistration from "./PatientRegistration";
 import { useLocation } from "react-router";
 import VisitModal from "../Patient/NewVisit/visitModal";
+import { urlWorkFlow } from "../../../endpoints";
+import customAxios from "../../components/customAxios/customAxios";
 
 const { TabPane } = Tabs;
 
@@ -21,6 +23,8 @@ const EncounterConfigFlow = () => {
   const [activeVerticalKey, setActiveVerticalKey] = useState("1");
   const [activeHorizontalKey, setActiveHorizontalKey] = useState("1-1");
   const [visitModalData, setVisitModalData] = useState(null);
+  const [tabsData1, setTabsData1] = useState([])
+  const [tabsData2, setTabsData2] = useState([])
 
   useEffect(() => {
     if (location.state) {
@@ -29,6 +33,22 @@ const EncounterConfigFlow = () => {
       setVisitModalData(location.state);
     }
   }, [location.state]);
+
+  useEffect(() => {
+    fetch()
+  }, [])
+
+  async function fetch() {
+    try {
+      const response = await customAxios.get(urlWorkFlow)
+      if (response.status === 200) {
+        setTabsData1(response.data.data.WorkFlowModel)
+        setTabsData2(response.data.data.WorkFlowModel)
+      }
+    } catch (error) {
+      console.error("Failed to fetch:", error);
+    }
+  }
 
   const tabsData = {
     1: [
@@ -61,7 +81,6 @@ const EncounterConfigFlow = () => {
 
   return (
     <div className="encounter-container">
-      {/* Vertical Tabs */}
       <div className="vertical-tabs">
         <Tabs
           tabPosition="left"
@@ -71,15 +90,38 @@ const EncounterConfigFlow = () => {
             setActiveHorizontalKey(`${key}-1`);
           }}
         >
-          <TabPane
-            tab={
-              <span>
-                <ScheduleOutlined /> Appointment Patients
-              </span>
-            }
-            key="1"
-          />
-          <TabPane
+          {tabsData1?.map((tab) => (
+            <Tabs.TabPane
+              tab={
+                <span>
+                  <ScheduleOutlined /> {tab.WorkFlowName}
+                </span>
+              }
+              key={tab.WorkFlowId}
+            />
+          ))}
+        </Tabs>
+      </div>
+
+      {/* <Tabs
+          tabPosition="left"
+          activeKey={activeVerticalKey}
+          onChange={(key) => {
+            setActiveVerticalKey(key);
+            setActiveHorizontalKey(`${key}-1`);
+          }}
+        >
+          {tabsData1?.map((tab) => {
+            <TabPane
+              tab={
+                <span>
+                  <ScheduleOutlined /> {tab.WorkFlowName}
+                </span>
+              }
+              key={tab.WorkFlowId}
+            />
+          })} */}
+      {/* <TabPane
             tab={
               <span>
                 <MedicineBoxOutlined /> Ambulatory Revisit
@@ -121,9 +163,9 @@ const EncounterConfigFlow = () => {
               </span>
             }
             key="6"
-          />
-        </Tabs>
-      </div>
+          /> */}
+      {/* </Tabs> */}
+      {/* </div> */}
 
       {/* Horizontal Tabs */}
       <div className="horizontal-tabs">
@@ -139,6 +181,19 @@ const EncounterConfigFlow = () => {
           ))}
         </Tabs>
       </div>
+      {/* <div className="horizontal-tabs">
+        <Tabs
+          type="card"
+          // activeKey={activeHorizontalKey}
+          onChange={(key) => setActiveHorizontalKey(key)}
+        >
+          {tabsData2?.map((tab) => (
+            <TabPane tab={tab.ScreenName} key={tab.ScreenId}>
+              <Card className="tab-content">{tab.ScreenName}</Card>
+            </TabPane>
+          ))}
+        </Tabs>
+      </div> */}
 
       {/* CSS */}
       <style jsx>{`
