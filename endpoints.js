@@ -586,4 +586,8 @@ export const urlUpdateWorkFlow = `${baseURL}/api/WorkFlow/UpdateWorkFlow`;
 export const urlCreate = `${baseURL}/api/WorkFlow/Create`;
 export const urlDeleteSelectedWorkFlow = `${baseURL}/api/WorkFlow/DeleteSelectedWorkFlow`;
 export const urlWorkFlow = `${baseURL}/api/WorkFlow/WorkFlow`;
-
+export const urlGetAllFrequency = `${baseURL}/api/ClinicalSetup/GetAllFrequency`;
+export const urlDeleteSelectedFrequency = `${baseURL}/api/ClinicalSetup/DeleteSelectedFrequency`;
+export const urlGetClinicalSetupForFacility = `${baseURL}/api/ClinicalSetup/GetClinicalSetupForFacility`;
+export const urlSavePath = `${baseURL}/api/ClinicalSetup/SavePath`;
+export const urlAddNewFrequency = `${baseURL}/api/ClinicalChart/AddNewFrequency`;

@@ -130,6 +130,7 @@ import Configuration from "./pages/Masters/Configuration Management/Configuratio
 import WorkflowManager from "./pages/Masters/Configuration Management/CreateWorkflow/index.jsx";
 import CreateEditWorkFlow from "./pages/Masters/Configuration Management/CreateWorkflow/CreateEditWorkFlow.jsx";
 import Frequency from "./pages/Masters/SystemParameterSetup/Frequency/index.jsx";
+import ClinicalSetup from "./pages/Masters/SystemParameterSetup/ClinicalSetup/index.jsx";
 import PatientTrackingBoard from "./pages/ClinicalDocuments/PatientTrackingBoard/index.jsx";
 import AdditionalCharge from "./pages/Masters/GeneralMasters/AccountManagement/AdditionalCharge";
 import CreateAdditionalCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAdditionalCharge";
@@ -1469,6 +1470,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ClaimSubmission />
+                </ProtectedRoute>
+              }
+            />
+             <Route
+              path="/ClinicalSetup"
+              element={
+                <ProtectedRoute>
+                  <ClinicalSetup />
                 </ProtectedRoute>
               }
             />
