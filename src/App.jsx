@@ -170,6 +170,7 @@ import CreateDischargeSummary from "./pages/ClinicalDocuments/DischargeSummary/C
 import ClaimSubmission from "./pages/ClaimManagement/ClaimSubmission/index.jsx";
 import ClaimProcess from "./pages/ClaimManagement/ClaimProcess/index.jsx";
 import EditPriceTariffRevision from "./pages/Masters/GeneralMasters/AccountManagement/EditPriceTariffRevision.jsx";
+import ParameterSetup from "./pages/Masters/SystemParameterSetup/AccountManagement/index.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -1478,6 +1479,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ClinicalSetup />
+                </ProtectedRoute>
+              }
+            />
+             <Route
+              path="/ParameterSetup"
+              element={
+                <ProtectedRoute>
+                  <ParameterSetup />
                 </ProtectedRoute>
               }
             />
