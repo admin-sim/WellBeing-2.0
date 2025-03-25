@@ -83,103 +83,104 @@ const EncounterConfigFlow = () => {
   return (
     <Spin spinning={loading} size="large" tip="Loading...">
       <div className="encounter-container">
+        {/* Vertical Tabs (All are enabled) */}
         <div className="vertical-tabs">
-          <Tabs
-            tabPosition="left"
-            onChange={GetWorkFlow}
-          >
+          <Tabs tabPosition="left" onChange={GetWorkFlow}>
             {tabsData1?.map((tab) => (
               <Tabs.TabPane
                 tab={
                   <span>
-                    <ScheduleOutlined /> {tab.WorkFlowName}
+                    <HomeOutlined /> {tab.WorkFlowName}
                   </span>
                 }
                 key={tab.WorkFlowId}
               />
             ))}
           </Tabs>
-        </div>        
+        </div>
+
+        {/* Horizontal Tabs (All except the first are disabled) */}
         <div className="horizontal-tabs">
-          <Tabs
-            type="card"
-            onChange={(key) => {
-            }}
-          >
-            {tabsData2?.filter((tab) => tab.ScreenId !== 3 && tab.ScreenId !== 5).map((tab) => (
-              <TabPane tab={tab.ScreenName} key={tab.ScreenId}>
+          <Tabs type="card">
+            {tabsData2?.map((tab, index) => (
+              <Tabs.TabPane
+                tab={tab.ScreenName}
+                key={tab.ScreenId}
+                disabled={index !== 0} // Disable all tabs except the first one
+              >
                 <Card className="tab-content">{GetView(tab)}</Card>
-              </TabPane>
+              </Tabs.TabPane>
             ))}
           </Tabs>
         </div>
+
         {/* CSS */}
         <style jsx>{`
-        .encounter-container {
-          display: flex;
-          gap: 16px;
-          min-height: 100vh;
-          background-color: #f0f2f5;
-          padding: 24px;
-        }
-
-        .vertical-tabs {
-          width: auto;
-          background-color: #fff;
-          border-radius: 8px;
-          padding: 16px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .horizontal-tabs {
-          flex-grow: 1;
-          background-color: #fff;
-          border-radius: 8px;
-          padding: 24px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          min-width: 300px;
-        }
-
-        .tab-content {
-          padding: 16px;
-        }
-
-        @media (max-width: 768px) {
           .encounter-container {
-            flex-direction: column;
-            padding: 16px;
+            display: flex;
+            gap: 16px;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            padding: 24px;
           }
 
           .vertical-tabs {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 16px;
-          }
-
-          .horizontal-tabs {
-            width: 100%;
+            width: auto;
+            background-color: #fff;
+            border-radius: 8px;
             padding: 16px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .encounter-container {
-            padding: 8px;
-          }
-
-          .vertical-tabs {
-            padding: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
           }
 
           .horizontal-tabs {
-            padding: 8px;
+            flex-grow: 1;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            min-width: 300px;
           }
 
           .tab-content {
-            padding: 8px;
+            padding: 16px;
           }
-        }
-      `}</style>
+
+          @media (max-width: 768px) {
+            .encounter-container {
+              flex-direction: column;
+              padding: 16px;
+            }
+
+            .vertical-tabs {
+              width: 100%;
+              padding: 8px;
+              margin-bottom: 16px;
+            }
+
+            .horizontal-tabs {
+              width: 100%;
+              padding: 16px;
+            }
+          }
+
+          @media (max-width: 480px) {
+            .encounter-container {
+              padding: 8px;
+            }
+
+            .vertical-tabs {
+              padding: 4px;
+            }
+
+            .horizontal-tabs {
+              padding: 8px;
+            }
+
+            .tab-content {
+              padding: 8px;
+            }
+          }
+        `}</style>
       </div>
     </Spin>
   );
