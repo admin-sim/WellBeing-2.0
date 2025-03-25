@@ -591,3 +591,7 @@ export const urlDeleteSelectedFrequency = `${baseURL}/api/ClinicalSetup/DeleteSe
 export const urlGetClinicalSetupForFacility = `${baseURL}/api/ClinicalSetup/GetClinicalSetupForFacility`;
 export const urlSavePath = `${baseURL}/api/ClinicalSetup/SavePath`;
 export const urlAddNewFrequency = `${baseURL}/api/ClinicalChart/AddNewFrequency`;
+export const urlGetAllParameter = `${baseURL}/api/SystemSetup/GetAllParameter`;
+export const urlGetParameterSetupBasedOnId = `${baseURL}/api/SystemSetup/GetParameterSetupBasedOnId`;
+export const urlGetParameterSetupForFacility = `${baseURL}/api/SystemSetup/GetParameterSetupForFacility`;
+export const urlUpdateParameterSetup = `${baseURL}/api/SystemSetup/UpdateParameterSetup`;

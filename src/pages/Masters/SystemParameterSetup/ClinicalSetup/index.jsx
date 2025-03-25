@@ -90,6 +90,23 @@ const ClinicalSetup = () => {
       message.error("Failed to save");
     }
   };
+
+  const handleCheckboxChange = (checked, recordKey) => {
+    setClinicalSetupData((prevData) =>
+      prevData.map((item) =>
+        item.key === recordKey ? { ...item, FromList: checked } : item
+      )
+    );
+  };
+  
+  const handleDropdownChange = (value, recordKey) => {
+    setClinicalSetupData((prevData) =>
+      prevData.map((item) =>
+        item.key === recordKey ? { ...item, ScannedFilePath: value } : item
+      )
+    );
+  };
+  
   const columns = [
     {
       title: "Sl. No",
@@ -110,27 +127,38 @@ const ClinicalSetup = () => {
             <>
               <Select
                 className="w-100 mb-2"
-                defaultValue={record.ScannedFilePath || ""}
+                value={
+                  storeModel.some(
+                    (store) => store.StoreId === record.ScannedFilePath
+                  )
+                    ? record.ScannedFilePath
+                    : ""
+                } // Ensure the value is a valid StoreId
+                onChange={(value) => handleDropdownChange(value, record.key)}
               >
                 <Select.Option value="">Select value</Select.Option>
                 {storeModel.map((store) => (
-                  <Select.Option key={store.StoreId} value={store.LongName}>
+                  <Select.Option key={store.StoreId} value={store.StoreId}>
                     {store.LongName}
                   </Select.Option>
                 ))}
               </Select>
+
               <Checkbox
-                checked={record.FromList === true} // Only true if backend sends true
-                onChange={(e) => (record.FromList = e.target.checked)}
+                checked={record.FromList === true} // Ensure only true values are checked
+                onChange={(e) =>
+                  handleCheckboxChange(e.target.checked, record.key)
+                }
               >
                 List all items from Product Definition
               </Checkbox>
             </>
           ) : record.ParameterName === "Dual Screen" ? (
-            // Dual Screen: Render Checkbox
             <Checkbox
-              checked={record.FromList === true} // Only true if backend sends true
-              onChange={(e) => (record.FromList = e.target.checked)}
+              checked={record.FromList === true} // Ensure only true values are checked
+              onChange={(e) =>
+                handleCheckboxChange(e.target.checked, record.key)
+              }
             >
               Disable Pharmacy/Billing
             </Checkbox>
@@ -172,7 +200,7 @@ const ClinicalSetup = () => {
       <Form layout="vertical">
         <Row gutter={16} style={{ marginTop: "10px" }}>
           <Col span={8}>
-            <Form.Item label="Facility Name">
+            <Form.Item label="Facility ">
               <Select
                 placeholder="Select Facility"
                 onChange={handleFacilityChange}
