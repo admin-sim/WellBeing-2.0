@@ -3,14 +3,16 @@ import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import Layout from "antd/es/layout/layout";
 import { useNavigate } from "react-router";
-import { Popconfirm, Table, ConfigProvider } from "antd";
+import { Popconfirm, Spin, Table, ConfigProvider } from "antd";
 import { urlStoreIndex } from "../../../../../endpoints.js";
 import PageHeader from "../../../../components/PageHeader/index.jsx";
 
 const Store = () => {
   const [dataTable, setDataTable] = useState();
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    setLoading(true)
     try {
       customAxios.get(urlStoreIndex, {}).then((response) => {
         const apiData = response.data.data;
@@ -22,12 +24,11 @@ const Store = () => {
           DefaultParentStore: item.DefaultParentStore,
           Status: item.Status,
         }));
-
-        console.log("Data Table", menuItems);
-
         setDataTable(menuItems);
+        setLoading(false)
       });
     } catch (error) {
+      setLoading(false)
       console.error("Error fetching purchase order details:", error);
     }
   }, []);
@@ -80,46 +81,48 @@ const Store = () => {
         buttonLabel={"Add Store"}
         onButtonClick={handleAdd}
       />
-      <ConfigProvider
-        theme={{
-          components: {
-            Table: {
-              headerBg: "#E6E6FA",
+      <Spin spinning={loading} tip="Loading..." size="medium">
+        <ConfigProvider
+          theme={{
+            components: {
+              Table: {
+                headerBg: "#E6E6FA",
+              },
             },
-          },
-        }}
-      >
-        <Table
-          style={{ margin: "1rem" }}
-          columns={columns}
-          bordered
-          expandable={{
-            expandedRowRender: (record) => (
-              <div
-                style={{
-                  display: "flex",
-                  //   justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <div style={{ flex: 1 }}>{record.StoreType}</div>
-                <div style={{ flex: 2 }}>{record.LongName}</div>
-                <div style={{ flex: 2 }}>{record.DefaultParentStore}</div>
-                <div style={{ flex: 1 }}>{record.Status}</div>
-                <div style={{ flex: 0 }}>
-                  <Popconfirm
-                    title="Sure to edit?"
-                    onConfirm={() => ModelUpdate(record.key)}
-                  >
-                    <EditOutlined style={{ marginRight: "4px" }} />
-                  </Popconfirm>
-                </div>
-              </div>
-            ),
           }}
-          dataSource={dataTable}
-        />
-      </ConfigProvider>
+        >
+          <Table
+            style={{ margin: "1rem" }}
+            columns={columns}
+            bordered
+            expandable={{
+              expandedRowRender: (record) => (
+                <div
+                  style={{
+                    display: "flex",
+                    //   justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ flex: 1 }}>{record.StoreType}</div>
+                  <div style={{ flex: 2 }}>{record.LongName}</div>
+                  <div style={{ flex: 2 }}>{record.DefaultParentStore}</div>
+                  <div style={{ flex: 1 }}>{record.Status}</div>
+                  <div style={{ flex: 0 }}>
+                    <Popconfirm
+                      title="Sure to edit?"
+                      onConfirm={() => ModelUpdate(record.key)}
+                    >
+                      <EditOutlined style={{ marginRight: "4px" }} />
+                    </Popconfirm>
+                  </div>
+                </div>
+              ),
+            }}
+            dataSource={dataTable}
+          />
+        </ConfigProvider>
+      </Spin>
     </Layout>
   );
 };

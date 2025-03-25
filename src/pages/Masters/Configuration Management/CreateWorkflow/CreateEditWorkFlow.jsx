@@ -124,19 +124,19 @@ function CreateEditWorkFlow() {
     setLists(newLists);
   };
 
-  if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        backgroundColor: '#f0f2f5'
-      }}>
-        <Spin size="large" />
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div style={{
+  //       display: 'flex',
+  //       justifyContent: 'center',
+  //       alignItems: 'center',
+  //       height: '100vh',
+  //       backgroundColor: '#f0f2f5'
+  //     }}>
+  //       <Spin size="large" />
+  //     </div>
+  //   );
+  // }
 
   return (
     <div
@@ -148,152 +148,154 @@ function CreateEditWorkFlow() {
       }}
     >
       <PageHeader title={"Create WorkFlow"} button={false} />
-      <Form
-        style={{ margin: "1rem" }}
-        layout="vertical"
-        form={form}
-        onFinish={handleSubmit}
-      >
-        <Row gutter={16}>
-          <ColWithSixSpan>
-            <Form.Item
-              name="FacilityId"
-              label="Facility Name"
-              rules={[{ required: true, message: "Please enter Facility" }]}
-            >
-              <Select placeholder="Select Facility">
-                {facilityOptions?.Facility?.map((option) => (
-                  <Select.Option
-                    key={option.FacilityId}
-                    value={option.FacilityId}
-                  >
-                    {option.FacilityName}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </ColWithSixSpan>
-          <ColWithSixSpan>
-            <Form.Item
-              name="WorkFlowName"
-              label="WorkFlow Name"
-              rules={[{ required: true, message: "Please enter Facility" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item hidden name="WorkFlowId">
-              <Input />
-            </Form.Item>
-          </ColWithSixSpan>
-          <ColWithSixSpan>
-            <Form.Item
-              name="WorkFlowDescription"
-              label="WorkFlow Description"
-              rules={[{ required: true, message: "Please enter Facility" }]}
-            >
-              <Input />
-            </Form.Item>
-          </ColWithSixSpan>
-          <ColWithSixSpan>
-            <Form.Item name="IsWalkInPatient" label=" ">
-              <Checkbox>Is Walk-In Patient</Checkbox>
-            </Form.Item>
-          </ColWithSixSpan>
-        </Row>
-        <DragDropContext onDragEnd={onDragEnd} loading={loading}>
-          <Row
-            style={{
-              height: "fit-content",
-              padding: "1rem 0",
-              border: "1px solid #ccc",
-              borderRadius: "1rem",
-              display: "flex",
-              justifyContent: "space-evenly",
-            }}
-          >
-            {Object.entries(lists)?.map(([listId, items]) => (
-              <Droppable droppableId={listId} key={listId}>
-                {(provided, snapshot) => (
-                  <Col span={8}>
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      style={{
-                        minHeight: "200px",
-                        background: snapshot.isDraggingOver
-                          ? "lightblue"
-                          : "white",
-                        border: "1px solid lightgrey",
-                        borderRadius: "4px",
-                        padding: "10px",
-                      }}
+      <Spin spinning={loading} tip='loading...'>
+        <Form
+          style={{ margin: "1rem" }}
+          layout="vertical"
+          form={form}
+          onFinish={handleSubmit}
+        >
+          <Row gutter={16}>
+            <ColWithSixSpan>
+              <Form.Item
+                name="FacilityId"
+                label="Facility Name"
+                rules={[{ required: true, message: "Please enter Facility" }]}
+              >
+                <Select placeholder="Select Facility">
+                  {facilityOptions?.Facility?.map((option) => (
+                    <Select.Option
+                      key={option.FacilityId}
+                      value={option.FacilityId}
                     >
-                      {items?.map((item, index) => (
-                        <Draggable
-                          draggableId={item.ScreenId.toString()}
-                          index={index}
-                          key={item.ScreenId.toString()}
-                        >
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              style={{
-                                ...provided.draggableProps.style,
-                                userSelect: "none",
-                                padding: "0.5rem 1rem",
-                                margin: "0 0 0.5rem 0",
-                                backgroundColor: snapshot.isDragging
-                                  ? "lightgreen"
-                                  : "lavender",
-                                color: "black",
-                                border: "1px solid lightgrey",
-                                borderRadius: "4px",
-                                display: "flex",
-                                alignItems: "center",
-                                ...provided.dragHandleProps.style,
-                              }}
-                            >
-                              {item.ScreenName}
-                              {/* {item.content} */}
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  </Col>
-                )}
-              </Droppable>
-            ))}
+                      {option.FacilityName}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
+              <Form.Item
+                name="WorkFlowName"
+                label="WorkFlow Name"
+                rules={[{ required: true, message: "Please enter Facility" }]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item hidden name="WorkFlowId">
+                <Input />
+              </Form.Item>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
+              <Form.Item
+                name="WorkFlowDescription"
+                label="WorkFlow Description"
+                rules={[{ required: true, message: "Please enter Facility" }]}
+              >
+                <Input />
+              </Form.Item>
+            </ColWithSixSpan>
+            <ColWithSixSpan>
+              <Form.Item name="IsWalkInPatient" label=" ">
+                <Checkbox>Is Walk-In Patient</Checkbox>
+              </Form.Item>
+            </ColWithSixSpan>
           </Row>
-        </DragDropContext>
-        <Row gutter={16} justify="end" style={{ marginTop: "2rem" }}>
-          <Col>
-            <Form.Item>
-              <Button
-                size="middle"
-                type="primary"
-                htmlType="submit"
-                style={{ marginRight: "1rem" }}
-              >
-                {record ? "Update" : "Save"}
-              </Button>
-              <Button
-                size="middle"
-                type="default"
-                danger
-                onClick={() => {
-                  navigate("/Workflow");
-                }}
-              >
-                Cancel
-              </Button>
-            </Form.Item>
-          </Col>
-        </Row>
-      </Form>
+          <DragDropContext onDragEnd={onDragEnd} loading={loading}>
+            <Row
+              style={{
+                height: "fit-content",
+                padding: "1rem 0",
+                border: "1px solid #ccc",
+                borderRadius: "1rem",
+                display: "flex",
+                justifyContent: "space-evenly",
+              }}
+            >
+              {Object.entries(lists)?.map(([listId, items]) => (
+                <Droppable droppableId={listId} key={listId}>
+                  {(provided, snapshot) => (
+                    <Col span={8}>
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        style={{
+                          minHeight: "200px",
+                          background: snapshot.isDraggingOver
+                            ? "lightblue"
+                            : "white",
+                          border: "1px solid lightgrey",
+                          borderRadius: "4px",
+                          padding: "10px",
+                        }}
+                      >
+                        {items?.map((item, index) => (
+                          <Draggable
+                            draggableId={item.ScreenId.toString()}
+                            index={index}
+                            key={item.ScreenId.toString()}
+                          >
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                style={{
+                                  ...provided.draggableProps.style,
+                                  userSelect: "none",
+                                  padding: "0.5rem 1rem",
+                                  margin: "0 0 0.5rem 0",
+                                  backgroundColor: snapshot.isDragging
+                                    ? "lightgreen"
+                                    : "lavender",
+                                  color: "black",
+                                  border: "1px solid lightgrey",
+                                  borderRadius: "4px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  ...provided.dragHandleProps.style,
+                                }}
+                              >
+                                {item.ScreenName}
+                                {/* {item.content} */}
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    </Col>
+                  )}
+                </Droppable>
+              ))}
+            </Row>
+          </DragDropContext>
+          <Row gutter={16} justify="end" style={{ marginTop: "2rem" }}>
+            <Col>
+              <Form.Item>
+                <Button
+                  size="middle"
+                  type="primary"
+                  htmlType="submit"
+                  style={{ marginRight: "1rem" }}
+                >
+                  {record ? "Update" : "Save"}
+                </Button>
+                <Button
+                  size="middle"
+                  type="default"
+                  danger
+                  onClick={() => {
+                    navigate("/Workflow");
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Spin>
     </div>
   );
 }

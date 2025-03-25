@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Tabs, Card } from "antd";
+import { Tabs, Card, Spin } from "antd";
 import {
   UserOutlined,
   ScheduleOutlined,
@@ -13,7 +13,7 @@ import AppointmentSearch from "./Appointment";
 import PatientRegistration from "./PatientRegistration";
 import { useLocation } from "react-router";
 import VisitModal from "../Patient/NewVisit/visitModal";
-import { urlWorkFlow } from "../../../endpoints";
+import { urlGetWorkFlow, urlWorkFlow } from "../../../endpoints";
 import customAxios from "../../components/customAxios/customAxios";
 
 const { TabPane } = Tabs;
@@ -25,6 +25,7 @@ const EncounterConfigFlow = () => {
   const [visitModalData, setVisitModalData] = useState(null);
   const [tabsData1, setTabsData1] = useState([])
   const [tabsData2, setTabsData2] = useState([])
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (location.state) {
@@ -35,6 +36,7 @@ const EncounterConfigFlow = () => {
   }, [location.state]);
 
   useEffect(() => {
+    setLoading(true)
     fetch()
   }, [])
 
@@ -43,160 +45,76 @@ const EncounterConfigFlow = () => {
       const response = await customAxios.get(urlWorkFlow)
       if (response.status === 200) {
         setTabsData1(response.data.data.WorkFlowModel)
-        setTabsData2(response.data.data.WorkFlowModel)
+        setTabsData2(response.data.data.WorkFlowScreens)
+        setLoading(false)
       }
     } catch (error) {
+      setLoading(false)
       console.error("Failed to fetch:", error);
     }
   }
 
-  const tabsData = {
-    1: [
-      { key: "1-1", title: "Appointment Search", content: <AppointmentSearch /> },
-      { key: "1-2", title: "Encounter", content: <Encounter />, disabled: true },
-    ],
-    2: [
-      { key: "2-1", title: "Patient Search", content: <PatientSearch /> },
-      { key: "2-2", title: "Encounter", content: <Encounter details={visitModalData} />, disabled: true },
-    ],
-    3: [
-      { key: "3-1", title: "Patient Registration", content: <PatientRegistration /> },
-      { key: "3-2", title: "Encounter", content: <Encounter />, disabled: true },
-    ],
-    4: [
-      { key: "4-1", title: "Patient Search", content: <PatientSearch /> },
-      { key: "4-2", title: "Encounter", content: <Encounter />, disabled: true },
-    ],
-    5: [
-      { key: "5-1", title: "Patient Registration", content: <PatientRegistration /> },
-      { key: "5-2", title: "Encounter", content: <Encounter />, disabled: true },
-      { key: "5-3", title: "Billing", content: "Billing", disabled: true },
-    ],
-    6: [
-      { key: "6-1", title: "Patient Registration", content: <PatientRegistration /> },
-      { key: "6-2", title: "Encounter", content: <Encounter />, disabled: true },
-      { key: "6-3", title: "Billing", content: "Billing", disabled: true },
-    ],
-  };
+  function GetView(value) {
+    if (value.ScreenId === 2) {
+      return <AppointmentSearch />
+    } else if (value.ScreenId === 3) {
+      return <Encounter />
+    } else if (value.ScreenId === 1) {
+      return <PatientRegistration />
+    } else if (value.ScreenId === 4) {
+      return <PatientSearch />
+    } else {
+      return null
+    }
+  }
+
+  async function GetWorkFlow(params) {
+    try {
+      const response = await customAxios.get(`${urlGetWorkFlow}?WorkFlowId=${parseInt(params)}`)
+      if (response.status === 200) {
+        setTabsData2(response.data.data.WorkFlowScreens)
+      }
+    } catch (error) {
+      setLoading(false)
+      console.error("Failed to fetch:", error);
+    }
+  }
 
   return (
-    <div className="encounter-container">
-      <div className="vertical-tabs">
-        <Tabs
-          tabPosition="left"
-          activeKey={activeVerticalKey}
-          onChange={(key) => {
-            setActiveVerticalKey(key);
-            setActiveHorizontalKey(`${key}-1`);
-          }}
-        >
-          {tabsData1?.map((tab) => (
-            <Tabs.TabPane
-              tab={
-                <span>
-                  <ScheduleOutlined /> {tab.WorkFlowName}
-                </span>
-              }
-              key={tab.WorkFlowId}
-            />
-          ))}
-        </Tabs>
-      </div>
-
-      {/* <Tabs
-          tabPosition="left"
-          activeKey={activeVerticalKey}
-          onChange={(key) => {
-            setActiveVerticalKey(key);
-            setActiveHorizontalKey(`${key}-1`);
-          }}
-        >
-          {tabsData1?.map((tab) => {
-            <TabPane
-              tab={
-                <span>
-                  <ScheduleOutlined /> {tab.WorkFlowName}
-                </span>
-              }
-              key={tab.WorkFlowId}
-            />
-          })} */}
-      {/* <TabPane
-            tab={
-              <span>
-                <MedicineBoxOutlined /> Ambulatory Revisit
-              </span>
-            }
-            key="2"
-          />
-          <TabPane
-            tab={
-              <span>
-                <UserOutlined /> Walk-In Patient
-              </span>
-            }
-            key="3"
-          />
-          <TabPane
-            tab={
-              <span>
-                <HomeOutlined /> InPatient Revisit
-              </span>
-            }
-            key="4"
-          />
-          <TabPane
-            tab={
-              <span style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-                <span>
-                  <FileTextOutlined /> General Out Patient
-                </span>
-                <span>Department</span>
-              </span>
-            }
-            key="5"
-          />
-          <TabPane
-            tab={
-              <span>
-                <UserOutlined /> WalkInCLient
-              </span>
-            }
-            key="6"
-          /> */}
-      {/* </Tabs> */}
-      {/* </div> */}
-
-      {/* Horizontal Tabs */}
-      <div className="horizontal-tabs">
-        <Tabs
-          type="card"
-          activeKey={activeHorizontalKey}
-          onChange={(key) => setActiveHorizontalKey(key)}
-        >
-          {tabsData[activeVerticalKey]?.map((tab) => (
-            <TabPane tab={tab.title} key={tab.key} disabled={tab.disabled}>
-              <Card className="tab-content">{tab.content}</Card>
-            </TabPane>
-          ))}
-        </Tabs>
-      </div>
-      {/* <div className="horizontal-tabs">
-        <Tabs
-          type="card"
-          // activeKey={activeHorizontalKey}
-          onChange={(key) => setActiveHorizontalKey(key)}
-        >
-          {tabsData2?.map((tab) => (
-            <TabPane tab={tab.ScreenName} key={tab.ScreenId}>
-              <Card className="tab-content">{tab.ScreenName}</Card>
-            </TabPane>
-          ))}
-        </Tabs>
-      </div> */}
-
-      {/* CSS */}
-      <style jsx>{`
+    <Spin spinning={loading} size="large" tip="Loading...">
+      <div className="encounter-container">
+        <div className="vertical-tabs">
+          <Tabs
+            tabPosition="left"
+            onChange={GetWorkFlow}
+          >
+            {tabsData1?.map((tab) => (
+              <Tabs.TabPane
+                tab={
+                  <span>
+                    <ScheduleOutlined /> {tab.WorkFlowName}
+                  </span>
+                }
+                key={tab.WorkFlowId}
+              />
+            ))}
+          </Tabs>
+        </div>        
+        <div className="horizontal-tabs">
+          <Tabs
+            type="card"
+            onChange={(key) => {
+            }}
+          >
+            {tabsData2?.filter((tab) => tab.ScreenId !== 3 && tab.ScreenId !== 5).map((tab) => (
+              <TabPane tab={tab.ScreenName} key={tab.ScreenId}>
+                <Card className="tab-content">{GetView(tab)}</Card>
+              </TabPane>
+            ))}
+          </Tabs>
+        </div>
+        {/* CSS */}
+        <style jsx>{`
         .encounter-container {
           display: flex;
           gap: 16px;
@@ -206,7 +124,7 @@ const EncounterConfigFlow = () => {
         }
 
         .vertical-tabs {
-          width: 250px;
+          width: auto;
           background-color: #fff;
           border-radius: 8px;
           padding: 16px;
@@ -262,7 +180,8 @@ const EncounterConfigFlow = () => {
           }
         }
       `}</style>
-    </div>
+      </div>
+    </Spin>
   );
 };
 
