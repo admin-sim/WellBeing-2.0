@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader/index.jsx";
 import CustomTable from "../../../../components/customTable/index.jsx";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
-import {  Button, Select, Input, Form, Row, Col, Checkbox,message } from "antd";
-import { urlGetAllFrequency, urlGetClinicalSetupForFacility ,urlSavePath} from "../../../../../endpoints";
+import { Button, Select, Input, Form, Row, Col, Checkbox, message } from "antd";
+import { urlGetAllFrequency, urlGetClinicalSetupForFacility, urlSavePath } from "../../../../../endpoints";
 
 const ClinicalSetup = () => {
   const [loading, setLoading] = useState(false);
@@ -11,6 +11,7 @@ const ClinicalSetup = () => {
   const [selectedFacility, setSelectedFacility] = useState(null);
   const [clinicalSetupData, setClinicalSetupData] = useState([]);
   const [storeModel, setStoreModel] = useState([]); // Store list
+  const [form] = Form.useForm();
 
   useEffect(() => {
     fetchFacilities();
@@ -31,7 +32,6 @@ const ClinicalSetup = () => {
   const handleFacilityChange = async (value) => {
     setSelectedFacility(value);
     setLoading(true);
-  
     try {
       debugger;
       const response = await customAxios.get(`${urlGetClinicalSetupForFacility}?FacilityId=${value}`);
@@ -40,19 +40,19 @@ const ClinicalSetup = () => {
           key: index + 1,
           ...item,
         }));
-        
+
         const filteredStoreModel = (response.data.data.StoreModel || [])
-          .filter((store) => store.StoreType === "Pharmacy")
+          .filter((store) => store.StoreId === 2)
           .map((store) => ({
             StoreId: store.StoreId,
             LongName: store.LongName,
           }));
-        
+        form.setFieldsValue({ 'StoreId': 2 })
         setClinicalSetupData(tableData);
         setStoreModel(filteredStoreModel);
-        
-      setClinicalSetupData(tableData);
-      setStoreModel(filteredStoreModel);
+
+        setClinicalSetupData(tableData);
+        setStoreModel(filteredStoreModel);
       }
     } catch (error) {
       console.error("Error fetching clinical setup:", error);
@@ -61,28 +61,25 @@ const ClinicalSetup = () => {
       setLoading(false);
     }
   };
-  
+
 
   const handleSave = async (record) => {
-    console.log("Saving:", record);
-
+    debugger
     const requestData = {
       FacilityId: record.FacilityId,
       ParameterId: record.ParameterId,
       ParameterName: record.ParameterName,
-      ScannedFilePath: record.ScannedFilePath || "", // Default to empty string if null
-      FromList: record.FromList || false, // Default to false if null
+      ScannedFilePath: record.ScannedFilePath || "",
+      FromList: record.FromList || false,
     };
 
     try {
-      debugger;
       const response = await customAxios.post(`${urlSavePath}`, requestData, {
         headers: {
           "Content-Type": "application/json",
         },
       });
       if (response.data) {
-        console.log("Save successful:", response.data);
         message.success("Save successful");
       }
     } catch (error) {
@@ -98,7 +95,7 @@ const ClinicalSetup = () => {
       )
     );
   };
-  
+
   const handleDropdownChange = (value, recordKey) => {
     setClinicalSetupData((prevData) =>
       prevData.map((item) =>
@@ -106,7 +103,7 @@ const ClinicalSetup = () => {
       )
     );
   };
-  
+
   const columns = [
     {
       title: "Sl. No",
@@ -125,33 +122,35 @@ const ClinicalSetup = () => {
         <div className="d-flex flex-column">
           {record.ParameterName === "Default Pharmacy" ? (
             <>
-              <Select
-                className="w-100 mb-2"
-                value={
-                  storeModel.some(
-                    (store) => store.StoreId === record.ScannedFilePath
-                  )
-                    ? record.ScannedFilePath
-                    : ""
-                } // Ensure the value is a valid StoreId
-                onChange={(value) => handleDropdownChange(value, record.key)}
-              >
-                <Select.Option value="">Select value</Select.Option>
-                {storeModel.map((store) => (
-                  <Select.Option key={store.StoreId} value={store.StoreId}>
-                    {store.LongName}
-                  </Select.Option>
-                ))}
-              </Select>
-
-              <Checkbox
-                checked={record.FromList === true} // Ensure only true values are checked
-                onChange={(e) =>
-                  handleCheckboxChange(e.target.checked, record.key)
-                }
-              >
-                List all items from Product Definition
-              </Checkbox>
+              <Form.Item name='StoreId' initialValue={2}>
+                <Select
+                  className="w-100 mb-2"
+                  value={
+                    storeModel.some(
+                      (store) => store.StoreId === record.ScannedFilePath
+                    )
+                      ? record.ScannedFilePath
+                      : ""
+                  }
+                  onChange={(value) => handleDropdownChange(value, record.key)}
+                >
+                  {storeModel.map((store) => (
+                    <Select.Option key={store.StoreId} value={store.StoreId}>
+                      {store.LongName}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Form.Item name='FromList'>
+                <Checkbox
+                  checked={record.FromList} // Ensure only true values are checked
+                  onChange={(e) =>
+                    handleCheckboxChange(e.target.checked, record.key)
+                  }
+                >
+                  List all items from Product Definition
+                </Checkbox>
+              </Form.Item>
             </>
           ) : record.ParameterName === "Dual Screen" ? (
             <Checkbox
@@ -183,21 +182,19 @@ const ClinicalSetup = () => {
       ),
     },
   ];
-  
-  
+
+
   return (
     <div
-    style={{
-      width: "100%",
-      backgroundColor: "white",
-      minHeight: "max-content",
-      borderRadius: "10px",
-    }}
-  >
-      {/* Clinical Setup Header */}
+      style={{
+        width: "100%",
+        backgroundColor: "white",
+        minHeight: "max-content",
+        borderRadius: "10px",
+      }}
+    >
       <PageHeader title="Clinical Setup" button={false} />
-  
-      <Form layout="vertical">
+      <Form layout="vertical" form={form}>
         <Row gutter={16} style={{ marginTop: "10px" }}>
           <Col span={8}>
             <Form.Item label="Facility ">
@@ -219,23 +216,21 @@ const ClinicalSetup = () => {
             </Form.Item>
           </Col>
         </Row>
+        {clinicalSetupData.length > 0 && (
+          <CustomTable
+            dataSource={clinicalSetupData}
+            columns={columns}
+            rowKey="ParameterId"
+            loading={loading}
+            pagination={false}
+            actionColumn={false}
+            isFilter={true}
+          />
+        )}
       </Form>
-  
-      {/* Show table only if data is available */}
-      {clinicalSetupData.length > 0 && (
-        <CustomTable
-          dataSource={clinicalSetupData}
-          columns={columns}
-          rowKey="ParameterId"
-          loading={loading}
-          pagination={false}
-          actionColumn={false}
-          isFilter={true}
-        />
-      )}
     </div>
   );
-  
+
 };
 
 export default ClinicalSetup;
