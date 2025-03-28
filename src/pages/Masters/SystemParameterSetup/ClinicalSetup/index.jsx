@@ -106,7 +106,7 @@ const ClinicalSetup = () => {
       )
     );
   };
-
+  
   const columns = [
     {
       title: "Sl. No",
@@ -125,33 +125,35 @@ const ClinicalSetup = () => {
         <div className="d-flex flex-column">
           {record.ParameterName === "Default Pharmacy" ? (
             <>
-              <Select
-                className="w-100 mb-2"
-                value={
-                  storeModel.some(
-                    (store) => store.StoreId === record.ScannedFilePath
-                  )
-                    ? record.ScannedFilePath
-                    : ""
-                } // Ensure the value is a valid StoreId
-                onChange={(value) => handleDropdownChange(value, record.key)}
-              >
-               
-                {storeModel.map((store) => (
-                  <Select.Option key={store.StoreId} value={store.StoreId}>
-                    {store.LongName}
-                  </Select.Option>
-                ))}
-              </Select>
-
-              <Checkbox
-                checked={record.FromList === true} // Ensure only true values are checked
-                onChange={(e) =>
-                  handleCheckboxChange(e.target.checked, record.key)
-                }
-              >
-                List all items from Product Definition
-              </Checkbox>
+              <Form.Item name="StoreId" initialValue={2}>
+                <Select
+                  className="w-100 mb-2"
+                  value={
+                    storeModel.some(
+                      (store) => store.StoreId === record.ScannedFilePath
+                    )
+                      ? record.ScannedFilePath
+                      : ""
+                  }
+                  onChange={(value) => handleDropdownChange(value, record.key)}
+                >
+                  {storeModel.map((store) => (
+                    <Select.Option key={store.StoreId} value={store.StoreId}>
+                      {store.LongName}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Form.Item name="FromList">
+                <Checkbox
+                  checked={record.FromList} // Ensure only true values are checked
+                  onChange={(e) =>
+                    handleCheckboxChange(e.target.checked, record.key)
+                  }
+                >
+                  List all items from Product Definition
+                </Checkbox>
+              </Form.Item>
             </>
           ) : record.ParameterName === "Dual Screen" ? (
             <Checkbox
@@ -183,7 +185,6 @@ const ClinicalSetup = () => {
       ),
     },
   ];
-
 
   return (
     <div
