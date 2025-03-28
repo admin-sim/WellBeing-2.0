@@ -29,6 +29,7 @@ import Layout from "antd/es/layout/layout";
 const { Text } = Typography;
 import { useNavigate } from "react-router";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
+import PageHeader from "../../../components/PageHeader/index.jsx";
 import InvoiceDiscountModal from "../../AccountManagement/Billling/InvoiceDiscountModal.jsx";
 
 import {
@@ -111,6 +112,7 @@ const OtcDispense = () => {
   const [invoiceLoading, setInvoiceLoading] = useState(false);
   console.log("l", location.state);
   const [billloading, setBillLoading] = useState(false);
+  const { state } = location;
   useEffect(() => {
     debugger;
 
@@ -1299,6 +1301,12 @@ const OtcDispense = () => {
     }
   }
 
+  useEffect(() => {
+    if (state?.openPrescription) {
+      hanldePrescription();
+    }
+  }, [state]);
+
   const handlePrescriptionTypeSubmit = (values) => {};
   const hanldePrescription = async () => {
     debugger;
@@ -1346,7 +1354,14 @@ const OtcDispense = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        <PageHeader
+          title="OTC Dispense"
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleCreateService}
+        />
+
+        {/* <Row
           style={{
             padding: "0.2rem 2rem 0rem 2rem",
             backgroundColor: "#40A2E3",
@@ -1366,7 +1381,7 @@ const OtcDispense = () => {
               Back
             </Button>
           </Col>
-        </Row>
+        </Row> */}
         <div style={{ margin: "0 2rem 1rem 2rem" }}>
           <PatientHeader patient={patientData} />
         </div>

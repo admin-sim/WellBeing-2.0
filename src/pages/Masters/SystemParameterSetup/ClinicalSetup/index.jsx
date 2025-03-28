@@ -20,12 +20,15 @@ const ClinicalSetup = () => {
   // Fetch all facilities
   const fetchFacilities = async () => {
     try {
+      setLoading(true);
       const response = await customAxios.get(urlGetAllFrequency);
       if (response.data && Array.isArray(response.data.data.Facilities)) {
         setFacilities(response.data.data.Facilities);
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error fetching facilities:", error);
+      setLoading(false);
     }
   };
 
@@ -122,35 +125,33 @@ const ClinicalSetup = () => {
         <div className="d-flex flex-column">
           {record.ParameterName === "Default Pharmacy" ? (
             <>
-              <Form.Item name='StoreId' initialValue={2}>
-                <Select
-                  className="w-100 mb-2"
-                  value={
-                    storeModel.some(
-                      (store) => store.StoreId === record.ScannedFilePath
-                    )
-                      ? record.ScannedFilePath
-                      : ""
-                  }
-                  onChange={(value) => handleDropdownChange(value, record.key)}
-                >
-                  {storeModel.map((store) => (
-                    <Select.Option key={store.StoreId} value={store.StoreId}>
-                      {store.LongName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-              <Form.Item name='FromList'>
-                <Checkbox
-                  checked={record.FromList} // Ensure only true values are checked
-                  onChange={(e) =>
-                    handleCheckboxChange(e.target.checked, record.key)
-                  }
-                >
-                  List all items from Product Definition
-                </Checkbox>
-              </Form.Item>
+              <Select
+                className="w-100 mb-2"
+                value={
+                  storeModel.some(
+                    (store) => store.StoreId === record.ScannedFilePath
+                  )
+                    ? record.ScannedFilePath
+                    : ""
+                } // Ensure the value is a valid StoreId
+                onChange={(value) => handleDropdownChange(value, record.key)}
+              >
+               
+                {storeModel.map((store) => (
+                  <Select.Option key={store.StoreId} value={store.StoreId}>
+                    {store.LongName}
+                  </Select.Option>
+                ))}
+              </Select>
+
+              <Checkbox
+                checked={record.FromList === true} // Ensure only true values are checked
+                onChange={(e) =>
+                  handleCheckboxChange(e.target.checked, record.key)
+                }
+              >
+                List all items from Product Definition
+              </Checkbox>
             </>
           ) : record.ParameterName === "Dual Screen" ? (
             <Checkbox
@@ -197,7 +198,7 @@ const ClinicalSetup = () => {
       <Form layout="vertical" form={form}>
         <Row gutter={16} style={{ marginTop: "10px" }}>
           <Col span={8}>
-            <Form.Item label="Facility ">
+            <Form.Item label="Facility " style={{ marginLeft: "20px", fontWeight: "bold" }}>
               <Select
                 placeholder="Select Facility"
                 onChange={handleFacilityChange}

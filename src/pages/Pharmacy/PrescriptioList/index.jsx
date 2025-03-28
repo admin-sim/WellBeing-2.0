@@ -102,7 +102,7 @@ function PrescriptionListModal({
     },
     {
       title: "Stock",
-      dataIndex: "Stock",
+      dataIndex: "BalanceQty",
     },
     {
       title: "TQty",

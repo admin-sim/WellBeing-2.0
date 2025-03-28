@@ -85,18 +85,18 @@ const PharamcyPrescriptionIndex = () => {
   }, []); 
   
   const navigate = useNavigate();
-
   const handleNavigate = (values) => {
-    debugger;
     const url = `/OtcDispense`;
     navigate(url, {
       state: {
         PatientId: values.PatientId,
         EncounterId: values.EncounterId,
-        flag : 1
+        flag: 1,
+        openPrescription: true, 
       },
     });
   };
+  
   const handleNavigateTopharmacy = (values) => {
     debugger;
     const url = `/OtcDispense`;
@@ -169,7 +169,7 @@ const PharamcyPrescriptionIndex = () => {
   const Chargescolumns = [
     {
       title: "Order ID",
-      dataIndex: "key",
+      dataIndex: "ChargeID",
       render: (text, record) => (
         <a onClick={() => handleNavigateTopharmacy(record)}  style={{ color: 'blue' }}>
             {text}
