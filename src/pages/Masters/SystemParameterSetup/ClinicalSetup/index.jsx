@@ -20,12 +20,15 @@ const ClinicalSetup = () => {
   // Fetch all facilities
   const fetchFacilities = async () => {
     try {
+      setLoading(true);
       const response = await customAxios.get(urlGetAllFrequency);
       if (response.data && Array.isArray(response.data.data.Facilities)) {
         setFacilities(response.data.data.Facilities);
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error fetching facilities:", error);
+      setLoading(false);
     }
   };
 
@@ -103,7 +106,7 @@ const ClinicalSetup = () => {
       )
     );
   };
-
+  
   const columns = [
     {
       title: "Sl. No",
@@ -122,7 +125,7 @@ const ClinicalSetup = () => {
         <div className="d-flex flex-column">
           {record.ParameterName === "Default Pharmacy" ? (
             <>
-              <Form.Item name='StoreId' initialValue={2}>
+              <Form.Item name="StoreId" initialValue={2}>
                 <Select
                   className="w-100 mb-2"
                   value={
@@ -141,7 +144,7 @@ const ClinicalSetup = () => {
                   ))}
                 </Select>
               </Form.Item>
-              <Form.Item name='FromList'>
+              <Form.Item name="FromList">
                 <Checkbox
                   checked={record.FromList} // Ensure only true values are checked
                   onChange={(e) =>
@@ -183,7 +186,6 @@ const ClinicalSetup = () => {
     },
   ];
 
-
   return (
     <div
       style={{
@@ -197,7 +199,7 @@ const ClinicalSetup = () => {
       <Form layout="vertical" form={form}>
         <Row gutter={16} style={{ marginTop: "10px" }}>
           <Col span={8}>
-            <Form.Item label="Facility ">
+            <Form.Item label="Facility " style={{ marginLeft: "20px", fontWeight: "bold" }}>
               <Select
                 placeholder="Select Facility"
                 onChange={handleFacilityChange}

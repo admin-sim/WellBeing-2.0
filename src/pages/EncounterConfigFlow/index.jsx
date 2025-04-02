@@ -99,14 +99,15 @@ const EncounterConfigFlow = () => {
           </Tabs>
         </div>
 
-        {/* Horizontal Tabs (All except the first are disabled) */}
         <div className="horizontal-tabs">
           <Tabs type="card">
-            {tabsData2?.map((tab, index) => (
+            {tabsData2?.map((tab) => (
               <Tabs.TabPane
                 tab={tab.ScreenName}
                 key={tab.ScreenId}
-                disabled={index !== 0} // Disable all tabs except the first one
+                disabled={
+                  tab.ScreenName === "Encounter" || tab.ScreenName === "Billing"
+                } // Disable only these tabs
               >
                 <Card className="tab-content">{GetView(tab)}</Card>
               </Tabs.TabPane>

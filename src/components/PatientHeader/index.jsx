@@ -11,6 +11,7 @@ import {
   Tooltip,
   Upload,
   message,
+  notification,
 } from "antd";
 import { FcDocument, FcInfo } from "react-icons/fc";
 import { DollarTwoTone, FolderOpenTwoTone } from "@ant-design/icons";
@@ -37,12 +38,14 @@ function PatientHeader({ patient, encounterId, style }) {
     );
     if (response.status === 200 && response.data != null) {
       const { UhId, PatientName, GeneratedEncounterId } = patient;
-      const updatedReceiptAllocations = response.data.ReceiptAllocations.map((item) => ({
-        ...item,
-        UhId,
-        PatientName,
-        GeneratedEncounterId,
-      }));
+      const updatedReceiptAllocations = response.data.ReceiptAllocations.map(
+        (item) => ({
+          ...item,
+          UhId,
+          PatientName,
+          GeneratedEncounterId,
+        })
+      );
       setData(updatedReceiptAllocations);
       setBillModalOpen(true);
     }
@@ -75,9 +78,17 @@ function PatientHeader({ patient, encounterId, style }) {
       setUploading(false);
     }
   };
-  
+
   const handleNavigate = () => {
-    debugger; // Optional: for debugging
+    if (!patient?.EncounterId) {
+      navigate("/AssignedPlan");
+      notification.warning({
+        message: "Error",
+        description: "Encounter ID is not available.",
+      });
+      return;
+    }
+
     navigate("/CreateAssignedPlan", {
       state: {
         patientId: patient?.PatientId,
@@ -85,6 +96,7 @@ function PatientHeader({ patient, encounterId, style }) {
       },
     });
   };
+
   const uploadProps = {
     onRemove: (file) => {
       const index = fileList.indexOf(file);
@@ -466,7 +478,7 @@ function PatientHeader({ patient, encounterId, style }) {
                   <Button
                     type="link"
                     icon={<FcDocument style={{ fontSize: "1.8rem" }} />}
-                    onClick={handleNavigate} 
+                    onClick={handleNavigate}
                   />
                 </Tooltip>
               </Col>

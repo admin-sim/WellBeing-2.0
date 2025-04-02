@@ -13,6 +13,7 @@ import {
   Space,
   AutoComplete,
 } from "antd";
+import moment from "moment";
 import {
   MinusCircleOutlined,
   CheckCircleOutlined,
@@ -36,7 +37,8 @@ const LabDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [options, setOptions] = useState([]);
   const [selectedUhId, setSelectedUhId] = useState(null);
-
+  const [fromDate, setFromDate] = useState();
+  const [toDate, setToDate] = useState();
   const handleAutoCompleteChange = async (value) => {
     try {
       if (!value.trim()) {
@@ -434,20 +436,36 @@ const LabDashboard = () => {
               </ColWithSixSpan>
 
               <ColWithSixSpan>
-                <Form.Item name="fromDate" label="From Date">
+                <Form.Item
+                  name="fromDate"
+                  label="From Date"
+                  rules={[{ required: true, message: "Please select a date!" }]}
+                >
                   <DatePicker
+                    value={fromDate}
+                    onChange={(date) => setFromDate(date)}
+                    disabledDate={(current) => current > moment()}
                     style={{ width: "100%" }}
-
-                    // disabledDate={disabledDate}
+                    format="DD-MM-YYYY"
+                    placeholder="DD-MM-YYYY"
+                    allowClear
                   />
                 </Form.Item>
               </ColWithSixSpan>
               <ColWithSixSpan>
-                <Form.Item name="toDate" label="To Date">
+                <Form.Item
+                  name="toDate"
+                  label="To Date"
+                  rules={[{ required: true, message: "Please select a date!" }]}
+                >
                   <DatePicker
+                    value={toDate}
+                    onChange={(date) => setToDate(date)}
+                    disabledDate={(current) => current < fromDate} // disable dates before fromDate
                     style={{ width: "100%" }}
-
-                    //disabledDate={disabledDate}
+                    format="DD-MM-YYYY"
+                    placeholder="DD-MM-YYYY"
+                    allowClear
                   />
                 </Form.Item>
               </ColWithSixSpan>
@@ -491,7 +509,7 @@ const LabDashboard = () => {
         <Card
           title={
             <div style={{ textAlign: "center" }}>
-              Patients Visit For Laboratory
+             Patients Visit For Laboratory
             </div>
           }
           bordered={false}

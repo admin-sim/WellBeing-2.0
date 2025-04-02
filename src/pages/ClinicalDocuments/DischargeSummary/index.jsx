@@ -891,13 +891,6 @@ const DischargeSummary = (details) => {
                 placeholder="DD-MM-YYYY"
                 allowClear
               />
-              {/* <DatePicker
-                style={{ width: "100%" }}
-                format={"DD-MM-YYYY"}
-                disabledDate={disabledDate}
-                placeholder="DD-MM-YYYY"
-                allowClear
-              /> */}
             </Form.Item>
           </ColWithSixSpan>
           <ColWithSixSpan>
@@ -919,13 +912,7 @@ const DischargeSummary = (details) => {
                 placeholder="DD-MM-YYYY"
                 allowClear
               />
-              {/* <DatePicker
-                style={{ width: "100%" }}
-                format={"DD-MM-YYYY"}
-                disabledDate={disabledDate}
-                placeholder="DD-MM-YYYY"
-                allowClear
-              /> */}
+            
             </Form.Item>
           </ColWithSixSpan>
           <ColWithSixSpan>
