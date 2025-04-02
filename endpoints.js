@@ -596,4 +596,5 @@ export const urlGetParameterSetupBasedOnId = `${baseURL}/api/SystemSetup/GetPara
 export const urlGetParameterSetupForFacility = `${baseURL}/api/SystemSetup/GetParameterSetupForFacility`;
 export const urlUpdateParameterSetup = `${baseURL}/api/SystemSetup/UpdateParameterSetup`;
 export const urlGetWorkFlow = `${baseURL}/api/WorkFlow/GetWorkFlow`;
+export const urlDeleteSelectedWorkFlowScreen = `${baseURL}/api/WorkFlow/DeleteSelectedWorkFlowScreen`;
 

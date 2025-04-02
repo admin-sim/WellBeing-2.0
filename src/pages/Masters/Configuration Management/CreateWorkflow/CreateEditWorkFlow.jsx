@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader";
-import { Button, Checkbox, Col, Form, Input, message, Row, Select, Spin } from "antd";
+import { Button, Card, Checkbox, Col, Form, Input, message, Modal, Row, Select, Space, Spin } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
@@ -9,15 +9,20 @@ import {
   ColWithEightSpan,
   ColWithSixSpan,
 } from "../../../../components/customGridColumns";
-import { urlCreate, urlEditWorkFlow, urlSaveWorkFlow, urlUpdateWorkFlow } from "../../../../../endpoints.js";
+import { urlCreate, urlDeleteSelectedWorkFlowScreen, urlEditWorkFlow, urlSaveWorkFlow, urlUpdateWorkFlow } from "../../../../../endpoints.js";
+import FormItem from "antd/es/form/FormItem/index.js";
+import { DeleteOutlined } from "@ant-design/icons";
 function CreateEditWorkFlow() {
   const [form] = useForm();
+  const [form1] = useForm();
   const [lists, setLists] = useState({});
   const location = useLocation();
   const navigate = useNavigate();
   const record = location.state;
   const [facilityOptions, setFacilityOptions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [screen, setScreen] = useState()
 
   useEffect(() => {
     const fetchFacilities = async () => {
@@ -53,19 +58,6 @@ function CreateEditWorkFlow() {
     };
     fetchFacilities();
   }, []);
-
-  // useEffect(() => {
-  //   setLists({
-  //     list1: [
-  //       { id: "1", content: "Patient Registration" },
-  //       { id: "2", content: "Appointment Search" },
-  //       { id: "3", content: "Encounter" },
-  //       { id: "4", content: "Patient Search" },
-  //       { id: "5", content: "Billing" },
-  //     ],
-  //     list2: [],
-  //   });
-  // }, []);
 
   useEffect(() => {
     if (facilityOptions?.Screen) {
@@ -109,34 +101,129 @@ function CreateEditWorkFlow() {
 
   const onDragEnd = (result) => {
     const { source, destination } = result;
+
     if (!destination) return;
 
-    const newLists = { ...lists };
-    const [reorderedItem] = newLists[source.droppableId].splice(
-      source.index,
-      1
-    );
-    newLists[destination.droppableId].splice(
-      destination.index,
-      0,
-      reorderedItem
-    );
-    setLists(newLists);
+    if (source.droppableId === "list2" && destination.droppableId !== "list2") {
+      return;
+    }
+
+    if (source.droppableId === "list1" && destination.droppableId === "list2") {
+      const sourceList = [...lists[source.droppableId]];
+      const destList = [...lists[destination.droppableId]];
+
+      const [movedItem] = sourceList.splice(source.index, 1);
+      destList.splice(destination.index, 0, movedItem);
+
+      setLists({
+        list1: sourceList,
+        list2: destList,
+      });
+    }
   };
 
-  // if (loading) {
-  //   return (
-  //     <div style={{
-  //       display: 'flex',
-  //       justifyContent: 'center',
-  //       alignItems: 'center',
-  //       height: '100vh',
-  //       backgroundColor: '#f0f2f5'
-  //     }}>
-  //       <Spin size="large" />
-  //     </div>
+  // const onDragEnd = (result) => {
+  //   const { source, destination } = result;
+  //   if (!destination) return;
+
+  //   const newLists = { ...lists };
+  //   const [reorderedItem] = newLists[source.droppableId].splice(
+  //     source.index,
+  //     1
   //   );
-  // }
+  //   newLists[destination.droppableId].splice(
+  //     destination.index,
+  //     0,
+  //     reorderedItem
+  //   );
+  //   setLists(newLists);
+  // };
+
+  function handlePlusClick(item) {
+    form1.resetFields()
+    {
+      (item.Parameters || []).forEach((it) => {
+        form1.setFieldsValue({ [it.ParameterName]: it.ActiveFlag });
+      });
+    }
+    setIsModalOpen(true)
+    setScreen(item)
+  }
+
+  async function handleDeleteClick(item) {
+    debugger
+    try {
+      const response = await customAxios.get(`${urlDeleteSelectedWorkFlowScreen}?WorkFlowId=${item.WorkFlowId}&WorkFlowScreenId=${item.WorkFlowScreenId}`);
+      if (response.status === 200 && response.data?.data) {
+        const Model = response.data.data
+
+      }
+    } catch (error) {
+      console.error("Failed to fetch:", error);
+    }
+  }
+
+  function onFinishmodal(value) {
+    debugger
+    const filteredScreens = lists.list2.find((i) =>
+      screen.ScreenId === i.ScreenId && screen.WorkFlowScreenId === i.WorkFlowScreenId)
+
+    const parameterMapping = {
+      PatientId: 1,
+      AppointmentId: 2,
+      PatientType: 3,
+      EncounterId: 4,
+    };
+
+    function AddItem(item) {
+      debugger
+      const exists = filteredScreens.Parameters.some(
+        (c) => c.ParameterName === item.ParameterName
+      );
+
+      if (exists) {
+        return item; 
+      } else {
+        return {
+          ...item,
+          ParameterId: parameterMapping[item.ParameterName] || 0, 
+        };
+      }
+    }
+
+    const newData = filteredScreens.Parameters.map((item) => {
+      const paramValue = value[item.ParameterName];
+
+      return paramValue === false
+        ? { ...item, ActiveFlag: paramValue }
+        : AddItem(item); 
+    });
+
+
+    // const newData = filteredScreens.Parameters.map((item) => {
+    //   const paramValue = value[item.ParameterName];
+
+    //   return paramValue === false
+    //     ? { ...item, ActiveFlag: paramValue }
+    //     : AddItem(item);
+    // });
+
+    const newData1 =
+      setLists((prev) => ({
+        ...prev,
+        list2: prev.list2.map((item) => ({
+          ...item,
+          Parameters: item.ScreenId === filteredScreens.ScreenId ? newData : item.Parameters,
+        })),
+      }));
+
+    setScreen(null)
+    setIsModalOpen(false)
+  }
+
+  function onCancelmodal() {
+    setIsModalOpen(false)
+  }
 
   return (
     <div
@@ -252,12 +339,40 @@ function CreateEditWorkFlow() {
                                   border: "1px solid lightgrey",
                                   borderRadius: "4px",
                                   display: "flex",
+                                  justifyContent: "space-between",
                                   alignItems: "center",
                                   ...provided.dragHandleProps.style,
                                 }}
                               >
-                                {item.ScreenName}
-                                {/* {item.content} */}
+                                <span>{item.ScreenName}</span>
+                                {listId === "list2" && (
+                                  <div style={{ display: "flex", gap: "5px" }}>
+                                    <Button size="small"
+                                      onClick={() => handlePlusClick(item)}
+                                      style={{
+                                        background: "#40A2E3",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "4px",
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      +
+                                    </Button>
+                                    <Button size="small"
+                                      onClick={() => handleDeleteClick(item)}
+                                      style={{
+                                        background: "#40A2E3",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "4px",
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      <DeleteOutlined />
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                             )}
                           </Draggable>
@@ -296,6 +411,49 @@ function CreateEditWorkFlow() {
           </Row>
         </Form>
       </Spin>
+      <Modal
+        title="Parameter"
+        onOk={() => form1.submit()}
+        onCancel={onCancelmodal}
+        width={500}
+        open={isModalOpen}
+        okText='Save'
+        cancelText='Close'
+      >
+        <Form
+          name="basic"
+          labelCol={{
+            span: 8,
+          }}
+          wrapperCol={{
+            span: 16,
+          }}
+          style={{
+            width: '100%',
+          }}
+          initialValues={{
+            remember: true,
+          }}
+          // layout='vertical'
+          onFinish={onFinishmodal}
+          autoComplete="off"
+          form={form1}
+        >
+          <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+            <Card title={screen?.Action} size="small">
+              {(facilityOptions?.Parameter || []).map((item) => (
+                <FormItem initialValue={false}
+                  valuePropName="checked"
+                  name={item.ParameterDescription.split(" ").join("")}
+                  key={item.ParameterId}
+                >
+                  <Checkbox>{item.ParameterDescription}</Checkbox>
+                </FormItem>
+              ))}
+            </Card>
+          </Space>
+        </Form>
+      </Modal>
     </div>
   );
 }
