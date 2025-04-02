@@ -154,19 +154,27 @@ function AccountManagement() {
       }}
     >
       <PageHeader title="Parameter Setup" button={false} />
-
-      <Row gutter={[16, 16]} style={{ marginBottom: "4px" , marginTop: "16px" }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: "4px", marginTop: "16px" }}>
         <Col span={24}>
-          <label style={{ fontWeight: "bold" }}>Facility</label>
+          <label>Facility</label>
         </Col>
       </Row>
-      <Row gutter={[16, 16]} style={{ marginBottom: "16px" }}>
-        <Col span={8}>
-          <Form.Item>
+
+      <Row
+        gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+        style={{ marginBottom: "16px" }}
+      >
+        <Col span={6}>
+          {" "}
+          <Form.Item
+            name="Facility"
+            rules={[{ required: true, message: "Facility is Required" }]} // Added validation rule
+          >
             <Select
               placeholder="Select Facility"
+              allowClear
               onChange={handleFacilityChange}
-              style={{ width: "100%" }}
+              className="w-100"
             >
               {facilities.length > 0 ? (
                 facilities.map((facility) => (
