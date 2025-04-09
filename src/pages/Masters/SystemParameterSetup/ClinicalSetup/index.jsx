@@ -3,7 +3,11 @@ import PageHeader from "../../../../components/PageHeader/index.jsx";
 import CustomTable from "../../../../components/customTable/index.jsx";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import { Button, Select, Input, Form, Row, Col, Checkbox, message } from "antd";
-import { urlGetAllFrequency, urlGetClinicalSetupForFacility, urlSavePath } from "../../../../../endpoints";
+import {
+  urlGetAllFrequency,
+  urlGetClinicalSetupForFacility,
+  urlSavePath,
+} from "../../../../../endpoints";
 
 const ClinicalSetup = () => {
   const [loading, setLoading] = useState(false);
@@ -37,12 +41,16 @@ const ClinicalSetup = () => {
     setLoading(true);
     try {
       debugger;
-      const response = await customAxios.get(`${urlGetClinicalSetupForFacility}?FacilityId=${value}`);
+      const response = await customAxios.get(
+        `${urlGetClinicalSetupForFacility}?FacilityId=${value}`
+      );
       if (response.data) {
-        const tableData = response.data.data.ClinicalSetupModel.map((item, index) => ({
-          key: index + 1,
-          ...item,
-        }));
+        const tableData = response.data.data.ClinicalSetupModel.map(
+          (item, index) => ({
+            key: index + 1,
+            ...item,
+          })
+        );
 
         const filteredStoreModel = (response.data.data.StoreModel || [])
           .filter((store) => store.StoreId === 2)
@@ -50,7 +58,7 @@ const ClinicalSetup = () => {
             StoreId: store.StoreId,
             LongName: store.LongName,
           }));
-        form.setFieldsValue({ 'StoreId': 2 })
+        form.setFieldsValue({ StoreId: 2 });
         setClinicalSetupData(tableData);
         setStoreModel(filteredStoreModel);
 
@@ -65,9 +73,8 @@ const ClinicalSetup = () => {
     }
   };
 
-
   const handleSave = async (record) => {
-    debugger
+    debugger;
     const requestData = {
       FacilityId: record.FacilityId,
       ParameterId: record.ParameterId,
@@ -106,7 +113,7 @@ const ClinicalSetup = () => {
       )
     );
   };
-  
+
   const columns = [
     {
       title: "Sl. No",
@@ -196,23 +203,41 @@ const ClinicalSetup = () => {
       }}
     >
       <PageHeader title="Clinical Setup" button={false} />
-      <Form layout="vertical" form={form}>
-        <Row gutter={16} style={{ marginTop: "10px" }}>
-          <Col span={8}>
-            <Form.Item label="Facility " style={{ marginLeft: "20px", fontWeight: "bold" }}>
+      <Form layout="vertical" form={form} style={{ padding: "0rem 2rem" }}>
+        <Row
+          gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+          style={{ marginTop: "10px" }}
+        >
+          <Col span={6}>
+            <Form.Item
+              label="Facility"
+              name="Facility"
+              rules={[
+                {
+                  required: true,
+                  message: "Facility Is Required",
+                },
+              ]}
+            >
               <Select
                 placeholder="Select Facility"
+                allowClear
                 onChange={handleFacilityChange}
                 className="w-100"
               >
                 {facilities.length > 0 ? (
                   facilities.map((facility) => (
-                    <Select.Option key={facility.FacilityId} value={facility.FacilityId}>
+                    <Select.Option
+                      key={facility.FacilityId}
+                      value={facility.FacilityId}
+                    >
                       {facility.FacilityName}
                     </Select.Option>
                   ))
                 ) : (
-                  <Select.Option disabled>No Facilities Available</Select.Option>
+                  <Select.Option disabled>
+                    No Facilities Available
+                  </Select.Option>
                 )}
               </Select>
             </Form.Item>
@@ -232,7 +257,6 @@ const ClinicalSetup = () => {
       </Form>
     </div>
   );
-
 };
 
 export default ClinicalSetup;

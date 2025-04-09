@@ -9,9 +9,20 @@ import {
   RedEnvelopeOutlined,
   ScheduleOutlined,
   ExperimentOutlined,
+  UserSwitchOutlined,
+  SecurityScanOutlined,
+  ContainerOutlined,
+  SolutionOutlined,
+  ContactsFilled,
+  AuditOutlined,
+  ReconciliationOutlined,
+  FieldTimeOutlined,
+  SlidersOutlined,
+  FileDoneOutlined,
+  TagOutlined,
 } from "@ant-design/icons";
 import { RiSettingsFill } from "react-icons/ri";
-import { FaClipboardUser, FaFlaskVial } from "react-icons/fa6";
+import { FaClipboardUser, FaFlaskVial, FaPersonWalkingArrowRight } from "react-icons/fa6";
 import { GoDotFill } from "react-icons/go";
 import { FaUserFriends, FaUserPlus } from "react-icons/fa";
 import { CiSettings } from "react-icons/ci";
@@ -74,8 +85,34 @@ export default function MenuList({ menuData, onClose }) {
         return <FaFlaskVial style={{ fontSize: "1.1rem" }} />;
       case "FaClipboardUser":
         return <FaClipboardUser style={{ fontSize: "1.1rem" }} />;
+      case "ContainerOutlined":
+        return <ContainerOutlined style={{ fontSize: "1.1rem" }} />;
+      case "UserSwitchOutlined":
+        return <UserSwitchOutlined style={{ fontSize: "1.1rem" }} />;
+      case "SettingOutlined":
+        return <SettingOutlined style={{ fontSize: "1.1rem" }} />;
+      case "SecurityScanOutlined":
+        return <SecurityScanOutlined style={{ fontSize: "1.1rem" }} />;
+      case "SolutionOutlined":
+        return <SolutionOutlined style={{ fontSize: "1.1rem" }} />;
+      case "ContactsFilled":
+        return <ContactsFilled style={{ fontSize: "1.1rem" }} />;
+      case "SlidersOutlined":
+        return <SlidersOutlined style={{ fontSize: "1.1rem" }} />;
+      case "FieldTimeOutlined":
+        return <FieldTimeOutlined style={{ fontSize: "1.1rem" }} />;
+      case "ReconciliationOutlined":
+        return <ReconciliationOutlined style={{ fontSize: "1.1rem" }} />;
+      case "AuditOutlined":
+        return <AuditOutlined style={{ fontSize: "1.1rem" }} />;
+      case "FileDoneOutlined":
+        return <FileDoneOutlined style={{ fontSize: "1.1rem" }} />;
+      case "FaPersonWalkingArrowRight":
+        return <FaPersonWalkingArrowRight style={{ fontSize: "1.1rem" }} />;
+      case "TeamOutlined":
+        return <TeamOutlined style={{ fontSize: "1.1rem" }} />;
       default:
-        return <GoDotFill style={{ fontSize: "0.7rem" }} />;
+        return <TagOutlined style={{ fontSize: "0.7rem" }} />;
     }
   };
 

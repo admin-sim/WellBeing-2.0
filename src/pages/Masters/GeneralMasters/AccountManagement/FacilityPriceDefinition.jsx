@@ -19,12 +19,6 @@ const FacilityPriceDefinition = () => {
   const navigate = useNavigate();
  
 
-
-
-
-
-
-
   useEffect(() => {
     const fetchData = async () => {
       debugger;
@@ -147,6 +141,7 @@ const FacilityPriceDefinition = () => {
           style={{ padding: '0rem 2rem' }}
           form={form}
         >
+          
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col className="gutter-row" span={6}>
               <div>
