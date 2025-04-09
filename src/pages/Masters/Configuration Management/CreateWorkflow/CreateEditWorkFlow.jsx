@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader";
-import { Button, Card, Checkbox, Col, Form, Input, message, Modal, Row, Select, Space, Spin } from "antd";
+import { Button, Card, Checkbox, Col, Form, Input, message, Modal, Row, Select, Space, Spin, Popconfirm } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
@@ -150,10 +150,10 @@ function CreateEditWorkFlow() {
     setScreen(item)
   }
 
-  async function handleDeleteClick(item) {
+  async function handleDeleteClick(record, item) {
     debugger
     try {
-      const response = await customAxios.get(`${urlDeleteSelectedWorkFlowScreen}?WorkFlowId=${item.WorkFlowId}&WorkFlowScreenId=${item.WorkFlowScreenId}`);
+      const response = await customAxios.get(`${urlDeleteSelectedWorkFlowScreen}?WorkFlowId=${record.WorkFlowId}&WorkFlowScreenId=${item.WorkFlowScreenId}`);
       if (response.status === 200 && response.data?.data) {
         const Model = response.data.data
 
@@ -182,11 +182,11 @@ function CreateEditWorkFlow() {
       );
 
       if (exists) {
-        return item; 
+        return item;
       } else {
         return {
           ...item,
-          ParameterId: parameterMapping[item.ParameterName] || 0, 
+          ParameterId: parameterMapping[item.ParameterName] || 0,
         };
       }
     }
@@ -196,7 +196,7 @@ function CreateEditWorkFlow() {
 
       return paramValue === false
         ? { ...item, ActiveFlag: paramValue }
-        : AddItem(item); 
+        : AddItem(item);
     });
 
 
@@ -359,7 +359,19 @@ function CreateEditWorkFlow() {
                                     >
                                       +
                                     </Button>
-                                    <Button size="small"
+                                    <Popconfirm
+                                      title="Are you sure to delete this item?"
+                                      onConfirm={() => handleDeleteClick(record, item)}
+                                      okText="Yes"
+                                      cancelText="No"
+                                    >
+                                      <Button
+                                        size="small"
+                                        danger
+                                        icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
+                                      ></Button>
+                                    </Popconfirm>
+                                    {/* <Button size="small"
                                       onClick={() => handleDeleteClick(item)}
                                       style={{
                                         background: "#40A2E3",
@@ -370,7 +382,7 @@ function CreateEditWorkFlow() {
                                       }}
                                     >
                                       <DeleteOutlined />
-                                    </Button>
+                                    </Button> */}
                                   </div>
                                 )}
                               </div>

@@ -732,8 +732,8 @@ function InPatientManagement() {
                               </Button>
                             )
                           }
-                        })} */}
-                        {/* {showAwaitingPatient.IncomingRequestForTransfer.map((item, index) => {
+                        })}
+                        {showAwaitingPatient.IncomingRequestForTransfer.map((item, index) => {
                           if (item.AdtStatus === "Confirmed") {
                             return (<>
                               <Tag key={index}>

@@ -17,7 +17,8 @@ const { Text } = Typography;
 import customAxios from "../../../../components/customAxios/customAxios";
 //import { urlUpdateDiscount } from "../../../endpoints";
 import { useEffect } from "react";
-function OrderingAttributeModal({ options, open, handleClose, handleSubmit }) {
+import { v4 as uuidv4 } from "uuid";
+function OrderingAttributeModal({ options, record, open, handleClose, handleSubmit }) {
   const [form] = Form.useForm();
 
   const [loading, setLoading] = useState(false);
@@ -28,28 +29,43 @@ function OrderingAttributeModal({ options, open, handleClose, handleSubmit }) {
   };
 
   const onFinishForAddChargeParameters = async (values) => {
-    debugger;
-
     const genderOption = options?.Genders.find(
       (option) => option.LookupID === values.Gender
     );
     const startAgeUnitOption = options?.Uoms.find(
-      (option) => option.UomId === values.StartAgeUnits
+      (option) => option.UomId === values.StartAgeUom
     );
     const endAgeUnitOption = options?.Uoms.find(
-      (option) => option.UomId === values.EndAgeUnits
+      (option) => option.UomId === values.EndAgeUom
     );
 
     const finalValues = {
       ...values,
+      key: record ? record?.key : uuidv4(),
       GenderType: genderOption?.LookupDescription,
       StartAgeUnitShortName: startAgeUnitOption?.ShortName,
       EndAgeUnitShortName: endAgeUnitOption?.ShortName,
+      ActiveFlag: true
     };
 
     handleSubmit(finalValues);
     handleCancel();
   };
+
+  useEffect(() => {
+    if (record) {
+      form.setFieldsValue({
+        Gender: record?.Gender,
+        StartAge: record?.StartAge,
+        StartAgeUom: record?.StartAgeUom,
+        EndAge: record?.EndAge,
+        EndAgeUom: record?.EndAgeUom,
+        ServiceOrderAttributeId: record?.ServiceOrderAttributeId
+      });
+    } else {
+      form.resetFields();
+    }
+  }, [record, form]);
 
   return (
     <div>
@@ -70,7 +86,7 @@ function OrderingAttributeModal({ options, open, handleClose, handleSubmit }) {
             onCancel={handleCancel}
           >
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-              <Col  span={8}>
+              <Col span={8}>
                 <Form.Item
                   name="Gender"
                   label="Gender"
@@ -87,19 +103,20 @@ function OrderingAttributeModal({ options, open, handleClose, handleSubmit }) {
                     ))}
                   </Select>
                 </Form.Item>
+                <Form.Item hidden name="ServiceOrderAttributeId"><Input /></Form.Item>
               </Col>
               <Col span={8}>
                 <Form.Item
                   name="StartAge"
-                  label="StartAge"
+                  label="Start Age"
                   rules={[{ required: true }]}
                 >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
-              <Col  span={8}>
+              <Col span={8}>
                 <Form.Item
-                  name="StartAgeUnits"
+                  name="StartAgeUom"
                   label="Start Age Units"
                   rules={[
                     {
@@ -117,18 +134,18 @@ function OrderingAttributeModal({ options, open, handleClose, handleSubmit }) {
                   </Select>
                 </Form.Item>
               </Col>
-              <Col  span={10}>
+              <Col span={10}>
                 <Form.Item
                   name="EndAge"
-                  label="EndAge"
+                  label="End Age"
                   rules={[{ required: true }]}
                 >
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
-              <Col  span={10}>
+              <Col span={10}>
                 <Form.Item
-                  name="EndAgeUnits"
+                  name="EndAgeUom"
                   label="End Age Units"
                   rules={[
                     { required: true, message: "Please select EndAge Units " },

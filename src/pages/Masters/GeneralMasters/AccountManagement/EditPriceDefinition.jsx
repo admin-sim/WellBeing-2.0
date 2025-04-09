@@ -3,7 +3,7 @@ import { Button, Col, Form, Input, InputNumber, Row, Select, DatePicker, Divider
 import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import Layout from 'antd/es/layout/layout';
 import { useNavigate } from 'react-router';
-import { urlGetAllServiceGroups, urlGetServiceClassificationsForServiceGroup, urlGetAllServicePricesForSelectedServiceClassification ,urlRevisionServicePrices, urlAddOrUpdateServicePrices} from '../../../../../endpoints';
+import { urlGetAllServiceGroups, urlGetServiceClassificationsForServiceGroup, urlGetAllServicePricesForSelectedServiceClassification, urlRevisionServicePrices, urlAddOrUpdateServicePrices } from '../../../../../endpoints';
 import customAxios from '../../../../components/customAxios/customAxios';
 import Title from 'antd/es/typography/Title';
 import { useLocation } from 'react-router-dom';
@@ -24,7 +24,7 @@ const EditPriceDefinition = () => {
   const location = useLocation();
   const value = location.state.value;
 
-  
+
   const [form] = Form.useForm();
   // Convert strings to dayjs objects
   const effectiveFrom = dayjs(value.EffectiveFromDatestring, 'DD-MM-YYYY');
@@ -33,10 +33,10 @@ const EditPriceDefinition = () => {
   React.useEffect(() => {
 
     form.setFieldsValue({
-        effectiveFrom,
-        effectiveTo
+      effectiveFrom,
+      effectiveTo
     });
-}, []);
+  }, []);
 
 
 
@@ -255,6 +255,7 @@ const EditPriceDefinition = () => {
       ),
     },
   ];
+
   const handleTableInputChange = (ServiceId, dataIndex, value) => {
     // Update the main `services` state
     setServices((prevServices) =>
@@ -264,13 +265,13 @@ const EditPriceDefinition = () => {
           : item
       )
     );
-  
+
     // Update the `modifiedServices` state to track changes
     setModifiedServices((prevModifiedServices) => {
       const existingIndex = prevModifiedServices.findIndex(
         (service) => service.ServiceId === ServiceId
       );
-  
+
       if (existingIndex !== -1) {
         // Update existing modified service
         const updatedServices = [...prevModifiedServices];
@@ -288,9 +289,6 @@ const EditPriceDefinition = () => {
       }
     });
   };
-  
-
-
 
   const handleOnFinish = async (values) => {
     debugger;
@@ -299,7 +297,7 @@ const EditPriceDefinition = () => {
 
     // Validate the form fields
     await form.validateFields();
-    if(modifiedServices.length<0){
+    if (modifiedServices.length === 0) {
       message.warning("please make any changes in price");
       return false;
     }
@@ -313,48 +311,47 @@ const EditPriceDefinition = () => {
 
     // Check if effectiveFromDate is not null
     if (effectiveFromDate) {
-        // Format the date to a string (if needed, based on your date format)
-        const formattedDate = effectiveFromDate.format('DD-MM-YYYY'); // Assuming you want to format it as 'DD-MM-YYYY'
-        const formtodate=effectiveToDate.format('DD-MM-YYYY'); 
+      // Format the date to a string (if needed, based on your date format)
+      const formattedDate = effectiveFromDate.format('DD-MM-YYYY'); // Assuming you want to format it as 'DD-MM-YYYY'
+      const formtodate = effectiveToDate.format('DD-MM-YYYY');
 
-        // Create a new array with the updated EffectiveFromDatestring
-        updatedServices = modifiedServices.map(service => ({
-            ...service,
-            EffectiveFromDatestring: formattedDate ,
-            EffectiveToDatestring :formtodate
-
-        }));
+      // Create a new array with the updated EffectiveFromDatestring
+      updatedServices = modifiedServices.map(service => ({
+        ...service,
+        EffectiveFromDatestring: formattedDate,
+        EffectiveToDatestring: formtodate
+      }));
     }
 
     try {
-        const response = await customAxios.post(urlAddOrUpdateServicePrices, updatedServices, {
-            headers: {
-                "Content-Type": "application/json",
-            },
+      const response = await customAxios.post(urlAddOrUpdateServicePrices, updatedServices, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (response.status === 200 && response.data.data === true) {
+        notification.success({
+          message: "Success",
+          description: "Service Added Successfully.....",
         });
-        if (response.status === 200 && response.data.data === true) {
-            notification.success({
-                message: "Success",
-                description: "Service Added Successfully.....",
-            });
-            setModifiedServices([]);
-            // Optionally reset form fields or navigate
-            // form.resetFields();
-            // const url = "/Service";
-            // navigate(url);
-        } else {
-            notification.error({
-                message: "Error",
-                description: "Something Went Wrong.....",
-            });
-        }
-    } catch (error) {
+        setModifiedServices([]);
+        // Optionally reset form fields or navigate
+        // form.resetFields();
+        // const url = "/Service";
+        // navigate(url);
+      } else {
         notification.error({
-            message: "Error",
-            description: "Something Went Wrong.....",
+          message: "Error",
+          description: "Something Went Wrong.....",
         });
+      }
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Something Went Wrong.....",
+      });
     }
-};
+  };
 
 
 
@@ -435,7 +432,7 @@ const EditPriceDefinition = () => {
             </Col>
             <Col className="gutter-row" span={4}>
               <div>
-                <Form.Item  label="EffectiveToDate"name="effectiveTo"
+                <Form.Item label="EffectiveToDate" name="effectiveTo"
                 >
                   <DatePicker format='DD-MM-YYYY' />
                 </Form.Item>
@@ -443,7 +440,7 @@ const EditPriceDefinition = () => {
             </Col>
             <Col className="gutter-row" span={2}>
               <Form.Item label="&nbsp;">
-                <Button type="primary"  htmlType="submit">
+                <Button type="primary" htmlType="submit">
                   Save
                 </Button>
               </Form.Item>
@@ -462,7 +459,7 @@ const EditPriceDefinition = () => {
             pagination={pagination}
             onChange={(pagination) => setPagination(pagination)}
           />
-    
+
         </Form>
       </div>
     </Layout>
