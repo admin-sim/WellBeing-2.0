@@ -157,6 +157,36 @@ function CreateService() {
           })
 
           setAgeGenderRestriction(order)
+          const order1 = response.data.data.ListServiceTat.map((p) => {
+            const TatUomOption = response.data.data?.Uoms.find(
+              (option) => option.UomId === p.TatUom
+            );
+
+            return {
+              ...p,
+              key: uuidv4(),
+              TatUomShortName: TatUomOption?.ShortName,
+            }
+          })
+
+          setTurnAroundTime(order1)
+
+          setAgeGenderRestriction(order)
+          const order2 = response.data.data.ListServiceMedicalCode.map((p) => {
+            const TatUomOption = response.data.data?.MedicalCodeTypes.find(
+              (option) => option.LookupID === p.MedicalCodeTypeId
+            );
+
+            return {
+              ...p,
+              key: uuidv4(),
+              TatUomShortName: TatUomOption?.LookupDescription,
+              ActiveFlag1: true
+            }
+          })
+
+          setMedicalCode(order2)
+
           if (data.IsFromTestValues) {
             setIsTestValuesDisabled(false);
             setResultTypeDisable(true);
@@ -291,11 +321,11 @@ function CreateService() {
     );
 
     const validItems1 = turnAroundTime.filter(
-      (item) => item.OrderPriorityId !== undefined
+      (item) => item.TatId !== undefined
     );
 
     const tempItems1 = turnAroundTime.filter(
-      (item) => item.OrderPriorityId === undefined && item.ActiveFlag === true
+      (item) => item.TatId === undefined && item.ActiveFlag === true
     );
 
     const validItems2 = medicalCode.filter(

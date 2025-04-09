@@ -36,7 +36,7 @@ function TurnAroundTimeTableModal({
   const onFinishForAddChargeParameters = async (values) => {
     debugger;
     const TatUomOption = options?.Uoms.find(
-      (option) => option.UomId === values.UOM
+      (option) => option.UomId === values.TatUom
     );
 
     const finalValues = {
@@ -103,7 +103,7 @@ function TurnAroundTimeTableModal({
               </Col>
               <Col span={8}>
                 <Form.Item
-                  name="UOM"
+                  name="TatUom"
                   label="UOM"
                   rules={[{ required: true }]}
                 >
