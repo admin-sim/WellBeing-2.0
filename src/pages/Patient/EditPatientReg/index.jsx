@@ -15,6 +15,7 @@ import {
   Space,
   Popconfirm,
   Tooltip,
+  message,
 } from "antd";
 import { IoAddCircleOutline } from "react-icons/io5";
 import { FaAnglesRight } from "react-icons/fa6";
@@ -35,6 +36,8 @@ import {
   urlAddNewAndUpdatePatientIdentity,
   urlGetPatientIdentificationDetails,
   urlDeletePatientIdentification,
+  urlGetEncounterDetails,
+  urlGetPatientHeaderDetails,
 } from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import Title from "antd/es/typography/Title";
@@ -63,7 +66,7 @@ const NewPatient = () => {
 
   const [selectedDate, setSelectedDate] = useState("");
   const [age, setAge] = useState({ years: 0, months: 0, days: 0 });
-
+  const [ModalLoader, setModalLoader] = useState(false);
   const [selecteddob, setselecteddob] = useState("");
 
   const [selectedCountry, setSelectedCountry] = useState("");
@@ -450,165 +453,98 @@ const NewPatient = () => {
 
   const handleSearchToVisit = () => {
     const url = `/patient/NewVisit`;
-    // Navigate to the new URL
     navigate(url);
   };
 
   const handleOnFinish = async (values) => {
-    debugger;
     setLoadings(true);
     console.log("Received values from form: ", values);
-
+  
     values.dob = selecteddob;
+  
     const patient = {
-      UhId:patientDetails.UhId,
+      UhId: patientDetails.UhId,
       PatientId: patientDetails.PatientId,
-      PatientTitle: values.title === undefined ? null : values.title,
-      PatientFirstName:
-        values.PatientFirstName === undefined || values.PatientFirstName === ""
-          ? null
-          : values.PatientFirstName,
-      PatientMiddleName:
-        values.PatientMiddleName === undefined ||
-        values.PatientMiddleName === ""
-          ? null
-          : values.PatientMiddleName,
-      PatientLastName:
-        values.PatientLastName === undefined || values.PatientLastName === ""
-          ? null
-          : values.PatientLastName,
-      Gender: values.PatientGender === undefined ? null : values.PatientGender,
+      PatientTitle: values.title || null,
+      PatientFirstName: values.PatientFirstName || null,
+      PatientMiddleName: values.PatientMiddleName || null,
+      PatientLastName: values.PatientLastName || null,
+      Gender: values.PatientGender || null,
       FacilityId: 1,
-      BloodGroup: values.BloodGroup === undefined ? null : values.BloodGroup,
-      DateOfBirthstring: values.dob === undefined ? null : values.dob,
-      FatherHusbandTitle:
-        values.titleFatherHusband === undefined
-          ? null
-          : values.titleFatherHusband,
-      FatherHusbandName:
-        values.FatherHusbandName === undefined ||
-        values.FatherHusbandName === ""
-          ? null
-          : values.FatherHusbandName,
-      MaritalStatus:
-        values.MaritalStatus === undefined ? null : values.MaritalStatus,
-      Height:
-        values.Height === undefined || values.Height === ""
-          ? null
-          : values.Height,
-      Weight:
-        values.Weight === undefined || values.Weight === ""
-          ? null
-          : values.Weight,
-      MobileNumber:
-        values.MobileNumber === undefined || values.MobileNumber === ""
-          ? null
-          : values.MobileNumber,
-      LandlineNumber:
-        values.LandlineNumber === undefined || values.LandlineNumber === ""
-          ? null
-          : values.LandlineNumber,
-      EmailId:
-        values.EmailId === undefined || values.EmailId === ""
-          ? null
-          : values.EmailId,
-      PresentAddress1:
-        values.presentAddress1 === undefined || values.presentAddress1 === ""
-          ? null
-          : values.presentAddress1,
-      ReligionId: values.Religion === undefined ? null : values.Religion,
-      PermanentAddress1:
-        values.permanentAddress1 === undefined ||
-        values.permanentAddress1 === ""
-          ? null
-          : values.permanentAddress1,
+      BloodGroup: values.BloodGroup || null,
+      DateOfBirthstring: values.dob || null,
+      FatherHusbandTitle: values.titleFatherHusband || null,
+      FatherHusbandName: values.FatherHusbandName || null,
+      MaritalStatus: values.MaritalStatus || null,
+      Height: values.Height || null,
+      Weight: values.Weight || null,
+      MobileNumber: values.MobileNumber || null,
+      LandlineNumber: values.LandlineNumber || null,
+      EmailId: values.EmailId || null,
+      PresentAddress1: values.presentAddress1 || null,
+      ReligionId: values.Religion || null,
+      PermanentAddress1: values.permanentAddress1 || null,
       PermanentCountryId: values?.permanentCountryId,
       PermanentStateId: values.permanentStateId,
       PermanentPlaceId: values.permanentPlaceId,
       PermanentAreaId: values.permanentAreaId,
-      PermanentPinCode:
-        values.permanentPinCode === undefined || values.permanentPinCode === ""
-          ? null
-          : values.permanentPinCode,
+      PermanentPinCode: values.permanentPinCode || null,
       PhotoUrl: uploadedImage,
       PresentCountryId: values?.presentCountryId,
       PresentStateId: values.presentStateId,
       PresentPlaceId: values.presentPlaceId,
       PresentAreaId: values.presentAreaId,
-      PresentPinCode:
-        values.presentPinCode === undefined || values.presentPinCode === ""
-          ? null
-          : values.presentPinCode,
-      Occupation:
-        values.Occupation === undefined || values.Occupation === ""
-          ? null
-          : values.Occupation,
-      EthnicityId: values.Ethnicity === undefined ? null : values.Ethnicity,
-      PrimaryLanguageId:
-        values.PrimaryLanguageId === undefined
-          ? null
-          : values.PrimaryLanguageId,
-      CanSpeakEnglish:
-        values.CanSpeakEnglish === undefined || values.CanSpeakEnglish === ""
-          ? null
-          : values.CanSpeakEnglish,
-      BirthPlace:
-        values.BirthPlace === undefined || values.BirthPlace === ""
-          ? null
-          : values.BirthPlace,
-      BirthIdentification1:
-        values.birthIdentification1 === undefined ||
-        values.birthIdentification1 === ""
-          ? null
-          : values.birthIdentification1,
-      BirthIdentification2:
-        values.birthIdentification2 === undefined ||
-        values.birthIdentification2 === ""
-          ? null
-          : values.birthIdentification2,
-          ActiveFlag:patientDetails.ActiveFlag
+      PresentPinCode: values.presentPinCode || null,
+      Occupation: values.Occupation || null,
+      EthnicityId: values.Ethnicity || null,
+      PrimaryLanguageId: values.PrimaryLanguageId || null,
+      CanSpeakEnglish: values.CanSpeakEnglish || null,
+      BirthPlace: values.BirthPlace || null,
+      BirthIdentification1: values.birthIdentification1 || null,
+      BirthIdentification2: values.birthIdentification2 || null,
+      ActiveFlag: patientDetails.ActiveFlag,
     };
-
-    const postData = {
-      patient: patient,
-    };
-
-    console.log("post data", postData);
-
+  
+    const postData = { patient };
+  
     try {
-      // Send a POST request to the server
       const response = await customAxios.post(urlAddNewPatient, postData);
-
-      if (response.data != null) {
+  
+      if (response.data !== null) {
         if (response.data === false) {
-          setLoadings(false);
           notification.error({
             message: "Error",
             description: "Failed to register patient. Please try again later.",
           });
         } else {
-          // Display success notification
           notification.success({
-            message: "Patient details updated Successful",
-            description: `The patient details have been successfully registered`,
+            message: "Patient details updated Successfully",
+            description: "The patient details have been successfully registered",
           });
-          handleSearchToVisit();
-          setLoadings(false);
+  
+          // Update patient record to pass to visit modal
+          const updatedRecord = {
+            ...patientDetails,
+            PatientId: response.data.PatientId ?? patient.PatientId,
+          };
+  
+          // Navigate to /Patient/NewVisit and pass record
+          navigate("/Patient/NewVisit", {
+            state: { record: updatedRecord },
+          });
         }
       }
-
-      // Process the response data (this assumes the server responds with JSON)
     } catch (error) {
       console.error("Failed to send data to server: ", error);
-
-      // Display error notification
       notification.error({
         message: "Error",
         description: "Failed to register patient. Please try again later.",
       });
+    } finally {
       setLoadings(false);
     }
   };
+  
 
   const onEdit = async (record) => {
     debugger;

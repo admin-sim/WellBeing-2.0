@@ -61,6 +61,7 @@ function CreateEditWorkFlow() {
 
   useEffect(() => {
     if (facilityOptions?.Screen) {
+      debugger
       const newScreen = facilityOptions?.Screen?.filter(
         (item) =>
           !facilityOptions?.WorkFlowScreens?.some((item1) => item.ScreenId === item1.ScreenId)
@@ -140,6 +141,7 @@ function CreateEditWorkFlow() {
   // };
 
   function handlePlusClick(item) {
+    debugger
     form1.resetFields()
     {
       (item.Parameters || []).forEach((it) => {
@@ -162,65 +164,81 @@ function CreateEditWorkFlow() {
       console.error("Failed to fetch:", error);
     }
   }
-
   function onFinishmodal(value) {
-    debugger
-    const filteredScreens = lists.list2.find((i) =>
-      screen.ScreenId === i.ScreenId && screen.WorkFlowScreenId === i.WorkFlowScreenId)
-
+    debugger;
+  
+    const filteredScreens = lists.list2.find(
+      (i) =>
+        screen?.ScreenId === i.ScreenId &&
+        screen?.WorkFlowScreenId === i.WorkFlowScreenId
+    );
+  
+    if (!filteredScreens) {
+      console.error("Screen not found in list2. Cannot update parameters.");
+      return;
+    }
+  
     const parameterMapping = {
       PatientId: 1,
       AppointmentId: 2,
       PatientType: 3,
       EncounterId: 4,
     };
-
-    function AddItem(item) {
-      debugger
-      const exists = filteredScreens.Parameters.some(
-        (c) => c.ParameterName === item.ParameterName
+  
+    const selectedIds = [];
+    const newParameters = Object.keys(parameterMapping).map((key) => {
+      const isChecked = value[key];
+  
+      const existingParam = filteredScreens.Parameters?.find(
+        (p) => p.ParameterName === key
       );
-
-      if (exists) {
-        return item;
-      } else {
+  
+      if (isChecked) {
+        selectedIds.push(parameterMapping[key]);
+        return {
+          ParameterName: key,
+          ParameterId: parameterMapping[key],
+          ActiveFlag: true,
+        };
+      } else if (existingParam) {
         return {
           ...item,
-          ParameterId: parameterMapping[item.ParameterName] || 0,
+          ParameterId: parameterMapping[item.ParameterName] || 0, 
         };
+      } else {
+        return null;
       }
-    }
-
-    const newData = filteredScreens.Parameters.map((item) => {
-      const paramValue = value[item.ParameterName];
-
-      return paramValue === false
-        ? { ...item, ActiveFlag: paramValue }
-        : AddItem(item);
     });
-
-
-    // const newData = filteredScreens.Parameters.map((item) => {
-    //   const paramValue = value[item.ParameterName];
-
-    //   return paramValue === false
-    //     ? { ...item, ActiveFlag: paramValue }
-    //     : AddItem(item);
-    // });
-
-    const newData1 =
-      setLists((prev) => ({
-        ...prev,
-        list2: prev.list2.map((item) => ({
-          ...item,
-          Parameters: item.ScreenId === filteredScreens.ScreenId ? newData : item.Parameters,
-        })),
-      }));
-
-    setScreen(null)
-    setIsModalOpen(false)
+  
+    const finalParams = newParameters.filter(Boolean);
+  
+    const formattedString =
+      selectedIds.length > 0 ? `${selectedIds.join(",")},` : "0";
+  
+    console.log("Formatted Parameter String:", formattedString);
+  
+    setLists((prev) => ({
+      ...prev,
+      list2: prev.list2.map((item) => {
+        if (
+          item.ScreenId === filteredScreens.ScreenId &&
+          item.WorkFlowScreenId === filteredScreens.WorkFlowScreenId
+        ) {
+          return {
+            ...item,
+            ParameterList: formattedString,
+            Parameters: finalParams,
+          };
+        }
+        return item;
+      }),
+    }));
+  
+    setScreen(null);
+    setIsModalOpen(false);
   }
-
+  
+  
   function onCancelmodal() {
     setIsModalOpen(false)
   }
@@ -454,13 +472,14 @@ function CreateEditWorkFlow() {
           <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
             <Card title={screen?.Action} size="small">
               {(facilityOptions?.Parameter || []).map((item) => (
-                <FormItem initialValue={false}
-                  valuePropName="checked"
-                  name={item.ParameterDescription.split(" ").join("")}
-                  key={item.ParameterId}
-                >
-                  <Checkbox>{item.ParameterDescription}</Checkbox>
-                </FormItem>
+              <FormItem
+              initialValue={false}
+              valuePropName="checked"
+              name={item.ParameterName} // <- Use a consistent internal key
+              key={item.ParameterId}
+            >
+              <Checkbox>{item.ParameterDescription}</Checkbox>
+            </FormItem>            
               ))}
             </Card>
           </Space>

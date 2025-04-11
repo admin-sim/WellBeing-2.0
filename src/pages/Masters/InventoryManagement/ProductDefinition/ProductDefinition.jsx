@@ -26,6 +26,7 @@ function ProductDefinition() {
   }, []);
 
   const fetchProductDefinitionIndex = () => {
+    debugger;
     try {
       customAxios.get(urlProductDefinitionIndex).then((response) => {
         const apiData = response.data.data;
