@@ -30,7 +30,7 @@ import customAxios from "../../../components/customAxios/customAxios.jsx";
 import { useNavigate } from "react-router";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
-
+import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 const PatientRegistartionReport = () => {
@@ -39,7 +39,7 @@ const PatientRegistartionReport = () => {
   const [facilities, setFacilities] = useState([]);
   const [reportUrl, setReportUrl] = useState(null);
   const [error, setError] = useState(null);
-
+  const userContext = useSelector((state) => state.userContext.value);
   const [loading, setLoading] = useState(false); // State for loader visibility
 
   useEffect(() => {
@@ -64,6 +64,7 @@ const PatientRegistartionReport = () => {
       FromDate: values.fromDate.format("YYYY-MM-DD"),
       ToDate: values.toDate.format("YYYY-MM-DD"),
       FacilityId: values.FacilityId,
+      AppUser: userContext.AppUserName
     };
 
     try {

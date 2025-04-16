@@ -33,7 +33,7 @@ import customAxios from "../../../components/customAxios/customAxios.jsx";
 import { useNavigate } from "react-router";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
-
+import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 const EncounterRegistrationReport = () => {
@@ -45,7 +45,7 @@ const EncounterRegistrationReport = () => {
   const [facilities, setFacilities] = useState([]);
   const [reportUrl, setReportUrl] = useState(null);
   const [error, setError] = useState(null);
-
+  const userContext = useSelector((state) => state.userContext.value);
   const [loading, setLoading] = useState(false); // State for loader visibility
 
   useEffect(() => {
@@ -95,6 +95,7 @@ const EncounterRegistrationReport = () => {
       DeptId: values.department,
       ProviderId: values.Provider,
       VisitType: values.VisitType,
+      AppUser: userContext.AppUserName
     };
 
     try {
