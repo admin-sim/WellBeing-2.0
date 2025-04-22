@@ -296,6 +296,7 @@ const OtcDispense = () => {
           const formattedBatchOptions = fetchedBatchData.map((batch) => ({
             value: `${batch.BatchNo}/${batch.EXPDateString}/${batch.PendingQty}`, // Combine values
             label: `${batch.BatchNo}/${batch.EXPDateString}/${batch.PendingQty}`,
+            batch: batch,
           }));
 
           setBatchOptions(formattedBatchOptions);
@@ -385,8 +386,9 @@ const OtcDispense = () => {
     }
   };
 
-  const handleBatchChange = async () => {
+  const handleBatchChange = async (value, batch) => {
     debugger;
+    form.setFieldsValue({ StockId: batch.batch.batch.StockId });
     const values = form.getFieldsValue();
 
     // Check if Batch is defined and not null
@@ -1477,12 +1479,16 @@ const OtcDispense = () => {
                   ]}
                 >
                   <Select
-                    onChange={handleBatchChange}
+                    onChange={(value, batch) => handleBatchChange(value, batch)}
                     disabled={!batchOptions.length}
                     dropdownStyle={{ minWidth: "15rem" }}
                   >
                     {batchOptions.map((batch) => (
-                      <Option key={batch.value} value={batch.value}>
+                      <Option
+                        key={batch.value}
+                        value={batch.value}
+                        batch={batch}
+                      >
                         {batch.label}
                       </Option>
                     ))}

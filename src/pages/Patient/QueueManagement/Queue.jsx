@@ -183,81 +183,119 @@ const Queue = () => {
     }
   };
 
+  // const filterQueueActions = (queueModel, queueAction) => {
+  //   return queueModel.map((patient) => {
+  //     let options = [...queueAction];
+  //     if (patient.Gender !== 8) {
+  //       options = options.filter(
+  //         (option) => option.LookupDescription !== "Antenatal Vitals"
+  //       );
+  //       if (patient.Q_Status === "Awaiting Arrival") {
+  //         options = options.filter((option) =>
+  //           ["Mark Arrival", "Patient Vital Signs"].includes(
+  //             option.LookupDescription
+  //           )
+  //         );
+  //       } else if (patient.Q_Status === "Arrived") {
+  //         options = options.filter((option) =>
+  //           [
+  //             "Patient Vital Signs",
+  //             "Push Patient",
+  //             "Revert To CheckIn",
+  //             "Start Consultation",
+  //           ].includes(option.LookupDescription)
+  //         );
+  //       } else if (patient.Q_Status === "Consultation In Progress") {
+  //         options = options.filter((option) =>
+  //           [
+  //             "Patient Vital Signs",
+  //             "Revert to MarkArrival",
+  //             "Close Consultation",
+  //           ].includes(option.LookupDescription)
+  //         );
+  //       } else if (patient.Q_Status === "Consulted") {
+  //         options = options.filter((option) =>
+  //           ["Patient Vital Signs"].includes(option.LookupDescription)
+  //         );
+  //       }
+  //     } else {
+  //       if (patient.Q_Status === "Awaiting Arrival") {
+  //         options = options.filter((option) =>
+  //           [
+  //             "Mark Arrival",
+  //             "Patient Vital Signs",
+  //             "Antenatal Vitals",
+  //           ].includes(option.LookupDescription)
+  //         );
+  //       } else if (patient.Q_Status === "Arrived") {
+  //         options = options.filter((option) =>
+  //           [
+  //             "Patient Vital Signs",
+  //             "Push Patient",
+  //             "Revert To CheckIn",
+  //             "Start Consultation",
+  //             "Antenatal Vitals",
+  //           ].includes(option.LookupDescription)
+  //         );
+  //       } else if (patient.Q_Status === "Consultation In Progress") {
+  //         options = options.filter((option) =>
+  //           [
+  //             "Patient Vital Signs",
+  //             "Revert to MarkArrival",
+  //             "Close Consultation",
+  //             "Antenatal Vitals",
+  //           ].includes(option.LookupDescription)
+  //         );
+  //       } else if (patient.Q_Status === "Consulted") {
+  //         options = options.filter((option) =>
+  //           ["Patient Vital Signs", "Antenatal Vitals"].includes(
+  //             option.LookupDescription
+  //           )
+  //         );
+  //       }
+  //     }
+
+  //     return options;
+  //   });
+  // };
+
   const filterQueueActions = (queueModel, queueAction) => {
     return queueModel.map((patient) => {
       let options = [...queueAction];
-      if (patient.Gender !== 8) {
-        options = options.filter(
-          (option) => option.LookupDescription !== "Antenatal Vitals"
+  
+      // Remove "Antenatal Vitals" unconditionally
+      options = options.filter(option => option.LookupDescription !== "Antenatal Vitals");
+  
+      if (patient.Q_Status === "Awaiting Arrival") {
+        options = options.filter((option) =>
+          ["Mark Arrival", "Patient Vital Signs"].includes(option.LookupDescription)
         );
-        if (patient.Q_Status === "Awaiting Arrival") {
-          options = options.filter((option) =>
-            ["Mark Arrival", "Patient Vital Signs"].includes(
-              option.LookupDescription
-            )
-          );
-        } else if (patient.Q_Status === "Arrived") {
-          options = options.filter((option) =>
-            [
-              "Patient Vital Signs",
-              "Push Patient",
-              "Revert To CheckIn",
-              "Start Consultation",
-            ].includes(option.LookupDescription)
-          );
-        } else if (patient.Q_Status === "Consultation In Progress") {
-          options = options.filter((option) =>
-            [
-              "Patient Vital Signs",
-              "Revert to MarkArrival",
-              "Close Consultation",
-            ].includes(option.LookupDescription)
-          );
-        } else if (patient.Q_Status === "Consulted") {
-          options = options.filter((option) =>
-            ["Patient Vital Signs"].includes(option.LookupDescription)
-          );
-        }
-      } else {
-        if (patient.Q_Status === "Awaiting Arrival") {
-          options = options.filter((option) =>
-            [
-              "Mark Arrival",
-              "Patient Vital Signs",
-              "Antenatal Vitals",
-            ].includes(option.LookupDescription)
-          );
-        } else if (patient.Q_Status === "Arrived") {
-          options = options.filter((option) =>
-            [
-              "Patient Vital Signs",
-              "Push Patient",
-              "Revert To CheckIn",
-              "Start Consultation",
-              "Antenatal Vitals",
-            ].includes(option.LookupDescription)
-          );
-        } else if (patient.Q_Status === "Consultation In Progress") {
-          options = options.filter((option) =>
-            [
-              "Patient Vital Signs",
-              "Revert to MarkArrival",
-              "Close Consultation",
-              "Antenatal Vitals",
-            ].includes(option.LookupDescription)
-          );
-        } else if (patient.Q_Status === "Consulted") {
-          options = options.filter((option) =>
-            ["Patient Vital Signs", "Antenatal Vitals"].includes(
-              option.LookupDescription
-            )
-          );
-        }
+      } else if (patient.Q_Status === "Arrived") {
+        options = options.filter((option) =>
+          [
+            "Patient Vital Signs",
+            "Push Patient",
+            "Revert To CheckIn",
+            "Start Consultation",
+          ].includes(option.LookupDescription)
+        );
+      } else if (patient.Q_Status === "Consultation In Progress") {
+        options = options.filter((option) =>
+          [
+            "Patient Vital Signs",
+            "Revert to MarkArrival",
+            "Close Consultation",
+          ].includes(option.LookupDescription)
+        );
+      } else if (patient.Q_Status === "Consulted") {
+        options = options.filter((option) =>
+          ["Patient Vital Signs"].includes(option.LookupDescription)
+        );
       }
-
+  
       return options;
     });
-  };
+  };  
 
   const handleSearchProvider = async () => {
     try {
