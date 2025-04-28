@@ -332,7 +332,8 @@ const EditPriceDefinition = () => {
       if (response.status === 200 && response.data.data === true) {
         notification.success({
           message: "Success",
-          description: "Service Added Successfully.....",
+          // description: "Service Added Successfully.....",
+          description: "The Service Price Edited Successfully.....",
         });
         setModifiedServices([]);
         // Optionally reset form fields or navigate

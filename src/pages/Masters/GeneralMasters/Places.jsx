@@ -129,7 +129,7 @@ function Places() {
     console.log("state Edit Modal Submit", values);
     if (
       values.State !== undefined &&
-      values.Country !== undefined &&
+      // values.Country !== undefined &&
       values.PlaceName !== undefined
     ) {
       const place = isEditing
@@ -141,12 +141,11 @@ function Places() {
         : {
             PlaceId: 0,
             StateId: values.State,
-            CountryId: values.Country,
+            // CountryId: values.Country,
             PlaceName: values.PlaceName,
           };
 
       try {
-        // Send a POST request to the server
         const response = await customAxios.post(urlAddAndUpdatePlace, place, {
           headers: {
             "Content-Type": "application/json",

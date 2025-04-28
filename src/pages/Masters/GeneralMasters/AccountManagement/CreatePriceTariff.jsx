@@ -93,7 +93,6 @@ function CreatePriceTariff() {
   };
 
   const handleEdit = async (record) => {
-    debugger;
     try {
       const response = await customAxios.get(
         `${urlEditPriceTariffChargeParameter}?PriceTariffLine=${record.PriceTariffLineId}`
@@ -113,7 +112,6 @@ function CreatePriceTariff() {
   };
 
   const handleDelete = async (record) => {
-    debugger;
     try {
       const response = await customAxios.delete(
         `${urlDeletePriceTariffChargeParameter}?priceTariffLineId=${record.PriceTariffLineId}&priceTariffId=${record.PriceTariffId}`
@@ -136,7 +134,6 @@ function CreatePriceTariff() {
   }, []);
 
   useEffect(() => {
-    debugger;
     if (EditedPricetariffId) {
       // Check if EditedPricetariffId exists
       const fetchData1 = async () => {
@@ -318,7 +315,6 @@ function CreatePriceTariff() {
       dataIndex: "ListOfChargeParameters",
       key: "chargeParameters",
       render: (text, record) => {
-        debugger;
         const chargeParameters = [];
 
         if (record.NationalityName)

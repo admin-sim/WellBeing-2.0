@@ -1,12 +1,42 @@
 import { PlusCircleOutlined } from "@ant-design/icons";
-import { Layout } from "antd";
-import React from "react";
+import { Layout, message } from "antd";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../../../../components/PageHeader";
 import CustomTable from "../../../../components/customTable/index";
+import customAxios from "../../../../components/customAxios/customAxios";
+import { urlDeleteReferral, urlReferralIndex } from "../../../../../endpoints";
 
 function Referal() {
   const navigate = useNavigate();
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await customAxios.get(urlReferralIndex);
+      const result = response.data.data.Referrals.map((item, index) => {
+        return {
+          ...item,
+          SlNo: index + 1,
+          ReferrerName: item.ReferrerFirstName,// + " " + item.ReferrerLastName,
+          ReferrerType:
+            item.ReferrerType == "D"
+              ? "Doctor"
+              : item.ReferrerType == "O"
+              ? "Other"
+              : "Hospital",
+        };
+      });
+      setData(result);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
   const columns = [
     {
       title: "Sl. No.",
@@ -35,7 +65,7 @@ function Referal() {
     },
     {
       title: "Address",
-      dataIndex: "Address",
+      dataIndex: "Address1",
       width: 120,
     },
     {
@@ -60,68 +90,35 @@ function Referal() {
     },
     {
       title: "Contact Email",
-      dataIndex: "Email",
+      dataIndex: "EmailId",
       width: 120,
     },
   ];
-  const data = [
-    {
-      key: "1",
-      SlNo: "1",
-      ReferrerName: "Prabhu",
-      ReferrerType: "Hospital",
-      Gender: "Male",
-      Qualification: "MBBS",
-      Address: "Bengaluru",
-      Area: "Kengeri",
-      Pin: "560074",
-      LandlineNumber: "0801234567",
-      MobileNumber: "9876543210",
-      Email: "abc@abc.com",
-    },
-    {
-      key: 2,
-      SlNo: "2",
-      ReferrerName: "Prabhu",
-      ReferrerType: "Hospital",
-      Gender: "Male",
-      Qualification: "MBBS",
-      Address: "Bengaluru",
-      Area: "Kengeri",
-      Pin: "560074",
-      LandlineNumber: "0801234567",
-      MobileNumber: "9876543210",
-      Email: "abc@abc.com",
-    },
-    {
-      key: 3,
-      SlNo: "3",
-      ReferrerName: "Prabhu",
-      ReferrerType: "Hospital",
-      Gender: "Male",
-      Qualification: "MBBS",
-      Address: "Bengaluru",
-      Area: "Kengeri",
-      Pin: "560074",
-      LandlineNumber: "0801234567",
-      MobileNumber: "9876543210",
-      Email: "abc@abc.com",
-    },
-    {
-      key: 4,
-      SlNo: "4",
-      ReferrerName: "Prabhu",
-      ReferrerType: "Hospital",
-      Gender: "Male",
-      Qualification: "MBBS",
-      Address: "Bengaluru",
-      Area: "Kengeri",
-      Pin: "560074",
-      LandlineNumber: "0801234567",
-      MobileNumber: "9876543210",
-      Email: "abc@abc.com",
-    },
-  ];
+
+  function handleEdit(record) {
+    const id = record.ReferrerId;
+    navigate("/Referral/CreateEdit", { state: { id } });
+  }
+
+  async function handleDelete(record) {
+    const id = record.ReferrerId;
+    try {
+      const response = await customAxios.delete(
+        `${urlDeleteReferral}?ReferrerId=${id}`
+      );
+      if (response.status === 200) {
+        if (response.data.data === "Success") {
+          message.success("Deleted Successfully");
+          fetchData();
+        } else {
+          message.error("Error deleting data:");
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting data:", error);
+    }
+  }
+
   return (
     <>
       <Layout>
@@ -144,8 +141,8 @@ function Referal() {
             size="small"
             columns={columns}
             dataSource={data}
-            onEdit={() => alert("Edit Clicked")}
-            onDelete={() => alert("Delete Clicked")}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
             isFilter={true}
             scroll={{
               x: 900,

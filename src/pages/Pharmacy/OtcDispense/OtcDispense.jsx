@@ -114,8 +114,6 @@ const OtcDispense = () => {
   const [billloading, setBillLoading] = useState(false);
   const { state } = location;
   useEffect(() => {
-    debugger;
-
     fetchDataHeader();
   }, []);
 
@@ -140,7 +138,6 @@ const OtcDispense = () => {
 
   const fetchData = async () => {
     setTableLoading(true);
-    debugger;
     try {
       const storeId = "";
 
@@ -249,7 +246,6 @@ const OtcDispense = () => {
     }
   };
   const fetchProviders = async (searchText) => {
-    debugger;
     setLoading(true);
     try {
       const response = await customAxios.get(
@@ -281,8 +277,6 @@ const OtcDispense = () => {
   };
 
   const handleChange = async (value, option) => {
-    debugger;
-
     if (value) {
       try {
         const batchResponse = await customAxios.get(
@@ -349,7 +343,6 @@ const OtcDispense = () => {
   };
 
   const handleQtyChange = async (e) => {
-    debugger;
     const values = form.getFieldsValue();
 
     // Check if Batch is defined and not null
@@ -387,7 +380,6 @@ const OtcDispense = () => {
   };
 
   const handleBatchChange = async (value, batch) => {
-    debugger;
     form.setFieldsValue({ StockId: batch.batch.batch.StockId });
     const values = form.getFieldsValue();
 
@@ -397,7 +389,8 @@ const OtcDispense = () => {
 
       try {
         const servicePriceResponse = await customAxios.get(
-          `${urlGetPharmacyServiceCharge}?BatchId=${BatchNo}&ServiceId=${values.Product}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${values.Qty}&StockId=${values.StockId}`
+          `${urlGetPharmacyServiceCharge}?BatchId=${encodeURIComponent(BatchNo)
+          }&ServiceId=${values.Product}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${values.Qty}&StockId=${values.StockId}`
         );
 
         // Process service price data
@@ -428,7 +421,6 @@ const OtcDispense = () => {
   };
 
   const handleProviderSearch = (value) => {
-    debugger;
     if (value) {
       debouncedFetchProvider(value);
     } else {
@@ -441,7 +433,6 @@ const OtcDispense = () => {
   };
   // Function to handle discount click
   const handleDiscount = async (row) => {
-    debugger;
     const response = await customAxios.get(
       `${urlEditPharmacyDiscount}?DiscountChargeId=${row.ChargeID}&PatientId=${row.PatientId}&EncounterId=${row.EncounterId}`
     );
@@ -452,7 +443,6 @@ const OtcDispense = () => {
     }
   };
   const handleInvoiceDiscount = async (row) => {
-    debugger;
     setInvoiceLoading(true);
     try {
       const Flag = "Y";
@@ -471,7 +461,6 @@ const OtcDispense = () => {
   };
 
   const handleDeleteCharge = async (record) => {
-    debugger;
     const response = await customAxios.delete(
       `${urlDeletePharmacyBillCharge}?chargeId=${record.ChargeID}&patientId=${record.PatientId}&encounterId=${record.EncounterId}&storeId=${record.StoreId}&stockId=${record.StockId}&amt=${record.AdjustedAmount}`
     );
@@ -484,7 +473,6 @@ const OtcDispense = () => {
   };
 
   const handleDiscountSubmit = async (values) => {
-    debugger;
     values.ChargeID = discountDetails.ChargeID;
     values.ServiceId = discountDetails.ServiceId;
     values.PatientId = discountDetails.PatientId;
@@ -517,7 +505,6 @@ const OtcDispense = () => {
   };
 
   const handleInvoiceDiscountSubmit = async (values) => {
-    debugger;
     values.ChargeID = invoicediscountDetails.ChargeID;
     values.ServiceId = invoicediscountDetails.ServiceId;
     values.Flag = "Y";
@@ -735,7 +722,6 @@ const OtcDispense = () => {
   };
 
   const handlePrintBill = async () => {
-    debugger;
     setReportLoading(true); // Start loading
     try {
       const flag = 1;
@@ -1097,7 +1083,6 @@ const OtcDispense = () => {
   };
 
   const handleOnFinish = async (values) => {
-    debugger;
     const [BatchNo, ExpDate] = values.Batch.split("/");
     const expDate = parseDate(ExpDate);
     const formattedExpDate = expDate.toISOString();
@@ -1204,7 +1189,6 @@ const OtcDispense = () => {
   };
 
   const handleSaveBill = async (values) => {
-    debugger;
     if (billloading) return; // Prevent multiple clicks
 
     setBillLoading(true); // Start loading state
@@ -1311,7 +1295,6 @@ const OtcDispense = () => {
 
   const handlePrescriptionTypeSubmit = (values) => {};
   const hanldePrescription = async () => {
-    debugger;
     try {
       const response = await customAxios.get(
         `${urlGetExistingPrescription}?EncounterId=${EncounterId}&PatientId=${PatientId}`
@@ -1329,7 +1312,6 @@ const OtcDispense = () => {
   };
 
   const handleShowPrescriptions = async (record) => {
-    debugger;
     try {
       const response = await customAxios.get(
         `${urlGetPrescriptionHedderIdPhar}?EncounterId=${EncounterId}&PatientId=${PatientId}&PriscptionHedderId=${record.PriscptionHedderId}`

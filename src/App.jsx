@@ -105,6 +105,8 @@ import PriceTariff from "./pages/Masters/GeneralMasters/AccountManagement/PriceT
 import CreatePriceTariff from "./pages/Masters/GeneralMasters/AccountManagement/CreatePriceTariff";
 import AutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/AutoCharge";
 import CreateAutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAutoCharge";
+import ChargeException from "./pages/Masters/GeneralMasters/AccountManagement/ChargeException";
+import CreateChargeException from "./pages/Masters/GeneralMasters/AccountManagement/CreateChargeException";
 import BillAggrement from "./pages/Masters/GeneralMasters/AccountManagement/BillAggrement";
 import CreateBillAgrement from "./pages/Masters/GeneralMasters/AccountManagement/CreateBillAgrement";
 import UpdateItemReceipt from "./pages/Inventory/ItemReceipt/UpdateItemReceipt.jsx";
@@ -987,6 +989,22 @@ function App() {
               }
             />
             <Route
+              path="ChargeException"
+              element={
+                <ProtectedRoute>
+                  <ChargeException />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="CreateChargeException"
+              element={
+                <ProtectedRoute>
+                  <CreateChargeException />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="AccomodationCharge"
               element={
                 <ProtectedRoute>
@@ -1346,7 +1364,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-              <Route
+            <Route
               path="/EditPriceTariffRevision"
               element={
                 <ProtectedRoute>
@@ -1474,7 +1492,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-             <Route
+            <Route
               path="/ClinicalSetup"
               element={
                 <ProtectedRoute>
@@ -1482,7 +1500,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-             <Route
+            <Route
               path="/ParameterSetup"
               element={
                 <ProtectedRoute>
