@@ -389,7 +389,7 @@ const NewVisit = () => {
           type: "error",
           content: `Visit Creation Unsuccessful`,
         });
-        form1.resetFields();
+        // form1.resetFields();
       }
 
       // setIsModalVisible(false);
@@ -410,7 +410,7 @@ const NewVisit = () => {
       } else {
         console.error("Failed to send data to server: ", error);
         message.error(`Error creating visit for patient: ${error.message}.`);
-        form1.resetFields();
+        // form1.resetFields();
       }
     }
   };

@@ -181,7 +181,7 @@ const AppointmentSearch = () => {
 
       handlevisitmodal(record);
     } else {
-      alert("make edit");
+      // alert("make edit");
       handleEditRegistrationsDetails(record);
     }
   };

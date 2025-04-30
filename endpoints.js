@@ -611,3 +611,5 @@ export const urlEditFacility = `${baseURL}/api/Facility/EditFacility`;
 export const urlUpdateFacility = `${baseURL}/api/Facility/UpdateFacility`;
 export const urlFacilityAddOrUpdate = `${baseURL}/api/Facility/FacilityAddOrUpdate`;
 export const urlChargeExceptionIndex = `${baseURL}/api/ChargeException/ChargeExceptionIndex`;
+export const urlChargeExceptionCreate = `${baseURL}/api/ChargeException/ChargeExceptionCreate`;
+export const urlChargeExceptionEdit = `${baseURL}/api/ChargeException/ChargeExceptionEdit`;
