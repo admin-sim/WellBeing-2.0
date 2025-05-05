@@ -81,7 +81,10 @@ function CreateChargeException() {
             ExceptionHeaderId: hearderData.ExceptionHeaderId,
             ShortName: hearderData.ShortName,
             LongName: hearderData.LongName,
-            EffectiveFromDate: dayjs(hearderData.EffectiveFromDate),
+            EffectiveFromDate: dayjs(
+              hearderData.EffectiveFromDate,
+              "DD-MM-YYYY"
+            ),
             FacilityId: hearderData.FacilityId,
             Priority: hearderData.Priority,
             Status: hearderData.Status === "A" ? true : false,
@@ -170,6 +173,10 @@ function CreateChargeException() {
         setLoading(false);
       });
     }
+  };
+
+  const disableToDate = (current) => {
+    return current && current.isBefore(dayjs(), "day");
   };
 
   const handleSelect = (value, option) => {
@@ -542,7 +549,7 @@ function CreateChargeException() {
               layout="vertical"
               variant="outlined"
               initialValues={{
-                Status: "Active",
+                Status: true,
                 EffectiveFrom: dayjs(),
               }}
               style={{
@@ -593,7 +600,11 @@ function CreateChargeException() {
                       },
                     ]}
                   >
-                    <DatePicker format="DD-MM-YYYY" style={{ width: "100%" }} />
+                    <DatePicker
+                      format="DD-MM-YYYY"
+                      style={{ width: "100%" }}
+                      disabledDate={disableToDate}
+                    />
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={6}>
@@ -698,7 +709,15 @@ function CreateChargeException() {
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
-                  <Form.Item name="Value1First">
+                  <Form.Item
+                    name="Value1First"
+                    rules={[
+                      {
+                        required: checkFirst,
+                        message: "Value Required.",
+                      },
+                    ]}
+                  >
                     <InputNumber
                       disabled={!checkFirst}
                       min={0}
@@ -708,7 +727,15 @@ function CreateChargeException() {
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
-                  <Form.Item name="Value2First">
+                  <Form.Item
+                    name="Value2First"
+                    rules={[
+                      {
+                        required: firstIndicatorVisible,
+                        message: "Value Required.",
+                      },
+                    ]}
+                  >
                     <InputNumber
                       min={0}
                       placeholder="Value2"
@@ -718,7 +745,15 @@ function CreateChargeException() {
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
-                  <Form.Item name="IntervalFirst">
+                  <Form.Item
+                    name="IntervalFirst"
+                    rules={[
+                      {
+                        required: firstIndicatorVisible,
+                        message: "Value Required.",
+                      },
+                    ]}
+                  >
                     <InputNumber
                       min={0}
                       placeholder="Interval"
@@ -741,7 +776,15 @@ function CreateChargeException() {
                   <label>Holiday</label>
                 </Col>
                 <Col className="gutter-row" span={4}>
-                  <Form.Item name="HolidayId">
+                  <Form.Item
+                    name="HolidayId"
+                    rules={[
+                      {
+                        required: checkSecond,
+                        message: "Holiday Required.",
+                      },
+                    ]}
+                  >
                     <Select
                       placeholder="Select Holiday"
                       disabled={!checkSecond}
@@ -774,7 +817,15 @@ function CreateChargeException() {
                   <label>Service Location</label>
                 </Col>
                 <Col className="gutter-row" span={4}>
-                  <Form.Item name="ServiceLocationId">
+                  <Form.Item
+                    name="ServiceLocationId"
+                    rules={[
+                      {
+                        required: checkThird,
+                        message: "Location Required.",
+                      },
+                    ]}
+                  >
                     <Select
                       placeholder="Select Indicator"
                       disabled={!checkThird}
@@ -807,7 +858,16 @@ function CreateChargeException() {
                   <label>Time of Service</label>
                 </Col>
                 <Col className="gutter-row" span={4}>
-                  <Form.Item name="FromTime" label="TimeFrom">
+                  <Form.Item
+                    name="FromTime"
+                    label="TimeFrom"
+                    rules={[
+                      {
+                        required: checkFour,
+                        message: "Time Required.",
+                      },
+                    ]}
+                  >
                     <TimePicker
                       format="hh:mm:ss"
                       style={{ width: "100%" }}
@@ -816,7 +876,16 @@ function CreateChargeException() {
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
-                  <Form.Item name="ToTime" label="TimeTo">
+                  <Form.Item
+                    name="ToTime"
+                    label="TimeTo"
+                    rules={[
+                      {
+                        required: checkFour,
+                        message: "Time Required.",
+                      },
+                    ]}
+                  >
                     <TimePicker
                       format="hh:mm:ss"
                       style={{ width: "100%" }}
@@ -853,7 +922,15 @@ function CreateChargeException() {
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
-                  <Form.Item name="Value1Fifth">
+                  <Form.Item
+                    name="Value1Fifth"
+                    rules={[
+                      {
+                        required: checkFive,
+                        message: "Value Required.",
+                      },
+                    ]}
+                  >
                     <InputNumber
                       disabled={!checkFive}
                       min={0}
@@ -863,7 +940,15 @@ function CreateChargeException() {
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
-                  <Form.Item name="Value2Fifth">
+                  <Form.Item
+                    name="Value2Fifth"
+                    rules={[
+                      {
+                        required: fifthIndicatorVisible,
+                        message: "Value Required.",
+                      },
+                    ]}
+                  >
                     <InputNumber
                       min={0}
                       placeholder="Value2"
@@ -873,7 +958,15 @@ function CreateChargeException() {
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
-                  <Form.Item name="IntervalFifth">
+                  <Form.Item
+                    name="IntervalFifth"
+                    rules={[
+                      {
+                        required: fifthIndicatorVisible,
+                        message: "Value Required.",
+                      },
+                    ]}
+                  >
                     <InputNumber
                       min={0}
                       placeholder="Interval"
@@ -909,7 +1002,15 @@ function CreateChargeException() {
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
-                  <Form.Item name="Value1Sixth">
+                  <Form.Item
+                    name="Value1Sixth"
+                    rules={[
+                      {
+                        required: checkSix,
+                        message: "Value Required.",
+                      },
+                    ]}
+                  >
                     <InputNumber
                       disabled={!checkSix}
                       min={0}
@@ -919,7 +1020,15 @@ function CreateChargeException() {
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
-                  <Form.Item name="Value2Sixth">
+                  <Form.Item
+                    name="Value2Sixth"
+                    rules={[
+                      {
+                        required: sixthIndicatorVisible,
+                        message: "Value Required.",
+                      },
+                    ]}
+                  >
                     <InputNumber
                       min={0}
                       placeholder="Value2"
@@ -929,7 +1038,15 @@ function CreateChargeException() {
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
-                  <Form.Item name="IntervalSixth">
+                  <Form.Item
+                    name="IntervalSixth"
+                    rules={[
+                      {
+                        required: sixthIndicatorVisible,
+                        message: "Value Required.",
+                      },
+                    ]}
+                  >
                     <InputNumber
                       min={0}
                       placeholder="Interval"
