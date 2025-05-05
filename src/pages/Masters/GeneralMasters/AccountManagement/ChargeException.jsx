@@ -3,7 +3,10 @@ import { Layout, message } from "antd";
 import Title from "antd/es/typography/Title";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
 import React, { useEffect, useState } from "react";
-import { urlChargeExceptionIndex } from "../../../../../endpoints";
+import {
+  urlChargeExceptionIndex,
+  urlDeleteSelectedchargeexception,
+} from "../../../../../endpoints";
 import CustomTable from "../../../../components/customTable";
 import { useNavigate } from "react-router";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -68,34 +71,33 @@ function ChargeException() {
     },
   ];
 
-  const handleAddAutoCharge = () => {
-    navigate("/CreateAutoCharge");
-  };
-
   const handleEdit = (record) => {
-    debugger;
-    navigate("/CreateAutoCharge", {
+    navigate("/CreateChargeException", {
       state: { ExceptionHeaderId: record.ExceptionHeaderId },
     });
   };
 
   const handledelete = async (record) => {
-    debugger;
     try {
-      const response = await customAxios.delete(urlRemoveAutoCharge, {
-        params: {
-          id: record.AutoChargeId,
-        },
-      });
-      if (response.status === 200 && response.data.data === true) {
+      const response = await customAxios.delete(
+        urlDeleteSelectedchargeexception,
+        {
+          params: {
+            ExceptionHeaderId: record.ExceptionHeaderId,
+          },
+        }
+      );
+      if (response.status === 200 && response.data === "Success") {
         message.success("Deleted Successfully..");
         fetchData();
       }
-    } catch (error) {}
+    } catch (error) {
+      message.error("Something went wrong..");
+    }
   };
 
   async function handleChargeException(id) {
-    navigate("/CreateChargeException", { state: { ChargeId: id } });
+    navigate("/CreateChargeException", { state: { ExceptionHeaderId: id } });
   }
 
   return (

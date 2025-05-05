@@ -1,6 +1,20 @@
 import React, { useEffect, useState } from "react";
 import PageHeader from "../../../../components/PageHeader";
-import { Button, Card, Checkbox, Col, Form, Input, message, Modal, Row, Select, Space, Spin, Popconfirm } from "antd";
+import {
+  Button,
+  Card,
+  Checkbox,
+  Col,
+  Form,
+  Input,
+  message,
+  Modal,
+  Row,
+  Select,
+  Space,
+  Spin,
+  Popconfirm,
+} from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
@@ -9,7 +23,13 @@ import {
   ColWithEightSpan,
   ColWithSixSpan,
 } from "../../../../components/customGridColumns";
-import { urlCreate, urlDeleteSelectedWorkFlowScreen, urlEditWorkFlow, urlSaveWorkFlow, urlUpdateWorkFlow } from "../../../../../endpoints.js";
+import {
+  urlCreate,
+  urlDeleteSelectedWorkFlowScreen,
+  urlEditWorkFlow,
+  urlSaveWorkFlow,
+  urlUpdateWorkFlow,
+} from "../../../../../endpoints.js";
 import FormItem from "antd/es/form/FormItem/index.js";
 import { DeleteOutlined } from "@ant-design/icons";
 function CreateEditWorkFlow() {
@@ -21,50 +41,64 @@ function CreateEditWorkFlow() {
   const record = location.state;
   const [facilityOptions, setFacilityOptions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [screen, setScreen] = useState()
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [screen, setScreen] = useState();
 
   useEffect(() => {
-    const fetchFacilities = async () => {
-      setLoading(true)
-      if (record ?? false) {
-        try {
-          const response = await customAxios.get(`${urlEditWorkFlow}?WorkFlowId=${record.WorkFlowId}`);
-          if (response.status === 200 && response.data?.data) {
-            const Model = response.data.data
-            setFacilityOptions(Model);
-            form.setFieldsValue({ 'FacilityId': Model.NewWorkFlowModel.FacilityId })
-            form.setFieldsValue({ 'WorkFlowName': Model.NewWorkFlowModel.WorkFlowName })
-            form.setFieldsValue({ 'WorkFlowId': Model.NewWorkFlowModel.WorkFlowId })
-            form.setFieldsValue({ 'WorkFlowDescription': Model.NewWorkFlowModel.WorkFlowDescription })
-            form.setFieldsValue({ 'IsWalkInPatient': Model.NewWorkFlowModel.IsWalkInPatient })
-          }
-        } catch (error) {
-          console.error("Failed to fetch:", error);
-        }
-        setLoading(false)
-      } else {
-        try {
-          const response = await customAxios.get(urlCreate);
-          if (response.status === 200 && response.data?.data) {
-            const Model = response.data.data
-            setFacilityOptions(Model);
-          }
-        } catch (error) {
-          console.error("Failed to fetch:", error);
-        }
-        setLoading(false)
-      }
-    };
     fetchFacilities();
   }, []);
 
+  const fetchFacilities = async () => {
+    setLoading(true);
+    if (record ?? false) {
+      try {
+        const response = await customAxios.get(
+          `${urlEditWorkFlow}?WorkFlowId=${record.WorkFlowId}`
+        );
+        if (response.status === 200 && response.data?.data) {
+          const Model = response.data.data;
+          setFacilityOptions(Model);
+          form.setFieldsValue({
+            FacilityId: Model.NewWorkFlowModel.FacilityId,
+          });
+          form.setFieldsValue({
+            WorkFlowName: Model.NewWorkFlowModel.WorkFlowName,
+          });
+          form.setFieldsValue({
+            WorkFlowId: Model.NewWorkFlowModel.WorkFlowId,
+          });
+          form.setFieldsValue({
+            WorkFlowDescription: Model.NewWorkFlowModel.WorkFlowDescription,
+          });
+          form.setFieldsValue({
+            IsWalkInPatient: Model.NewWorkFlowModel.IsWalkInPatient,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch:", error);
+      }
+      setLoading(false);
+    } else {
+      try {
+        const response = await customAxios.get(urlCreate);
+        if (response.status === 200 && response.data?.data) {
+          const Model = response.data.data;
+          setFacilityOptions(Model);
+        }
+      } catch (error) {
+        console.error("Failed to fetch:", error);
+      }
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (facilityOptions?.Screen) {
-      debugger
       const newScreen = facilityOptions?.Screen?.filter(
         (item) =>
-          !facilityOptions?.WorkFlowScreens?.some((item1) => item.ScreenId === item1.ScreenId)
+          !facilityOptions?.WorkFlowScreens?.some(
+            (item1) => item.ScreenId === item1.ScreenId
+          )
       );
       setLists({
         list1: newScreen ?? [],
@@ -73,16 +107,15 @@ function CreateEditWorkFlow() {
     }
   }, [facilityOptions]);
 
-
   async function handleSubmit(values) {
-    debugger
     setLoading(true);
     const PostData = {
       NewWorkFlowModel: values,
       WorkFlowModel: lists.list1,
-      WorkFlowModel1: lists.list2
-    }
-    const url = values.WorkFlowId === undefined ? urlSaveWorkFlow : urlUpdateWorkFlow;
+      WorkFlowModel1: lists.list2,
+    };
+    const url =
+      values.WorkFlowId === undefined ? urlSaveWorkFlow : urlUpdateWorkFlow;
     const response = await customAxios.post(url, PostData, {
       headers: {
         "Content-Type": "application/json",
@@ -90,10 +123,14 @@ function CreateEditWorkFlow() {
     });
 
     if (response.status == 200) {
-      if (response.data === 'Exists') {
-        message.warning('WorkFlow Already Exists')
+      if (response.data === "Exists") {
+        message.warning("WorkFlow Already Exists");
       } else {
-        message.success(`WorkFlow ${values.WorkFlowId === undefined ? "Created" : "Updated"} Successfully`);
+        message.success(
+          `WorkFlow ${
+            values.WorkFlowId === undefined ? "Created" : "Updated"
+          } Successfully`
+        );
         setLoading(false);
         navigate("/Workflow");
       }
@@ -141,58 +178,68 @@ function CreateEditWorkFlow() {
   // };
 
   function handlePlusClick(item) {
-    debugger
-    form1.resetFields()
+    form1.resetFields();
     {
       (item.Parameters || []).forEach((it) => {
         form1.setFieldsValue({ [it.ParameterName]: it.ActiveFlag });
       });
     }
-    setIsModalOpen(true)
-    setScreen(item)
+    setIsModalOpen(true);
+    setScreen(item);
   }
 
   async function handleDeleteClick(record, item) {
-    debugger
-    try {
-      const response = await customAxios.get(`${urlDeleteSelectedWorkFlowScreen}?WorkFlowId=${record.WorkFlowId}&WorkFlowScreenId=${item.WorkFlowScreenId}`);
-      if (response.status === 200 && response.data?.data) {
-        const Model = response.data.data
-
-      }
-    } catch (error) {
-      console.error("Failed to fetch:", error);
-    }
-  }
-  function onFinishmodal(value) {
     debugger;
-  
+    if (item.WorkFlowScreenId === 0) {
+      const [movedItem] = lists.list2.splice(0, 1);
+      lists.list1.splice(1, 0, movedItem);
+
+      setLists({
+        list1: lists.list1,
+        list2: lists.list2,
+      });
+    } else {
+      try {
+        const response = await customAxios.get(
+          `${urlDeleteSelectedWorkFlowScreen}?WorkFlowId=${record.WorkFlowId}&WorkFlowScreenId=${item.WorkFlowScreenId}`
+        );
+        if (response.status === 200 && response.data?.data) {
+          const Model = response.data.data;
+        }
+      } catch (error) {
+        console.error("Failed to fetch:", error);
+      }
+    }
+    fetchFacilities();
+  }
+
+  function onFinishmodal(value) {
     const filteredScreens = lists.list2.find(
       (i) =>
         screen?.ScreenId === i.ScreenId &&
         screen?.WorkFlowScreenId === i.WorkFlowScreenId
     );
-  
+
     if (!filteredScreens) {
       console.error("Screen not found in list2. Cannot update parameters.");
       return;
     }
-  
+
     const parameterMapping = {
       PatientId: 1,
       AppointmentId: 2,
       PatientType: 3,
       EncounterId: 4,
     };
-  
+
     const selectedIds = [];
     const newParameters = Object.keys(parameterMapping).map((key) => {
       const isChecked = value[key];
-  
+
       const existingParam = filteredScreens.Parameters?.find(
         (p) => p.ParameterName === key
       );
-  
+
       if (isChecked) {
         selectedIds.push(parameterMapping[key]);
         return {
@@ -202,21 +249,22 @@ function CreateEditWorkFlow() {
         };
       } else if (existingParam) {
         return {
-          ...item,
-          ParameterId: parameterMapping[item.ParameterName] || 0, 
+          // ...item,
+          // ParameterId: parameterMapping[item.ParameterName] || 0,
+          ParameterId: existingParam.ParameterId || 0,
         };
       } else {
         return null;
       }
     });
-  
+
     const finalParams = newParameters.filter(Boolean);
-  
+
     const formattedString =
       selectedIds.length > 0 ? `${selectedIds.join(",")},` : "0";
-  
+
     console.log("Formatted Parameter String:", formattedString);
-  
+
     setLists((prev) => ({
       ...prev,
       list2: prev.list2.map((item) => {
@@ -233,14 +281,13 @@ function CreateEditWorkFlow() {
         return item;
       }),
     }));
-  
+
     setScreen(null);
     setIsModalOpen(false);
   }
-  
-  
+
   function onCancelmodal() {
-    setIsModalOpen(false)
+    setIsModalOpen(false);
   }
 
   return (
@@ -253,7 +300,7 @@ function CreateEditWorkFlow() {
       }}
     >
       <PageHeader title={"Create WorkFlow"} button={false} />
-      <Spin spinning={loading} tip='loading...'>
+      <Spin spinning={loading} tip="loading...">
         <Form
           style={{ margin: "1rem" }}
           layout="vertical"
@@ -365,7 +412,8 @@ function CreateEditWorkFlow() {
                                 <span>{item.ScreenName}</span>
                                 {listId === "list2" && (
                                   <div style={{ display: "flex", gap: "5px" }}>
-                                    <Button size="small"
+                                    <Button
+                                      size="small"
                                       onClick={() => handlePlusClick(item)}
                                       style={{
                                         background: "#40A2E3",
@@ -379,14 +427,20 @@ function CreateEditWorkFlow() {
                                     </Button>
                                     <Popconfirm
                                       title="Are you sure to delete this item?"
-                                      onConfirm={() => handleDeleteClick(record, item)}
+                                      onConfirm={() =>
+                                        handleDeleteClick(record, item)
+                                      }
                                       okText="Yes"
                                       cancelText="No"
                                     >
                                       <Button
                                         size="small"
                                         danger
-                                        icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
+                                        icon={
+                                          <DeleteOutlined
+                                            style={{ fontSize: "0.9rem" }}
+                                          />
+                                        }
                                       ></Button>
                                     </Popconfirm>
                                     {/* <Button size="small"
@@ -447,8 +501,8 @@ function CreateEditWorkFlow() {
         onCancel={onCancelmodal}
         width={500}
         open={isModalOpen}
-        okText='Save'
-        cancelText='Close'
+        okText="Save"
+        cancelText="Close"
       >
         <Form
           name="basic"
@@ -459,7 +513,7 @@ function CreateEditWorkFlow() {
             span: 16,
           }}
           style={{
-            width: '100%',
+            width: "100%",
           }}
           initialValues={{
             remember: true,
@@ -469,17 +523,17 @@ function CreateEditWorkFlow() {
           autoComplete="off"
           form={form1}
         >
-          <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+          <Space direction="vertical" size="middle" style={{ display: "flex" }}>
             <Card title={screen?.Action} size="small">
               {(facilityOptions?.Parameter || []).map((item) => (
-              <FormItem
-              initialValue={false}
-              valuePropName="checked"
-              name={item.ParameterName} // <- Use a consistent internal key
-              key={item.ParameterId}
-            >
-              <Checkbox>{item.ParameterDescription}</Checkbox>
-            </FormItem>            
+                <FormItem
+                  initialValue={false}
+                  valuePropName="checked"
+                  name={item.ParameterName} // <- Use a consistent internal key
+                  key={item.ParameterId}
+                >
+                  <Checkbox>{item.ParameterDescription}</Checkbox>
+                </FormItem>
               ))}
             </Card>
           </Space>

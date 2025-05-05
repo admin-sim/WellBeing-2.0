@@ -277,6 +277,7 @@ const OtcDispense = () => {
   };
 
   const handleChange = async (value, option) => {
+    debugger;
     if (value) {
       try {
         const batchResponse = await customAxios.get(
@@ -303,7 +304,11 @@ const OtcDispense = () => {
           });
 
           const servicePriceResponse = await customAxios.get(
-            `${urlGetPharmacyServiceCharge}?BatchId=${fetchedBatchData[0].BatchNo}&ServiceId=${value}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${Qty}&StockId=${fetchedBatchData[0].StockId}`
+            `${urlGetPharmacyServiceCharge}?BatchId=${encodeURIComponent(
+              fetchedBatchData[0].BatchNo
+            )}&ServiceId=${value}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${Qty}&StockId=${
+              fetchedBatchData[0].StockId
+            }`
           );
 
           // Process service price data
@@ -389,8 +394,13 @@ const OtcDispense = () => {
 
       try {
         const servicePriceResponse = await customAxios.get(
-          `${urlGetPharmacyServiceCharge}?BatchId=${encodeURIComponent(BatchNo)
-          }&ServiceId=${values.Product}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${values.Qty}&StockId=${values.StockId}`
+          `${urlGetPharmacyServiceCharge}?BatchId=${encodeURIComponent(
+            BatchNo
+          )}&ServiceId=${
+            values.Product
+          }&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${
+            values.Qty
+          }&StockId=${values.StockId}`
         );
 
         // Process service price data

@@ -870,19 +870,19 @@ const Queue = () => {
         </div>
       ),
     },
-    {
-      title: <span>App&nbsp;Time</span>,
-      dataIndex: "appointmentTime",
-      key: "appointmentTime",
+    // {
+    //   title: <span>App&nbsp;Time</span>,
+    //   dataIndex: "appointmentTime",
+    //   key: "appointmentTime",
 
-      render: (text, record) => (
-        <div style={{ width: 40 }}>
-          <p>
-            <strong>{formatTime(record.AppointmentTime)}</strong>
-          </p>
-        </div>
-      ),
-    },
+    //   render: (text, record) => (
+    //     <div style={{ width: 40 }}>
+    //       <p>
+    //         <strong>{formatTime(record.AppointmentTime)}</strong>
+    //       </p>
+    //     </div>
+    //   ),
+    // },
     {
       title: <span>Patient&nbsp;Details</span>,
       dataIndex: "PatientDetails",

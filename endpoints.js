@@ -613,3 +613,7 @@ export const urlFacilityAddOrUpdate = `${baseURL}/api/Facility/FacilityAddOrUpda
 export const urlChargeExceptionIndex = `${baseURL}/api/ChargeException/ChargeExceptionIndex`;
 export const urlChargeExceptionCreate = `${baseURL}/api/ChargeException/ChargeExceptionCreate`;
 export const urlChargeExceptionEdit = `${baseURL}/api/ChargeException/ChargeExceptionEdit`;
+export const urlSaveNewBillChargeException = `${baseURL}/api/ChargeException/SaveNewBillChargeException`;
+export const urlUpdateBillChargeException = `${baseURL}/api/ChargeException/UpdateBillChargeException`;
+export const urlDeleteSelectedchargeexception = `${baseURL}/api/ChargeException/DeleteSelectedchargeexception`;
+

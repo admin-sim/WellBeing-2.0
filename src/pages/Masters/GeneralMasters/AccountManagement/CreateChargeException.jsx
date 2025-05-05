@@ -20,12 +20,13 @@ import Input from "antd/es/input/Input";
 import customAxios from "../../../../components/customAxios/customAxios";
 import React, { useEffect, useState } from "react";
 import {
-  urlCreateAutoCharge,
-  urlUpdateAutoCharge,
   urlChargeExceptionCreate,
   urlPackageDescriptionService,
   urlPackageDescriptionServiceGroup,
   urlPackageDescriptionServiceClassification,
+  urlChargeExceptionEdit,
+  urlUpdateBillChargeException,
+  urlSaveNewBillChargeException,
 } from "../../../../../endpoints";
 import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router";
@@ -42,16 +43,9 @@ function CreateChargeException() {
   const location = useLocation();
   const AutoChargeId = location.state?.AutoChargeId;
   const navigate = useNavigate();
-  const [chargeProviderId, setChargeProviderId] = useState(null);
-  const [serviceId, setSelectedServiceId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const [form1] = Form.useForm();
-  const [autoChargeDropDown, setAutoChargeDropDown] = useState({
-    PatientType: [],
-    Facility: [],
-    EncounterType: [],
-  });
   const [isIndicator, setIsIndicator] = useState(true);
   const [dropDown, setDropDown] = useState([]);
   const [checkFirst, setCheckFirst] = useState(false);
@@ -68,37 +62,122 @@ function CreateChargeException() {
   const [isDescription, setIsDescription] = useState(false);
 
   useEffect(() => {
-    customAxios.get(urlChargeExceptionCreate).then((response) => {
-      const apiData = response.data.data;
-      setDropDown(apiData);
-    });
-  }, []);
-
-  useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
-    //setLoading(true);
-    try {
-      const response = await customAxios.get(`${urlChargeExceptionEdit}`);
-      if (response.status == 200 && response.data.data != null) {
-        setAutoChargeDropDown(response.data.data);
+    setLoading(true);
+    if (ExceptionHeaderId > 0) {
+      try {
+        const response = await customAxios.get(
+          `${urlChargeExceptionEdit}?ChargeException=${ExceptionHeaderId}`
+        );
+        if (response.status == 200 && response.data.data != null) {
+          setDropDown(response.data.data);
+          const hearderData = response.data.data.AddNewChargeException;
+          const ChargeFactorData = response.data.data.ChargeExceptionLines;
+          const IndicatorData = response.data.data.ChargeExceptionIndicators;
+          form.setFieldsValue({
+            ExceptionHeaderId: hearderData.ExceptionHeaderId,
+            ShortName: hearderData.ShortName,
+            LongName: hearderData.LongName,
+            EffectiveFromDate: dayjs(hearderData.EffectiveFromDate),
+            FacilityId: hearderData.FacilityId,
+            Priority: hearderData.Priority,
+            Status: hearderData.Status === "A" ? true : false,
+          });
+          ChargeFactorData.map((item) => {
+            if (item.ChargeFactor === "Days after last IP Encounter") {
+              handleFirstIndicator(item.ChargeIndicator);
+              setCheckFirst(true);
+              form.setFieldsValue({
+                First: true,
+                ChargeIndicatorFirst: item.ChargeIndicator,
+                Value1First: item.Value1,
+                Value2First: item.Value2,
+                IntervalFirst: item.Interval,
+                ExceptionLineId1: item.ExceptionLineId,
+              });
+            }
+            if (item.ChargeFactor === "Holiday") {
+              setCheckSecond(true);
+              form.setFieldsValue({
+                Second: true,
+                HolidayId: item.HolidayId,
+                ExceptionLineId2: item.ExceptionLineId,
+              });
+            }
+            if (item.ChargeFactor === "Service Location") {
+              setCheckThird(true);
+              form.setFieldsValue({
+                Third: true,
+                ServiceLocationId: item.ServiceLocationId,
+                ExceptionLineId3: item.ExceptionLineId,
+              });
+            }
+            if (item.ChargeFactor === "Time of Service") {
+              setCheckFour(true);
+              form.setFieldsValue({
+                Forth: true,
+                FromTime: dayjs(item.FromTime, "HH:mm:ss"),
+                ToTime: dayjs(item.ToTime, "HH:mm:ss"),
+                ExceptionLineId4: item.ExceptionLineId,
+              });
+            }
+            if (item.ChargeFactor === "Days after last original service") {
+              handleFifthIndicator(item.ChargeIndicator);
+              setCheckFive(true);
+              form.setFieldsValue({
+                Fifth: true,
+                ChargeIndicatorFifth: item.ChargeIndicator,
+                Value1Fifth: item.Value1,
+                Value2Fifth: item.Value2,
+                IntervalFifth: item.Interval,
+                ExceptionLineId5: item.ExceptionLineId,
+              });
+            }
+            if (item.ChargeFactor === "Days after last OP encounter") {
+              handleSixthIndicator(item.ChargeIndicator);
+              setCheckSix(true);
+              form.setFieldsValue({
+                Sixth: true,
+                ChargeIndicatorSixth: item.ChargeIndicator,
+                Value1Sixth: item.Value1,
+                Value2Sixth: item.Value2,
+                IntervalSixth: item.Interval,
+                ExceptionLineId6: item.ExceptionLineId,
+              });
+            }
+          });
+          const dataIndicator = IndicatorData.map((item) => {
+            return {
+              ...item,
+              key: uuidv4(),
+              DescriptionId: item.IndicatorDescriptionId,
+            };
+          });
+          setDataModel(dataIndicator);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error(error);
+        setLoading(false);
       }
-    } catch (error) {
-      console.error(error);
+    } else {
+      customAxios.get(urlChargeExceptionCreate).then((response) => {
+        const apiData = response.data.data;
+        setDropDown(apiData);
+        setLoading(false);
+      });
     }
-    //setLoading(false);
   };
 
   const handleSelect = (value, option) => {
-    debugger;
     form1.setFieldsValue({ DescriptionId: option.key });
     form1.setFieldsValue({ IndicatorDescriptionName: option.value });
   };
 
   const handleSearch = async (searchText) => {
-    debugger;
     if (searchText) {
       const response = await customAxios.get(
         `${url}?Description=${searchText}`
@@ -115,8 +194,7 @@ function CreateChargeException() {
     }
   };
 
-  const onFinish = async (values) => {
-    debugger;
+  async function onFinish(values) {
     const AddNewChargeFactors = [];
     checkFirst;
     if (checkFirst) {
@@ -125,6 +203,7 @@ function CreateChargeException() {
         Value1: values.Value1First,
         Value2: values.Value2First,
         Interval: values.IntervalFirst,
+        ExceptionLineId: values.ExceptionLineId1 ?? 0,
         ChargeFactor: "Days after last IP Encounter",
       };
       AddNewChargeFactors.push(first);
@@ -132,21 +211,24 @@ function CreateChargeException() {
     if (checkSecond) {
       const second = {
         HolidayId: values.HolidayId,
+        ExceptionLineId: values.ExceptionLineId2 ?? 0,
         ChargeFactor: "Holiday",
       };
       AddNewChargeFactors.push(second);
     }
     if (checkThird) {
       const Third = {
-        ServiceLocationId: values.ServiceLocations,
+        ServiceLocationId: values.ServiceLocationId,
+        ExceptionLineId: values.ExceptionLineId3 ?? 0,
         ChargeFactor: "Service Location",
       };
       AddNewChargeFactors.push(Third);
     }
     if (checkFour) {
       const four = {
-        TimeFrom: values.TimeFrom,
-        TimeTo: values.TimeTo,
+        TimeFrom: values.FromTime.format("HH:mm:ss"),
+        TimeTo: values.ToTime.format("HH:mm:ss"),
+        ExceptionLineId: values.ExceptionLineId4 ?? 0,
         ChargeFactor: "Time of Service",
       };
       AddNewChargeFactors.push(four);
@@ -157,6 +239,7 @@ function CreateChargeException() {
         Value1: values.Value1Fifth,
         Value2: values.Value2Fifth,
         Interval: values.IntervalFifth,
+        ExceptionLineId: values.ExceptionLineId5 ?? 0,
         ChargeFactor: "Days after last original service",
       };
       AddNewChargeFactors.push(five);
@@ -167,55 +250,70 @@ function CreateChargeException() {
         Value1: values.Value1Sixth,
         Value2: values.Value2Sixth,
         Interval: values.IntervalSixth,
+        ExceptionLineId: values.ExceptionLineId6 ?? 0,
         ChargeFactor: "Days after last OP encounter",
       };
       AddNewChargeFactors.push(six);
     }
-    console.log("values", values);
+
     const header = {
+      ExceptionHeaderId: values.ExceptionHeaderId ?? 0,
       ShortName: values.ShortName,
       LongName: values.LongName,
-      EffectiveFromDate: values.EffectiveFromDate.format("YYYY-MM-DD"),
+      EffectiveFromDate: values.EffectiveFromDate.format("DD-MM-YYYY"),
       FacilityId: values.FacilityId,
-      Priority: values.Priority,
-      Status: values.Status,
+      Priority: values.Priority ?? 0,
+      Status: values.Status === true ? "A" : "H",
     };
+
+    const filterDataModel = dataModel.filter(
+      (item) => item.ActiveFlag === true || item.ExceptionLineId !== undefined
+    );
 
     const ChargeFactor = {
-      ChargeIndicator: "FirstChargeIndicator",
+      AddNewChargeException: header,
+      ChargeExceptionLines: AddNewChargeFactors,
+      ChargeExceptionIndicators: filterDataModel,
     };
 
-    if (AutoChargeId) {
-      values.AutoChargeId = AutoChargeId;
-      try {
-        const response = await customAxios.post(urlUpdateAutoCharge, values, {
-          headers: {
-            "Content-Type": "application/json",
-          },
+    const url =
+      header.ExceptionHeaderId > 0
+        ? urlUpdateBillChargeException
+        : urlSaveNewBillChargeException;
+    try {
+      const response = await customAxios.post(url, ChargeFactor, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (response.status == 200 && response.data.data === "Success") {
+        notification.success({
+          message: "Success",
+          description: "ChargeException Updated Succeessfully.....",
         });
-        if (response.status == 200 && response.data.data === true) {
-          console.log("response.data.data", response.data.data);
-          notification.success({
-            message: "Success",
-            description: "AutoCharge Updated Succeessfully.....",
-          });
-          form.resetFields();
-          const url = "/AutoCharge";
-          navigate(url);
-        } else {
-          notification.error({
-            message: "Error",
-            description: "Something Went Wrong.....",
-          });
-        }
-      } catch (error) {
+        const url = "/ChargeException";
+        navigate(url);
+      } else if (
+        response.status == 200 &&
+        response.data.data === "Already Exists"
+      ) {
+        notification.success({
+          message: "Already Exists",
+          description: "ChargeException Already Exists",
+        });
+      } else {
         notification.error({
           message: "Error",
           description: "Something Went Wrong.....",
         });
       }
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Something Went Wrong.....",
+      });
     }
-  };
+  }
 
   const columns = [
     {
@@ -255,20 +353,9 @@ function CreateChargeException() {
     },
   ];
 
-  const handleChargeProviderSelect = async (value, option) => {
-    setChargeProviderId(option.key);
-  };
-
   function handleChargeException() {
     navigate("/ChargeException");
   }
-
-  const [firstVisible, setFirstVisible] = useState(false);
-  const [secondVisible, setSecondVisible] = useState(false);
-  const [thirdVisible, setThirdVisible] = useState(false);
-  const [fourVisible, setFourVisible] = useState(false);
-  const [fiveVisible, setFiveVisible] = useState(false);
-  const [sixVisible, setSixVisible] = useState(false);
 
   const [firstIndicatorVisible, setFirstIndicatorVisible] = useState(false);
   const [fifthIndicatorVisible, setFifthIndicatorVisible] = useState(false);
@@ -276,60 +363,29 @@ function CreateChargeException() {
 
   function handleFirst(e) {
     setCheckFirst(e.target.checked);
-    if (e.target.checked) {
-      setFirstVisible(true);
-    } else {
-      setFirstVisible(false);
-    }
   }
 
   function handleSecond(e) {
     setCheckSecond(e.target.checked);
-    if (e.target.checked) {
-      setSecondVisible(true);
-    } else {
-      setSecondVisible(false);
-    }
   }
 
   function handleThird(e) {
     setCheckThird(e.target.checked);
-    if (e.target.checked) {
-      setThirdVisible(true);
-    } else {
-      setThirdVisible(false);
-    }
   }
 
   function handleFour(e) {
     setCheckFour(e.target.checked);
-    if (e.target.checked) {
-      setFourVisible(true);
-    } else {
-      setFourVisible(false);
-    }
   }
 
   function handleFive(e) {
     setCheckFive(e.target.checked);
-    if (e.target.checked) {
-      setFiveVisible(true);
-    } else {
-      setFiveVisible(false);
-    }
   }
 
   function handleSix(e) {
     setCheckSix(e.target.checked);
-    if (e.target.checked) {
-      setSixVisible(true);
-    } else {
-      setSixVisible(false);
-    }
   }
 
   function handleFirstIndicator(e) {
-    debugger;
     if (e === "B") {
       setFirstIndicatorVisible(true);
     } else {
@@ -362,6 +418,7 @@ function CreateChargeException() {
 
   async function onOkModal() {
     await form1.validateFields();
+    setIsIndicator(true);
     const values = form1.getFieldsValue();
     onFinishModel(values);
   }
@@ -369,6 +426,9 @@ function CreateChargeException() {
   const [selectedRecord, setSelectedRecord] = useState(null);
 
   function GetProviderName(id) {
+    if (id === 0) {
+      return "All";
+    }
     return dropDown.Provider.filter((item) => item.ProviderId === id)[0]
       ?.ProviderName;
   }
@@ -384,7 +444,6 @@ function CreateChargeException() {
   }
 
   function onFinishModel(values) {
-    debugger;
     setDataModel((prevData) => {
       const exists = prevData.filter(
         (item) => item.key === selectedRecord?.key
@@ -392,7 +451,10 @@ function CreateChargeException() {
       values.ChargeIndicator = GetIndicatorName(values.Indicator);
       values.ProviderName = GetProviderName(values.ProviderId);
       values.PatientTypeName = GetPatientTypeName(values.PatientTypeId);
+      values.ProviderId = values.ProviderId === "All" ? 0 : values.ProviderId;
       values.ActiveFlag = true;
+      values.IndicatorDescriptionId = values.DescriptionId ?? 0;
+      values.ExceptionLineId ?? 0;
       if (exists.length > 0) {
         values.key = selectedRecord?.key;
         return prevData.map((item) =>
@@ -422,14 +484,17 @@ function CreateChargeException() {
 
   function handleEdit(record) {
     setSelectedRecord(record);
+    setIsIndicator(record.Indicator === 2060 ? true : false);
     form1.setFieldsValue({
       Indicator: record.Indicator,
-      ProviderId: record.ProviderId,
+      ProviderId: record.ProviderId ?? "All",
+      ExceptionLineId: record.ExceptionLineId ?? 0,
       PatientTypeId: record.PatientTypeId,
       Applicability: record.Applicability,
       ChargeException: record.ChargeException,
       FactorAmount: record.FactorAmount,
       IndicatorDescriptionName: record.IndicatorDescriptionName,
+      DescriptionId: record.DescriptionId,
     });
     setModalVisible(true);
   }
@@ -454,7 +519,7 @@ function CreateChargeException() {
   }
 
   return (
-    <>
+    <Spin spinning={loading} tip="Loading...">
       <Layout>
         <div
           style={{
@@ -612,6 +677,9 @@ function CreateChargeException() {
                   <Form.Item name="First" valuePropName="checked">
                     <Checkbox onChange={handleFirst}></Checkbox>
                   </Form.Item>
+                  <Form.Item name="ExceptionLineId1" hidden>
+                    <Input />
+                  </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
                   <label>Days after last IP Encounter</label>
@@ -665,6 +733,9 @@ function CreateChargeException() {
                   <Form.Item name="Second" valuePropName="checked">
                     <Checkbox onChange={handleSecond}></Checkbox>
                   </Form.Item>
+                  <Form.Item name="ExceptionLineId2" hidden>
+                    <Input />
+                  </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
                   <label>Holiday</label>
@@ -694,6 +765,9 @@ function CreateChargeException() {
                 <Col className="gutter-row" span={4}>
                   <Form.Item name="Third" valuePropName="checked">
                     <Checkbox onChange={handleThird}></Checkbox>
+                  </Form.Item>
+                  <Form.Item name="ExceptionLineId3" hidden>
+                    <Input />
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
@@ -725,6 +799,9 @@ function CreateChargeException() {
                   <Form.Item name="Forth" valuePropName="checked">
                     <Checkbox onChange={handleFour}></Checkbox>
                   </Form.Item>
+                  <Form.Item name="ExceptionLineId4" hidden>
+                    <Input />
+                  </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
                   <label>Time of Service</label>
@@ -734,7 +811,7 @@ function CreateChargeException() {
                     <TimePicker
                       format="hh:mm:ss"
                       style={{ width: "100%" }}
-                      disabled={!fourVisible}
+                      disabled={!checkFour}
                     />
                   </Form.Item>
                 </Col>
@@ -743,7 +820,7 @@ function CreateChargeException() {
                     <TimePicker
                       format="hh:mm:ss"
                       style={{ width: "100%" }}
-                      disabled={!fourVisible}
+                      disabled={!checkFour}
                     />
                   </Form.Item>
                 </Col>
@@ -754,6 +831,9 @@ function CreateChargeException() {
                 <Col className="gutter-row" span={4}>
                   <Form.Item name="Fifth" valuePropName="checked">
                     <Checkbox onChange={handleFive}></Checkbox>
+                  </Form.Item>
+                  <Form.Item name="ExceptionLineId5" hidden>
+                    <Input />
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
@@ -807,6 +887,9 @@ function CreateChargeException() {
                 <Col className="gutter-row" span={4}>
                   <Form.Item name="Sixth" valuePropName="checked">
                     <Checkbox onChange={handleSix}></Checkbox>
+                  </Form.Item>
+                  <Form.Item name="ExceptionLineId6" hidden>
+                    <Input />
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={4}>
@@ -881,7 +964,7 @@ function CreateChargeException() {
                 <Col style={{ marginRight: "10px" }}>
                   <Form.Item>
                     <Button type="primary" htmlType="submit">
-                      Save
+                      {ExceptionHeaderId > 0 ? "Update" : "Save"}
                     </Button>
                   </Form.Item>
                 </Col>
@@ -898,6 +981,7 @@ function CreateChargeException() {
           <Modal
             title="Charge Exception Details"
             onOk={onOkModal}
+            okText={selectedRecord ? "Update" : "Save"}
             onCancel={onCancelModel}
             open={modalVisible}
             maskClosable={false}
@@ -943,6 +1027,9 @@ function CreateChargeException() {
                           </Select.Option>
                         ))}
                     </Select>
+                  </Form.Item>
+                  <Form.Item name="ExceptionLineId" hidden>
+                    <Input />
                   </Form.Item>
                 </Col>
                 <Col className="gutter-row" span={8}>
@@ -1011,7 +1098,9 @@ function CreateChargeException() {
                     initialValue="All"
                   >
                     <Select defaultValue={"All"}>
-                      <Select.Option value="All">All</Select.Option>
+                      <Select.Option value="All" key="All">
+                        All
+                      </Select.Option>
                       {(dropDown.Provider || []).map((option) => (
                         <Select.Option
                           key={option.ProviderId}
@@ -1075,7 +1164,7 @@ function CreateChargeException() {
                 </Col>
                 <Col className="gutter-row" span={8}>
                   <Form.Item label="Factor/Amount" name="FactorAmount">
-                    <Input />
+                    <InputNumber min={0} style={{ width: "100%" }} />
                   </Form.Item>
                 </Col>
               </Row>
@@ -1083,7 +1172,7 @@ function CreateChargeException() {
           </Modal>
         </div>
       </Layout>
-    </>
+    </Spin>
   );
 }
 
