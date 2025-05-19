@@ -2,7 +2,7 @@ import customAxios from "../../../components/customAxios/customAxios.jsx";
 import React, { useEffect, useState } from "react";
 import { LeftOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router";
-import { Col, ConfigProvider, Row, Select } from "antd";
+import { Col, ConfigProvider, InputNumber, Row, Select } from "antd";
 import Input from "antd/es/input";
 import Form from "antd/es/form";
 import { Card, Modal, Table, message } from "antd";
@@ -56,23 +56,18 @@ const AppointmentSearch = () => {
   const [form] = Form.useForm();
   const [form1] = Form.useForm();
 
-
-
   const [isVisitModalVisible, setIsVisitModalVisible] = useState(false);
 
   const [messageApi, contextHolder] = message.useMessage();
   const [IsVisitCreated, setIsVisitCreated] = useState(false);
 
-
   const [showWard, setShowWard] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState(null); 
+  const [selectedRecord, setSelectedRecord] = useState(null);
   const [departmentLoading, setDepartmentLoading] = useState(true);
   const [providerLoading, setProviderLoading] = useState(false);
   const [providersData, setProvidersData] = useState([]);
   const [submitLoader, setIsSubmitLoader] = useState(false);
   const [departmentsData, setDepartmentsData] = useState([]);
-
-
 
   useEffect(() => {
     fetchData();
@@ -178,7 +173,6 @@ const AppointmentSearch = () => {
 
   const handleUhidClick = (record) => {
     if (record.PatientStatus == true) {
-
       handlevisitmodal(record);
     } else {
       // alert("make edit");
@@ -228,7 +222,7 @@ const AppointmentSearch = () => {
     }
   };
 
- const handleOk = async () => {
+  const handleOk = async () => {
     debugger;
 
     try {
@@ -253,7 +247,7 @@ const AppointmentSearch = () => {
         WardCategoryId: values.WardCategory,
         WardId: values.Ward,
         BedId: values.Bed,
-        AppointmentId:values.AppointmentId
+        AppointmentId: values.AppointmentId,
       };
 
       // Send a POST request to the server
@@ -269,7 +263,7 @@ const AppointmentSearch = () => {
         if (response.data.EncounterResult != null) {
           messageApi.warning({
             type: "warning",
-            content: response.data.EncounterResult
+            content: response.data.EncounterResult,
           });
         } else {
           const genVisitId = response.data.GeneratedEncounterId;
@@ -290,8 +284,8 @@ const AppointmentSearch = () => {
       }
 
       // setIsModalVisible(false);
-   
-     // setServiceLocations([]);
+
+      // setServiceLocations([]);
       // form1.resetFields();
 
       // Additional logic after the asynchronous operation
@@ -576,7 +570,7 @@ const AppointmentSearch = () => {
                 />
               </Form.Item>
             </ColWithSixSpan>
-            <ColWithSixSpan>
+            {/* <ColWithSixSpan>
               <Form.Item
                 label="Mobile Number"
                 name="MobileNumber"
@@ -587,7 +581,30 @@ const AppointmentSearch = () => {
                   },
                 ]}
               >
-                <Input allowClear />
+                <InputNumber maxLength={10} style={{ width: "100%" }} />
+              </Form.Item>
+               </Form.Item>
+            </ColWithSixSpan> */}
+            <ColWithSixSpan>
+              <Form.Item
+                label="Mobile Number"
+                name="MobileNumber"
+                rules={[
+                  {
+                    pattern: /^[0-9]{10}$/,
+                    message: "Please enter a valid 10-digit mobile number!"
+                  }
+                ]}
+              >
+                <Input
+                  maxLength={10}
+                  onKeyPress={(e) => {
+                    const pattern = /[0-9]/;
+                    if (!pattern.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
               </Form.Item>
             </ColWithSixSpan>
           </Row>

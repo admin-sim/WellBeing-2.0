@@ -154,6 +154,13 @@ import OtcReturn from "./pages/Pharmacy/OtcReturn/index.jsx";
 import PharamcyPrescriptionIndex from "./pages/Pharmacy/PharmacyPrescription/index.jsx";
 import DailyCollectionReport from "./pages/ReportManagement/AccountManagementReport/DailyCollectionReport.jsx";
 import RevenueAnalysisReport from "./pages/ReportManagement/AccountManagementReport/RevenueAnalysisReport.jsx";
+import PatientAccountLedger from "./pages/ReportManagement/AccountManagementReport/PatientAccountLedger.jsx";
+import PatientAccountAdvance from "./pages/ReportManagement/AccountManagementReport/PatientAccountAdvance.jsx";
+import PatientOutstanding from "./pages/ReportManagement/AccountManagementReport/PatientOutstanding.jsx";
+import AppointmentReport from "./pages/ReportManagement/ResourceScheduling/AppointmentReport.jsx";
+import DischargeReport from "./pages/ReportManagement/WardManagement/DischargeReport.jsx";
+import CurrentInPatientReport from "./pages/ReportManagement/WardManagement/CurrentInPatientReport.jsx";
+import AdmissionReport from "./pages/ReportManagement/WardManagement/AdmissionReport.jsx";
 import AccomodationCharge from "./pages/Masters/GeneralMasters/AccountManagement/AccomodationCharge.jsx";
 import CreateAccomodationCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAccomodationCharge.jsx";
 import ReccuringCharge from "./pages/Masters/GeneralMasters/AccountManagement/ReccuringCharge.jsx";
@@ -1385,6 +1392,62 @@ function App() {
               element={
                 <ProtectedRoute>
                   <RevenueAnalysisReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/PatientAccountLedger"
+              element={
+                <ProtectedRoute>
+                  <PatientAccountLedger />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/PatientAccountAdvance"
+              element={
+                <ProtectedRoute>
+                  <PatientAccountAdvance />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/AppointmentReport"
+              element={
+                <ProtectedRoute>
+                  <AppointmentReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/DischargeReport"
+              element={
+                <ProtectedRoute>
+                  <DischargeReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/CurrentInPatientReport"
+              element={
+                <ProtectedRoute>
+                  <CurrentInPatientReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/AdmissionReport"
+              element={
+                <ProtectedRoute>
+                  <AdmissionReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/PatientOutstanding"
+              element={
+                <ProtectedRoute>
+                  <PatientOutstanding />
                 </ProtectedRoute>
               }
             />

@@ -616,4 +616,7 @@ export const urlChargeExceptionEdit = `${baseURL}/api/ChargeException/ChargeExce
 export const urlSaveNewBillChargeException = `${baseURL}/api/ChargeException/SaveNewBillChargeException`;
 export const urlUpdateBillChargeException = `${baseURL}/api/ChargeException/UpdateBillChargeException`;
 export const urlDeleteSelectedchargeexception = `${baseURL}/api/ChargeException/DeleteSelectedchargeexception`;
+export const urlUpdateContainerInfo = `${baseURL}/api/LabTestMaster/UpdateContainerInfo`;
+export const urlGetFacilityDepartmentServiceLocationBasedOnFacilityId = `${baseURL}/api/FacilityDepartmentServiceLocation/GetFacilityDepartmentServiceLocationBasedOnFacilityId`;
+export const urlGetAllType = `${baseURL}/api/Master/GetAllType`;
 

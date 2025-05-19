@@ -210,16 +210,16 @@ const CreateAssignedPlan = () => {
               MembershipValidFromDate:
                 AddNewAssignedPlanData.MembershipValidFromDate
                   ? dayjs(
-                    AddNewAssignedPlanData.MembershipValidFromDate,
-                    "DD-MM-YYYY"
-                  )
+                      AddNewAssignedPlanData.MembershipValidFromDate,
+                      "DD-MM-YYYY"
+                    )
                   : null,
               MembershipValidToDate:
                 AddNewAssignedPlanData.MembershipValidToDate
                   ? dayjs(
-                    AddNewAssignedPlanData.MembershipValidToDate,
-                    "DD-MM-YYYY"
-                  )
+                      AddNewAssignedPlanData.MembershipValidToDate,
+                      "DD-MM-YYYY"
+                    )
                   : null,
               EmployeeNo: AddNewAssignedPlanData.EmployeeNo,
               ParentPriceApplicable:
@@ -272,7 +272,9 @@ const CreateAssignedPlan = () => {
       const resultdata = response.data.data.result;
       if (resultdata === "Success") {
         setDisable(true);
-        const messsage1 = AssignedPlanId ? "Plan Updated Successfully..." : "Plan Applied Successfully..."
+        const messsage1 = AssignedPlanId
+          ? "Plan Updated Successfully..."
+          : "Plan Applied Successfully...";
         message.success(messsage1);
         if (response.data.data.AssignedPlan != null) {
           setAssignedPlan(response.data.data.AssignedPlan);
@@ -283,7 +285,7 @@ const CreateAssignedPlan = () => {
       } else {
         message.warning("Something Went Wrong");
       }
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const onFinishAddAuth = async (values) => {
@@ -306,26 +308,24 @@ const CreateAssignedPlan = () => {
 
     const url = planAuthId ? urlUpdateAuthorisation : urlSaveNewAuthorisation;
     try {
-      const response = await customAxios.post(
-        url,
-        values,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await customAxios.post(url, values, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       if (response.data.data != null && response.data.data > 0) {
         setPlanAuthId(response.data.data);
         setAddNewAuthShowBtn(true);
-        const message1 = planAuthId ? "Authorisation Updated Successfully" : "New Authorisation Added Successfully";
+        const message1 = planAuthId
+          ? "Authorisation Updated Successfully"
+          : "New Authorisation Added Successfully";
         message.success(message1);
       }
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const handleCancel = () => {
-    debugger
+    debugger;
     const url = "/AssignedPlan";
     navigate(url);
   };
@@ -402,9 +402,9 @@ const CreateAssignedPlan = () => {
           MembershipValidFromDate:
             AddNewAssignedPlanData.MembershipValidFromDate
               ? dayjs(
-                AddNewAssignedPlanData.MembershipValidFromDate,
-                "DD-MM-YYYY"
-              )
+                  AddNewAssignedPlanData.MembershipValidFromDate,
+                  "DD-MM-YYYY"
+                )
               : null,
           MembershipValidToDate: AddNewAssignedPlanData.MembershipValidToDate
             ? dayjs(AddNewAssignedPlanData.MembershipValidToDate, "DD-MM-YYYY")
@@ -454,7 +454,6 @@ const CreateAssignedPlan = () => {
       message.success("AuthorisationLineChargeParameter Deleted Successfully");
     }
   };
-
 
   // const handlePayerChange =async (value) => {
   //   debugger;
@@ -563,8 +562,7 @@ const CreateAssignedPlan = () => {
           ApprovedDays: AuthData.ApprovedDays,
           IsAmtAuthorized: AuthData.IsAmtAuthorized,
           AuthAmount: AuthData.AuthAmount,
-          AmtDeductible: AuthData.AmtDeductible
-
+          AmtDeductible: AuthData.AmtDeductible,
         });
 
         const filteredtransData =
@@ -584,9 +582,8 @@ const CreateAssignedPlan = () => {
         setAddNewAuthShowBtn(false);
         setPlanAuthId(values.PlanAuthId);
         setAssignedPlanId(values.AssignedPlanId);
-
       }
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const handleEditChargeParameter = async (record) => {
@@ -607,9 +604,7 @@ const CreateAssignedPlan = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  }
-
-
+  };
 
   const columns = [
     {
@@ -662,11 +657,7 @@ const CreateAssignedPlan = () => {
       dataIndex: "AmtIndicator",
       key: "AmtIndicator",
       render: (amtIndicator) =>
-        amtIndicator === "A"
-          ? "Amount"
-          : amtIndicator
-            ? "Percentage"
-            : "",
+        amtIndicator === "A" ? "Amount" : amtIndicator ? "Percentage" : "",
     },
     {
       title: "Value",
@@ -722,9 +713,7 @@ const CreateAssignedPlan = () => {
       title: "Remarks",
       dataIndex: "Remarks",
       key: "Remarks",
-
     },
-
   ];
   const columnsAuth = [
     {
@@ -917,7 +906,7 @@ const CreateAssignedPlan = () => {
                         label="Payer"
                       >
                         {/* <Select onChange={(value) => handlePayerChange(value)} > */}
-                        <Select >
+                        <Select>
                           {billagreementDropdown.Payer?.map((option) => (
                             <Select.Option
                               key={option.PayerId}
@@ -1040,8 +1029,29 @@ const CreateAssignedPlan = () => {
                       </Form.Item>
                     </Col>
                     <Col className="gutter-row" span={6}>
-                      <Form.Item name="EmployeeNo" label="EmployeeNumber">
+                      {/* <Form.Item name="EmployeeNo" label="EmployeeNumber">
                         <Input style={{ width: "100%" }} />
+                      </Form.Item> */}
+                      <Form.Item
+                        label="Mobile Number"
+                        name="MobileNumber"
+                        rules={[
+                          {
+                            pattern: /^[0-9]{10}$/,
+                            message:
+                              "Please enter a valid 10-digit mobile number!",
+                          },
+                        ]}
+                      >
+                        <Input
+                          maxLength={10}
+                          onKeyPress={(e) => {
+                            const pattern = /[0-9]/;
+                            if (!pattern.test(e.key)) {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -1434,7 +1444,9 @@ const CreateAssignedPlan = () => {
                             actionColumn={true}
                             isFilter={true}
                             onEdit={handleEditChargeParameter}
-                            onDelete={handleDeleteAuthorisationLineChargeParameter}
+                            onDelete={
+                              handleDeleteAuthorisationLineChargeParameter
+                            }
                             scroll={{
                               x: 1500,
                             }}
