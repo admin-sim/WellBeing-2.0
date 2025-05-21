@@ -25,6 +25,7 @@ import {
   Table,
   AutoComplete,
   Checkbox,
+  message,
 } from "antd";
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
@@ -51,13 +52,11 @@ const ContainerDefinition = () => {
   });
   const [paginationSize, setPaginationSize] = useState(5);
   const [filteredData, setFilteredData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [mainTestOptions, setMainTestOptions] = useState([]);
-  const [subTestOptions, setSubTestOptions] = useState([]);
+  const [updatedData, setUpdatedData] = useState([]);
   const { Title } = Typography;
   const hasEffectRun = useRef(false);
 
@@ -68,6 +67,7 @@ const ContainerDefinition = () => {
           debugger;
           const apiData = response.data.data;
           setFilteredData(apiData);
+          setUpdatedData(apiData);
         });
       } catch (error) {
         //console.error("Error fetching purchase order details:", error);
@@ -78,35 +78,40 @@ const ContainerDefinition = () => {
 
   const navigate = useNavigate();
 
-  const handleCancel = () => {};
+  const handleCancel = () => {
+    setFilteredData(updatedData);
+  };
 
   const onFinish = async (values) => {
     debugger;
     setIsSearchLoading(true);
     setLoading(true);
-    filteredData.forEach((item) => {});
-    let Data1 = [];
+    const updatedRecord = filteredData.filter((item) =>
+      updatedData.some((i) =>
+        i.CDID === item.CDID ? i.IsActive !== item.IsActive : false
+      )
+    );
+    if (updatedRecord.length === 0) {
+      message.warning("No changes made to the container definition.");
+      setLoading(false);
+      return;
+    }
     try {
-      const postData1 = {
-        ContainerName: values.DocumentType,
-        ValuesName: values.Supplier,
-        IsActive: values.ProcurementStore,
-      };
-      // customAxios
-      //   .post(urlUpdateContainerInfo, postData1, {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //   })
-      //   .then((response) => {
-      //     debugger;
-      //     if (response.data.data.length > 0) {
-      //       setIsTableHasValues(true);
-      //     }
-      //   })
-      //   .finally(() => {
-      //     setLoading(false);
-      //   });
+      customAxios
+        .post(urlUpdateContainerInfo, updatedRecord, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          debugger;
+          if (response.data.data === "Data Updated Successfully.") {
+            message.success("Container Definition updated successfully");
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     } catch (error) {
       console.error("Error:", error);
     }
@@ -114,9 +119,10 @@ const ContainerDefinition = () => {
   };
 
   function handleCheck(e, record) {
+    debugger;
     const { checked } = e.target;
     const updatedData = filteredData.map((item) => {
-      if (item.CDID === e.target.value) {
+      if (item.CDID === record.CDID) {
         return { ...item, IsActive: checked };
       }
       return item;
@@ -145,7 +151,7 @@ const ContainerDefinition = () => {
       dataIndex: "IsActive",
       key: "IsActive",
       render: (IsActive, record) => (
-        <Checkbox checked={IsActive} onChange={() => handleCheck(record)} />
+        <Checkbox checked={IsActive} onChange={(e) => handleCheck(e, record)} />
       ),
     },
   ];
@@ -197,7 +203,7 @@ const ContainerDefinition = () => {
           <Row justify="end" style={{ padding: "0rem 1rem" }}>
             <Col style={{ marginRight: "10px" }}>
               <Form.Item>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={loading}>
                   Update
                 </Button>
               </Form.Item>
