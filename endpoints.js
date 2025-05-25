@@ -635,3 +635,5 @@ export const urlGetAllServiceAsync= `${baseURL}/api/Service/GetAllServiceAsync`;
 export const urlLoadRadioSampleCollectionGrid = `${baseURL}/api/Laboratory/LoadRadioSampleCollectionGrid`;
 export const urlRadiologyResultEntryIndex = `${baseURL}/api/Laboratory/RadiologyResultEntryIndex`;
 export const urlRadiologyVerificationIndex = `${baseURL}/api/Laboratory/RadiologyVerificationIndex`;
+
+//XYZ
