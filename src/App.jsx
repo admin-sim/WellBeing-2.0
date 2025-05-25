@@ -105,6 +105,8 @@ import PriceTariff from "./pages/Masters/GeneralMasters/AccountManagement/PriceT
 import CreatePriceTariff from "./pages/Masters/GeneralMasters/AccountManagement/CreatePriceTariff";
 import AutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/AutoCharge";
 import CreateAutoCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAutoCharge";
+import ChargeException from "./pages/Masters/GeneralMasters/AccountManagement/ChargeException";
+import CreateChargeException from "./pages/Masters/GeneralMasters/AccountManagement/CreateChargeException";
 import BillAggrement from "./pages/Masters/GeneralMasters/AccountManagement/BillAggrement";
 import CreateBillAgrement from "./pages/Masters/GeneralMasters/AccountManagement/CreateBillAgrement";
 import UpdateItemReceipt from "./pages/Inventory/ItemReceipt/UpdateItemReceipt.jsx";
@@ -130,6 +132,7 @@ import Configuration from "./pages/Masters/Configuration Management/Configuratio
 import WorkflowManager from "./pages/Masters/Configuration Management/CreateWorkflow/index.jsx";
 import CreateEditWorkFlow from "./pages/Masters/Configuration Management/CreateWorkflow/CreateEditWorkFlow.jsx";
 import Frequency from "./pages/Masters/SystemParameterSetup/Frequency/index.jsx";
+import ClinicalSetup from "./pages/Masters/SystemParameterSetup/ClinicalSetup/index.jsx";
 import PatientTrackingBoard from "./pages/ClinicalDocuments/PatientTrackingBoard/index.jsx";
 import AdditionalCharge from "./pages/Masters/GeneralMasters/AccountManagement/AdditionalCharge";
 import CreateAdditionalCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAdditionalCharge";
@@ -151,6 +154,13 @@ import OtcReturn from "./pages/Pharmacy/OtcReturn/index.jsx";
 import PharamcyPrescriptionIndex from "./pages/Pharmacy/PharmacyPrescription/index.jsx";
 import DailyCollectionReport from "./pages/ReportManagement/AccountManagementReport/DailyCollectionReport.jsx";
 import RevenueAnalysisReport from "./pages/ReportManagement/AccountManagementReport/RevenueAnalysisReport.jsx";
+import PatientAccountLedger from "./pages/ReportManagement/AccountManagementReport/PatientAccountLedger.jsx";
+import PatientAccountAdvance from "./pages/ReportManagement/AccountManagementReport/PatientAccountAdvance.jsx";
+import PatientOutstanding from "./pages/ReportManagement/AccountManagementReport/PatientOutstanding.jsx";
+import AppointmentReport from "./pages/ReportManagement/ResourceScheduling/AppointmentReport.jsx";
+import DischargeReport from "./pages/ReportManagement/WardManagement/DischargeReport.jsx";
+import CurrentInPatientReport from "./pages/ReportManagement/WardManagement/CurrentInPatientReport.jsx";
+import AdmissionReport from "./pages/ReportManagement/WardManagement/AdmissionReport.jsx";
 import AccomodationCharge from "./pages/Masters/GeneralMasters/AccountManagement/AccomodationCharge.jsx";
 import CreateAccomodationCharge from "./pages/Masters/GeneralMasters/AccountManagement/CreateAccomodationCharge.jsx";
 import ReccuringCharge from "./pages/Masters/GeneralMasters/AccountManagement/ReccuringCharge.jsx";
@@ -169,6 +179,7 @@ import CreateDischargeSummary from "./pages/ClinicalDocuments/DischargeSummary/C
 import ClaimSubmission from "./pages/ClaimManagement/ClaimSubmission/index.jsx";
 import ClaimProcess from "./pages/ClaimManagement/ClaimProcess/index.jsx";
 import EditPriceTariffRevision from "./pages/Masters/GeneralMasters/AccountManagement/EditPriceTariffRevision.jsx";
+import ParameterSetup from "./pages/Masters/SystemParameterSetup/AccountManagement/index.jsx";
 import ProcedureCharges from "./pages/AccountManagement/ProcedureCharges/index.jsx";
 import PackageSubscription from "./pages/AccountManagement/PackageSubscription/index.jsx";
 import CreateProcedure from "./pages/AccountManagement/ProcedureCharges/CreateProcedure.jsx";
@@ -992,6 +1003,22 @@ function App() {
               }
             />
             <Route
+              path="ChargeException"
+              element={
+                <ProtectedRoute>
+                  <ChargeException />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="CreateChargeException"
+              element={
+                <ProtectedRoute>
+                  <CreateChargeException />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="AccomodationCharge"
               element={
                 <ProtectedRoute>
@@ -1376,6 +1403,62 @@ function App() {
               }
             />
             <Route
+              path="/PatientAccountLedger"
+              element={
+                <ProtectedRoute>
+                  <PatientAccountLedger />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/PatientAccountAdvance"
+              element={
+                <ProtectedRoute>
+                  <PatientAccountAdvance />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/AppointmentReport"
+              element={
+                <ProtectedRoute>
+                  <AppointmentReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/DischargeReport"
+              element={
+                <ProtectedRoute>
+                  <DischargeReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/CurrentInPatientReport"
+              element={
+                <ProtectedRoute>
+                  <CurrentInPatientReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/AdmissionReport"
+              element={
+                <ProtectedRoute>
+                  <AdmissionReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/PatientOutstanding"
+              element={
+                <ProtectedRoute>
+                  <PatientOutstanding />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/PurchaseOrderReport"
               element={
                 <ProtectedRoute>
@@ -1476,6 +1559,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ClaimSubmission />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ClinicalSetup"
+              element={
+                <ProtectedRoute>
+                  <ClinicalSetup />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ParameterSetup"
+              element={
+                <ProtectedRoute>
+                  <ParameterSetup />
                 </ProtectedRoute>
               }
             />

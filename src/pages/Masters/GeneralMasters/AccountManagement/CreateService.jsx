@@ -1,17 +1,15 @@
 import {
-  ArrowLeftOutlined,
+  DeleteOutlined,
   EditOutlined,
   PlusCircleFilled,
   PlusCircleOutlined,
-  PlusOutlined,
-  PlusSquareFilled,
-  SearchOutlined,
 } from "@ant-design/icons";
+import { v4 as uuidv4 } from "uuid";
 import {
   Layout,
   Row,
   Col,
-  Typography,
+  Spin,
   Button,
   Form,
   Checkbox,
@@ -22,11 +20,11 @@ import {
   Modal,
   Table,
   Tooltip,
+  Popconfirm,
+  InputNumber,
   DatePicker,
 } from "antd";
-import { useForm } from "antd/es/form/Form";
-import Title from "antd/es/typography/Title";
-import TextArea from "antd/es/input/TextArea";
+
 import Input from "antd/es/input/Input";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
@@ -41,6 +39,8 @@ import customAxios from "../../../../components/customAxios/customAxios";
 import OrderingAttributeModal from "./OrderingAttributeModal";
 import MedicalCodeModal from "./MedicalCodeModal";
 import TurnAroundTimeTableModal from "./TurnAroundTimeTableModal";
+import PageHeader from "../../../../components/PageHeader";
+import { FaAnglesLeft } from "react-icons/fa6";
 import PackageIndicationModal from "./PackageIndicationModal";
 const { Panel } = Collapse;
 function CreateService() {
@@ -51,17 +51,12 @@ function CreateService() {
   const [uom, setUom] = useState([]);
   const [category, setCategory] = useState([]);
   const [servicegroupname, setServiceGroupName] = useState([]);
-  const [serviceclassificationname, setServiceClassificationName] = useState(
-    []
-  );
+  const [serviceclassificationname, setServiceClassificationName] = useState([]);
   const [testresulttypes, setTestResultTypes] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isMedicalModalVisible, setIsMedicalModalVisible] = useState(false);
-  const [isTurnAroundTimeModalVisible, setIsTurnAroundTimeModalVisible] =
-    useState(false);
+  const [isTurnAroundTimeModalVisible, setIsTurnAroundTimeModalVisible] = useState(false);
   const [ispackageModalVisible, setIsPackageModalVisible] = useState(false);
-  const [orderAtributeDropdown, setOrderAtributeDropDown] = useState([]);
-  console.log("Serviceclassificationid", Serviceclassificationid);
   const [ageGenderRestriction, setAgeGenderRestriction] = useState([]);
   const [turnAroundTime, setTurnAroundTime] = useState([]);
   const [packageInd, setPackageInd] = useState([]);
@@ -81,12 +76,16 @@ function CreateService() {
   const [reultTypeDisable, setResultTypeDisable] = useState(false);
   const [isTestValuesDisabled, setIsTestValuesDisabled] = useState(true);
   const [isRadiologyChecked, setIsRadiologyChecked] = useState(false);
+  const [record, setRecord] = useState(null)
   const [filteredTemplates, setFilteredTemplates] = useState([]);
   const [testoptions, setTestOptions] = useState([]);
+  const [loading, setLoading] = useState(false)
+  const [sampleTypes, setSampleTypes] = useState([])
+  const [templateListModel, setTemplateListModel] = useState([])
+
 
   useEffect(() => {
     const fetchData = async () => {
-      debugger;
       try {
         const response = await customAxios.get(
           `${urlCreateNewService}?ServiceClassificationId=${Serviceclassificationid}`
@@ -100,6 +99,8 @@ function CreateService() {
           setServiceClassificationName(data.ServiceClassificationName);
           setTemplateList(data.templateListmodel);
           setServiceDropDown(data);
+          setSampleTypes(data.SampleTypes)
+          setTemplateListModel(data.templateListmodel)
         } else {
           console.error("Failed to fetch patient details");
         }
@@ -115,8 +116,8 @@ function CreateService() {
   }, []);
 
   const EditServiceData = async () => {
-    debugger;
     if (ServiceId > 0) {
+      setLoading(true)
       try {
         const response = await customAxios.get(
           `${urlEditService}?Id=${ServiceId}`
@@ -142,7 +143,58 @@ function CreateService() {
             TestValues: data.TestValues,
             NormalValForTestVal: data.NormalValForTestVal,
             LabUOM: data.LabUOM,
+            IsProviderRequired: data.IsProviderRequired,
+            IsServiceEditable: data.IsServiceEditable,
+            IsAssociateCharge: data.IsAssociateCharge,
+            IsSurgeryCharge: data.IsSurgeryCharge
           });
+
+          const order = response.data.data.ListServiceOrdering.map((p) => {
+            const startAgeUnitOption = response.data.data?.Uoms.find(
+              (option) => option.UomId === p.StartAgeUom
+            );
+            const endAgeUnitOption = response.data.data?.Uoms.find(
+              (option) => option.UomId === p.EndAgeUom
+            );
+
+            return {
+              ...p,
+              key: uuidv4(),
+              StartAgeUnitShortName: startAgeUnitOption.LongName,
+              EndAgeUnitShortName: endAgeUnitOption.LongName
+            }
+          })
+
+          setAgeGenderRestriction(order)
+          const order1 = response.data.data.ListServiceTat.map((p) => {
+            const TatUomOption = response.data.data?.Uoms.find(
+              (option) => option.UomId === p.TatUom
+            );
+
+            return {
+              ...p,
+              key: uuidv4(),
+              TatUomShortName: TatUomOption?.ShortName,
+            }
+          })
+
+          setTurnAroundTime(order1)
+
+          setAgeGenderRestriction(order)
+          const order2 = response.data.data.ListServiceMedicalCode.map((p) => {
+            const TatUomOption = response.data.data?.MedicalCodeTypes.find(
+              (option) => option.LookupID === p.MedicalCodeTypeId
+            );
+
+            return {
+              ...p,
+              key: uuidv4(),
+              TatUomShortName: TatUomOption?.LookupDescription,
+              ActiveFlag1: true
+            }
+          })
+
+          setMedicalCode(order2)
 
           if (data.IsFromTestValues) {
             setIsTestValuesDisabled(false);
@@ -154,18 +206,19 @@ function CreateService() {
             setTemplateDisable(false);
             setResultTypeDisable(true);
           }
+          setLoading(false)
         } else {
+          setLoading(false)
           console.error("Failed to fetch patient details");
         }
       } catch (error) {
+        setLoading(false)
         console.error("Error fetching data:", error);
       }
     }
   };
 
   useEffect(() => {
-    debugger;
-    // Filter the templateList based on checkbox state
     const filtered = isRadiologyChecked
       ? templateList.filter((template) => template.IsRadiology)
       : templateList.filter((template) => template.IsLab);
@@ -174,8 +227,6 @@ function CreateService() {
   }, [isRadiologyChecked, templateList]);
 
   const handleResultTypeChange = (value, option) => {
-    debugger;
-    // Check if the selected value's option children is "Template"
     if (option.children === "Template") {
       setTemplateDisable(false);
     } else {
@@ -194,11 +245,9 @@ function CreateService() {
       setResultTypeDisable(false);
       form.setFieldsValue({ TemplateID: undefined });
     }
-    // If checked, set ResultType to the LookupDescription of the first option
     if (checked && testresulttypes.length > 0) {
       form.setFieldsValue({ ResultType: testresulttypes[2].LookupID });
     } else {
-      // Optionally reset ResultType if unchecked
       form.setFieldsValue({ ResultType: undefined });
     }
     form.setFieldsValue({
@@ -229,7 +278,6 @@ function CreateService() {
       form.setFieldsValue({ ResultType: testresulttypes[0].LookupID });
       form.setFieldsValue({ TemplateID: undefined });
     } else {
-      // Optionally reset ResultType if unchecked
       form.setFieldsValue({ ResultType: undefined });
     }
   };
@@ -238,9 +286,7 @@ function CreateService() {
 
   const handleTestValuesChange = (e) => {
     const value = e.target.value;
-    // setTestValues(value);
 
-    // Split the input by '|' and filter out empty values
     const newOptions = value
       .split("|")
       .map((opt) => opt.trim())
@@ -283,13 +329,53 @@ function CreateService() {
       
 
 
+    values.IsFromTestValues = values.IsFromTestValues ? values.IsFromTestValues : false;
+    values.IsRadiology = values.IsRadiology ? values.IsRadiology : false;
+    values.IsSubTest = values.IsSubTest ? values.IsSubTest : false;
+    values.OrderIsOrderable = values.OrderIsOrderable !== false ? 'True' : 'False';
+    values.OrderPatientTypeIp = values.OrderPatientTypeIp !== false ? 'True' : 'False';
+    values.OrderPatientTypeAmbulatory = values.OrderPatientTypeAmbulatory !== false ? 'True' : 'False';
+    values.OrderPatientTypeEmergency = values.OrderPatientTypeEmergency !== false ? 'True' : 'False';
+    values.OrderPatientTypeShortStay = values.OrderPatientTypeShortStay !== false ? 'True' : 'False';
+    values.IsAtomic = values.IsAtomic === true ? 'True' : 'False'
+    values.ExecutionResultApplicable = values.ExecutionResultApplicable === true ? 'True' : 'False'
+    values.ExecutionRequestAnesthetist = values.ExecutionRequestAnesthetist === true ? 'True' : 'False'
+
+    const validItems = ageGenderRestriction.filter(
+      (item) => item.ServiceOrderAttributeId !== undefined
+    );
+
+    const tempItems = ageGenderRestriction.filter(
+      (item) => item.ServiceOrderAttributeId === undefined && item.ActiveFlag === true
+    );
+
+    const validItems1 = turnAroundTime.filter(
+      (item) => item.TatId !== undefined
+    );
+
+    const tempItems1 = turnAroundTime.filter(
+      (item) => item.TatId === undefined && item.ActiveFlag === true
+    );
+
+    const validItems2 = medicalCode.filter(
+      (item) => item.MedicalCodeId !== undefined
+    );
+
+    const tempItems2 = medicalCode.filter(
+      (item) => item.MedicalCodeId === undefined && item.ActiveFlag1 === true
+    );
+
     const Service = {
       AddNewService: values,
-      ListServiceOrdering: null,
-      ListServiceTat: null,
-      ListServiceMedicalCode: null,
+      ListServiceOrdering: validItems,
+      ListServiceTat: validItems1,
+      ListServiceMedicalCode: validItems2,
+      NewGender: tempItems,
+      NewListServiceTat: tempItems1,
+      NewMedicalCode: tempItems2,
       ServiceLabAttribute: null,
-      ServicePackage: packageInd?.length>0  ? packageInd :null,
+      NewServicePackage: null,
+      ServicePackage: packageInd?.length>0  ? packageInd :null
     };
 
     const url = ServiceId ? urlUpdateService : urlAddNewService;
@@ -321,15 +407,19 @@ function CreateService() {
     }
   };
 
-  const showModal = () => {
+  const showModal = (record) => {
+    setRecord(record)
     setIsModalVisible(true);
   };
 
-  const showMedicalCodeModel = () => {
+  const showMedicalCodeModel = (record) => {
+    setRecord(record)
     setIsMedicalModalVisible(true);
   };
 
-  const showTurnArountTimeModel = () => {
+
+  const showTurnArountTimeModel = (record) => {
+    setRecord(record)
     setIsTurnAroundTimeModalVisible(true);
   };
   const showPackageModal = () => {
@@ -337,60 +427,127 @@ function CreateService() {
   };
 
   const handleSubmit = (values) => {
-    debugger;
-    console.log(values);
-    // Ensure values is an array
+    debugger
     const valuesArray = Array.isArray(values) ? values : [values];
 
-    // Map the incoming values and add a key to each
-    const valuesWithKeys = valuesArray.map((value, index) => ({
-      ...value,
-      key: keyCounter + index,
-    }));
+    setAgeGenderRestriction((prev) => {
+      const updatedList = [...prev];
 
-    // Increment the key counter
-    setKeyCounter(keyCounter + valuesArray.length);
+      valuesArray.forEach((newItem) => {
+        const existingIndex = updatedList.findIndex(
+          (item) => item.ServiceOrderAttributeId === newItem.ServiceOrderAttributeId && item.key === newItem.key
+        );
 
-    // Update the state with the new values with keys
-    setAgeGenderRestriction((prev) => [...prev, ...valuesWithKeys]);
+        if (existingIndex !== -1) {
+          updatedList[existingIndex] = {
+            ...updatedList[existingIndex],
+            ...newItem,
+          };
+        } else {
+          updatedList.push(newItem);
+        }
+      });
+
+      return updatedList;
+    });
+    setRecord(null)
   };
+
 
   const handleMedicalCodeSubmit = (values) => {
-    debugger;
-    console.log(values);
-
-    // Ensure values is an array
     const valuesArray = Array.isArray(values) ? values : [values];
 
-    // Map the incoming values and add a key to each
-    const valuesWithKeys = valuesArray.map((value, index) => ({
-      ...value,
-      key: keyCounterMED + index,
-    }));
+    setMedicalCode((prev) => {
+      const updatedList = [...prev];
 
-    // Increment the key counter
-    setKeyCounterMED(keyCounterMED + valuesArray.length);
+      valuesArray.forEach((newItem) => {
+        const existingIndex = updatedList.findIndex(
+          (item) => item.MedicalCodeId === newItem.MedicalCodeId && item.key === newItem.key
+        );
 
-    // Update the state with the new values with keys
-    setMedicalCode((prev) => [...prev, ...valuesWithKeys]);
+        if (existingIndex !== -1) {
+          updatedList[existingIndex] = {
+            ...updatedList[existingIndex],
+            ...newItem,
+          };
+        } else {
+          updatedList.push(newItem);
+        }
+      });
+
+      return updatedList;
+    });
+    setRecord(null)
   };
+
   const handleTurnAroundTimeSubmit = (values) => {
-    debugger;
-
+    debugger
     const valuesArray = Array.isArray(values) ? values : [values];
 
-    // Map the incoming values and add a key to each
-    const valuesWithKeys = valuesArray.map((value, index) => ({
-      ...value,
-      key: keyCounterTAT + index,
-    }));
+    setTurnAroundTime((prev) => {
+      const updatedList = [...prev];
 
-    // Increment the key counter
-    setKeyCounterTAT(keyCounterTAT + valuesArray.length);
+      valuesArray.forEach((newItem) => {
+        const existingIndex = updatedList.findIndex(
+          (item) => item.OrderPriorityId === newItem.OrderPriorityId && item.key === newItem.key
+        );
 
-    // Update the state with the new values with keys
-    setTurnAroundTime((prev) => [...prev, ...valuesWithKeys]);
+        if (existingIndex !== -1) {
+          updatedList[existingIndex] = {
+            ...updatedList[existingIndex],
+            ...newItem,
+          };
+        } else {
+          updatedList.push(newItem);
+        }
+      });
+
+      return updatedList;
+    });
+    setRecord(null)
   };
+
+  function onGenderDelete(record) {
+    debugger
+    const newGender = ageGenderRestriction.map((m) => {
+      if (m.key === record.key) {
+        return {
+          ...m,
+          ActiveFlag: false
+        }
+      }
+      return m
+    })
+    setAgeGenderRestriction(newGender);
+  }
+
+  function onTatDelete(record) {
+    debugger
+    const newTat = turnAroundTime.map((m) => {
+      if (m.key === record.key) {
+        return {
+          ...m,
+          ActiveFlag: false
+        }
+      }
+      return m
+    })
+    setTurnAroundTime(newTat);
+  }
+
+  function onMedicalDelete(record) {
+    debugger
+    const newCode = medicalCode.map((m) => {
+      if (m.key === record.key) {
+        return {
+          ...m,
+          ActiveFlag1: false
+        }
+      }
+      return m
+    })
+    setMedicalCode(newCode);
+  }
 
   const handlePackageIndicatiotrSubmit = (values) => {
     debugger;
@@ -436,6 +593,31 @@ function CreateService() {
       dataIndex: "EndAgeUnitShortName",
       key: "EndAgeUnitShortName",
     },
+    {
+      title: "Action",
+      dataIndex: "Action",
+      key: "Action",
+      render: (_, record) =>
+        <>
+          <Button
+            size="small"
+            onClick={() => showModal(record)}
+            icon={<EditOutlined style={{ fontSize: "0.9rem" }} />}
+          ></Button>
+          <Popconfirm
+            title="Are you sure to delete this item?"
+            onConfirm={() => onGenderDelete(record)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button
+              size="small"
+              danger
+              icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
+            ></Button>
+          </Popconfirm>
+        </>
+    }
   ];
   // const columnsPackageInd = [
   //   {
@@ -559,6 +741,7 @@ function CreateService() {
     },
   ];
 
+
   const columnsTurnAroundTime = [
     {
       title: "Order Priority",
@@ -572,9 +755,34 @@ function CreateService() {
     },
     {
       title: "Tat UOM",
-      dataIndex: "UOM",
-      key: "UOM",
+      dataIndex: "TatUomShortName",
+      key: "TatUomShortName",
     },
+    {
+      title: "Action",
+      dataIndex: "Action",
+      key: "Action",
+      render: (_, record) =>
+        <>
+          <Button
+            size="small"
+            onClick={() => showTurnArountTimeModel(record)}
+            icon={<EditOutlined style={{ fontSize: "0.9rem" }} />}
+          ></Button>
+          <Popconfirm
+            title="Are you sure to delete this item?"
+            onConfirm={() => onTatDelete(record)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button
+              size="small"
+              danger
+              icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
+            ></Button>
+          </Popconfirm>
+        </>
+    }
   ];
 
   const columnMedicalCode = [
@@ -595,21 +803,38 @@ function CreateService() {
     },
     {
       title: "Status",
-      dataIndex: "Status",
-      key: "Status",
+      dataIndex: "ActiveFlag",
+      key: "ActiveFlag",
+      render: (_, record) => {
+        return record.ActiveFlag === true ? 'Active' : 'Hidden'
+      }
     },
     {
       title: "Action",
       dataIndex: "Action",
       key: "Action",
-    },
+      render: (_, record) =>
+        <>
+          <Button
+            size="small"
+            onClick={() => showMedicalCodeModel(record)}
+            icon={<EditOutlined style={{ fontSize: "0.9rem" }} />}
+          ></Button>
+          <Popconfirm
+            title="Are you sure to delete this item?"
+            onConfirm={() => onMedicalDelete(record)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button
+              size="small"
+              danger
+              icon={<DeleteOutlined style={{ fontSize: "0.9rem" }} />}
+            ></Button>
+          </Popconfirm>
+        </>
+    }
   ];
-
-  const handleClick = () => {
-    // Your handle click logic here
-
-    console.log("Plus icon clicked");
-  };
 
   return (
     <>
@@ -622,164 +847,503 @@ function CreateService() {
             borderRadius: "10px",
           }}
         >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Create Service Definition Manager
-              </Title>
-            </Col>
-            <Col offset={5} span={3}>
-              <Button
-                className="dfja"
-                icon={<ArrowLeftOutlined style={{ fontSize: "1.1rem" }} />}
-                onClick={() => navigate("/Service")}
-              >
-                Back to list
-              </Button>
-            </Col>
-          </Row>
-
-          <Form
-            style={{ margin: "0.5rem 1rem" }}
-            layout="vertical"
-            form={form}
-            onFinish={onFinish}
-          >
-            <Row gutter={32}>
-              <Col span={8}>
-                <strong>Service Group:</strong> {servicegroupname}
-              </Col>
-              <Col span={8}>
-                <strong>Service Classification:</strong>{" "}
-                {serviceclassificationname}
-              </Col>
-            </Row>
-            <Row gutter={18}>
-              <Col span={6}>
-                <Form.Item
-                  name="ShortName"
-                  label="Service Code"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter ServiceCode",
-                    },
-                  ]}
-                >
-                  <Input style={{ width: "100%" }} />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="LongName"
-                  label="Service Name"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter ServiceName",
-                    },
-                  ]}
-                >
-                  <Input style={{ width: "100%" }} />
-                </Form.Item>
-              </Col>
-
-              <Col span={6}>
-                <Form.Item
-                  name="UomId"
-                  label="Uom"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select Uom",
-                    },
-                  ]}
-                >
-                  <Select
-                    style={{ width: "100%" }}
-                    placeholder="SelectUom"
-                    allowClear
+          <PageHeader
+            title={"Create Service Definition Manager"}
+            buttonIcon={<FaAnglesLeft style={{ fontSize: "1rem" }} />}
+            buttonLabel={"Back to list"}
+            onButtonClick={() => navigate("/Service")}
+          />
+          <Spin spinning={loading} tip='loading...'>
+            <Form
+              style={{ margin: "1rem 2rem" }}
+              layout="vertical"
+              form={form}
+              onFinish={onFinish}
+              initialValues={{
+                OrderIsOrderable: true,
+                OrderPatientTypeIp: true,
+                OrderPatientTypeAmbulatory: true,
+                OrderPatientTypeEmergency: true,
+                OrderPatientTypeShortStay: true,
+                IsAtomic: true
+              }}
+            >
+              <Row gutter={32}>
+                <Col span={8}>
+                  <strong>Service Group:</strong> {servicegroupname}
+                </Col>
+                <Col span={8}>
+                  <strong>Service Classification:</strong>{" "}
+                  {serviceclassificationname}
+                </Col>
+              </Row>
+              <Row gutter={18}>
+                <Col span={6}>
+                  <Form.Item
+                    name="ShortName"
+                    label="Service Code"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter ServiceCode",
+                      },
+                    ]}
                   >
-                    {uom.map((option) => (
-                      <Select.Option key={option.UomId} value={option.UomId}>
-                        {option.ShortName}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="CategoryId"
-                  label="Category"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select category",
-                    },
-                  ]}
-                >
-                  <Select
-                    style={{ width: "100%" }}
-                    placeholder="SelectCategory"
-                    allowClear
-                  >
-                    {category.map((option) => (
-                      <Select.Option
-                        key={option.LookupID}
-                        value={option.LookupID}
-                      >
-                        {option.LookupDescription}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={18}>
-              <Col span={6}>
-                <Form.Item
-                  name="Status"
-                  label="Status"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select Status",
-                    },
-                  ]}
-                  initialValue="true" // Add this line
-                >
-                  <Select style={{ width: "100%" }} options={options} />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item label="Remarks">
-                  <Form.Item name="Remarks" noStyle>
-                    <Input.TextArea />
+                    <Input style={{ width: "100%" }} />
                   </Form.Item>
-                </Form.Item>
-              </Col>
-            </Row>
-            {servicegroupname.includes("Package Services") && (
-              <Collapse
-                accordion
-                defaultActiveKey={["6"]}
-                style={{ marginTop: "0.5rem" }}
-              >
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name="LongName"
+                    label="Service Name"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter ServiceName",
+                      },
+                    ]}
+                  >
+                    <Input style={{ width: "100%" }} />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name="UomId"
+                    label="Uom"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select Uom",
+                      },
+                    ]}
+                  >
+                    <Select
+                      style={{ width: "100%" }}
+                      placeholder="SelectUom"
+                      allowClear
+                    >
+                      {uom.map((option) => (
+                        <Select.Option key={option.UomId} value={option.UomId}>
+                          {option.ShortName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name="CategoryId"
+                    label="Category"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select category",
+                      },
+                    ]}
+                  >
+                    <Select
+                      style={{ width: "100%" }}
+                      placeholder="SelectCategory"
+                      allowClear
+                    >
+                      {category.map((option) => (
+                        <Select.Option
+                          key={option.LookupID}
+                          value={option.LookupID}
+                        >
+                          {option.LookupDescription}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={18}>
+                <Col span={6}>
+                  <Form.Item style={{ marginTop: 30 }}
+                    name="IsAtomic"
+                    valuePropName="checked"
+                  >
+                    <Checkbox>Is Automic</Checkbox>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name="Status"
+                    label="Status"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select Status",
+                      },
+                    ]}
+                    initialValue="true"
+                  >
+                    <Select style={{ width: "100%" }} options={options} />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item label="Remarks">
+                    <Form.Item name="Remarks" noStyle>
+                      <Input.TextArea />
+                    </Form.Item>
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={18}>
+                <Col span={6}>
+                  <Form.Item
+                    name="IsProviderRequired"
+                    valuePropName="checked"
+                  >
+                    <Checkbox>Is Provider Required</Checkbox>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name="IsServiceEditable"
+                    valuePropName="checked"
+                  >
+                    <Checkbox>Is Service Editable</Checkbox>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name="IsAssociateCharge"
+                    valuePropName="checked"
+                  >
+                    <Checkbox>Is Associate Charge</Checkbox>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name="IsSurgeryCharge"
+                    valuePropName="checked"
+                  >
+                    <Checkbox>Is Surgery Charge</Checkbox>
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Collapse accordion>
+                <Panel header="Ordering Attribute" key="2">
+                  <Row gutter={16}>
+                    <Col span={5}>
+                      <Form.Item
+                        label="Is Orderable"
+                        name="OrderIsOrderable"
+                        valuePropName="checked"
+                      >
+                        <Checkbox>Is Orderable ?</Checkbox>
+                      </Form.Item>
+                    </Col>
+                    <Col span={5}>
+                      <Form.Item
+                        label="Frequency Applicable"
+                        name="FrequencyApplicable"
+                        valuePropName="checked"
+                      >
+                        <Checkbox> Frequency Applicable ? </Checkbox>
+                      </Form.Item>
+                    </Col>
+                    <Col span={5}>
+                      <Form.Item
+                        label="Schedule Applicable"
+                        name="ScheduleApplicable"
+                        valuePropName="checked"
+                      >
+                        <Checkbox> Schedule Applicable? </Checkbox>
+                      </Form.Item>
+                    </Col>
+                    <Col span={5}>
+                      <Form.Item
+                        label="Is Quantity Applicable"
+                        name="IsQuantityApplicable"
+                        valuePropName="checked"
+                      >
+                        <Checkbox>Is Quantity Applicable ?</Checkbox>
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                  <Row gutter={16}>
+                    <Divider orientation="left"> ApplicablePatientType</Divider>
+                    <Col span={5}>
+                      <Form.Item
+                        label="Emergency Patient"
+                        name="OrderPatientTypeEmergency"
+                        valuePropName="checked"
+                      >
+                        <Checkbox>Emergency Patient</Checkbox>
+                      </Form.Item>
+                    </Col>
+                    <Col span={5}>
+                      <Form.Item
+                        label="In Patient"
+                        name="OrderPatientTypeIp"
+                        valuePropName="checked"
+                      >
+                        <Checkbox>In Patient </Checkbox>
+                      </Form.Item>
+                    </Col>
+                    <Col span={5}>
+                      <Form.Item
+                        label="Ambulatory Patient"
+                        name="OrderPatientTypeAmbulatory"
+                        valuePropName="checked"
+                      >
+                        <Checkbox>Ambulatory Patient </Checkbox>
+                      </Form.Item>
+                    </Col>
+                    <Col span={5}>
+                      <Form.Item
+                        label="Short Stay Patient"
+                        name="OrderPatientTypeShortStay"
+                        valuePropName="checked"
+                      >
+                        <Checkbox>Short Stay Patient</Checkbox>
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Divider orientation="left">
+                      Age-Gender Restriction
+                      <PlusCircleFilled
+                        style={{ marginLeft: 8 }}
+                        onClick={() => showModal(null)}
+                      />
+                    </Divider>
+                    <OrderingAttributeModal
+                      options={serviceDropDown}
+                      open={isModalVisible}
+                      handleClose={() => setIsModalVisible(false)}
+                      handleSubmit={handleSubmit}
+                      record={record}
+                    />
+                  </Row>
+                  <Table
+                    dataSource={ageGenderRestriction.filter((k) => k.ActiveFlag === true)}
+                    columns={columns}
+                    pagination={false}
+                    locale={{
+                      emptyText: (
+                        <span style={{ color: "" }}>No data available</span>
+                      ),
+                    }}
+                    bordered
+                  ></Table>
+                </Panel>
+              </Collapse>
+              <Collapse accordion style={{ marginTop: "0.5rem" }}>
+                <Panel header="Execution Attributes" key="3">
+                  <Row gutter={16}>
+                    <Col span={5}>
+                      <Form.Item
+                        label="Schedule Applicable"
+                        name="ExecutionResultApplicable"
+                        valuePropName="checked"
+                      >
+                        <Checkbox> Result Applicable </Checkbox>
+                      </Form.Item>
+                    </Col>
+                    <Col span={5}>
+                      <Form.Item label="Result Template" name="ExecutionResultComponent">
+                        <Select type="text" disabled>
+                          <Select.Option></Select.Option>
+                          <Select.Option></Select.Option>
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                    <Col span={5}>
+                      <Form.Item
+                        label="Anesthetist Required"
+                        name="ExecutionRequestAnesthetist"
+                        valuePropName="checked"
+                      >
+                        <Checkbox>Anesthetist Required</Checkbox>
+                      </Form.Item>
+                    </Col>
+                    <Divider orientation="left">
+                      Estimated Service Duration
+                    </Divider>
+                  </Row>
+                  <Row gutter={16}>
+                    <Col span={5}>
+                      <Form.Item label="Min." name="ExecutionMinimunServiceDuration">
+                        <InputNumber min={0} style={{ width: "100%" }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={5}>
+                      <Form.Item label="Standard" name="ExecutionStandardServiceDuration">
+                        <InputNumber min={0} style={{ width: "100%" }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={5}>
+                      <Form.Item label="Max." name="ExecutionMaximumServiceDuration">
+                        <InputNumber min={0} style={{ width: "100%" }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={5}>
+                      <Form.Item label="Uom" name="ExecutionUomServiceDuration">
+                        <Select
+                          style={{ width: "100%" }}
+                          placeholder="SelectUom"
+                          allowClear
+                        >
+                          {uom.map((option) => (
+                            <Select.Option
+                              key={option.UomId}
+                              value={option.UomId}
+                            >
+                              {option.ShortName}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                </Panel>
+              </Collapse>
+              <Collapse accordion style={{ marginTop: "0.5rem" }}>
+                <Panel header="Lab Attributes" key="1">
+                  <Row gutter={16}>
+                    <Col span={24}>
+                      <Row gutter={16}>
+                        <Col span={4}>
+                          <Form.Item
+                            label="Test Type"
+                            name="IsSubTest"
+                            valuePropName="checked"
+                          >
+                            <Checkbox>Is SubTest ?</Checkbox>
+                          </Form.Item>
+                        </Col>
+                        <Col span={4}>
+                          <Form.Item
+                            label="Category"
+                            name="IsRadiology"
+                            valuePropName="checked"
+                          >
+                            <Checkbox onChange={handleCheckboxChange}>
+                              Is Radiology?
+                            </Checkbox>
+                          </Form.Item>
+                        </Col>
+                        <Col span={4}>
+                          <Form.Item name="ResultType" label="Result Type">
+                            <Select
+                              onChange={handleResultTypeChange}
+                              style={{ width: "100%" }}
+                              placeholder="SelectResultType"
+                              allowClear
+                              disabled={reultTypeDisable}
+                            >
+                              {testresulttypes.map((option) => (
+                                <Select.Option
+                                  key={option.LookupID}
+                                  value={option.LookupID}
+                                >
+                                  {option.LookupDescription}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                        <Col span={6}>
+                          <Form.Item label="Templates" name="TemplateID">
+                            <Select
+                              style={{ width: "100%" }}
+                              placeholder="Select Result Type"
+                              allowClear
+                              disabled={templatedisable}
+                            >
+                              {templateListModel.map((option) => (
+                                <Select.Option
+                                  key={option.TID}
+                                  value={option.TID}
+                                >
+                                  {option.TempName}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                        <Col span={6}>
+                          <Form.Item label="Sample Type" name="SampleTypeId">
+                            <Select
+                              style={{ width: "100%" }}
+                              placeholder="SelectResultType"
+                              allowClear
+                              disabled={reultTypeDisable}
+                            >
+                              {sampleTypes.map((option) => (
+                                <Select.Option
+                                  key={option.LookupID}
+                                  value={option.LookupID}
+                                >
+                                  {option.LookupDescription}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    </Col>
+                    <Col span={24}>
+                      <Row gutter={16}>
+                        <Col span={4}>
+                          <Form.Item
+                            label="&nbsp;"
+                            name="IsFromTestValues"
+                            valuePropName="checked"
+                          >
+                            <Checkbox onChange={handleIsFromTestValues}>
+                              {" "}
+                              IsResult From Test Values ?{" "}
+                            </Checkbox>
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            label={
+                              <span>
+                                Test Values&nbsp;
+                                <Tooltip title="Enter values separated by '|' (pipe)">
+                                  <span style={{ cursor: "pointer" }}>🛈</span>
+                                </Tooltip>
+                              </span>
+                            }
+                            name="TestValues"
+                          >
+                            <Input.TextArea
+                              onChange={handleTestValuesChange}
+                              disabled={isTestValuesDisabled}
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={6}>
+                          <Form.Item
+                            label="Select Normal Value"
+                            name="NormalValForTestVal"
+                          >
+                            <Select disabled={isTestValuesDisabled}>
+                              {testoptions.map((option, index) => (
+                                <Select.Option key={index} value={option}>
+                                  {option}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                        <Col span={6}>
+                          <Form.Item label="Lab UOM" name="LabUOM">
+                            <Input />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    </Col>
+                  </Row>
+                </Panel>
+              </Collapse>
+              <Collapse accordion style={{ marginTop: "0.5rem" }}>
                 <Panel
                   header={
                     <div
@@ -789,141 +1353,20 @@ function CreateService() {
                         alignItems: "center",
                       }}
                     >
-                      <span>Package</span>
+                      <span>Turn Around Time</span>
                       <Button
                         type="text"
                         icon={<PlusCircleOutlined />}
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent closing the panel
-                          showPackageModal();
-                        }}
+                        onClick={() => showTurnArountTimeModel(null)}
                       />
                     </div>
                   }
-                  key="6"
+                  key="4"
                 >
-                  <Row gutter={16}>
-                    <Col span={24}>
-                      <Row gutter={16}>
-                        <Col span={4}>
-                          <Form.Item
-                            label={
-                              <span>
-                                Pkg Days
-                                <Tooltip title="PKG Days">
-                                  <span style={{ cursor: "pointer" }}>🛈</span>
-                                </Tooltip>
-                              </span>
-                            }
-                            name="PackageDays"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Required",
-                              },
-                            ]}
-                          >
-                            <Input />
-                          </Form.Item>
-                        </Col>
-                        <Col span={4}>
-                          <Form.Item
-                            label={
-                              <span>
-                                Pkg Amount
-                                <Tooltip title=" PKG Amount">
-                                  <span style={{ cursor: "pointer" }}>🛈</span>
-                                </Tooltip>
-                              </span>
-                            }
-                            name="PackageAmount"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Required",
-                              },
-                            ]}
-                          >
-                            <Input />
-                          </Form.Item>
-                        </Col>
-                        <Col span={4}>
-                          <Form.Item
-                            label="EffectiveFrom"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Required",
-                              },
-                            ]}
-                            name="PackageFromDate"
-                          >
-                            <DatePicker
-                              style={{ width: "100%" }}
-                              // onChange={handleEfeectiveFrom}
-                              format="DD-MM-YYYY"
-                            />
-                          </Form.Item>
-                        </Col>
-                        <Col span={4}>
-                          <Form.Item
-                            label="EffectiveTo"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Required",
-                              },
-                            ]}
-                            name="PackageToDate"
-                          >
-                            <DatePicker
-                              style={{ width: "100%" }}
-                              // onChange={handleEfeectiveTo}
-                              format="DD-MM-YYYY"
-                            />
-                          </Form.Item>
-                        </Col>
-
-                        <Col span={3}>
-                          <Form.Item
-                            label="Health Check"
-                            name="PackageIsHealth"
-                            valuePropName="checked"
-                          >
-                            <Checkbox onChange={handleCheckboxChange} />
-                          </Form.Item>
-                        </Col>
-
-                        <Col span={3}>
-                          <Form.Item
-                            label="Multi Encounter"
-                            name="PackageIsMultiEncounter"
-                            valuePropName="checked"
-                          >
-                            <Checkbox onChange={handleCheckboxChange} />
-                          </Form.Item>
-                        </Col>
-                        <Col span={2}>
-                          <Form.Item
-                            label={
-                              <span>
-                                No Of Encs
-                              </span>
-                            }
-                            name="PackageNumberEncounter"
-                          >
-                            <Input />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                    </Col>
-                  </Row>
                   <Table
-                    // style={{ padding: '0rem 2rem' }}
-                    dataSource={packageInd}
-                    columns={columnsPackageInd}
+                    dataSource={turnAroundTime.filter((i) => i.ActiveFlag === true)}
+                    columns={columnsTurnAroundTime}
                     pagination={false}
-                    //rowKey={(row) => row.ChargeID} // Specify the custom id property here
                     locale={{
                       emptyText: (
                         <span style={{ color: "" }}>No data available</span>
@@ -931,429 +1374,72 @@ function CreateService() {
                     }}
                     bordered
                   ></Table>
-                  <PackageIndicationModal
+                  <TurnAroundTimeTableModal
                     options={serviceDropDown}
-                    open={ispackageModalVisible}
-                    handleClose={() => setIsPackageModalVisible(false)}
-                    handleSubmit={handlePackageIndicatiotrSubmit}
+                    open={isTurnAroundTimeModalVisible}
+                    handleClose={() => setIsTurnAroundTimeModalVisible(false)}
+                    handleSubmit={handleTurnAroundTimeSubmit}
+                    record={record}
                   />
                 </Panel>
               </Collapse>
-            )}
-            <Collapse accordion style={{ marginTop: "0.5rem" }}>
-              <Panel header="Lab Details" key="1">
-                <Row gutter={16}>
-                  <Col span={24}>
-                    <Row gutter={16}>
-                      <Col span={4}>
-                        <Form.Item
-                          label="Test Type"
-                          name="IsSubTest"
-                          valuePropName="checked"
-                        >
-                          <Checkbox>Is SubTest ?</Checkbox>
-                        </Form.Item>
-                      </Col>
-                      <Col span={4}>
-                        <Form.Item
-                          label="Category"
-                          name="IsRadiology"
-                          valuePropName="checked"
-                        >
-                          <Checkbox onChange={handleCheckboxChange}>
-                            Is Radiology?
-                          </Checkbox>
-                        </Form.Item>
-                      </Col>
-
-                      <Col span={4}>
-                        <Form.Item name="ResultType" label="Result Type">
-                          <Select
-                            onChange={handleResultTypeChange}
-                            style={{ width: "100%" }}
-                            placeholder="SelectResultType"
-                            allowClear
-                            disabled={reultTypeDisable}
-                          >
-                            {testresulttypes.map((option) => (
-                              <Select.Option
-                                key={option.LookupID}
-                                value={option.LookupID}
-                              >
-                                {option.LookupDescription}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </Col>
-
-                      <Col span={6}>
-                        <Form.Item label="Templates" name="TemplateID">
-                          <Select
-                            style={{ width: "100%" }}
-                            placeholder="Select Result Type"
-                            allowClear
-                            disabled={templatedisable} // Disable if no options
-                          >
-                            {filteredTemplates.map((option) => (
-                              <Select.Option
-                                key={option.TID}
-                                value={option.TID}
-                              >
-                                {option.TempName}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </Col>
-                      <Col span={6}>
-                        <Form.Item label="Sample Type" name="SampleTypeId">
-                          <Input />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </Col>
-                  <Col span={24}>
-                    <Row gutter={16}>
-                      <Col span={4}>
-                        <Form.Item
-                          label="&nbsp;"
-                          name="IsFromTestValues"
-                          valuePropName="checked"
-                        >
-                          <Checkbox onChange={handleIsFromTestValues}>
-                            {" "}
-                            IsResult From Test Values ?{" "}
-                          </Checkbox>
-                        </Form.Item>
-                      </Col>
-                      <Col span={8}>
-                        <Form.Item
-                          label={
-                            <span>
-                              Test Values&nbsp;
-                              <Tooltip title="Enter values separated by '|' (pipe)">
-                                <span style={{ cursor: "pointer" }}>🛈</span>
-                              </Tooltip>
-                            </span>
-                          }
-                          name="TestValues"
-                        >
-                          <Input.TextArea
-                            onChange={handleTestValuesChange}
-                            disabled={isTestValuesDisabled}
-                          />
-                        </Form.Item>
-                      </Col>
-                      <Col span={6}>
-                        <Form.Item
-                          label="Select Normal Value"
-                          name="NormalValForTestVal"
-                        >
-                          <Select disabled={isTestValuesDisabled}>
-                            {testoptions.map((option, index) => (
-                              <Select.Option key={index} value={option}>
-                                {option}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </Col>
-                      <Col span={6}>
-                        <Form.Item label="Lab UOM" name="LabUOM">
-                          <Input />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </Col>
-                </Row>
-              </Panel>
-            </Collapse>
-            <Collapse accordion style={{ marginTop: "0.5rem" }}>
-              <Panel header="Ordering Attribute" key="2">
-                <Row gutter={16}>
-                  <Col span={5}>
-                    <Form.Item
-                      label="Is Orderable"
-                      name="Is Orderable"
-                      valuePropName="checked"
+              <Collapse accordion style={{ marginTop: "0.5rem" }}>
+                <Panel
+                  header={
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
                     >
-                      <Checkbox>Is Orderable ?</Checkbox>
-                    </Form.Item>
-                  </Col>
-                  <Col span={5}>
-                    <Form.Item
-                      label="Frequency Applicable"
-                      name="Frequency Applicable"
-                      valuePropName="checked"
-                    >
-                      <Checkbox> Frequency Applicable ? </Checkbox>
-                    </Form.Item>
-                  </Col>
-
-                  <Col span={5}>
-                    <Form.Item
-                      label="Schedule Applicable"
-                      name="Schedule Applicable"
-                      valuePropName="checked"
-                    >
-                      <Checkbox> Schedule Applicable? </Checkbox>
-                    </Form.Item>
-                  </Col>
-                  <Col span={5}>
-                    <Form.Item
-                      label="Is Quantity Applicable"
-                      name="Is Quantity Applicable"
-                      valuePropName="checked"
-                    >
-                      <Checkbox>Is Quantity Applicable ?</Checkbox>
-                    </Form.Item>
-                  </Col>
-                </Row>
-                <Row gutter={16}>
-                  <Divider orientation="left"> ApplicablePatientType</Divider>
-                  <Col span={5}>
-                    <Form.Item
-                      label="Emergency Patient"
-                      name="Emergency Patient"
-                      valuePropName="checked"
-                    >
-                      <Checkbox>Emergency Patient</Checkbox>
-                    </Form.Item>
-                  </Col>
-                  <Col span={5}>
-                    <Form.Item
-                      label="Frequency Applicable"
-                      name="Frequency Applicable"
-                      valuePropName="checked"
-                    >
-                      <Checkbox>In Patient </Checkbox>
-                    </Form.Item>
-                  </Col>
-
-                  <Col span={5}>
-                    <Form.Item
-                      label="Ambulatory Patient"
-                      name="Ambulatory Patient"
-                      valuePropName="checked"
-                    >
-                      <Checkbox>Ambulatory Patient </Checkbox>
-                    </Form.Item>
-                  </Col>
-                  <Col span={5}>
-                    <Form.Item
-                      label="Short Stay Patient"
-                      name="Short Stay Patient"
-                      valuePropName="checked"
-                    >
-                      <Checkbox>Short Stay Patient</Checkbox>
-                    </Form.Item>
-                  </Col>
-                </Row>
-                <Row>
-                  <Divider orientation="left">
-                    Age-Gender Restriction
-                    <PlusCircleFilled
-                      style={{ marginLeft: 8 }}
-                      onClick={showModal}
-                    />
-                  </Divider>
-                  <OrderingAttributeModal
+                      <span>Medical Codes</span>
+                      <Button
+                        type="text"
+                        icon={<PlusCircleOutlined />}
+                        onClick={() => showMedicalCodeModel(null)}
+                      />
+                    </div>
+                  }
+                  key="5"
+                >
+                  <Table
+                    dataSource={medicalCode.filter((j) => j.ActiveFlag1 === true)}
+                    columns={columnMedicalCode}
+                    locale={{
+                      emptyText: (
+                        <span style={{ color: "" }}>No data available</span>
+                      ),
+                    }}
+                    bordered
+                    pagination={false}
+                  ></Table>
+                  <MedicalCodeModal
                     options={serviceDropDown}
-                    open={isModalVisible}
-                    handleClose={() => setIsModalVisible(false)}
-                    handleSubmit={handleSubmit}
-                    // discountDetails={discountDetails}
-                    // setCharges={setCharges}
+                    open={isMedicalModalVisible}
+                    handleClose={() => setIsMedicalModalVisible(false)}
+                    handleSubmit={handleMedicalCodeSubmit}
+                    record={record}
                   />
-                </Row>
-                <Table
-                  // style={{ padding: '0rem 2rem' }}
-                  dataSource={ageGenderRestriction}
-                  columns={columns}
-                  pagination={false}
-                  //rowKey={(row) => row.ChargeID} // Specify the custom id property here
-                  locale={{
-                    emptyText: (
-                      <span style={{ color: "" }}>No data available</span>
-                    ),
-                  }}
-                  bordered
-                ></Table>
-              </Panel>
-            </Collapse>
-
-            <Collapse accordion style={{ marginTop: "0.5rem" }}>
-              <Panel header="Execution Attributes" key="3">
-                <Row gutter={16}>
-                  <Col span={5}>
-                    <Form.Item
-                      label="Schedule Applicable"
-                      name="Schedule Applicable"
-                      valuePropName="checked"
-                    >
-                      <Checkbox> Result Applicable </Checkbox>
-                    </Form.Item>
-                  </Col>
-                  <Col span={5}>
-                    <Form.Item label="Result Template" name="Result Template">
-                      <input type="text" disabled />
-                    </Form.Item>
-                  </Col>
-                  <Col span={5}>
-                    <Form.Item
-                      label="Anesthetist Required"
-                      name="Anesthetist Required"
-                      valuePropName="checked"
-                    >
-                      <Checkbox>Anesthetist Required</Checkbox>
-                    </Form.Item>
-                  </Col>
-                  <Divider orientation="left">
-                    Estimated Service Duration
-                  </Divider>
-                </Row>
-                <Row gutter={16}>
-                  <Col span={5}>
-                    <Form.Item label="Min." name="Min">
-                      <Input style={{ width: "100%" }} disabled />
-                    </Form.Item>
-                  </Col>
-                  <Col span={5}>
-                    <Form.Item label="Standard" name="Standard">
-                      <Input style={{ width: "100%" }} disabled />
-                    </Form.Item>
-                  </Col>
-                  <Col span={5}>
-                    <Form.Item label="Max." name="Max.">
-                      <Input style={{ width: "100%" }} disabled />
-                    </Form.Item>
-                  </Col>
-                  <Col span={5}>
-                    <Form.Item label="Uom" name="UomEx">
-                      <Select
-                        style={{ width: "100%" }}
-                        placeholder="SelectUom"
-                        allowClear
-                      >
-                        {uom.map((option) => (
-                          <Select.Option
-                            key={option.UomId}
-                            value={option.UomId}
-                          >
-                            {option.ShortName}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </Panel>
-            </Collapse>
-            <Collapse accordion style={{ marginTop: "0.5rem" }}>
-              <Panel
-                header={
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span>Turn Around Time</span>
-                    <Button
-                      type="text"
-                      icon={<PlusCircleOutlined />}
-                      onClick={showTurnArountTimeModel}
-                    />
-                  </div>
-                }
-                key="4"
-              >
-                <Table
-                  // style={{ padding: '0rem 2rem' }}
-                  dataSource={turnAroundTime}
-                  columns={columnsTurnAroundTime}
-                  pagination={false}
-                  //rowKey={(row) => row.ChargeID} // Specify the custom id property here
-                  locale={{
-                    emptyText: (
-                      <span style={{ color: "" }}>No data available</span>
-                    ),
-                  }}
-                  bordered
-                ></Table>
-                <TurnAroundTimeTableModal
-                  options={serviceDropDown}
-                  open={isTurnAroundTimeModalVisible}
-                  handleClose={() => setIsTurnAroundTimeModalVisible(false)}
-                  handleSubmit={handleTurnAroundTimeSubmit}
-
-                  // discountDetails={discountDetails}
-                  // setCharges={setCharges}
-                />
-              </Panel>
-            </Collapse>
-            <Collapse accordion style={{ marginTop: "0.5rem" }}>
-              <Panel
-                header={
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span>Medical Codes</span>
-                    <Button
-                      type="text"
-                      icon={<PlusCircleOutlined />}
-                      onClick={showMedicalCodeModel}
-                    />
-                  </div>
-                }
-                key="5"
-              >
-                <Table
-                  // style={{ padding: '0rem 2rem' }}
-                  dataSource={medicalCode}
-                  columns={columnMedicalCode}
-                  //rowKey={(row) => row.ChargeID} // Specify the custom id property here
-                  locale={{
-                    emptyText: (
-                      <span style={{ color: "" }}>No data available</span>
-                    ),
-                  }}
-                  bordered
-                  pagination={false}
-                ></Table>
-                <MedicalCodeModal
-                  options={serviceDropDown}
-                  open={isMedicalModalVisible}
-                  handleClose={() => setIsMedicalModalVisible(false)}
-                  handleSubmit={handleMedicalCodeSubmit}
-                  // discountDetails={discountDetails}
-                  // setCharges={setCharges}
-                />
-              </Panel>
-            </Collapse>
-            <Row gutter={32} style={{ marginTop: "1.5rem" }}>
-              {" "}
-              {/* Added this line */}
-              <Col offset={20} span={2}>
-                <Form.Item>
-                  <Button type="primary" htmlType="submit">
-                    Save
-                  </Button>
-                </Form.Item>
-              </Col>
-              <Col span={2}>
-                <Form.Item>
-                  <Button type="default">Cancel</Button>
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
+                </Panel>
+              </Collapse>
+              <Row gutter={32} style={{ marginTop: "1.5rem" }}>
+                {" "}
+                <Col offset={20} span={2}>
+                  <Form.Item>
+                    <Button type="primary" htmlType="submit">
+                      Save
+                    </Button>
+                  </Form.Item>
+                </Col>
+                <Col span={2}>
+                  <Form.Item>
+                    <Button onClick={() => { navigate("/Service"); }} type="default">Cancel</Button>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
+          </Spin>
         </div>
       </Layout>
     </>

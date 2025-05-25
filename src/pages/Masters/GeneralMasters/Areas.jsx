@@ -73,6 +73,7 @@ function Areas() {
   };
 
   const handleAreaEditModal = (record) => {
+    debugger
     setAreaData(record);
     setLoading(true);
     setIsEditing(true);
@@ -125,14 +126,15 @@ function Areas() {
   };
 
   const handleSubmit = async () => {
+    debugger
     form.validateFields();
     const values = form.getFieldsValue();
 
     setIsSubmitClicked(true);
     if (
       values.Place !== undefined &&
-      values.State !== undefined &&
-      values.Country !== undefined &&
+      // values.State !== undefined &&
+      // values.Country !== undefined &&
       values.AreaName !== undefined
     ) {
       const area = isEditing
@@ -144,13 +146,12 @@ function Areas() {
         : {
             AreaId: 0,
             PlaceId: values.Place,
-            StateId: values.State,
-            CountryId: values.Country,
+            // StateId: values.State,
+            // CountryId: values.Country,
             AreaName: values.AreaName,
           };
 
       try {
-        // Send a POST request to the server
         const response = await customAxios.post(urlAddAndUpdateArea, area, {
           headers: {
             "Content-Type": "application/json",

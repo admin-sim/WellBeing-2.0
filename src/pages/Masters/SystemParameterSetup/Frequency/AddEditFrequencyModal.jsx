@@ -1,6 +1,8 @@
 import { Button, Col, Form, Input, Modal, Row, Select } from "antd";
 import React, { useEffect } from "react";
-
+import customAxios from "../../../../components/customAxios/customAxios.jsx";
+import {urlAddNewFrequency} from "../../../../../endpoints";
+import { message } from "antd";
 function AddEditFrequencyModal({ open, handleClose, handleSubmit, record }) {
   const [form] = Form.useForm();
 
@@ -34,7 +36,7 @@ function AddEditFrequencyModal({ open, handleClose, handleSubmit, record }) {
           <Row gutter={32}>
             <Col span={24} style={{ marginBottom: "-1rem" }}>
               <Form.Item
-                name="Frequency"
+                name="FrequencyName"
                 label="Frequency Name"
                 rules={[{ required: true, message: "Please enter Frequency" }]}
               >
@@ -43,7 +45,7 @@ function AddEditFrequencyModal({ open, handleClose, handleSubmit, record }) {
             </Col>
             <Col span={24} style={{ marginBottom: "-1rem" }}>
               <Form.Item
-                name="Count"
+                name="CountId"
                 label="Count"
                 rules={[{ required: true, message: "Please enter Count" }]}
               >
@@ -52,7 +54,7 @@ function AddEditFrequencyModal({ open, handleClose, handleSubmit, record }) {
             </Col>
             <Col span={24}>
               <Form.Item
-                name="LocalLanguage"
+                name="LocalLang"
                 label="Local Language"
                 rules={[
                   { required: true, message: "Please enter Local Language" },

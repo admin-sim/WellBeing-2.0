@@ -315,11 +315,48 @@ const DischargeSummary = (details) => {
     },
     {
       title: "Discharge Date",
-      dataIndex: "ToDateString",
+      dataIndex: "ToDateString1",
       key: "PoDateString",
       sorter: (a, b) => new Date(a.PoDateString) - new Date(b.PoDateString),
       sortDirections: ["descend", "ascend"],
-    },
+      render: (text) => {
+        if (!text) {
+          return (
+            <Tag
+              style={{
+                color: "red",
+                fontWeight: "bold",
+                display: "flex",
+                borderRadius: "8px",
+                border: "1px solid red",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <div>
+                <span>Discharge Clearance</span>
+                <br />
+                <span>Pending</span>
+              </div>
+            </Tag>
+          );
+        }
+
+        return (
+          <Tag
+            style={{
+              backgroundColor: "lightpink",
+              color: "red",
+              border: "1px solid red",
+              borderRadius: "8px",
+              fontWeight: "bold",
+            }}
+          >
+            {text}
+          </Tag>
+        );
+      },
+    },    
     {
       title: "Admtted Under",
       dataIndex: "ProviderName",
@@ -572,70 +609,133 @@ const DischargeSummary = (details) => {
     });
   };
 
+  // const onFinish = async (values) => {
+  //   debugger
+  //   setLoading(true);
+  //   try {
+  //     const postData1 = {
+  //       UHID: values.Uhid || null,
+  //       Name: values.Name || null,
+  //       ProviderId: values.ProviderId || 0,
+  //       DepartmentId: values.Department || 0,
+  //       FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : null,
+  //       ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : null,
+  //       PatientType: values.PatientType || 0,
+  //       Reportstatus: values.ReportStatus || "",
+  //       Admissionstatus: values.AdmissionStatus || "",
+  //       patientId: form.getFieldValue("patientId") || 0,
+  //       DischargeToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
+  //     };
+  
+  //     // Construct the query string with only the parameters that have values
+  //     const queryParams = Object.fromEntries(
+  //       Object.entries(postData1).filter(([_, value]) => value !== null && value !== "")
+  //     );
+  
+  //     // Make API request with the constructed queryParams
+  //     const response = await customAxios.get(`${urlIndexDischageSummarySearch}`, {
+  //       params: queryParams,
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+  
+  //     if (response.status === 200) {
+  //       // ✅ Remove duplicate records based on EncounterId
+  //       const uniqueData = removeDuplicates(response.data.data);
+  //       setFilteredData(
+  //         uniqueData.map((obj, index) => ({
+  //           ...obj,
+  //           key: index + 1,
+  //         }))
+  //       );
+  //       // setCurrentPage1(1);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //     message.error("Failed to load data.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  
+  // // ✅ Function to remove duplicates based on EncounterId
+  // const removeDuplicates = (data) => {
+  //   const seen = new Set();
+  //   return data.filter((item) => {
+  //     const encounter = item.EncounterId ? item.EncounterId.toString().trim() : "";
+  //     if (!seen.has(encounter)) {
+  //       seen.add(encounter);
+  //       return true;
+  //     }
+  //     return false;
+  //   });
+  // };
+  
   const onFinish = async (values) => {
-    debugger
     setLoading(true);
-    debugger
     try {
       const postData1 = {
-        UHID: values.Uhid ? values.Uhid : null,
-        Name: values.Name ? values.Name : null,
-        ProviderId: values.ProviderId ? values.ProviderId : 0,
-        DepartmentId: values.Department ? values.Department : 0,
+        UHID: values.Uhid || null,
+        Name: values.Name || null,
+        ProviderId: values.ProviderId || 0,
+        DepartmentId: values.Department || 0,
         FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : null,
         ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : null,
-        PatientType: values.PatientType ? values.PatientType : 0,
-        Reportstatus: values.ReportStatus ? values.ReportStatus : "",
-        Admissionstatus: values.AdmissionStatus ? values.AdmissionStatus : "",
-        patientId: form.getFieldValue("patientId") ? form.getFieldValue("patientId") : 0,
+        PatientType: values.PatientType || 0,
+        Reportstatus: values.ReportStatus || "",
+        Admissionstatus: values.AdmissionStatus || "",
+        patientId: form.getFieldValue("patientId") || 0,
         DischargeToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
       };
-      debugger
-
+  
       // Construct the query string with only the parameters that have values
-      const queryParams = {};
-
-      if (postData1.UHID) queryParams.UHID = postData1.UHID;
-      if (postData1.Name) queryParams.Name = postData1.Name;
-      if (postData1.ProviderId) queryParams.ProviderId = postData1.ProviderId;
-      if (postData1.DepartmentId) queryParams.DepartmentId = postData1.DepartmentId;
-      if (postData1.FromDate) queryParams.FromDate = postData1.FromDate;
-      if (postData1.ToDate) queryParams.ToDate = postData1.ToDate;
-      if (postData1.PatientType) queryParams.PatientType = postData1.PatientType;
-      if (postData1.Reportstatus) queryParams.Reportstatus = postData1.Reportstatus;
-      if (postData1.Admissionstatus) queryParams.Admissionstatus = postData1.Admissionstatus;
-      if (postData1.patientId) queryParams.patientId = postData1.patientId;
-      if (postData1.DischargeToDate) queryParams.DischargeToDate = postData1.DischargeToDate;
-
+      const queryParams = Object.fromEntries(
+        Object.entries(postData1).filter(([_, value]) => value !== null && value !== "")
+      );
+  
       // Make API request with the constructed queryParams
-      customAxios
-        .get(
-          `${urlIndexDischageSummarySearch}`, {
-          params: queryParams,
-          headers: {
-            "Content-Type": "application/json", // Replace with the appropriate content type if needed
-          },
-        }
-        )
-        .then((response) => {
-          debugger
-          const newColumnData = response.data.data.map(
-            (obj, index) => {
-              return { ...obj, key: index + 1 };
-            }
-          );
-          setFilteredData(newColumnData);
-          // setCurrentPage1(1);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      const response = await customAxios.get(`${urlIndexDischageSummarySearch}`, {
+        params: queryParams,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (response.status === 200) {
+        // ✅ Remove duplicate records based on EncounterId (Keep latest record)
+        const latestData = getLatestRecords(response.data.data);
+        setFilteredData(
+          latestData.map((obj, index) => ({
+            ...obj,
+            key: index + 1,
+          }))
+        );
+      }
     } catch (error) {
-      // Handle any errors here
       console.error("Error:", error);
+      message.error("Failed to load data.");
+    } finally {
+      setLoading(false);
     }
   };
-
+  
+  // ✅ Function to remove duplicates and keep only the latest record based on EncounterId
+  const getLatestRecords = (data) => {
+    const map = new Map();
+  
+    data.forEach((item) => {
+      const encounter = item.EncounterId ? item.EncounterId.toString().trim() : null;
+  
+      if (encounter) {
+        // ✅ Always overwrite with the latest record based on EncounterId
+        map.set(encounter, item);
+      }
+    });
+  
+    return Array.from(map.values());
+  };
+  
 
 
   const onReset = () => {
@@ -791,13 +891,6 @@ const DischargeSummary = (details) => {
                 placeholder="DD-MM-YYYY"
                 allowClear
               />
-              {/* <DatePicker
-                style={{ width: "100%" }}
-                format={"DD-MM-YYYY"}
-                disabledDate={disabledDate}
-                placeholder="DD-MM-YYYY"
-                allowClear
-              /> */}
             </Form.Item>
           </ColWithSixSpan>
           <ColWithSixSpan>
@@ -819,13 +912,7 @@ const DischargeSummary = (details) => {
                 placeholder="DD-MM-YYYY"
                 allowClear
               />
-              {/* <DatePicker
-                style={{ width: "100%" }}
-                format={"DD-MM-YYYY"}
-                disabledDate={disabledDate}
-                placeholder="DD-MM-YYYY"
-                allowClear
-              /> */}
+            
             </Form.Item>
           </ColWithSixSpan>
           <ColWithSixSpan>

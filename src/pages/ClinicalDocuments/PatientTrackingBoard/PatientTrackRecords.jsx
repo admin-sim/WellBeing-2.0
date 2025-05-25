@@ -199,40 +199,77 @@ function PatientTrackRecords() {
     }
   };
 
+  // const handlePatientTrackingSearch = async (values) => {
+  //   try {
+  //     debugger;
+  //     setLoading(true);
+  //     const response = await customAxios.get(
+  //       `${urlSearchPatientTrackRecords}?PatientId=${selectedPatientId || PatientId}&EncounterId=${generatedEncounter || encounter}`
+  //     );
+
+  //     if (response.status === 200) {
+  //       debugger;
+  //       setLoading(false);
+  //       // Remove duplicate records before setting the table data
+  //       const uniqueData = removeDuplicates(response.data.data.ClinicalDocumentTypes);
+  //       setTableData(uniqueData);
+  //       setPatientTrackRecordTable(true);
+
+  //       // Fetch the patient header after the search is successful
+  //       await fetchDataHeader();
+  //     }
+  //   } catch (error) {
+  //     setLoading(false);
+  //     console.error("Failed to search patient tracking records:", error);
+  //     message.error("Encounter Not yet created for the patient");
+  //   }
+  // };
+
+  // // Function to remove duplicates based on EncounterId
+  // const removeDuplicates = (data) => {
+  //   const uniqueEncounters = new Map();
+  //   data.forEach((item) => {
+  //     if (!uniqueEncounters.has(item.Encounter)) {
+  //       uniqueEncounters.set(item.Encounter, item);
+  //     }
+  //   });
+  //   return Array.from(uniqueEncounters.values());
+  // };
+
   const handlePatientTrackingSearch = async (values) => {
     try {
-      debugger;
+      setLoading(true);
       const response = await customAxios.get(
         `${urlSearchPatientTrackRecords}?PatientId=${selectedPatientId || PatientId}&EncounterId=${generatedEncounter || encounter}`
       );
-
+  
       if (response.status === 200) {
-        debugger;
-        // Remove duplicate records before setting the table data
-        const uniqueData = removeDuplicates(response.data.data.ClinicalDocumentTypes);
-        setTableData(uniqueData);
+        setLoading(false);
+        const latestData = getLatestRecords(response.data.data.ClinicalDocumentTypes);
+        setTableData(latestData);
         setPatientTrackRecordTable(true);
-
-        // Fetch the patient header after the search is successful
         await fetchDataHeader();
       }
     } catch (error) {
+      setLoading(false);
       console.error("Failed to search patient tracking records:", error);
       message.error("Encounter Not yet created for the patient");
     }
   };
-
-  // Function to remove duplicates based on EncounterId
-  const removeDuplicates = (data) => {
-    const uniqueEncounters = new Map();
+  
+  const getLatestRecords = (data) => {
+    const map = new Map();
+  
     data.forEach((item) => {
-      if (!uniqueEncounters.has(item.Encounter)) {
-        uniqueEncounters.set(item.Encounter, item);
+      const encounter = item.Encounter ? item.Encounter.toString().trim() : null;
+      if (encounter) {
+        map.set(encounter, item);
       }
     });
-    return Array.from(uniqueEncounters.values());
+  
+    return Array.from(map.values());
   };
-
+  
   // end of nmew ?
   //   const handlePatientTrackingSearch = async(values) => {
   //   debugger
@@ -678,8 +715,12 @@ function PatientTrackRecords() {
                         <Row gutter={16} justify={isMobile && "end"}>
                           <Col>
                             <Form.Item label={!isMobile && " "}>
-                              <Button htmlType="submit" type="primary">
-                                Search
+                              <Button
+                                type="primary"
+                                htmlType="submit"
+                                disabled={loading}
+                              >
+                                {loading ? "Searching..." : "Search"}
                               </Button>
                             </Form.Item>
                           </Col>

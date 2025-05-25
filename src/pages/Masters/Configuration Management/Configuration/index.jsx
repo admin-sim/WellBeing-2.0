@@ -12,6 +12,7 @@ function Configuration() {
   const [currentRecord, setCurrentRecord] = useState(null);
   const [configurations, setConfigurations] = useState([]);
   const [facilities, setFacilities] = useState([]);
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchDataHeader();
@@ -31,10 +32,11 @@ function Configuration() {
         const facilities = response.data.data.Facilities;
         setConfigurations(configurations);
         setFacilities(facilities);
-
+        setLoading(false)
       } else {
+        setLoading(false)
       }
-    } catch (error) { }
+    } catch (error) { setLoading(false) }
   };
 
   const columns = [
@@ -145,7 +147,7 @@ function Configuration() {
           buttonIcon={<PlusCircleOutlined />}
           onButtonClick={handleAddNewDepartment}
         />
-        <CustomTable
+        <CustomTable loading={loading}
           isFilter={true}
           columns={columns}
           dataSource={configurations}

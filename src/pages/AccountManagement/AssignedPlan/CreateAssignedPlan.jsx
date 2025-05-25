@@ -63,6 +63,8 @@ import { debounce, set, values } from "lodash";
 import CustomTable from "../../../components/customTable";
 import AssignedPlanModal from "./AssignedPlanModal";
 import EditAssignedPlanModal from "./EditAssignedPlanModal";
+import PageHeader from "../../../components/PageHeader/index.jsx";
+import { FaAnglesLeft } from "react-icons/fa6";
 
 const CreateAssignedPlan = () => {
   const location = useLocation();
@@ -73,9 +75,8 @@ const CreateAssignedPlan = () => {
   const [transfer, setTransfer] = useState(false);
   const [paramTable, setParamTable] = useState(false);
   const [buttonshow, setButtonShow] = useState(false);
-
   const [disable, setDisable] = useState(false);
-
+  const navigate = useNavigate();
   const [patientData, setPatientData] = useState(null);
   const [AssignedPlanId, setAssignedPlanId] = useState(null);
   const [PatientTypeId, setPatientTypeId] = useState(null);
@@ -220,7 +221,7 @@ const CreateAssignedPlan = () => {
                       "DD-MM-YYYY"
                     )
                   : null,
-                  EmployeeNo: AddNewAssignedPlanData.EmployeeNo,
+              EmployeeNo: AddNewAssignedPlanData.EmployeeNo,
               ParentPriceApplicable:
                 AddNewAssignedPlanData.IsParentPriceApplicable,
               DocumentReference: AddNewAssignedPlanData.DocumentReference,
@@ -271,7 +272,9 @@ const CreateAssignedPlan = () => {
       const resultdata = response.data.data.result;
       if (resultdata === "Success") {
         setDisable(true);
-        const messsage1=AssignedPlanId ? "Plan Updated Successfully..." : "Plan Applied Successfully..."
+        const messsage1 = AssignedPlanId
+          ? "Plan Updated Successfully..."
+          : "Plan Applied Successfully...";
         message.success(messsage1);
         if (response.data.data.AssignedPlan != null) {
           setAssignedPlan(response.data.data.AssignedPlan);
@@ -299,31 +302,33 @@ const CreateAssignedPlan = () => {
       : "";
     values.AssignedPlanId = AssignedPlanId;
     values.PlanAuthId = planAuthId ? planAuthId : 0;
-    values.AuthAmount=values.AuthAmount ? values.AuthAmount : null;
-    values.ApprovedDays=values.ApprovedDays ? values.ApprovedDays : null;
-    values.AmtDeductible=values.AmtDeductible ? values.AmtDeductible : 0;
+    values.AuthAmount = values.AuthAmount ? values.AuthAmount : null;
+    values.ApprovedDays = values.ApprovedDays ? values.ApprovedDays : null;
+    values.AmtDeductible = values.AmtDeductible ? values.AmtDeductible : 0;
 
     const url = planAuthId ? urlUpdateAuthorisation : urlSaveNewAuthorisation;
     try {
-      const response = await customAxios.post(
-        url,
-        values,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await customAxios.post(url, values, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       if (response.data.data != null && response.data.data > 0) {
         setPlanAuthId(response.data.data);
         setAddNewAuthShowBtn(true);
-        const message1=planAuthId ? "Authorisation Updated Successfully" : "New Authorisation Added Successfully";
+        const message1 = planAuthId
+          ? "Authorisation Updated Successfully"
+          : "New Authorisation Added Successfully";
         message.success(message1);
       }
     } catch (error) {}
   };
 
-  const handleCancel = {};
+  const handleCancel = () => {
+    debugger;
+    const url = "/AssignedPlan";
+    navigate(url);
+  };
 
   const handleAddNew = async () => {
     debugger;
@@ -359,7 +364,7 @@ const CreateAssignedPlan = () => {
     debugger;
     setAddAuth(false);
     setPlanAuthId(null);
-   // setAssignedPlanId(null);
+    // setAssignedPlanId(null);
     form1.resetFields();
     const response = await customAxios.get(
       `${urlGetAuthorizationListByAssignPlanId}?AssignedPlanId=${AssignedPlanId}`
@@ -404,7 +409,7 @@ const CreateAssignedPlan = () => {
           MembershipValidToDate: AddNewAssignedPlanData.MembershipValidToDate
             ? dayjs(AddNewAssignedPlanData.MembershipValidToDate, "DD-MM-YYYY")
             : null,
-            EmployeeNo: AddNewAssignedPlanData.EmployeeNo,
+          EmployeeNo: AddNewAssignedPlanData.EmployeeNo,
           ParentPriceApplicable: AddNewAssignedPlanData.IsParentPriceApplicable,
           DocumentReference: AddNewAssignedPlanData.DocumentReference,
           EligibleWardTypeId: AddNewAssignedPlanData.EligibleWardTypeId
@@ -431,7 +436,7 @@ const CreateAssignedPlan = () => {
     const response = await customAxios.delete(
       `${urlDeleteAuthorisation}?PlanAuthId=${record.PlanAuthId}&AssignedPlanId=${record.AssignedPlanId}`
     );
-    if(response.status === 200){
+    if (response.status === 200) {
       setAuthColumnData(response.data.data);
       setAddAuth(false);
       setPlanAuthId(null);
@@ -444,12 +449,11 @@ const CreateAssignedPlan = () => {
     const response = await customAxios.delete(
       `${urlDeleteAuthorisationLineChargeParameter}?authorisationLineId=${record.AuthLineId}&PlanAuthId=${record.PlanAuthId}`
     );
-    if (response.status===200 &&  response.data.data != null) {
+    if (response.status === 200 && response.data.data != null) {
       setColumnData(response.data.data);
       message.success("AuthorisationLineChargeParameter Deleted Successfully");
     }
   };
-  
 
   // const handlePayerChange =async (value) => {
   //   debugger;
@@ -548,43 +552,41 @@ const CreateAssignedPlan = () => {
           AuthorisationDate: AuthData.AuthorisationDate
             ? dayjs(AuthData.AuthorisationDate, "DD-MM-YYYY")
             : null,
-            AuthValidFromDate: AuthData.AuthValidFromDate
+          AuthValidFromDate: AuthData.AuthValidFromDate
             ? dayjs(AuthData.AuthValidFromDate, "DD-MM-YYYY")
             : null,
-            AuthValidToDate: AuthData.AuthValidToDate
+          AuthValidToDate: AuthData.AuthValidToDate
             ? dayjs(AuthData.AuthValidToDate, "DD-MM-YYYY")
             : null,
-            IsDaysRestricted:AuthData.IsDaysRestricted,
-            ApprovedDays : AuthData.ApprovedDays,
-            IsAmtAuthorized : AuthData.IsAmtAuthorized,
-            AuthAmount : AuthData.AuthAmount,
-            AmtDeductible : AuthData.AmtDeductible
-
+          IsDaysRestricted: AuthData.IsDaysRestricted,
+          ApprovedDays: AuthData.ApprovedDays,
+          IsAmtAuthorized: AuthData.IsAmtAuthorized,
+          AuthAmount: AuthData.AuthAmount,
+          AmtDeductible: AuthData.AmtDeductible,
         });
-         
+
         const filteredtransData =
-        response.data.data.SelectedChargeParameters?.filter(
-          (item) => item.LookupDescription !== "Payer"
-        ).map((item) => ({
-          key: item.LookupID,
-          title: item.LookupDescription,
-          // Add more fields as needed
-        }));
+          response.data.data.SelectedChargeParameters?.filter(
+            (item) => item.LookupDescription !== "Payer"
+          ).map((item) => ({
+            key: item.LookupID,
+            title: item.LookupDescription,
+            // Add more fields as needed
+          }));
 
-      // Set the pre-selected items in Transfer
-      setTargetKeys(filteredtransData?.map((item) => item.key));
-      setColumnData(response.data.data.AuthorisationLine);
+        // Set the pre-selected items in Transfer
+        setTargetKeys(filteredtransData?.map((item) => item.key));
+        setColumnData(response.data.data.AuthorisationLine);
 
-      setAddAuth(true);
-      setAddNewAuthShowBtn(false);
-      setPlanAuthId(values.PlanAuthId);
-      setAssignedPlanId(values.AssignedPlanId);
-
+        setAddAuth(true);
+        setAddNewAuthShowBtn(false);
+        setPlanAuthId(values.PlanAuthId);
+        setAssignedPlanId(values.AssignedPlanId);
       }
     } catch (error) {}
   };
 
-  const handleEditChargeParameter = async(record) =>{
+  const handleEditChargeParameter = async (record) => {
     debugger;
     try {
       const response = await customAxios.get(
@@ -602,9 +604,7 @@ const CreateAssignedPlan = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  }
-
-
+  };
 
   const columns = [
     {
@@ -657,11 +657,7 @@ const CreateAssignedPlan = () => {
       dataIndex: "AmtIndicator",
       key: "AmtIndicator",
       render: (amtIndicator) =>
-        amtIndicator === "A"
-          ? "Amount"
-          : amtIndicator
-          ? "Percentage"
-          : "",
+        amtIndicator === "A" ? "Amount" : amtIndicator ? "Percentage" : "",
     },
     {
       title: "Value",
@@ -675,13 +671,13 @@ const CreateAssignedPlan = () => {
       render: (priority) =>
         priority === "A" ? "Amount" : priority ? "Quantity" : "",
     },
-    
+
     {
       title: "Requested Amt",
       dataIndex: "AmtRequested",
       key: "AmtRequested",
     },
-  
+
     {
       title: "Deductibles",
       dataIndex: "AmtDeductible",
@@ -717,9 +713,7 @@ const CreateAssignedPlan = () => {
       title: "Remarks",
       dataIndex: "Remarks",
       key: "Remarks",
-      
     },
-  
   ];
   const columnsAuth = [
     {
@@ -771,7 +765,7 @@ const CreateAssignedPlan = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.2rem 2rem 0rem 2rem",
             backgroundColor: "#40A2E3",
@@ -783,11 +777,16 @@ const CreateAssignedPlan = () => {
               Assigned Plan
             </Title>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Assigned Plan"}
+          buttonIcon={<FaAnglesLeft style={{ fontSize: "1rem" }} />}
+          buttonLabel={"Back"}
+          onButtonClick={handleCancel}
+        />
         <div style={{ margin: "0 2rem 1rem 2rem" }}>
           <PatientHeader patient={patientData} />
         </div>
-
         <Row gutter={16}>
           <Col span={6}>
             <div
@@ -816,7 +815,6 @@ const CreateAssignedPlan = () => {
                   </Button>
                 </Col>
               </Row>
-
               {assignedPlan?.map((Plan, index) => {
                 return (
                   <Row
@@ -908,7 +906,7 @@ const CreateAssignedPlan = () => {
                         label="Payer"
                       >
                         {/* <Select onChange={(value) => handlePayerChange(value)} > */}
-                        <Select >
+                        <Select>
                           {billagreementDropdown.Payer?.map((option) => (
                             <Select.Option
                               key={option.PayerId}
@@ -1031,8 +1029,29 @@ const CreateAssignedPlan = () => {
                       </Form.Item>
                     </Col>
                     <Col className="gutter-row" span={6}>
-                      <Form.Item name="EmployeeNo" label="EmployeeNumber">
+                      {/* <Form.Item name="EmployeeNo" label="EmployeeNumber">
                         <Input style={{ width: "100%" }} />
+                      </Form.Item> */}
+                      <Form.Item
+                        label="Mobile Number"
+                        name="MobileNumber"
+                        rules={[
+                          {
+                            pattern: /^[0-9]{10}$/,
+                            message:
+                              "Please enter a valid 10-digit mobile number!",
+                          },
+                        ]}
+                      >
+                        <Input
+                          maxLength={10}
+                          onKeyPress={(e) => {
+                            const pattern = /[0-9]/;
+                            if (!pattern.test(e.key)) {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -1425,7 +1444,9 @@ const CreateAssignedPlan = () => {
                             actionColumn={true}
                             isFilter={true}
                             onEdit={handleEditChargeParameter}
-                            onDelete={handleDeleteAuthorisationLineChargeParameter}
+                            onDelete={
+                              handleDeleteAuthorisationLineChargeParameter
+                            }
                             scroll={{
                               x: 1500,
                             }}
@@ -1440,13 +1461,13 @@ const CreateAssignedPlan = () => {
                           setColumnData={setColumnData}
                         />
                         <EditAssignedPlanModal
-                            options={editbillAgrementChargeDropdown}
-                            open={editModalOpen}
-                            handleClose={() => setEditModalOpen(false)}
-                            editedAuthlineId={editedAuthlineId}
-                            setColumnData={setColumnData}
-                            linedata={linedata}
-                          />
+                          options={editbillAgrementChargeDropdown}
+                          open={editModalOpen}
+                          handleClose={() => setEditModalOpen(false)}
+                          editedAuthlineId={editedAuthlineId}
+                          setColumnData={setColumnData}
+                          linedata={linedata}
+                        />
                       </div>
                     </div>
                   </div>

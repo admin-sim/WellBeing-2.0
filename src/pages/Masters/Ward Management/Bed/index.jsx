@@ -51,6 +51,7 @@ function Bed() {
         }
       });
     } catch (error) {
+      setLoading(false)
       console.error("Error fetching purchase order details:", error);
     }
   }, [])

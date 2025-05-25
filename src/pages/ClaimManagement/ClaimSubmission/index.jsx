@@ -23,8 +23,8 @@ import {
   urlSearchDetailedClaimRecord,
   urlGetPatientHeaderDetails,
   urlAddNewCliamInvvoice,
- } from '../../../../endpoints.js';
- import { EditOutlined } from '@ant-design/icons';
+} from '../../../../endpoints.js';
+import { EditOutlined } from '@ant-design/icons';
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import UhidSelectComponent from "../../../components/UhidSelectComponent/index.jsx";
@@ -36,7 +36,7 @@ const PatientClaimForm = () => {
   const [form] = Form.useForm();
   const [form1] = Form.useForm();
   const [selectedUhId, setSelectedUhId] = useState(null);
-  const [selectedPatientId, setSelectedPatientId] = useState(null); 
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [status, setStatus] = useState([]);
   const [dropDownLoad, setDropDownLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -45,7 +45,15 @@ const PatientClaimForm = () => {
   const [claimStatusOptions, setClaimStatusOptions] = useState([]);
   const [patientData, setPatientData] = useState();
   const [filteredData, setFilteredData] = useState([]); // Store API data
+  const [model, setModel] = useState([]);
   const [loading, setLoading] = useState(false); // Loading state for table
+  const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
+  const [toDate, setToDate] = useState(dayjs());
+  const [reportloading, setReportLoading] = useState(false);
+  const [reportUrl, setReportUrl] = useState(null);
+  const [blobData, setBlobData] = useState(null);
+  const [isModalVisible1, setIsModalVisible1] = useState(false);
+  const [error, setError] = useState(null);
 
   const columns = [
     {
@@ -69,12 +77,14 @@ const PatientClaimForm = () => {
       title: "Bill Number",
       dataIndex: "BillNumber",
       key: "BillNumber",
-      render: (text, record) => (
-        <a href={`/bill-details/${record.BillNumber}`} target="_blank" rel="noopener noreferrer">
-          {text}
-        </a>
-      ),
-    }, 
+      // render: (text, record) => (
+      //   <a href={`/bill-details/${record.BillNumber}`} target="_blank" rel="noopener noreferrer">
+      //     {text}
+      //   </a>
+      // ),
+      render: (_, record) => <Button type="link" onClick={(value) => handlePrintBill(value, record)}>{record.BillNumber}</Button>,
+
+    },
     { title: "Bill Amount", dataIndex: "BillAmount", key: "BillAmount" },
     { title: "Bill Date", dataIndex: "BillDatestring", key: "BillDate" },
     { title: "Original Claim Amount", dataIndex: "OrginalCliamAmount", key: "OriginalClaimAmount" },
@@ -82,17 +92,72 @@ const PatientClaimForm = () => {
     { title: "Denied Amount", dataIndex: "ClaimDeniedAmount", key: "DeniedAmount" },
     { title: "Pending Amount", dataIndex: "ClaimPendingAmount", key: "PendingAmount" },
     { title: "Claim Amount", dataIndex: "ClaimAmount", key: "ClaimAmount" },
-    { title: "Claim Status", dataIndex: "BillStatus", key: "ClaimStatus" },
+    model.Invoicetype === 1 ?
+      { title: "Claim Status", dataIndex: "Statusname", key: "Statusname" } :
+      { title: "Claim Status", dataIndex: "ClaimStatusname", key: "ClaimStatusname" }
   ];
-  
-  // Fetch options from backend
+
+  const disableFromDate = (current) => {
+    return current && current.isAfter(dayjs().endOf("day"));
+  };
+
+  const handlePrintBill = async (value, record) => {
+    debugger
+    setReportLoading(true);
+    try {
+      const request = {
+        BillingId: record.BillNumber,
+        EncounterId: record.EncounterID,
+        FileType: "pdf", // or 'excel'
+      };
+      const { url, blob } = await fetchReport(request);
+      setReportUrl(url);
+      setBlobData(blob);
+      setIsModalVisible1(true);
+    } catch (error) {
+      setReportLoading(false)
+      setError(error.message);
+    } finally {
+      setReportLoading(false); // End loading
+    }
+  };
+  async function fetchReport(request) {
+    const response = await fetch(
+      "https://192.168.29.254:808/api/ReportsApi/BillReport",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+    console.log("respo", response);
+
+    if (!response.ok) {
+      setReportLoading(false)
+      throw new Error("Failed to fetch report");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    return { url, blob };
+  }
+
+  const disableToDate = (current) => {
+    return (
+      current &&
+      (current.isBefore(fromDate, "day") ||
+        current.isAfter(dayjs().endOf("day")))
+    );
+  };
+
   const fetchOptions = async () => {
     setLoading(true);
     try {
-        debugger
-      const response =  await customAxios.get(urlGetOption)
+      debugger
+      const response = await customAxios.get(urlGetOption)
       if (response.status === 200 && response.data) {
-        // const data = JSON.parse(response.data); // Ensure valid JSON parsing
         setPayerOptions(response.data.data.Payer || []);
         setClaimStatusOptions(response.data.data.CliamStatus || []);
       }
@@ -131,30 +196,29 @@ const PatientClaimForm = () => {
   const handleCancel = () => {
     form.resetFields();
   };
- 
+
   const showModal = (record) => {
     debugger
     setSelectedRecord(record);
     setIsModalVisible(true);
-   
+
   };
 
   useEffect(() => {
     if (isModalVisible && selectedRecord) {
       form1.setFieldsValue({
         authorisationReference: selectedRecord?.AuthRef || "",
-        authorisationDate: selectedRecord?.AuthDate
-          ? dayjs(selectedRecord?.AuthDate).format("DD-MM-YYYY")
+        authorisationDate: selectedRecord?.AuthDateString
+          ? dayjs(selectedRecord?.AuthDateString).format("DD-MM-YYYY")
           : null,
-        SubbmitedDate: selectedRecord?.SubbmitedDate
-          ? dayjs(selectedRecord?.SubbmitedDate).format("DD-MM-YYYY")
-          : null,
+        SubbmitedDate: selectedRecord?.SubbmitedDateString
+          ? dayjs(selectedRecord?.SubbmitedDateString).format("DD-MM-YYYY")
+          : dayjs(),
         PayerName: selectedRecord?.PayerName || "",
         originalClaimAmount: selectedRecord?.OrginalCliamAmount || "",
       });
     }
   }, [isModalVisible, selectedRecord]);
-
 
   const handleModalClose = () => {
     setIsModalVisible(false);
@@ -162,16 +226,16 @@ const PatientClaimForm = () => {
     setPatientData(null);
     form1.resetFields();
   };
- 
+
   const handleSelectUHID = (value, option) => {
     setSelectedUhId(value);
 
     if (option) {
       const selectedPatientData = option;
       console.log("Selected Patient Data:", selectedPatientData);
-      
-    const patientId = option?.data?.PatientId; // Extract patientId
-    setSelectedPatientId(patientId); // Update selected patientId
+
+      const patientId = option?.data?.PatientId; // Extract patientId
+      setSelectedPatientId(patientId); // Update selected patientId
     }
     form.setFieldsValue({
       Uhid: option?.data?.UhId,
@@ -193,9 +257,9 @@ const PatientClaimForm = () => {
     setLoading(true);
     try {
       const searchParams = {
-        Uhid: values.Uhid || null,
+        Uhid: values.Uhid || '',
         Patientid: form.getFieldValue("patientId") || 0,
-        PatientName:  values.PatientName  ? values.PatientName : null,
+        PatientName: values.PatientName ? values.PatientName : '',
         StatusType: values.status || 0,
         PayerType: values.payerName || 0,
         FromDate: values.fromDate ? values.fromDate.format("DD-MM-YYYY") : '',
@@ -203,18 +267,18 @@ const PatientClaimForm = () => {
         cliamnumber: form.getFieldValue("claimNumber") || '',
         Type: form.getFieldValue("type") || 0,
       };
-  
+
       const response = await customAxios.get(
         `${urlSearchDetailedClaimRecord}?Uhid=${searchParams.Uhid}&Patientid=${searchParams.Patientid}&PatientName=${searchParams.PatientName}&StatusType=${searchParams.StatusType}&PayerType=${searchParams.PayerType}&FromDate=${searchParams.FromDate}&ToDate=${searchParams.ToDate}&cliamnumber=${searchParams.cliamnumber}&Type=${searchParams.Type}`
       );
-      
-  
+
       if (response.status === 200 && response.data.data) {
         const resultData = response.data.data.PatientClaim.map((item, index) => ({
           ...item,
-          key: index + 1, // Ensure each row has a unique key
+          key: index + 1,
         }));
-        setFilteredData(resultData); // Update table data
+        setModel(response.data.data)
+        setFilteredData(resultData);
       }
     } catch (error) {
       console.error("Error during search:", error);
@@ -227,31 +291,28 @@ const PatientClaimForm = () => {
   const handleSave = async () => {
     // Collect form data
     const formData = await form1.validateFields(); // Ensure the form is valid before sending the request
-  //   let submittedDate = formData.SubbmitedDate;
-  // if (submittedDate) {
-  //   submittedDate = moment(submittedDate).format('MM/DD/YYYY hh:mm:ss A');
-  // }
+    //   let submittedDate = formData.SubbmitedDate;
+    // if (submittedDate) {
+    //   submittedDate = moment(submittedDate).format('MM/DD/YYYY hh:mm:ss A');
+    // }
 
-  // // Convert authorisationDate to the required format "MM/DD/YYYY hh:mm:ss A"
-  // let authorisationDate = formData.authorisationDate;
-  // if (authorisationDate) {
-  //   authorisationDate = moment(authorisationDate).format('MM/DD/YYYY hh:mm:ss A');
-  // }
+    // // Convert authorisationDate to the required format "MM/DD/YYYY hh:mm:ss A"
+    // let authorisationDate = formData.authorisationDate;
+    // if (authorisationDate) {
+    //   authorisationDate = moment(authorisationDate).format('MM/DD/YYYY hh:mm:ss A');
+    // }
     const Memory = {
-     
       ClaimStatus: formData.claimStatus,
-      OrginalCliamAmount: String(formData.originalClaimAmount),
-      // SubbmitedDate: submittedDate,
+      OrginalCliamAmount: formData.originalClaimAmount === "" ? 0 : formData.originalClaimAmount,
+      // SubbmitedDate: formData.SubmittedDate.format('DD-MM-YYYY'),
       BillID: selectedRecord.BillID,
-      Tempdate: formData.SubbmitedDate,
+      Tempdate: formData.SubbmitedDate.format('DD-MM-YYYY'),
     };
-  //  const Invoice = {
-  //    Invoice: Memory,
-  //  };
+    //  const Invoice = {
+    //    Invoice: Memory,
+    //  };
     try {
       debugger
-      // Perform POST request to the API endpoint
-     
       const response = await customAxios.post(
         urlAddNewCliamInvvoice,
         Memory,
@@ -261,18 +322,16 @@ const PatientClaimForm = () => {
           },
         }
       );
-      // Handle response (success or failure)
       if (response.status === 200) {
-        // Handle success, maybe show a success message
         if (response.data === 'Success') {
           console.log('Claim Invoice Added Successfully:', response.data);
-          message.success('Claim Invoice Added Successfully');  // Show success message
-          handleModalClose(); 
+          message.success('Claim Invoice Added Successfully');
+          form.submit()
+          handleModalClose();
         } else {
           console.log('Claim Invoice Added Failed:', response.data);
-          message.error('Failed to Add Claim Invoice');  // Show failure message
+          message.error('Failed to Add Claim Invoice');
         }
-         
       } else {
         // Handle error
         console.error('Error:', response.data);
@@ -283,8 +342,7 @@ const PatientClaimForm = () => {
       message.error('An error occurred while adding the Claim Invoice');
     }
   };
-  
-  
+
   return (
     <Layout
       style={{
@@ -295,7 +353,6 @@ const PatientClaimForm = () => {
       }}
     >
       <PageHeader title={"Patient Claim"} button={false} />
-
       <Form
         layout="vertical"
         form={form}
@@ -308,8 +365,11 @@ const PatientClaimForm = () => {
           padding: "20px",
           borderRadius: "8px",
         }}
+        initialValues={{
+          fromDate: dayjs().subtract(1, "day"),
+          toDate: dayjs()
+        }}
       >
-        {/* Row 1 */}
         <Row gutter={16}>
           <Col span={8}>
             <Form.Item label="UHID" name="Uhid">
@@ -326,7 +386,7 @@ const PatientClaimForm = () => {
           </Col>
           <Col span={8}>
             <Form.Item label="Status" name="status">
-              <Select placeholder="Select Claim Status">
+              <Select placeholder="Select Claim Status" allowClear>
                 {claimStatusOptions.map((status) => (
                   <Option key={status.LookupID} value={status.LookupID}>
                     {status.LookupDescription}
@@ -336,16 +396,13 @@ const PatientClaimForm = () => {
             </Form.Item>
           </Col>
         </Row>
-
-        {/* Row 2 */}
         <Row gutter={16}>
           <Col span={8}>
             <Form.Item
               label="Payer Name"
               name="payerName"
-              rules={[{ required: true, message: "Payer Name is required" }]}
             >
-              <Select placeholder="Select Payer">
+              <Select placeholder="Select Payer" allowClear>
                 {payerOptions.map((payer) => (
                   <Option key={payer.PayerId} value={payer.PayerId}>
                     {payer.PayerName}
@@ -356,16 +413,29 @@ const PatientClaimForm = () => {
           </Col>
           <Col span={8}>
             <Form.Item label="From Date" name="fromDate">
-              <DatePicker style={{ width: "100%" }} />
+              {/* <DatePicker style={{ width: "100%" }} format='DD-MM-YYYY' /> */}
+              <DatePicker
+                value={fromDate}
+                onChange={(date) => setFromDate(date)}
+                disabledDate={disableFromDate}
+                style={{ width: "100%" }}
+                format="DD-MM-YYYY"
+              />
             </Form.Item>
           </Col>
           <Col span={8}>
             <Form.Item label="To Date" name="toDate">
-              <DatePicker style={{ width: "100%" }} />
+              {/* <DatePicker style={{ width: "100%" }} format='DD-MM-YYYY' /> */}
+              <DatePicker
+                value={toDate}
+                onChange={(date) => setToDate(date)}
+                disabledDate={disableToDate}
+                style={{ width: "100%" }}
+                format="DD-MM-YYYY"
+              />
             </Form.Item>
           </Col>
         </Row>
-        {/* Buttons */}
         <Row gutter={16} justify="end" style={{ marginTop: "20px" }}>
           <Col>
             <Button type="primary" htmlType="submit">
@@ -388,27 +458,24 @@ const PatientClaimForm = () => {
           scroll={{ x: 1000 }}
         />
       </Spin>
-
       <Modal
         title={null} // Using PageHeader for the title
         visible={isModalVisible}
         onCancel={handleModalClose}
         footer={[
-          
           <Button
             key="save"
             type="primary"
-            onClick={handleSave} 
+            onClick={handleSave}
           >
             Save
           </Button>,
           <Button key="close" onClick={handleModalClose}>
-          Close
-        </Button>,
+            Close
+          </Button>,
         ]}
-        width={900} // Adjust modal width if needed
+        width={1100}
       >
-        {/* Page Header */}
         <Row>
           <Col span={24}>
             <PageHeader
@@ -417,8 +484,6 @@ const PatientClaimForm = () => {
             />
           </Col>
         </Row>
-
-        {/* Patient Header */}
         <Row style={{ marginTop: 16 }}>
           <Col span={24}>
             {selectedRecord ? (
@@ -428,8 +493,6 @@ const PatientClaimForm = () => {
             )}
           </Col>
         </Row>
-
-        {/* Form Layout */}
         <Form
           form={form1}
           layout="vertical"
@@ -440,12 +503,10 @@ const PatientClaimForm = () => {
             PayerName: selectedRecord?.PayerName || "",
             claimStatus: null,
             originalClaimAmount: selectedRecord?.OrginalCliamAmount || "",
-            SubbmitedDate: null,
+            SubbmitedDate: dayjs(),
           }}
         >
-          
           <Row gutter={16}>
-            {/* Authorisation Reference */}
             <Col span={12}>
               <Form.Item
                 label="Authorisation Reference"
@@ -454,23 +515,17 @@ const PatientClaimForm = () => {
                 <Input value={selectedRecord?.AuthRef} disabled />
               </Form.Item>
             </Col>
-
-            {/* Authorisation Date */}
             <Col span={12}>
               <Form.Item label="Authorisation Date" name="authorisationDate">
-              <Input value={selectedRecord?.AuthDate} disabled />
-                
+                <Input value={selectedRecord?.AuthDate} disabled />
+
               </Form.Item>
             </Col>
-
-            {/* Insurance Provider */}
             <Col span={12}>
               <Form.Item label="Insurance Provider" name="PayerName">
                 <Input value={selectedRecord?.PayerName} disabled />
               </Form.Item>
             </Col>
-
-            {/* Claim Status */}
             <Col span={12}>
               <Form.Item
                 label="Claim Status"
@@ -488,8 +543,6 @@ const PatientClaimForm = () => {
                 </Select>
               </Form.Item>
             </Col>
-
-            {/* Original Claim Amount */}
             <Col span={12}>
               <Form.Item
                 label="Original Claim Amount"
@@ -498,16 +551,55 @@ const PatientClaimForm = () => {
                 <Input value={selectedRecord?.OrginalCliamAmount} disabled />
               </Form.Item>
             </Col>
-
-            {/* Submitted Date */}
             <Col span={12}>
               <Form.Item label="Submitted Date" name="SubbmitedDate">
-              <Input value={selectedRecord?.SubbmitedDate} disabled />
+                <DatePicker style={{ width: "100%" }} format='DD-MM-YYYY' />
               </Form.Item>
             </Col>
           </Row>
         </Form>
       </Modal>
+      {reportloading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(255, 255, 255, 0.8)", // Light overlay
+            zIndex: 1000,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Spin size="large" />
+        </div>
+      )}
+      <div>
+        {error && <div>Error: {error}</div>}
+
+        <Modal
+          title="Report"
+          open={isModalVisible1}
+          onCancel={() => setIsModalVisible1(false)}
+          footer={[
+            <Button key="close" onClick={() => setIsModalVisible1(false)}>
+              Close
+            </Button>,
+          ]}
+          width={"60rem"}
+        >
+          {reportUrl && (
+            <iframe
+              src={reportUrl}
+              style={{ width: "100%", height: "500px", border: "none" }}
+              title="Report"
+            />
+          )}
+        </Modal>
+      </div>
     </Layout>
   );
 };

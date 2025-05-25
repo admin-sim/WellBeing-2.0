@@ -2,9 +2,8 @@ import { UploadOutlined, CameraOutlined, DeleteOutlined } from "@ant-design/icon
 import { Button, Upload, message, Spin } from "antd";
 import React, { useCallback, useRef, useState, useEffect } from "react";
 import Webcam from "react-webcam";
-
-function WebcamImage({ onImageUpload }) {
-  const [img, setImg] = useState(null);
+function WebcamImage({ onImageUpload, initialImage }) {
+  const [img, setImg] = useState(initialImage || null); // Set initial value
   const webcamRef = useRef(null);
   const [fileList, setFileList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,10 +22,16 @@ function WebcamImage({ onImageUpload }) {
     }
   }, [hasCameraPermission]);
 
-  // Truncate File Name
-  const shortenFileName = (name) => (name.length > 12 ? name.substring(0, 12) + "..." : name);
+  // ✅ Update state when `initialImage` changes
+  useEffect(() => {
+    if (initialImage) {
+      setImg(initialImage);
+    }
+  }, [initialImage]);
 
-  // Capture Image
+  const shortenFileName = (name) =>
+    name.length > 12 ? name.substring(0, 12) + "..." : name;
+
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current.getScreenshot();
     setImg(imageSrc);
@@ -81,49 +86,25 @@ function WebcamImage({ onImageUpload }) {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        width: "250px",
-        minHeight: "250px",
-        border: "1px solid lavender",
-        borderRadius: "1rem",
-        padding: "1rem",
-      }}
-    >
+    <div className="webcam-container">
       {/* Image Display / Webcam */}
-      <div
-        style={{
-          width: "160px",
-          height: "160px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          border: "1px solid #ddd",
-          borderRadius: "8px",
-          overflow: "hidden",
-          marginBottom: "1rem",
-        }}
-      >
+      <div className="webcam-preview">
         {loading ? (
           <Spin tip="Loading camera..." />
         ) : img ? (
-          <img
-            src={img}
-            alt="Captured"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+          <img src={img} alt="Captured" className="preview-image" />
         ) : hasCameraPermission ? (
           <Webcam
             audio={false}
             mirrored={true}
-            height={160}
-            width={160}
+            className="webcam"
             ref={webcamRef}
             screenshotFormat="image/jpeg"
-            videoConstraints={{ width: 720, height: 720, facingMode: "user" }}
+            videoConstraints={{
+              width: 720,
+              height: 720,
+              facingMode: "user",
+            }}
             onUserMediaError={handleUserMediaError}
           />
         ) : (
@@ -132,11 +113,15 @@ function WebcamImage({ onImageUpload }) {
       </div>
 
       {/* Buttons */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+      <div className="button-group">
         {!img ? (
           <>
             <Upload {...props} showUploadList={false}>
-              <Button size="middle" icon={<UploadOutlined />} style={{ width: "100%" }}>
+              <Button
+                size="middle"
+                icon={<UploadOutlined />}
+                className="button"
+              >
                 Upload Photo
               </Button>
             </Upload>
@@ -145,7 +130,7 @@ function WebcamImage({ onImageUpload }) {
               <Button
                 size="middle"
                 icon={<CameraOutlined />}
-                style={{ width: "100%", borderColor: "green" }}
+                className="button capture"
                 onClick={capture}
               >
                 Capture Photo
@@ -157,7 +142,7 @@ function WebcamImage({ onImageUpload }) {
             <Button
               size="middle"
               icon={<DeleteOutlined />}
-              style={{ width: "100%", borderColor: "red" }}
+              className="button remove"
               onClick={() => {
                 setImg(null);
                 setFileList([]);
@@ -172,7 +157,7 @@ function WebcamImage({ onImageUpload }) {
               <Button
                 size="middle"
                 icon={<CameraOutlined />}
-                style={{ width: "100%", borderColor: "green" }}
+                className="button capture"
                 onClick={capture}
               >
                 Retake Photo
@@ -181,6 +166,71 @@ function WebcamImage({ onImageUpload }) {
           </>
         )}
       </div>
+
+      {/* Styles */}
+      <style jsx>{`
+        .webcam-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          max-width: 300px;
+          width: 100%;
+          border: 1px solid lavender;
+          border-radius: 1rem;
+          padding: 1rem;
+          margin: auto;
+        }
+
+        .webcam-preview {
+          width: 100%;
+          max-width: 200px;
+          height: 200px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          overflow: hidden;
+          margin-bottom: 1rem;
+        }
+
+        .webcam,
+        .preview-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .button-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          width: 100%;
+        }
+
+        .button {
+          width: 100%;
+        }
+
+        .capture {
+          border-color: green;
+        }
+
+        .remove {
+          border-color: red;
+        }
+
+        @media (max-width: 400px) {
+          .webcam-container {
+            max-width: 90%;
+            padding: 0.5rem;
+          }
+          .webcam-preview {
+            max-width: 160px;
+            height: 160px;
+          }
+        }
+      `}</style>
     </div>
   );
 }

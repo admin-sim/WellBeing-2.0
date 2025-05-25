@@ -300,6 +300,7 @@ function PayerRegistration() {
   };
 
   const handleOnFinish = async (values) => {
+    debugger;
     setLoading(true);
     console.log("Received values from form: ", values);
 
@@ -710,7 +711,11 @@ function PayerRegistration() {
             style={{ margin: "1rem" }}
             layout="vertical"
             form={form}
-            initialValues={{ Status: "A" }}
+            initialValues={{
+              Status: "A",
+              EffectiveFrom: dayjs(),
+              EffectiveTo: dayjs().add(1, "day"),
+            }}
             onFinish={handleOnFinish}
             // onFieldsChange={handleFieldsChange}
           >

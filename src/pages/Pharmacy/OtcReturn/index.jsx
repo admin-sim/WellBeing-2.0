@@ -53,7 +53,6 @@ function OtcReturn() {
   const navigate = useNavigate();
 
   const handleSelectUHID = (value, option) => {
-    debugger;
     setSelectedUhId(value);
     if (value === undefined) {
       form.resetFields();
@@ -68,7 +67,6 @@ function OtcReturn() {
   };
 
   const getencounters = async (patientid) => {
-    debugger;
     try {
       const visitsResponse = await customAxios.get(
         `${urlGetAllVisitsForPatientId}?PatientId=${patientid}`
@@ -100,7 +98,6 @@ function OtcReturn() {
   };
 
   const getInvoice = async (patientid) => {
-    debugger;
     try {
       const visitsResponse = await customAxios.get(
         `${urlGetAllInvoice}?PatientId=${patientid}`
@@ -144,7 +141,6 @@ function OtcReturn() {
   };
 
   const handleSelect = async (values) => {
-    debugger;
     const type = 1;
     const returnList = await customAxios.get(
       `${urlGetPharmacyReturnList}?PatientId=${values.patientId}&Type=${type}&EncounterId=${values.Encounter}&BillID=${values.BillID}`
@@ -181,7 +177,6 @@ function OtcReturn() {
 
   // Calculate the net return amount for an individual record
   const calculateNetReturnAmount = (record) => {
-    debugger;
     const { ReturnQty, NetAmount, DiscountAmount } = record;
     const returnQty = parseFloat(ReturnQty) || 0;
     const netAmount = parseFloat(NetAmount) || 0;
@@ -323,9 +318,7 @@ function OtcReturn() {
   ];
 
   const handleSave = async () => {
-    debugger;
     await form.validateFields();
-  
     // Filter dataSource to include only items with ReturnQty > 0
     const filteredData = dataSource
       .filter((item) => parseFloat(item.ReturnQty) > 0)

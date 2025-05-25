@@ -29,6 +29,7 @@ import Layout from "antd/es/layout/layout";
 const { Text } = Typography;
 import { useNavigate } from "react-router";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
+import PageHeader from "../../../components/PageHeader/index.jsx";
 import InvoiceDiscountModal from "../../AccountManagement/Billling/InvoiceDiscountModal.jsx";
 
 import {
@@ -111,9 +112,8 @@ const OtcDispense = () => {
   const [invoiceLoading, setInvoiceLoading] = useState(false);
   console.log("l", location.state);
   const [billloading, setBillLoading] = useState(false);
+  const { state } = location;
   useEffect(() => {
-    debugger;
-
     fetchDataHeader();
   }, []);
 
@@ -138,7 +138,6 @@ const OtcDispense = () => {
 
   const fetchData = async () => {
     setTableLoading(true);
-    debugger;
     try {
       const storeId = "";
 
@@ -247,7 +246,6 @@ const OtcDispense = () => {
     }
   };
   const fetchProviders = async (searchText) => {
-    debugger;
     setLoading(true);
     try {
       const response = await customAxios.get(
@@ -280,7 +278,6 @@ const OtcDispense = () => {
 
   const handleChange = async (value, option) => {
     debugger;
-
     if (value) {
       try {
         const batchResponse = await customAxios.get(
@@ -294,6 +291,7 @@ const OtcDispense = () => {
           const formattedBatchOptions = fetchedBatchData.map((batch) => ({
             value: `${batch.BatchNo}/${batch.EXPDateString}/${batch.PendingQty}`, // Combine values
             label: `${batch.BatchNo}/${batch.EXPDateString}/${batch.PendingQty}`,
+            batch: batch,
           }));
 
           setBatchOptions(formattedBatchOptions);
@@ -306,7 +304,11 @@ const OtcDispense = () => {
           });
 
           const servicePriceResponse = await customAxios.get(
-            `${urlGetPharmacyServiceCharge}?BatchId=${fetchedBatchData[0].BatchNo}&ServiceId=${value}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${Qty}&StockId=${fetchedBatchData[0].StockId}`
+            `${urlGetPharmacyServiceCharge}?BatchId=${encodeURIComponent(
+              fetchedBatchData[0].BatchNo
+            )}&ServiceId=${value}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${Qty}&StockId=${
+              fetchedBatchData[0].StockId
+            }`
           );
 
           // Process service price data
@@ -346,7 +348,6 @@ const OtcDispense = () => {
   };
 
   const handleQtyChange = async (e) => {
-    debugger;
     const values = form.getFieldsValue();
 
     // Check if Batch is defined and not null
@@ -383,8 +384,8 @@ const OtcDispense = () => {
     }
   };
 
-  const handleBatchChange = async () => {
-    debugger;
+  const handleBatchChange = async (value, batch) => {
+    form.setFieldsValue({ StockId: batch.batch.batch.StockId });
     const values = form.getFieldsValue();
 
     // Check if Batch is defined and not null
@@ -393,7 +394,13 @@ const OtcDispense = () => {
 
       try {
         const servicePriceResponse = await customAxios.get(
-          `${urlGetPharmacyServiceCharge}?BatchId=${BatchNo}&ServiceId=${values.Product}&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${values.Qty}&StockId=${values.StockId}`
+          `${urlGetPharmacyServiceCharge}?BatchId=${encodeURIComponent(
+            BatchNo
+          )}&ServiceId=${
+            values.Product
+          }&PatientId=${PatientId}&EncounterId=${EncounterId}&Qty=${
+            values.Qty
+          }&StockId=${values.StockId}`
         );
 
         // Process service price data
@@ -424,7 +431,6 @@ const OtcDispense = () => {
   };
 
   const handleProviderSearch = (value) => {
-    debugger;
     if (value) {
       debouncedFetchProvider(value);
     } else {
@@ -437,7 +443,6 @@ const OtcDispense = () => {
   };
   // Function to handle discount click
   const handleDiscount = async (row) => {
-    debugger;
     const response = await customAxios.get(
       `${urlEditPharmacyDiscount}?DiscountChargeId=${row.ChargeID}&PatientId=${row.PatientId}&EncounterId=${row.EncounterId}`
     );
@@ -448,7 +453,6 @@ const OtcDispense = () => {
     }
   };
   const handleInvoiceDiscount = async (row) => {
-    debugger;
     setInvoiceLoading(true);
     try {
       const Flag = "Y";
@@ -467,7 +471,6 @@ const OtcDispense = () => {
   };
 
   const handleDeleteCharge = async (record) => {
-    debugger;
     const response = await customAxios.delete(
       `${urlDeletePharmacyBillCharge}?chargeId=${record.ChargeID}&patientId=${record.PatientId}&encounterId=${record.EncounterId}&storeId=${record.StoreId}&stockId=${record.StockId}&amt=${record.AdjustedAmount}`
     );
@@ -480,7 +483,6 @@ const OtcDispense = () => {
   };
 
   const handleDiscountSubmit = async (values) => {
-    debugger;
     values.ChargeID = discountDetails.ChargeID;
     values.ServiceId = discountDetails.ServiceId;
     values.PatientId = discountDetails.PatientId;
@@ -513,7 +515,6 @@ const OtcDispense = () => {
   };
 
   const handleInvoiceDiscountSubmit = async (values) => {
-    debugger;
     values.ChargeID = invoicediscountDetails.ChargeID;
     values.ServiceId = invoicediscountDetails.ServiceId;
     values.Flag = "Y";
@@ -731,7 +732,6 @@ const OtcDispense = () => {
   };
 
   const handlePrintBill = async () => {
-    debugger;
     setReportLoading(true); // Start loading
     try {
       const flag = 1;
@@ -1093,7 +1093,6 @@ const OtcDispense = () => {
   };
 
   const handleOnFinish = async (values) => {
-    debugger;
     const [BatchNo, ExpDate] = values.Batch.split("/");
     const expDate = parseDate(ExpDate);
     const formattedExpDate = expDate.toISOString();
@@ -1200,7 +1199,6 @@ const OtcDispense = () => {
   };
 
   const handleSaveBill = async (values) => {
-    debugger;
     if (billloading) return; // Prevent multiple clicks
 
     setBillLoading(true); // Start loading state
@@ -1299,9 +1297,14 @@ const OtcDispense = () => {
     }
   }
 
+  useEffect(() => {
+    if (state?.openPrescription) {
+      hanldePrescription();
+    }
+  }, [state]);
+
   const handlePrescriptionTypeSubmit = (values) => {};
   const hanldePrescription = async () => {
-    debugger;
     try {
       const response = await customAxios.get(
         `${urlGetExistingPrescription}?EncounterId=${EncounterId}&PatientId=${PatientId}`
@@ -1319,7 +1322,6 @@ const OtcDispense = () => {
   };
 
   const handleShowPrescriptions = async (record) => {
-    debugger;
     try {
       const response = await customAxios.get(
         `${urlGetPrescriptionHedderIdPhar}?EncounterId=${EncounterId}&PatientId=${PatientId}&PriscptionHedderId=${record.PriscptionHedderId}`
@@ -1346,7 +1348,14 @@ const OtcDispense = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        <PageHeader
+          title="OTC Dispense"
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleCreateService}
+        />
+
+        {/* <Row
           style={{
             padding: "0.2rem 2rem 0rem 2rem",
             backgroundColor: "#40A2E3",
@@ -1366,7 +1375,7 @@ const OtcDispense = () => {
               Back
             </Button>
           </Col>
-        </Row>
+        </Row> */}
         <div style={{ margin: "0 2rem 1rem 2rem" }}>
           <PatientHeader patient={patientData} />
         </div>
@@ -1462,12 +1471,16 @@ const OtcDispense = () => {
                   ]}
                 >
                   <Select
-                    onChange={handleBatchChange}
+                    onChange={(value, batch) => handleBatchChange(value, batch)}
                     disabled={!batchOptions.length}
                     dropdownStyle={{ minWidth: "15rem" }}
                   >
                     {batchOptions.map((batch) => (
-                      <Option key={batch.value} value={batch.value}>
+                      <Option
+                        key={batch.value}
+                        value={batch.value}
+                        batch={batch}
+                      >
                         {batch.label}
                       </Option>
                     ))}

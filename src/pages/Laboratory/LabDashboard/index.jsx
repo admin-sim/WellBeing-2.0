@@ -13,6 +13,7 @@ import {
   Space,
   AutoComplete,
 } from "antd";
+import moment from "moment";
 import {
   MinusCircleOutlined,
   CheckCircleOutlined,
@@ -36,7 +37,8 @@ const LabDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [options, setOptions] = useState([]);
   const [selectedUhId, setSelectedUhId] = useState(null);
-
+  const [fromDate, setFromDate] = useState();
+  const [toDate, setToDate] = useState();
   const handleAutoCompleteChange = async (value) => {
     try {
       if (!value.trim()) {
@@ -224,13 +226,12 @@ const LabDashboard = () => {
       render: (text, record) => (
         <Space direction="vertical">
           {record.IsbillCancelled ? (
-          <Space direction="vertical" align="start">
-          <label style={{ color: "red" }}>Bill Cancelled</label>
-          <span style={{  color: "gray" }}>
-            {record.ModifiedDateTimestring}
-          </span>
-        </Space>
-        
+            <Space direction="vertical" align="start">
+              <label style={{ color: "red" }}>Bill Cancelled</label>
+              <span style={{ color: "gray" }}>
+                {record.ModifiedDateTimestring}
+              </span>
+            </Space>
           ) : (
             <>
               {record.IsSmpPartiallyCollected === true &&
@@ -263,28 +264,32 @@ const LabDashboard = () => {
                   </Tooltip>
                 </Space>
               )}
-              {!record.IsSmpPartiallyCollected && !record.IsAllSampleCollected && (
-                <Space align="start">
-                  <Button
-                    type="link"
-                    onClick={() => handleSampleCollection(record)}
-                  >
-                    Sample Collection
-                  </Button>
-                  <Tooltip
-                    title="Sample Not Collected"
-                    placement="right"
-                    overlayStyle={{ fontSize: "10px" }}
-                  >
-                    <MinusCircleOutlined style={{ color: "#b98c54" }} />
-                  </Tooltip>
-                </Space>
-              )}
-    
+              {!record.IsSmpPartiallyCollected &&
+                !record.IsAllSampleCollected && (
+                  <Space align="start">
+                    <Button
+                      type="link"
+                      onClick={() => handleSampleCollection(record)}
+                    >
+                      Sample Collection
+                    </Button>
+                    <Tooltip
+                      title="Sample Not Collected"
+                      placement="right"
+                      overlayStyle={{ fontSize: "10px" }}
+                    >
+                      <MinusCircleOutlined style={{ color: "#b98c54" }} />
+                    </Tooltip>
+                  </Space>
+                )}
+
               {record.IsResEntryPartiallyDone === true &&
                 !record.IsAllResEntryDone && (
                   <Space align="start">
-                    <Button type="link" onClick={() => handleResultEntry(record)}>
+                    <Button
+                      type="link"
+                      onClick={() => handleResultEntry(record)}
+                    >
                       Result Entry
                     </Button>
                     <Tooltip
@@ -322,11 +327,14 @@ const LabDashboard = () => {
                   </Tooltip>
                 </Space>
               )}
-    
+
               {record.IsVerificationPartiallyDone === true &&
                 !record.IsAllVerificationDone && (
                   <Space align="start">
-                    <Button type="link" onClick={() => handleVerification(record)}>
+                    <Button
+                      type="link"
+                      onClick={() => handleVerification(record)}
+                    >
                       Verification
                     </Button>
                     <Tooltip
@@ -353,7 +361,10 @@ const LabDashboard = () => {
               {!record.IsVerificationPartiallyDone &&
                 !record.IsAllVerificationDone && (
                   <Space align="start">
-                    <Button type="link" onClick={() => handleVerification(record)}>
+                    <Button
+                      type="link"
+                      onClick={() => handleVerification(record)}
+                    >
                       Verification
                     </Button>
                     <Tooltip
@@ -369,8 +380,7 @@ const LabDashboard = () => {
           )}
         </Space>
       ),
-    }
-    
+    },
   ];
 
   return (
@@ -422,9 +432,40 @@ const LabDashboard = () => {
                   <Input placeholder="Enter Name" />
                 </Form.Item>
               </ColWithSixSpan>
+              {/* <ColWithSixSpan>
+                <Form.Item
+                  name="mobile"
+                  label="Mobile Number"
+                  rules={[
+                    {
+                      pattern: new RegExp(/^\d{10}$/),
+                      message: "Invalid mobile number!",
+                    },
+                  ]}
+                >
+                  <Input maxLength={10} type="number" />
+                </Form.Item>
+              </ColWithSixSpan> */}
               <ColWithSixSpan>
-                <Form.Item name="mobile" label="Mobile Number">
-                  <Input placeholder="Enter Mobile Number" />
+                <Form.Item
+                  label="Mobile Number"
+                  name="MobileNumber"
+                  rules={[
+                    {
+                      pattern: /^[0-9]{10}$/,
+                      message: "Please enter a valid 10-digit mobile number!",
+                    },
+                  ]}
+                >
+                  <Input
+                    maxLength={10}
+                    onKeyPress={(e) => {
+                      const pattern = /[0-9]/;
+                      if (!pattern.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
                 </Form.Item>
               </ColWithSixSpan>
               <ColWithSixSpan>
@@ -434,20 +475,36 @@ const LabDashboard = () => {
               </ColWithSixSpan>
 
               <ColWithSixSpan>
-                <Form.Item name="fromDate" label="From Date">
+                <Form.Item
+                  name="fromDate"
+                  label="From Date"
+                  rules={[{ required: true, message: "Please select a date!" }]}
+                >
                   <DatePicker
+                    value={fromDate}
+                    onChange={(date) => setFromDate(date)}
+                    disabledDate={(current) => current > moment()}
                     style={{ width: "100%" }}
-
-                    // disabledDate={disabledDate}
+                    format="DD-MM-YYYY"
+                    placeholder="DD-MM-YYYY"
+                    allowClear
                   />
                 </Form.Item>
               </ColWithSixSpan>
               <ColWithSixSpan>
-                <Form.Item name="toDate" label="To Date">
+                <Form.Item
+                  name="toDate"
+                  label="To Date"
+                  rules={[{ required: true, message: "Please select a date!" }]}
+                >
                   <DatePicker
+                    value={toDate}
+                    onChange={(date) => setToDate(date)}
+                    disabledDate={(current) => current < fromDate} // disable dates before fromDate
                     style={{ width: "100%" }}
-
-                    //disabledDate={disabledDate}
+                    format="DD-MM-YYYY"
+                    placeholder="DD-MM-YYYY"
+                    allowClear
                   />
                 </Form.Item>
               </ColWithSixSpan>

@@ -21,6 +21,7 @@ import {
   Table,
   message,
   Layout,
+  Spin,
 } from "antd";
 
 import {
@@ -52,19 +53,25 @@ const ProductClassification = () => {
   const [dropDown, setDropDown] = useState({ ProductGroup: [] });
   const [activeButton, setActiveButton] = useState(null);
   const { TextArea } = Input;
+  const [loading, setLoading] = useState(false)
+  const [loading1, setLoading1] = useState(false)
 
   useEffect(() => {
+    setLoading(true)
     try {
       customAxios.get(urlProductClassificationIndex, {}).then((response) => {
         const apiData = response.data.data;
         setDropDown(apiData);
+        setLoading(false)
       });
     } catch (error) {
+      setLoading(false)
       console.error("Error fetching purchase order details:", error);
     }
   }, []);
 
   const onclick = (values, index) => {
+    setLoading1(true)
     try {
       customAxios
         .get(`${urlGetList}?ProductGroupId=${values}`, null, {
@@ -83,8 +90,9 @@ const ProductClassification = () => {
           );
           setDPPData(response.data.data.ProductClassification);
           setActiveButton(index);
+          setLoading1(false)
         });
-    } catch (error) { }
+    } catch (error) { setLoading1(false) }
   };
 
   const ModelAdd = () => {
@@ -265,221 +273,221 @@ const ProductClassification = () => {
   };
 
   return (
-    <Layout
-      style={{
-        width: "100%",
-        backgroundColor: "white",
-        minHeight: "max-content",
-        borderRadius: "10px",
-      }}
-    >
-      <PageHeader title={"Product Classification"} button={false} />
+    <Spin spinning={loading} tip="Loading...">
+      <Layout
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <PageHeader title={"Product Classification"} button={false} />
 
-      <Row gutter={32} style={{ margin: "1rem 0 1rem 1rem" }}>
-        <Col
-          xl={6}
-          lg={12}
-          md={12}
-          xs={24}
-          span={24}
-          style={{
-            width: "100%",
-            backgroundColor: "white",
-            height: "min-content",
-            borderRadius: "10px",
-            border: "1px solid grey",
-            padding: 0,
-          }}
-        >
-          <Row
+        <Row gutter={32} style={{ margin: "1rem 0 1rem 1rem" }}>
+          <Col
+            xl={6}
+            lg={12}
+            md={12}
+            xs={24}
+            span={24}
             style={{
-              padding: "0.3rem 1rem",
-
-              // backgroundColor: "#40A2E3",
-              backgroundColor: "lavender",
-              borderRadius: "10px 10px 0px 0px ",
+              width: "100%",
+              backgroundColor: "white",
+              height: "min-content",
+              borderRadius: "10px",
+              border: "1px solid grey",
+              padding: 0,
             }}
           >
-            <Col span={24}>
-              <Title
-                level={5}
-                style={{
-                  color: "black",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Product Group
-              </Title>
-            </Col>
-          </Row>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "1rem",
-              alignItems: "flex-start",
-              padding: "1rem 0",
-            }}
-          >
-            <ConfigProvider
-              theme={{
-                token: {
-                  colorLink: "#000",
-                  colorLinkActive: "#0958d9",
-                  colorLinkHover: "#69b1ff",
-                },
+            <Row
+              style={{
+                padding: "0.3rem 1rem",
+                backgroundColor: "lavender",
+                borderRadius: "10px 10px 0px 0px ",
               }}
             >
-              {dropDown.ProductGroup.map((item, index) => (
-                <Button
-                  icon={<DoubleRightOutlined />}
-                  key={item.LookupID}
+              <Col span={24}>
+                <Title
+                  level={5}
                   style={{
-                    color:
-                      activeButton === index
-                        ? "#40A2E3"
-                        : "rgba(0, 0, 0, 0.65)",
-                    fontWeight: activeButton === index ? "bold" : "normal",
+                    color: "black",
+                    fontWeight: 500,
+                    margin: 0,
+                    paddingTop: 0,
                   }}
-                  type="link"
-                  onClick={() => onclick(item.LookupID, index)}
                 >
-                  {item.LookupDescription}
-                </Button>
-              ))}
-            </ConfigProvider>
-          </div>
-        </Col>
-        <Col
-          xl={18}
-          span={24}
-          style={{
-            marginTop: "1rem",
-            padding: 0,
-            display: "flex",
-            justifyContent: "center",
-            flexDirection: "column",
-          }}
-        >
-          {showTable && (
-            <>
-              <h4 style={{ margin: "0 0 0 0.5rem" }}>{productGroup}</h4>
-              <CustomTable
-                dataSource={dPPData}
-                columns={columns}
-                actionColumnName={<Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={ModelAdd}
-                ></Button>}
-                onEdit={(record) => ModelUpdate(record.ProductClassificationId)}
-                onDelete={(record) =>
-                  ModelDelete(record.ProductClassificationId)
-                }
-              />
-            </>
-          )}
-        </Col>
-      </Row>
-      <Modal
-        title="Add Product Classification"
-        onOk={onOkModal}
-        onCancel={onCancelModel}
-        open={isModalOpen}
-        layout="vertical"
-        width={700}
-        footer={[
-          <Button key="submit" type="primary" onClick={onOkModal}>
-            {buttonTitle}
-          </Button>,
-          <Button key="back" danger onClick={onCancelModel}>
-            Close
-          </Button>,
-        ]}
-      >
-        <Form
-          layout="vertical"
-          onFinish={onFinishModel}
-          form={form1}
-          initialValues={{
-            Status: true,
-            ProductGroupId: productGroupId,
-          }}
-        >
-          Product Group: <strong style={{ margin: "2rem 0 0 0" }}>{productGroup}</strong>
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-            style={{ margin: "1rem 0 0 0" }}
+                  Product Group
+                </Title>
+              </Col>
+            </Row>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+                alignItems: "flex-start",
+                padding: "1rem 0",
+              }}
+            >
+              <ConfigProvider
+                theme={{
+                  token: {
+                    colorLink: "#000",
+                    colorLinkActive: "#0958d9",
+                    colorLinkHover: "#69b1ff",
+                  },
+                }}
+              >
+                {dropDown.ProductGroup.map((item, index) => (
+                  <Button
+                    icon={<DoubleRightOutlined />}
+                    key={item.LookupID}
+                    style={{
+                      color:
+                        activeButton === index
+                          ? "#40A2E3"
+                          : "rgba(0, 0, 0, 0.65)",
+                      fontWeight: activeButton === index ? "bold" : "normal",
+                    }}
+                    type="link"
+                    onClick={() => onclick(item.LookupID, index)}
+                  >
+                    {item.LookupDescription}
+                  </Button>
+                ))}
+              </ConfigProvider>
+            </div>
+          </Col>
+          <Col
+            xl={18}
+            span={24}
+            style={{
+              marginTop: "1rem",
+              padding: 0,
+              display: "flex",
+              justifyContent: "center",
+              flexDirection: "column",
+            }}
           >
-            <Col className="gutter-row" span={12}>
-              <Form.Item
-                label="Short Name"
-                name="ShortName"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please input!",
-                  },
-                ]}
-              >
-                <Input type="text" disabled={!!form1.getFieldValue('ProductClassificationId')} allowClear></Input>
-              </Form.Item>
-              <FormItem hidden name="ProductClassificationId">
-                <Input></Input>
-              </FormItem>
-              <FormItem hidden name="ProductGroupId">
-                <Input></Input>
-              </FormItem>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label="Status"
-                name="Status"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please input!",
-                  },
-                ]}
-              >
-                <Select>
-                  <Option key={true} value={true}>
-                    Active
-                  </Option>
-                  <Option key="false" value="false">
-                    Hidden
-                  </Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={24}>
-              <Form.Item
-                label="Long Name"
-                name="LongName"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please input!",
-                  },
-                ]}
-              >
-                <Input type="text" allowClear></Input>
-              </Form.Item>
-            </Col>
-            <Col span={24}>
-              <Form.Item
-                label="Remarks"
-                name="Remarks"
-              >
-                <TextArea rows={2} />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Modal>
-    </Layout>
+            {showTable && (
+              <>
+                <h4 style={{ margin: "0 0 0 0.5rem" }}>{productGroup}</h4>
+                <CustomTable loading={loading1}
+                  dataSource={dPPData}
+                  columns={columns}
+                  actionColumnName={<Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={ModelAdd}
+                  ></Button>}
+                  onEdit={(record) => ModelUpdate(record.ProductClassificationId)}
+                  onDelete={(record) =>
+                    ModelDelete(record.ProductClassificationId)
+                  }
+                />
+              </>
+            )}
+          </Col>
+        </Row>
+        <Modal
+          title="Add Product Classification"
+          onOk={onOkModal}
+          onCancel={onCancelModel}
+          open={isModalOpen}
+          layout="vertical"
+          width={700}
+          footer={[
+            <Button key="submit" type="primary" onClick={onOkModal}>
+              {buttonTitle}
+            </Button>,
+            <Button key="back" danger onClick={onCancelModel}>
+              Close
+            </Button>,
+          ]}
+        >
+          <Form
+            layout="vertical"
+            onFinish={onFinishModel}
+            form={form1}
+            initialValues={{
+              Status: true,
+              ProductGroupId: productGroupId,
+            }}
+          >
+            Product Group: <strong style={{ margin: "2rem 0 0 0" }}>{productGroup}</strong>
+            <Row
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+              style={{ margin: "1rem 0 0 0" }}
+            >
+              <Col className="gutter-row" span={12}>
+                <Form.Item
+                  label="Short Name"
+                  name="ShortName"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Input type="text" disabled={!!form1.getFieldValue('ProductClassificationId')} allowClear></Input>
+                </Form.Item>
+                <FormItem hidden name="ProductClassificationId">
+                  <Input></Input>
+                </FormItem>
+                <FormItem hidden name="ProductGroupId">
+                  <Input></Input>
+                </FormItem>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="Status"
+                  name="Status"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Select>
+                    <Option key={true} value={true}>
+                      Active
+                    </Option>
+                    <Option key="false" value="false">
+                      Hidden
+                    </Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={24}>
+                <Form.Item
+                  label="Long Name"
+                  name="LongName"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input!",
+                    },
+                  ]}
+                >
+                  <Input type="text" allowClear></Input>
+                </Form.Item>
+              </Col>
+              <Col span={24}>
+                <Form.Item
+                  label="Remarks"
+                  name="Remarks"
+                >
+                  <TextArea rows={2} />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
+      </Layout>
+    </Spin>
   );
 };
 

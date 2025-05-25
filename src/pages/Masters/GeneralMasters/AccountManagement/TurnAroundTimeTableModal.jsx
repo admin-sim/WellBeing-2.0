@@ -16,11 +16,13 @@ import React, { useState } from "react";
 const { Text } = Typography;
 //import { urlUpdateDiscount } from "../../../endpoints";
 import { useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 function TurnAroundTimeTableModal({
   options,
   open,
   handleClose,
   handleSubmit,
+  record
 }) {
   const [form] = Form.useForm();
 
@@ -33,27 +35,33 @@ function TurnAroundTimeTableModal({
 
   const onFinishForAddChargeParameters = async (values) => {
     debugger;
+    const TatUomOption = options?.Uoms.find(
+      (option) => option.UomId === values.TatUom
+    );
 
-    //   const genderOption = options?.Genders.find(
-    //     (option) => option.LookupID === values.Gender
-    //   );
-    //   const startAgeUnitOption = options?.Uoms.find(
-    //     (option) => option.UomId === values.StartAgeUnits
-    //   );
-    //   const endAgeUnitOption = options?.Uoms.find(
-    //     (option) => option.UomId === values.EndAgeUnits
-    //   );
+    const finalValues = {
+      ...values,
+      key: record ? record?.key : uuidv4(),
+      TatUomShortName: TatUomOption?.ShortName,
+      ActiveFlag: true
+    };
 
-    //   const finalValues = {
-    //     ...values,
-    //     GenderType: genderOption?.LookupDescription,
-    //     StartAgeUnitShortName: startAgeUnitOption?.ShortName,
-    //     EndAgeUnitShortName: endAgeUnitOption?.ShortName,
-    //   };
-
-    handleSubmit(values);
+    handleSubmit(finalValues);
     handleCancel();
   };
+
+  useEffect(() => {
+    if (record) {
+      form.setFieldsValue({
+        TatId: record?.TatId,
+        OrderPriorityId: record?.OrderPriorityId,
+        TatValue: record?.TatValue,
+        UOM: record?.UOM
+      });
+    } else {
+      form.resetFields();
+    }
+  }, [record, form]);
 
   return (
     <div>
@@ -75,13 +83,14 @@ function TurnAroundTimeTableModal({
           >
             <Row gutter={16}>
               <Col span={8}>
-                <Form.Item name="OrderPriorityId" label="Ordering Priority">
+                <Form.Item name="OrderPriorityId" label="Ordering Priority" rules={[{ required: true }]}>
                   <Select>
                     <Select.Option key="Asap" value="Asap"></Select.Option>
                     <Select.Option key="Routine" value="Routine"></Select.Option>
                     <Select.Option key="Stat" value="Stat"></Select.Option>
                   </Select>
                 </Form.Item>
+                <Form.Item name="TatId" hidden><Input /></Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
                 <Form.Item
@@ -89,40 +98,40 @@ function TurnAroundTimeTableModal({
                   label="TAT"
                   rules={[{ required: true }]}
                 >
-                  <Input style={{ width: "100%" }} />
+                  <InputNumber min={0} style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
-              <Col  span={8}>
-                  <Form.Item
-                    name="UOM"
-                    label="UOM"
-                   
-                  >
-                    <Select>
-                      {options?.Uoms.map((option) => (
-                        <Select.Option
-                          key={option.UomId}
-                          value={option.UomId}
-                        >
-                          {option.ShortName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
+              <Col span={8}>
+                <Form.Item
+                  name="TatUom"
+                  label="UOM"
+                  rules={[{ required: true }]}
+                >
+                  <Select>
+                    {options?.Uoms.map((option) => (
+                      <Select.Option
+                        key={option.UomId}
+                        value={option.UomId}
+                      >
+                        {option.ShortName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
             </Row>
             <Row gutter={16} justify="end">
-            <Col>
-              <Form.Item>
-              <Button type="primary" htmlType="submit" style={{ marginRight: '8px' }}>
-                  Submit
-                </Button>
-                <Button type="default" onClick={handleCancel} >
-                  Cancel
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
+              <Col>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit" style={{ marginRight: '8px' }}>
+                    Submit
+                  </Button>
+                  <Button type="default" onClick={handleCancel} >
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
           </Form>
         </Modal>
       </Spin>

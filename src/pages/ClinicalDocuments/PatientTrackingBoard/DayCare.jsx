@@ -118,46 +118,67 @@ function DayCare() {
     },
   ];
 
-  // useEffect(()=>{
-  //  async function handlePatientTrackingSearch() {
-  //     debugger
-  //     const response= await customAxios.get(`${urlSearchInPatientTrackRecords}?Flag=${2}`)
-  //     if(response.status==200){
-  //       debugger
-  //       setTableData(response.data.data.ClinicalDocumentTypes)
+ 
+
+  // useEffect(() => {
+  //   async function handlePatientTrackingSearch() {
+  //     const response = await customAxios.get(`${urlSearchInPatientTrackRecords}?Flag=${2}`);
+  //     if (response.status === 200) {
+  //       const data = response.data.data.ClinicalDocumentTypes;
+  //       const uniqueData = removeDuplicates(data); // Apply deduplication
+  //       setTableData(uniqueData);
   //     }
-  //       setPatientTrackRecordTable(true);
-    
-  //       console.log(values);
-  //     };
-  //   handlePatientTrackingSearch()
-  // },[])
-  useEffect(() => {
+  //     setPatientTrackRecordTable(true);
+  //   }
+  
+  //   handlePatientTrackingSearch();
+  // }, []);
+  
+  // // Function to remove duplicates based on EncounterId
+  // const removeDuplicates = (data) => {
+  //   const uniqueEncounters = new Map();
+  //   data.forEach((item) => {
+  //     if (!uniqueEncounters.has(item.Encounter)) {
+  //       uniqueEncounters.set(item.Encounter, item);
+  //     }
+  //   });
+  //   return Array.from(uniqueEncounters.values());
+  // };
+  
+   useEffect(() => {
     async function handlePatientTrackingSearch() {
-      const response = await customAxios.get(`${urlSearchInPatientTrackRecords}?Flag=${2}`);
-      if (response.status === 200) {
-        const data = response.data.data.ClinicalDocumentTypes;
-        const uniqueData = removeDuplicates(data); // Apply deduplication
-        setTableData(uniqueData);
+      try {
+        const response = await customAxios.get(`${urlSearchInPatientTrackRecords}?Flag=${2}`);
+        if (response.status === 200) {
+          const data = response.data.data.ClinicalDocumentTypes;
+          const latestData = getLatestRecords(data); 
+          setTableData(latestData);
+        }
+        setPatientTrackRecordTable(true);
+      } catch (error) {
+        console.error("Error fetching patient tracking data:", error);
       }
-      setPatientTrackRecordTable(true);
     }
   
     handlePatientTrackingSearch();
   }, []);
   
-  // Function to remove duplicates based on EncounterId
-  const removeDuplicates = (data) => {
-    const uniqueEncounters = new Map();
+ 
+  const getLatestRecords = (data) => {
+    const map = new Map();
+  
     data.forEach((item) => {
-      if (!uniqueEncounters.has(item.Encounter)) {
-        uniqueEncounters.set(item.Encounter, item);
+      const encounter = item.Encounter ? item.Encounter.toString().trim() : null;
+  
+      if (encounter) {
+     
+        map.set(encounter, item);
       }
     });
-    return Array.from(uniqueEncounters.values());
-  };
   
-    
+    return Array.from(map.values());
+  };
+   
   
 
   return (

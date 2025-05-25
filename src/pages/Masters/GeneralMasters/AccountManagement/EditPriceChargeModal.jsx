@@ -14,9 +14,12 @@ import {
 import React, { useState, useEffect, useCallback } from "react";
 const { Text } = Typography;
 import customAxios from "../../../../components/customAxios/customAxios";
-import { urlUpdatePriceTariffChargeParameter, urlPackageDescriptionServiceForInsurance,
+import {
+  urlUpdatePriceTariffChargeParameter,
+  urlPackageDescriptionServiceForInsurance,
   urlPackageDescriptionServiceGroup,
-  urlPackageDescriptionServiceClassification, } from "../../../../../endpoints";
+  urlPackageDescriptionServiceClassification,
+} from "../../../../../endpoints";
 import dayjs from "dayjs";
 import { debounce } from "lodash";
 
@@ -40,7 +43,6 @@ function EditPriceChargeModal({
   //setValue(linedata?.IndicatorDescriptionId);
   const [url, setUrl] = useState();
   useEffect(() => {
-    debugger;
     if (linedata) {
       form.setFieldsValue({
         PatientTypeId: linedata.PatientTypeId,
@@ -53,7 +55,7 @@ function EditPriceChargeModal({
         Nationality: linedata.Nationality,
         Gender: linedata.Gender,
         Payer: linedata.Payer,
-        WardType: linedata.WardType,
+        WardType: linedata.WardTypeId,
         Provider: linedata.Provider,
         IncomeLimit: linedata.IncomeLimit,
         EffectiveFrom: linedata.EffectiveFromDate
@@ -64,6 +66,9 @@ function EditPriceChargeModal({
           : null,
       });
       setValue(linedata.IndicatorDescriptionId);
+      linedata.Indicator === 2060
+        ? setDescriptionDisabled(true)
+        : setDescriptionDisabled(false);
       //setDescriptionName(linedata.IndicatorDescriptionName);
     }
   }, [linedata]);
@@ -77,8 +82,7 @@ function EditPriceChargeModal({
   };
 
   const onFinishForUpdateChargeParameters = async (values) => {
-    debugger;
-    console.log('value',value);
+    console.log("value", value);
     setLoading(true);
     // values.EffectiveFromDate = effectiveFromDatemodal;
     // values.EffectiveToDate = effectiveToDatemodal;
@@ -91,8 +95,12 @@ function EditPriceChargeModal({
     values.PriceTariffId = linedata.PriceTariffId;
     values.PriceTariffLineId = editedpriceTarifflineId;
     values.RevisionNo = 0;
-    values.IndicatorDescriptionId=value;
-    values.TariffLineValue=values.TariffLineValue ? values.TariffLineValue :0;
+    values.IndicatorDescriptionId = value;
+    values.WardTypeId = values.WardType;
+    values.TariffLineValue = values.TariffLineValue
+      ? values.TariffLineValue
+      : 0;
+      
     console.log(linedata, "linedata");
     try {
       const response = await customAxios.post(
@@ -121,18 +129,14 @@ function EditPriceChargeModal({
     setLoading(false);
   };
 
-
-
-
-
   const IndicatorOnchange = (value, option) => {
     console.log("Selected value:", value);
     console.log("Selected option:", option);
     form.setFieldsValue({ IndicatorDescriptionId: undefined });
     setValue(undefined);
     setData([]);
-  
-    form.resetFields(['IndicatorDescriptionId']); // Corrected to use an array
+
+    form.resetFields(["IndicatorDescriptionId"]); // Corrected to use an array
     // Update the URL based on the selected option
     if (option.children !== "All") {
       setDescriptionDisabled(false);
@@ -147,30 +151,26 @@ function EditPriceChargeModal({
           setUrl(urlPackageDescriptionServiceForInsurance);
           break;
       }
-    }
-    else{
+    } else {
       setDescriptionDisabled(true);
     }
-    
   };
 
   const fetchOptions = async (value) => {
-    debugger;
     if (!url || !value) {
       setData([]);
       //message.warning('Please Select Indicator First..')
       return;
     }
     setFetching(true);
-    if(value){
+    if (value) {
       try {
         const response = await customAxios.get(`${url}?Description=${value}`);
         setData(response.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-    }
-    else{
+    } else {
       setData([]);
     }
     setFetching(false);
@@ -359,7 +359,7 @@ function EditPriceChargeModal({
                     { required: true, message: "Please select Indicator" },
                   ]}
                 >
-                  <Select  onChange={IndicatorOnchange}>
+                  <Select onChange={IndicatorOnchange}>
                     {options.Indicators?.map((option) => (
                       <Select.Option
                         key={option.LookupID}
@@ -458,24 +458,28 @@ function EditPriceChargeModal({
                 <Form.Item label="EffectiveTo" name="EffectiveTo">
                   <DatePicker
                     style={{ width: "100%" }}
-                  //  onChange={handleEfeectiveToModal}
+                    //  onChange={handleEfeectiveToModal}
                     format="DD-MM-YYYY"
                   />
                 </Form.Item>
               </Col>
             </Row>
             <Row gutter={16} justify="end">
-            <Col>
-              <Form.Item>
-              <Button type="primary" htmlType="submit" style={{ marginRight: '8px' }}>
-                  Submit
-                </Button>
-                <Button type="default" onClick={handleCancel} >
-                  Cancel
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
+              <Col>
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    style={{ marginRight: "8px" }}
+                  >
+                    Submit
+                  </Button>
+                  <Button type="default" onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
           </Form>
         </Modal>
       </Spin>

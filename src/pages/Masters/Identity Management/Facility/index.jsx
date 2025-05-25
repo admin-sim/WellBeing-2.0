@@ -6,12 +6,7 @@ import { PlusCircleOutlined } from "@ant-design/icons";
 import { urlGetAllFacilities } from "../../../../../endpoints.js";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
 
-
-
-
-
 function Facility() {
-
   const [columnData, setColumnData] = useState();
   const [loading, setLoading] = useState(false);
   useEffect(() => {
@@ -22,11 +17,12 @@ function Facility() {
     setLoading(true);
     try {
       const response = await customAxios.get(`${urlGetAllFacilities}`);
-      const newColumnData = response.data.data.FacilityModel.map((obj, index) => {
-        return { ...obj, key: index + 1 };
-      });
+      const newColumnData = response.data.data.FacilityModel.map(
+        (obj, index) => {
+          return { ...obj, key: index + 1 };
+        }
+      );
       setColumnData(newColumnData);
-   
     } catch (error) {
       console.error(error);
     }
@@ -48,7 +44,7 @@ function Facility() {
     {
       title: "Facility Code",
       dataIndex: "FacilityCode",
- 
+
       width: 120,
     },
     {
@@ -60,7 +56,7 @@ function Facility() {
     {
       title: "Address Line 2",
       dataIndex: "AddressLine2",
- 
+
       width: 250,
     },
     {
@@ -114,14 +110,11 @@ function Facility() {
     },
   ];
 
- 
-
   const navigate = useNavigate();
 
-  const handleEdit = (record) => {
-    console.log(record);
+  function handleEdit(record) {
     navigate("CreateFacility", { state: record });
-  };
+  }
 
   const handleAddNewFacility = () => {
     navigate("CreateFacility");
@@ -139,16 +132,16 @@ function Facility() {
       >
         <PageHeader
           title={"Facility"}
-          button={false}
-         // buttonLabel="Add New Facility"
-          //buttonIcon={<PlusCircleOutlined />}
-         // onButtonClick={handleAddNewFacility}
+          button={true}
+          buttonLabel="Add New Facility"
+          buttonIcon={<PlusCircleOutlined />}
+          onButtonClick={handleAddNewFacility}
         />
         <CustomTable
           isFilter={true}
           columns={columns}
           dataSource={columnData}
-          //onEdit={handleEdit}
+          onEdit={handleEdit}
         />
       </div>
     </>

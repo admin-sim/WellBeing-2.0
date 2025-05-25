@@ -13,10 +13,11 @@ import {
   message,
 } from "antd";
 import React, { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 const { Text } = Typography;
 //import { urlUpdateDiscount } from "../../../endpoints";
 import { useEffect } from "react";
-function MedicalCodeModal({ options, open, handleClose, handleSubmit }) {
+function MedicalCodeModal({ options, open, handleClose, handleSubmit, record }) {
   const [form] = Form.useForm();
 
   const [loading, setLoading] = useState(false);
@@ -27,28 +28,37 @@ function MedicalCodeModal({ options, open, handleClose, handleSubmit }) {
   };
 
   const onFinishForAddChargeParameters = async (values) => {
-    debugger;
+    debugger
+    const genderOption = options?.MedicalCodeTypes.find(
+      (option) => option.LookupID === values.MedicalCodeTypeId
+    );
 
-    //   const genderOption = options?.Genders.find(
-    //     (option) => option.LookupID === values.Gender
-    //   );
-    //   const startAgeUnitOption = options?.Uoms.find(
-    //     (option) => option.UomId === values.StartAgeUnits
-    //   );
-    //   const endAgeUnitOption = options?.Uoms.find(
-    //     (option) => option.UomId === values.EndAgeUnits
-    //   );
+    const finalValues = {
+      ...values,
+      key: record ? record?.key : uuidv4(),
+      MedicalCodeTypeName: genderOption?.LookupDescription,
+      ActiveFlag1: true
+    };
 
-    //   const finalValues = {
-    //     ...values,
-    //     GenderType: genderOption?.LookupDescription,
-    //     StartAgeUnitShortName: startAgeUnitOption?.ShortName,
-    //     EndAgeUnitShortName: endAgeUnitOption?.ShortName,
-    //   };
-
-    handleSubmit(values);
+    handleSubmit(finalValues);
     handleCancel();
   };
+
+  useEffect(() => {
+    if (record) {
+      form.setFieldsValue({
+        MedicalCodeId: record?.MedicalCodeId,
+        MedicalCodeTypeId: record?.MedicalCodeTypeId,
+        Version: record?.Version,
+        MedicalCodeTypeDescription: record?.MedicalCodeTypeDescription,
+        ActiveFlag: record?.ActiveFlag,
+        ActiveFlag1: true
+      });
+    } else {
+      form.resetFields();
+    }
+  }, [record, form]);
+
 
   return (
     <div>
@@ -71,11 +81,11 @@ function MedicalCodeModal({ options, open, handleClose, handleSubmit }) {
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
-                  name="MedicalCodeTypeName"
+                  name="MedicalCodeTypeId"
                   label="MedicalCodeTypes"
-                  rules={[{ required: true, message: "Please select Gender " }]}
+                  rules={[{ required: true }]}
                 >
-                  <Select>
+                  <Select placeholder='Select Medical Code'>
                     {options?.MedicalCodeTypes.map((option) => (
                       <Select.Option
                         key={option.LookupID}
@@ -86,8 +96,9 @@ function MedicalCodeModal({ options, open, handleClose, handleSubmit }) {
                     ))}
                   </Select>
                 </Form.Item>
+                <Form.Item name='MedicalCodeId' hidden><Input /></Form.Item>
               </Col>
-              <Col  span={12}>
+              <Col span={12}>
                 <Form.Item
                   name="Version"
                   label="Version"
@@ -108,26 +119,26 @@ function MedicalCodeModal({ options, open, handleClose, handleSubmit }) {
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="Status" label="Status">
-                  <Select>
-                    <Select.Option key="Active" value="Active"></Select.Option>
-                    <Select.Option key="Hidden" value="Hidden"></Select.Option>
+                <Form.Item name="ActiveFlag" label="Status" rules={[{ required: true }]}>
+                  <Select placeholder='Select Status'>
+                    <Select.Option value={true}>Active</Select.Option>
+                    <Select.Option value={false}>Hidden</Select.Option>
                   </Select>
                 </Form.Item>
               </Col>
             </Row>
             <Row gutter={16} justify="end">
-            <Col>
-              <Form.Item>
-              <Button type="primary" htmlType="submit" style={{ marginRight: '8px' }}>
-                  Submit
-                </Button>
-                <Button type="default" onClick={handleCancel} >
-                  Cancel
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
+              <Col>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit" style={{ marginRight: '8px' }}>
+                    Submit
+                  </Button>
+                  <Button type="default" onClick={handleCancel} >
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
           </Form>
         </Modal>
       </Spin>

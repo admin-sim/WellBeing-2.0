@@ -261,16 +261,6 @@ function ClinicalChart() {
         />
       ),
     },
-    {
-      label: `Diagnosis & Discharge`,
-      key: 6,
-      children: `Content 6`,
-    },
-    // {
-    //   label: `Diagnosis & Discharge`,
-    //   key: 7,
-    //   children: `Content 6`,
-    // },
   ];
 
   const navigate = useNavigate();

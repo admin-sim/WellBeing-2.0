@@ -37,7 +37,6 @@ import dayjs from "dayjs";
 import BillAggrementModal from "./BillAggrementModal";
 import EditBillAgrementModal from "./EditBillAgrementModal";
 
-
 function CreateBillAgrement() {
   const [form] = Form.useForm();
 
@@ -264,7 +263,6 @@ function CreateBillAgrement() {
       if (response.status === 200 && response.data.data != null) {
         setColumnData(response.data.data.BillAgreementLineModels);
         message.success("Deleted Sucessfully..");
-      
       } else {
         console.error("Failed to fetch patient details");
       }
@@ -287,12 +285,16 @@ function CreateBillAgrement() {
       AgreementDescription: values.AgreementDescription,
       FacilityId: 1,
       Remarks: values.Remarks,
-      RestrictedDays: values.RestrictedDays ? values.RestrictedDays : null ,
+      RestrictedDays: values.RestrictedDays ? values.RestrictedDays : null,
       IsDaysRestricted: values.IsDaysRestricted,
-      RestrictedDeductible: values.RestrictedDeductible  ? values.RestrictedDeductible  : null ,
+      RestrictedDeductible: values.RestrictedDeductible
+        ? values.RestrictedDeductible
+        : null,
       RestrictedDeductibleType: values.RestrictedDeductibleType,
       IsDeductibleRestricted: values.IsDeductibleRestricted,
-      RestrictedAuthLimit: values.RestrictedAuthLimit ? values.RestrictedAuthLimit : null ,
+      RestrictedAuthLimit: values.RestrictedAuthLimit
+        ? values.RestrictedAuthLimit
+        : null,
       IsAuthLimitRestricted: values.IsAuthLimitRestricted,
       RestrictedAuthLimitType: values.RestrictedAuthLimitType,
       PayerId: values.PayerId,
@@ -316,11 +318,12 @@ function CreateBillAgrement() {
       if (response.status === 200 && response.data) {
         if (response.data.data > 0) {
           if (EditedAgreementId > 0) {
-            message.success("PriceTariff Updated Successfully");
+            message.success("BillAggrement Updated Successfully");
             navigate("/BillAggrement");
           } else {
             setAgreementId(response.data.data);
-            message.success("PriceTariff Created Successfully");
+            message.success("BillAggrement Created Successfully");
+            navigate("/BillAggrement");
           }
         } else {
           message.error(

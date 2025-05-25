@@ -105,39 +105,43 @@ function Allergy(Patient) {
   const handleSaveAllergyDetails = async (values) => {
     debugger
     setLoading(true)
-    const allergy = {
-      AllergyId: values.AllergyId ? values.AllergyId : 0,
-      CategoryId: values.Category,
-      Allergen: values.Allergen,
-      ReactionTypeId: values.ReactionType,
-      Reaction: values.Reaction,
-      ConfirmationId: values.Confirmation,
-      Approximately: values.Approximately,
-      SinceId: values.since,
-      Day: values.Day,
-      Month: values.Month,
-      Year: values.Year,
-      StatusId: values.Status,
-      SeverityId: values.Severity,
-      DateofOnsetstring: values.onsetDate ? values.onsetDate.format('DD-MM-YYYY') : '',
-      SourceOfInfoId: values.source,
-      SiteOfReaction: values.reaction,
-      RelievingFactor: values.reliving,
-      DateOfClosurestring: values.closureDate ? values.closureDate.format('DD-MM-YYYY') : '',
-      Remarks: values.remarks,
-      EncounterId: Patient.Patient.Encounter,
-      PatientId: Patient.Patient.PatientId
-    }
-    const response = await customAxios.post(urlSaveAllergy, allergy, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    if (response.status === 200) {
-      // fetch()
+    try {
+      const allergy = {
+        AllergyId: values.AllergyId ? values.AllergyId : 0,
+        CategoryId: values.Category,
+        Allergen: values.Allergen,
+        ReactionTypeId: values.ReactionType,
+        Reaction: values.Reaction,
+        ConfirmationId: values.Confirmation,
+        Approximately: values.Approximately,
+        SinceId: values.since,
+        Day: values.Day,
+        Month: values.Month,
+        Year: values.Year,
+        StatusId: values.Status,
+        SeverityId: values.Severity,
+        DateofOnsetstring: values.onsetDate ? values.onsetDate.format('DD-MM-YYYY') : '',
+        SourceOfInfoId: values.source,
+        SiteOfReaction: values.reaction,
+        RelievingFactor: values.reliving,
+        DateOfClosurestring: values.closureDate ? values.closureDate.format('DD-MM-YYYY') : '',
+        Remarks: values.remarks,
+        EncounterId: Patient.Patient.Encounter,
+        PatientId: Patient.Patient.PatientId
+      }
+      const response = await customAxios.post(urlSaveAllergy, allergy, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (response.status === 200) {
+        // fetch()
+        setLoading(false)
+        Patient.handleAllery(response.data.data)
+        handleClose()
+      }
+    } catch (error) {
       setLoading(false)
-      Patient.handleAllery(response.data.data)
-      handleClose()
     }
   }
 

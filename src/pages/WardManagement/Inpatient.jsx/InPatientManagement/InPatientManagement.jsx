@@ -496,13 +496,13 @@ function InPatientManagement() {
             />
           </Col>
           <ColWithEightSpan style={{ marginBottom: "1rem" }}>
-            <Search
+            {/* <Search
               placeholder="Search Patients"
               style={{
                 width: "100%",
                 marginRight: "2rem",
               }}
-            />
+            /> */}
           </ColWithEightSpan>
           <ColWithSixSpan>
             <Select
@@ -669,6 +669,7 @@ function InPatientManagement() {
               // rowKey={inPatientDetails.BedID}
               columns={columns}
               dataSource={inPatientDetails}
+              isFilter={true}
               actionColumn={false}
             />
           </Spin>
@@ -731,8 +732,8 @@ function InPatientManagement() {
                               </Button>
                             )
                           }
-                        })} */}
-                        {/* {showAwaitingPatient.IncomingRequestForTransfer.map((item, index) => {
+                        })}
+                        {showAwaitingPatient.IncomingRequestForTransfer.map((item, index) => {
                           if (item.AdtStatus === "Confirmed") {
                             return (<>
                               <Tag key={index}>

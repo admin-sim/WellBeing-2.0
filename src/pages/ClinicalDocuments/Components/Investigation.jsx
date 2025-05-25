@@ -292,7 +292,7 @@ const OrderDetails = (Patient) => {
 
   async function handleSendtoLab() {
     debugger
-    await form1.validateFields()
+    // await form1.validateFields()
     Patient.handleLoading(true)
     const investigations = Patient.dropDown.PatientAccountCharges.filter(f => f.ServiceGroupID == 1042)
     const listnotsentToLab = investigations.filter(f => f.SamplColHeaderId == null || f.SamplColHeaderId == 0);
@@ -317,20 +317,20 @@ const OrderDetails = (Patient) => {
         Patient.UpdateDropDown(response.data.data.PatientAccountCharges);
         form1.resetFields();
         message.success("Investigations Has Been Sent Successfully.");
-        // Patient.handleLoading(false)
+        Patient.handleLoading(false)
       } else {
         message.error("Failed To Send Investigations.");
-        // Patient.handleLoading(false)
+        Patient.handleLoading(false)
       }
     }
-    // else {
-    //   if (Patient.dropDown.LastEncounter.PatientType == 22) {
-    //     message.success("For Out Patient Investigations Will Be Sent After Billing");
-    //   } else {
-    //     message.error("Please Add Some Investigations To Send.")
-    //   }
-    //   Patient.handleLoading(false)
-    // }
+    else {
+      if (Patient.dropDown.LastEncounter.PatientType == 22) {
+        message.success("For Out Patient Investigations Will Be Sent After Billing");
+      } else {
+        message.error("Please Add Some Investigations To Send.")
+      }
+      Patient.handleLoading(false)
+    }
   }
 
   return (

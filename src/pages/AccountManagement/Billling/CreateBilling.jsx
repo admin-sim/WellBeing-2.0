@@ -604,7 +604,7 @@ const CreateBilling = () => {
   };
   async function fetchReport(request) {
     const response = await fetch(
-      "http://localhost:43705/api/ReportsApi/BillReport",
+      "https://192.168.29.254:808/api/ReportsApi/BillReport",
       {
         method: "POST",
         headers: {
@@ -972,8 +972,8 @@ const CreateBilling = () => {
 
   const handleSaveBill = async (values) => {
     debugger;
+    setLoading(true);
     if (billloading) return; // Prevent multiple clicks
-
     setBillLoading(true); // Start loading state
     const loadingMessage = message.loading(
       "Please wait, bill is being processed...",
@@ -1002,6 +1002,7 @@ const CreateBilling = () => {
 
       if (!charges) {
         message.warning("Please Add Charges To Proceed Billing....");
+        setLoading(false);
         setBillLoading(false);
         loadingMessage(); // Remove loading message
         return false;
@@ -1037,6 +1038,7 @@ const CreateBilling = () => {
           message.error("Failed to generate bill");
         } else {
           message.success("Bill generated successfully!");
+          setLoading(false);
           await GetBillReceipt(response.data);
           form1.resetFields();
           setReceiptInsAmtData([]);
@@ -1048,6 +1050,7 @@ const CreateBilling = () => {
     } catch (error) {
       message.error("Something Went Wrong");
     } finally {
+      setLoading(false);
       setBillLoading(false); // End loading state
       loadingMessage(); // Remove loading message
     }

@@ -38,7 +38,7 @@ import customAxios from "../../../components/customAxios/customAxios.jsx";
 import { useNavigate } from "react-router";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
-
+import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 
@@ -55,7 +55,7 @@ const RevenueAnalysisReport = () => {
     const [allPayerTypes, setAllPayerTypes] = useState([])
     const [fromDate, setFromDate] = useState(dayjs());
     const [toDate, setToDate] = useState(dayjs());
-
+    const userContext = useSelector((state) => state.userContext.value);
     const [loading, setLoading] = useState(false); // State for loader visibility
 
     useEffect(() => {
@@ -229,6 +229,7 @@ const RevenueAnalysisReport = () => {
             ReportOption: values.ReportOption,
             GroupingID: values.Search,
             ReportForID: values.Search1,
+            AppUser: userContext.AppUserName
         };
 
         try {

@@ -53,6 +53,7 @@ function ShowEditDefinition() {
 
   useEffect(() => {
     async function fetch() {
+      debugger
       if (type) {
         try {
           setLoading(true);

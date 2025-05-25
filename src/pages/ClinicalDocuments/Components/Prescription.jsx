@@ -326,6 +326,7 @@ function Prescription(Patient) {
         <Form.Item
           name={[record.key, "IntervalInDays"]}
           style={{ marginBottom: 0 }}
+          rules={[{ required: true, message: "Please input IntervalInDays!" }]}
           initialValue={record.Interval}
         >
           <InputNumber min={0} style={{ width: '100%' }}

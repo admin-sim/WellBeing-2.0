@@ -17,7 +17,7 @@ import {
   urlGetEncounterDetails,
   urlGetPatientHeaderDetails,
 } from "../../../../endpoints.js";
-
+import { useLocation } from "react-router-dom";
 import debounce from "lodash/debounce";
 
 import { EnvironmentOutlined } from "@ant-design/icons";
@@ -69,11 +69,18 @@ const NewVisit = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showWard, setShowWard] = useState(false);
 
- 
+  const location = useLocation();
 
   useEffect(() => {
     debugger;
+    if (location.state?.record) {
+      setModalLoader(true); // show loader before fetching
+      handlevisitmodal(location.state.record); // trigger modal logic
+    }
+  }, [location.state]);
 
+  useEffect(() => {
+    debugger;
     customAxios.get(urlGetPatientDetail).then((response) => {
       const apiData = response.data.data;
       setPatientDropdown(apiData);
@@ -382,7 +389,7 @@ const NewVisit = () => {
           type: "error",
           content: `Visit Creation Unsuccessful`,
         });
-        form1.resetFields();
+        // form1.resetFields();
       }
 
       // setIsModalVisible(false);
@@ -403,7 +410,7 @@ const NewVisit = () => {
       } else {
         console.error("Failed to send data to server: ", error);
         message.error(`Error creating visit for patient: ${error.message}.`);
-        form1.resetFields();
+        // form1.resetFields();
       }
     }
   };

@@ -258,12 +258,12 @@ const Remarks = values.Remarks === undefined || values.Remarks === "" ? '""': va
         <Row style={{ padding: '0.5rem 2rem 0rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
           <Col span={16}>
             <Title level={4} style={{ color: 'white', fontWeight: 500 }}>
-              ServiceClassification
+              Service Classification
             </Title>
           </Col>
           <Col offset={3} span={3}>
             <Button icon={<PlusCircleOutlined />} onClick={showModal}>
-              CreateServiceClassification
+              Create Service Classification
             </Button>
           </Col>
         </Row>
@@ -315,7 +315,7 @@ const Remarks = values.Remarks === undefined || values.Remarks === "" ? '""': va
         />
         <Modal
           width={600}
-          title="Add New Place"
+          title="Add New Service Classification"
           open={isModalOpen}
           maskClosable={false}
           footer={null}

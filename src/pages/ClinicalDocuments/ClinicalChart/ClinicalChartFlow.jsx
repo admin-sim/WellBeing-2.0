@@ -161,10 +161,19 @@ function ClinicalChartFlow() {
                             <Tabs.TabPane
                                 tab={
                                     <div
+                                        // style={{
+                                        //     width: "3vw",
+                                        //     textAlign: "center",
+                                        //     fontWeight: "600",
+                                        // }}
                                         style={{
-                                            width: "3vw",
+                                            width: "15vw",
                                             textAlign: "center",
                                             fontWeight: "600",
+                                            border: defaultActiveKey === "1" ? "2px solid #1890ff" : "2px solid transparent",
+                                            borderRadius: "8px",
+                                            backgroundColor: defaultActiveKey === "22" ? "#e6f7ff" : "transparent",
+                                            transition: "all 0.3s ease",
                                         }}
                                     >
                                         ALL
@@ -177,10 +186,19 @@ function ClinicalChartFlow() {
                             <Tabs.TabPane
                                 tab={
                                     <div
+                                        // style={{
+                                        //     width: "3vw",
+                                        //     textAlign: "center",
+                                        //     fontWeight: "600",
+                                        // }}
                                         style={{
-                                            width: "3vw",
+                                            width: "15vw",
                                             textAlign: "center",
                                             fontWeight: "600",
+                                            border: defaultActiveKey === "22" ? "2px solid #1890ff" : "2px solid transparent",
+                                            borderRadius: "8px",
+                                            backgroundColor: defaultActiveKey === "22" ? "#e6f7ff" : "transparent",
+                                            transition: "all 0.3s ease",
                                         }}
                                     >
                                         OP
@@ -193,10 +211,19 @@ function ClinicalChartFlow() {
                             <Tabs.TabPane
                                 tab={
                                     <div
+                                        // style={{
+                                        //     width: "3vw",
+                                        //     textAlign: "center",
+                                        //     fontWeight: "600",
+                                        // }}
                                         style={{
-                                            width: "3vw",
+                                            width: "15vw",
                                             textAlign: "center",
                                             fontWeight: "600",
+                                            border: defaultActiveKey === "23" ? "2px solid #1890ff" : "2px solid transparent",
+                                            borderRadius: "8px",
+                                            backgroundColor: defaultActiveKey === "23" ? "#e6f7ff" : "transparent",
+                                            transition: "all 0.3s ease",
                                         }}
                                     >
                                         IP
@@ -209,10 +236,19 @@ function ClinicalChartFlow() {
                             <Tabs.TabPane
                                 tab={
                                     <div
+                                        // style={{
+                                        //     width: "3vw",
+                                        //     textAlign: "center",
+                                        //     fontWeight: "600",
+                                        // }}
                                         style={{
-                                            width: "3vw",
+                                            width: "15vw",
                                             textAlign: "center",
                                             fontWeight: "600",
+                                            border: defaultActiveKey === "24" ? "2px solid #1890ff" : "2px solid transparent",
+                                            borderRadius: "8px",
+                                            backgroundColor: defaultActiveKey === "24" ? "#e6f7ff" : "transparent",
+                                            transition: "all 0.3s ease",
                                         }}
                                     >
                                         DM
@@ -225,10 +261,20 @@ function ClinicalChartFlow() {
                             <Tabs.TabPane
                                 tab={
                                     <div
+                                        // style={{
+                                        //     width: "3vw",
+                                        //     textAlign: "center",
+                                        //     fontWeight: "600",
+                                        // }}
                                         style={{
-                                            width: "3vw",
+                                            width: "15vw",
                                             textAlign: "center",
                                             fontWeight: "600",
+                                            color  : "red",
+                                            border: defaultActiveKey === "25" ? "2px solid #1890ff" : "2px solid transparent",
+                                            borderRadius: "8px",
+                                            backgroundColor: defaultActiveKey === "25" ? "#e6f7ff" : "transparent",
+                                            transition: "all 0.3s ease",
                                         }}
                                     >
                                         EM
