@@ -649,7 +649,6 @@ function CreateReceipt() {
       ReceiptInstruments: updatedReceiptInsAmtData, // Maps to 'ReceiptInstruments'
       PatientAccountBills: isDepositChecked ? [] : updatedBillsWithTotal, // Maps to 'Receipts'
     };
-
     const response = await customAxios.post(urlSaveNewReceipt, ReceiptDetails, {
       headers: {
         "Content-Type": "application/json",
@@ -661,7 +660,6 @@ function CreateReceipt() {
         key: uuidv4(),
       }));
       setAssosiateBills(assosiateBills);
-
       form.resetFields();
       setAllocations([]);
       setActiveTab("1");

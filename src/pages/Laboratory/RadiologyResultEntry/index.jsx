@@ -17,7 +17,7 @@ import {
   Divider,
 } from "antd";
 
-import customAxios from "../../../../components/customAxios/customAxios.jsx";
+import customAxios from "../../../components/customAxios/customAxios";
 import { useState, useEffect } from "react";
 //import ".//style.css";
 
@@ -30,14 +30,17 @@ import {
   urlGetSelectedTestDataForResEntered,
   urlGetTemplateDataByTemplateId,
   urlLoadSampleCollectionGrid,
-} from "../../../../../endpoints.js";
+  urlRadiologyResultEntryIndex,
+  urlLoadRadioSampleCollectionGrid,
+} from "../../../../endpoints.js";
+
 import { v4 as uuidv4 } from "uuid"; // Import uuidv4
 import { useLocation } from "react-router-dom";
-import PatientHeader from "../../../../components/PatientHeader/index.jsx";
-import CkEditor from "../../../../components/CKEditor/index.jsx";
+import PatientHeader from "../../../components/PatientHeader/index.jsx";
+import CkEditor from "../../../components/CKEditor/index.jsx";
 import { useNavigate } from "react-router";
-import PageHeader from "../../../../components/PageHeader/index.jsx";
-const ResultEntry = () => {
+import PageHeader from "../../../components/PageHeader/index.jsx";
+const RadiologyResultEntry = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm(); // Ant Design Form hook
   const [services, setServices] = useState([]);
@@ -86,10 +89,10 @@ const ResultEntry = () => {
     setTableLoading(true);
     try {
       const response = await customAxios.get(
-        `${urlResultEntryIndex}?PatientId=${record.PatientId}&EncounterId=${record.EncounterId}&SelclabId=${record.PatientLabStatusID}`
+        `${urlRadiologyResultEntryIndex}?PatientId=${record.PatientId}&EncounterId=${record.EncounterId}&SelclabId=${record.PatientLabStatusID}`
       );
       if (response.status === 200) {
-        const patientdetail = response.data.data.ListOfSamplColTests;
+        const patientdetail = response.data.data.ListOfSamplColTests || [];
         setServices(
           patientdetail.map((item) => ({ ...item, key: item.SmpColHeaderId }))
         );
@@ -114,7 +117,7 @@ const ResultEntry = () => {
   const LoadSampleCollectionGrid = async () => {
     try {
       const response = await customAxios.get(
-        `${urlLoadSampleCollectionGrid}?PatientId=${record.PatientId}&EncounterId=${record.EncounterId}&SelclabId=${record.PatientLabStatusID}`
+        `${urlLoadRadioSampleCollectionGrid}?PatientId=${record.PatientId}&EncounterId=${record.EncounterId}&SelclabId=${record.PatientLabStatusID}`
       );
       if (response.status === 200) {
         const services = response.data.data;
@@ -751,16 +754,16 @@ const ResultEntry = () => {
         );
       }
     },
-    getCheckboxProps: (record) => ({
-      disabled: record.IsVerificationDone || !record.IsSampleCollected,
-    }),
+    // getCheckboxProps: (record) => ({
+    //   disabled: record.IsVerificationDone || !record.IsSampleCollected,
+    // }),
     renderCell: (checked, record, index, originNode) => {
       if (record.IsVerificationDone) {
         return <span>Done</span>;
       }
-      if (!record.IsSampleCollected) {
-        return <span></span>;
-      }
+    //   if (!record.IsSampleCollected) {
+    //     return <span></span>;
+    //   }
       if (record.IsResultEntryDone) {
         setGreenRow("green-row");
       }
@@ -838,12 +841,12 @@ const ResultEntry = () => {
     } catch (error) {}
   };
 
-  const handleSampleCollection = () => {
-    navigate("/SampleCollection", { state: { record } });
-  };
+//   const handleSampleCollection = () => {
+//     navigate("/SampleCollection", { state: { record } });
+//   };
 
   const handleVerification = () => {
-    navigate("/Verification", { state: { record } });
+    navigate("/RadiologyVerification", { state: { record } });
   };
 
   const handleReport = () => {
@@ -863,9 +866,9 @@ const ResultEntry = () => {
         <PageHeader title={"Result Entry"} button={false} />
         <div style={{ padding: "0.5 1rem" }}>
           <Space style={{ margin: "1rem 1rem 0 1rem" }}>
-            <Button onClick={() => handleSampleCollection()}>
+            {/* <Button onClick={() => handleSampleCollection()}>
               Sample Collection
-            </Button>
+            </Button> */}
             <Button type="primary">Result Entry</Button>
             <Button onClick={() => handleVerification()}>Verification</Button>
             <Button onClick={() => handleReport()}>Report</Button>
@@ -995,4 +998,4 @@ const ResultEntry = () => {
   );
 };
 
-export default ResultEntry;
+export default RadiologyResultEntry;

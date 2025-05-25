@@ -14,30 +14,31 @@ import {
   Select,
   AutoComplete,
   Modal,
+  message,
   Divider,
 } from "antd";
-
-import customAxios from "../../../../components/customAxios/customAxios.jsx";
+import customAxios from "../../../components/customAxios/customAxios.jsx";
 import { useState, useEffect } from "react";
 //import ".//style.css";
 
 import {
   urlGetPatientHeaderDetails,
-  urlGetSelectedTestDataForResEntry,
   urlResultEntryIndex,
   urlLoadTestReferenceForResEntry,
-  urlSaveTestsResultEntry,
   urlGetSelectedTestDataForResEntered,
   urlGetTemplateDataByTemplateId,
   urlLoadSampleCollectionGrid,
-} from "../../../../../endpoints.js";
+  urlSaveVerification,
+  urlRadiologyResultEntryIndex,
+  urlLoadRadioSampleCollectionGrid,
+} from "../../../../endpoints.js";
 import { v4 as uuidv4 } from "uuid"; // Import uuidv4
 import { useLocation } from "react-router-dom";
-import PatientHeader from "../../../../components/PatientHeader/index.jsx";
-import CkEditor from "../../../../components/CKEditor/index.jsx";
+import PatientHeader from "../../../components/PatientHeader/index.jsx";
+import CkEditor from "../../../components/CKEditor/index.jsx";
 import { useNavigate } from "react-router";
-import PageHeader from "../../../../components/PageHeader/index.jsx";
-const ResultEntry = () => {
+import PageHeader from "../../../components/PageHeader/index.jsx";
+const RadiologyVerification = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm(); // Ant Design Form hook
   const [services, setServices] = useState([]);
@@ -53,9 +54,13 @@ const ResultEntry = () => {
   const [invalidInputs, setInvalidInputs] = useState({});
   const [ckModalOpen, setCkModalOpen] = useState(false);
   const [templateEditorData, setTemplateEditorData] = useState("");
-  const [key, setKey] = useState(1);
-  const [editorKey, setEditorKey] = useState(0);
+  const [key, setKey] = useState(null);
+  const [customKey, setCustomKey] = useState(resultEntry?.length + 1000);
   const [currentRecord, setCurrentRecord] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [error, setError] = useState(null);
+  const [reportUrl, setReportUrl] = useState(null);
+  const [blobData, setBlobData] = useState(null);
 
   useEffect(() => {
     if (!ckModalOpen) handleCancel();
@@ -86,10 +91,11 @@ const ResultEntry = () => {
     setTableLoading(true);
     try {
       const response = await customAxios.get(
-        `${urlResultEntryIndex}?PatientId=${record.PatientId}&EncounterId=${record.EncounterId}&SelclabId=${record.PatientLabStatusID}`
+        `${urlRadiologyResultEntryIndex}?PatientId=${record.PatientId}&EncounterId=${record.EncounterId}&SelclabId=${record.PatientLabStatusID}`
       );
       if (response.status === 200) {
-        const patientdetail = response.data.data.ListOfSamplColTests;
+        const patientdetail = response.data.data.ListOfSamplColTests || [];
+  
         setServices(
           patientdetail.map((item) => ({ ...item, key: item.SmpColHeaderId }))
         );
@@ -114,7 +120,7 @@ const ResultEntry = () => {
   const LoadSampleCollectionGrid = async () => {
     try {
       const response = await customAxios.get(
-        `${urlLoadSampleCollectionGrid}?PatientId=${record.PatientId}&EncounterId=${record.EncounterId}&SelclabId=${record.PatientLabStatusID}`
+        `${urlLoadRadioSampleCollectionGrid}?PatientId=${record.PatientId}&EncounterId=${record.EncounterId}&SelclabId=${record.PatientLabStatusID}`
       );
       if (response.status === 200) {
         const services = response.data.data;
@@ -131,60 +137,88 @@ const ResultEntry = () => {
     }
   };
 
-  const onFinish = async (values) => {
-    console.log("resultentry", resultEntry);
-
-    if (selectedRow.length === 0) {
+  const handleSaveVerificationStatus = async (VerifyStatus) => {
+    if (selectedRow?.length === 0) {
       notification.warning({
         message: "Warning",
         description: "Please select at least one test.",
       });
       return;
     }
+    var intverifystatus = parseInt(VerifyStatus);
+    var boolverifyStatus;
 
-    // Create a new array with updated values
-    const updatedResultEntry = resultEntry.map((item) => ({
-      ...item,
-      PatientId: selectedRow.PatientId, // Update PatientId
-      EncounterId: selectedRow.EncounterId, // Update EncounterId
-      LabStatusId: selectedRow.LabStatusId, // Update LabStatusId
-    }));
+    if (intverifystatus === 0) {
+      boolverifyStatus = false;
+    } else if (intverifystatus === 1) {
+      boolverifyStatus = true;
+    } else {
+      var message1 = "There Is A Problem Verifying A Test.";
+      message.error(message1);
+      return; // Exit function if status is invalid
+    }
 
-    try {
-      const response = await customAxios.post(
-        urlSaveTestsResultEntry, // Adjust the URL to match your API endpoint
-        updatedResultEntry,
+    // Check if resultEntry is defined and has one record
+
+    if (selectedRow.IsVerificationDone === true && intverifystatus === 1) {
+      var message2 = "This Test Is Already Verified.";
+      message.warning(message2);
+      return false;
+    } else if (
+      selectedRow.IsVerificationDone === false &&
+      intverifystatus === 0
+    ) {
+      var message3 = "Please Verify the Test To Unverify.";
+      message.warning(message3);
+      return false;
+    } else {
+      // Create a new array with updated values
+      const SmplColList = [
         {
-          params: { PatientAge: patientData.Age },
-          headers: {
-            "Content-Type": "application/json",
-          },
+          PatientId: selectedRow.PatientId, // Update PatientId
+          EncounterId: selectedRow.EncounterId, // Update EncounterId
+          LabStatusId: selectedRow.LabStatusId, // Update LabStatusId
+          SmpColHeaderId: selectedRow.SmpColHeaderId,
+          SmpColLineId: selectedRow.SmpColLineId,
+          IsVerificationDone: boolverifyStatus,
+        },
+      ];
+
+      try {
+        const response = await customAxios.post(
+          urlSaveVerification,
+          SmplColList,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data.data.Status !== "") {
+          const message1 = "Saved Successfully";
+          notification.success({
+            message: "Success",
+            description: message1,
+          });
+          setResultEntry([]);
+          LoadSampleCollectionGrid();
+          setSelectedRow([]);
+          setSelectedRowKeys([]);
+
+          form.resetFields();
+        } else {
+          notification.error({
+            message: "Error",
+            description: "Something Went Wrong.....",
+          });
         }
-      );
-
-      if (response.data.data.Status !== "") {
-        const message1 = "ResultEntry Collected Successfully";
-        notification.success({
-          message: "Success",
-          description: message1,
-        });
-        setResultEntry([]);
-        LoadSampleCollectionGrid();
-        setSelectedRow([]);
-        setSelectedRowKeys([]);
-
-        form.resetFields();
-      } else {
+      } catch (error) {
         notification.error({
           message: "Error",
-          description: "Something Went Wrong.....",
+          description: "An error occurred while adding the user.",
         });
       }
-    } catch (error) {
-      notification.error({
-        message: "Error",
-        description: "An error occurred while adding the user.",
-      });
     }
   };
 
@@ -289,176 +323,36 @@ const ResultEntry = () => {
     return [];
   }
 
-  // const handleTemplateClick = async (record) => {
-  //   setCurrentRecord(record);
-  //   let templateData = "";
-  //   if (record.ResId > 0 || record.ObservedValues) {
-  //     templateData = record.ObservedValues;
-  //   } else {
-  //     try {
-  //       const response = await customAxios.get(
-  //         `${urlGetTemplateDataByTemplateId}?Tid=${record.TemplateId}`
-  //       );
-  //       if (response.status === 200) {
-  //         templateData = response.data.data.TempData;
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching template data:", error);
-  //       notification.error({
-  //         message: "Error",
-  //         description: "Failed to load template data. Please try again.",
-  //       });
-  //       return;
-  //     }
-  //   }
-  //   setTemplateEditorData(templateData);
-  //   setEditorKey((prevKey) => prevKey + 1);
-  //   setCkModalOpen(true);
-  // };
-
-  // const handleTemplateClick = async (record) => {
-  //   setCurrentRecord(record); // Store current record
-  //   let templateData = "";
-
-  //   // Create a table for patient details
-  //   const generatePatientTableHTML = (patient) => {
-  //     if (!patient) return "";
-
-  //     return `
-  //       <table border="1" cellpadding="8" cellspacing="0" style="width:100%; border-collapse: collapse; font-size:14px;">
-  //         <tr>
-  //           <th>UHID</th>
-  //           <th>Name</th>
-  //           <th>Age</th>
-  //           <th>Gender</th>
-  //           <th>Generated Encounter ID</th>
-  //         </tr>
-  //         <tr>
-  //           <td>${patient?.UhId || ""}</td>
-  //           <td>${patient?.PatientName || ""}</td>
-  //           <td>${patient?.Age || ""}</td>
-  //           <td>${patient?.PatientGender || ""}</td>
-  //           <td>${patient?.GeneratedEncounterId || ""}</td>
-  //         </tr>
-  //       </table>
-  //       <br/>
-  //     `;
-  //   };
-
-  //   // Append patient data table to template
-  //   const patientTableHTML = generatePatientTableHTML(patientData); // Using the `record` which is the current patient record
-
-  //   // Check if we already have ObservedValues or fetch from the API
-  //   if (record.ResId > 0 || record.ObservedValues) {
-  //     templateData = record.ObservedValues;
-  //   } else {
-  //     try {
-  //       const response = await customAxios.get(
-  //         `${urlGetTemplateDataByTemplateId}?Tid=${record.TemplateId}`
-  //       );
-  //       if (response.status === 200) {
-  //         templateData = response.data.data.TempData;
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching template data:", error);
-  //       notification.error({
-  //         message: "Error",
-  //         description: "Failed to load template data. Please try again.",
-  //       });
-  //       return; // Return if the fetch fails
-  //     }
-  //   }
-
-  //   // Combine the patient table and template content
-  //   const fullTemplateContent = `${patientTableHTML}${templateData}`;
-
-  //   // Set the combined content in the CKEditor
-  //   setTemplateEditorData(fullTemplateContent);
-  //   setEditorKey((prevKey) => prevKey + 1); // Force re-render of CKEditor
-  //   setCkModalOpen(true); // Open the modal to edit the template
-  // };
-
   const handleTemplateClick = async (record) => {
-    setCurrentRecord(record); // Store current record
-    let templateData = "";
-  
-    // Create a table for patient details with wrapper comments
-    const generatePatientTableHTML = (patient) => {
-      if (!patient) return "";
-  
-      return `
-        <!-- PATIENT_TABLE_START -->
-        <table border="1" cellpadding="8" cellspacing="0" style="width:100%; border-collapse: collapse; font-size:14px;">
-          <tr>
-            <th>UHID</th>
-            <th>Name</th>
-            <th>Age</th>
-            <th>Gender</th>
-            <th>Generated Encounter ID</th>
-          </tr>
-          <tr>
-            <td>${patient?.UhId || ""}</td>
-            <td>${patient?.PatientName || ""}</td>
-            <td>${patient?.Age || ""}</td>
-            <td>${patient?.PatientGender || ""}</td>
-            <td>${patient?.GeneratedEncounterId || ""}</td>
-          </tr>
-        </table>
-        <br/>
-        <!-- PATIENT_TABLE_END -->
-      `;
-    };
-  
-    try {
-      // Fetch template data if not already available
-      if (record.ResId > 0 || record.ObservedValues) {
-        templateData = record.ObservedValues;
-      } else {
-        const response = await customAxios.get(
-          `${urlGetTemplateDataByTemplateId}?Tid=${record.TemplateId}`
-        );
-        if (response.status === 200) {
-          templateData = response.data.data.TempData;
-        }
-      }
-  
-      // Remove previously injected patient table if present
-      const cleanedTemplateData = templateData.replace(
-        /<!-- PATIENT_TABLE_START -->[\s\S]*?<!-- PATIENT_TABLE_END -->/g,
-        ""
+    // Handle the click event, you can log the record or perform other actions
+
+    // Additional logic to handle the template click
+    setCurrentRecord(record);
+    if (record.ResId > 0) {
+      setTemplateEditorData(record.ObservedValues);
+    } else {
+      const response = await customAxios.get(
+        `${urlGetTemplateDataByTemplateId}?Tid=${record.TemplateId}`
       );
-  
-      // Generate new patient table and combine with cleaned template
-      const patientTableHTML = generatePatientTableHTML(patientData);
-      const fullTemplateContent = `${patientTableHTML}${cleanedTemplateData}`;
-  
-      // Update state and open modal
-      setTemplateEditorData(fullTemplateContent);
-      setEditorKey((prevKey) => prevKey + 1); // Force CKEditor to rerender
-      setCkModalOpen(true); // Show modal
-  
-    } catch (error) {
-      console.error("Error fetching template data:", error);
-      notification.error({
-        message: "Error",
-        description: "Failed to load template data. Please try again.",
-      });
+      if (response.status === 200) {
+        setTemplateEditorData(response.data.data.TempData);
+        //setKey();
+      }
     }
+    // setReadOnly(true)
+    setCkModalOpen(true);
   };
-  
 
   const handleCancel = () => {
+    setCustomKey(customKey + 1);
     setTemplateEditorData("");
     setCkModalOpen(false);
-    setEditorKey((prevKey) => prevKey + 1);
   };
-
   const handleTemplateSave = () => {
     if (currentRecord) {
       const updatedRecord = {
         ...currentRecord,
         ObservedValues: templateEditorData,
-        // ResId: currentRecord.ResId > 0 ? currentRecord.ResId : 1, // Assign a non-zero value if it's a new entry
       };
       updateRecords(updatedRecord);
       setCkModalOpen(false);
@@ -469,19 +363,6 @@ const ResultEntry = () => {
     setResultEntry((prevRecords) =>
       prevRecords.map((record) =>
         record.key === updatedRecord.key ? updatedRecord : record
-      )
-    );
-
-    // Update the services state to reflect the changes
-    setServices((prevServices) =>
-      prevServices.map((service) =>
-        service.key === updatedRecord.key
-          ? {
-              ...service,
-              ObservedValues: updatedRecord.ObservedValues,
-              ResId: updatedRecord.ResId,
-            }
-          : service
       )
     );
   };
@@ -535,6 +416,7 @@ const ResultEntry = () => {
             return (
               <Form.Item {...commonProps}>
                 <AutoComplete
+                  disabled
                   onChange={(value) => handleObservedValueChange(value, record)}
                   options={testValuesOptions}
                   style={commonStyle}
@@ -549,6 +431,7 @@ const ResultEntry = () => {
                   onChange={(e) =>
                     handleObservedValueChange(e.target.value, record)
                   }
+                  disabled
                   type="number"
                   style={{
                     ...commonStyle,
@@ -583,6 +466,7 @@ const ResultEntry = () => {
         );
         return (
           <Select
+            disabled
             defaultValue={record.MethodsID || "NoMethod"}
             style={{ width: 180 }}
             onChange={(value) => handleMethodChange(value, record)}
@@ -730,11 +614,6 @@ const ResultEntry = () => {
     type: "radio", // Change to radio for single selection
     selectedRowKeys,
     onChange: (selectedRowKeys, selectedRows) => {
-      console.log(
-        `selectedRowKeys: ${selectedRowKeys}`,
-        "selectedRow: ",
-        selectedRows[0]
-      );
       setSelectedRowKeys(selectedRowKeys);
       setSelectedRow(selectedRows[0]);
 
@@ -743,63 +622,24 @@ const ResultEntry = () => {
           selectedRows[0].TestId,
           selectedRows[0].ChargeId
         );
-      } else {
-        LoadResEntryGridBasedOnTestId(
-          selectedRows[0].TestId,
-          selectedRows[0].ChargeId,
-          selectedRows[0].LabStatusId
-        );
       }
     },
-    getCheckboxProps: (record) => ({
-      disabled: record.IsVerificationDone || !record.IsSampleCollected,
-    }),
+    // getCheckboxProps: (record) => ({
+    //   disabled: record.IsVerificationDone || !record.IsResultEntryDone,
+    // }),
     renderCell: (checked, record, index, originNode) => {
-      if (record.IsVerificationDone) {
-        return <span>Done</span>;
-      }
-      if (!record.IsSampleCollected) {
+      //   if (record.IsVerificationDone) {
+      //     return <span>Done</span>;
+      //   }
+      if (!record.IsResultEntryDone) {
         return <span></span>;
       }
-      if (record.IsResultEntryDone) {
+      if (record.IsVerificationDone) {
         setGreenRow("green-row");
       }
 
       return originNode;
     },
-  };
-
-  const LoadResEntryGridBasedOnTestId = async (
-    testid,
-    chargeid,
-    labstatusid
-  ) => {
-    debugger;
-    try {
-      const response = await customAxios.get(
-        `${urlGetSelectedTestDataForResEntry}?TestId=${testid}&ChargeId=${chargeid}&ChargeId=${labstatusid}&GenderId=${patientData.Gender}`
-      );
-      if (response.status === 200 && response.data != null) {
-        const resultEntries = response.data.data.ResultEntryList;
-        setKey(response.data.data.ResultEntryList.length);
-        const methodid = null;
-        //setResultEntry(resultEntries);
-        const updatedResultEntries = await Promise.all(
-          resultEntries.map(async (entry) => {
-            const references = await LoadAndSetReferences(entry, methodid);
-            return {
-              key: uuidv4(), // Assign a unique key using uuidv4
-              ...entry,
-              ...references,
-            };
-          })
-        );
-
-        setResultEntry(updatedResultEntries);
-        // setMethods(response.data.data.ListTestMethodModel);
-      } else {
-      }
-    } catch (error) {}
   };
 
   const LoadAlreadyResEnteredTests = async (testid, chargeid) => {
@@ -838,17 +678,18 @@ const ResultEntry = () => {
     } catch (error) {}
   };
 
-  const handleSampleCollection = () => {
-    navigate("/SampleCollection", { state: { record } });
+//   const handleSampleCollection = () => {
+//     // Navigate to the desired page and pass the record object as a parameter
+//     navigate("/SampleCollection", { state: { record } });
+//   };
+  const handleResultEntry = () => {
+    // Navigate to the desired page and pass the record object as a parameter
+    navigate("/RadiologyResultEntry", { state: { record } });
   };
-
-  const handleVerification = () => {
-    navigate("/Verification", { state: { record } });
-  };
-
   const handleReport = () => {
     navigate("/Report", { state: { record } });
   };
+
 
   return (
     <Layout style={{ width: "100%" }}>
@@ -860,26 +701,21 @@ const ResultEntry = () => {
           borderRadius: "10px",
         }}
       >
-        <PageHeader title={"Result Entry"} button={false} />
+        <PageHeader title={"Verification"} button={false} />
         <div style={{ padding: "0.5 1rem" }}>
           <Space style={{ margin: "1rem 1rem 0 1rem" }}>
-            <Button onClick={() => handleSampleCollection()}>
+            {/* <Button onClick={() => handleSampleCollection()}>
               Sample Collection
-            </Button>
-            <Button type="primary">Result Entry</Button>
-            <Button onClick={() => handleVerification()}>Verification</Button>
+            </Button> */}
+            <Button onClick={() => handleResultEntry()}>Result Entry</Button>
+            <Button type="primary">Verification</Button>
             <Button onClick={() => handleReport()}>Report</Button>
           </Space>
           <Divider />
           <div style={{ margin: "0 1rem 1rem 1rem" }}>
             <PatientHeader patient={patientData} />
           </div>
-          <Form
-            layout="vertical"
-            onFinish={onFinish}
-            form={form}
-            style={{ padding: " 0 0.5rem" }}
-          >
+          <Form layout="vertical" form={form} style={{ padding: " 0 0.5rem" }}>
             <ConfigProvider
               theme={{
                 components: {
@@ -905,11 +741,10 @@ const ResultEntry = () => {
                   columns={columns}
                   dataSource={services}
                   rowClassName={(record) =>
-                    record.IsResultEntryDone ? "green-row" : ""
+                    record.IsVerificationDone ? "green-row" : ""
                   }
                   scroll={{ x: true }}
                   size="small"
-                  pagination={false}
                   bordered
                 />
               </Spin>
@@ -925,22 +760,27 @@ const ResultEntry = () => {
               scroll={{ x: true }}
               size="small"
               bordered
+              pagination={false}
             />
 
-            <Row justify="end">
-              <Col style={{ marginRight: "10px" }}>
+            <Row justify="end" gutter={16} style={{ marginTop: "1rem" }}>
+              <Col>
                 <Form.Item>
-                  <Button type="primary" htmlType="submit">
-                    {selectedRow && selectedRow.IsResultEntryDone
-                      ? "Update"
-                      : "Save"}
+                  <Button
+                    type="primary"
+                    onClick={() => handleSaveVerificationStatus(1)}
+                  >
+                    Verify
                   </Button>
                 </Form.Item>
               </Col>
               <Col>
                 <Form.Item>
-                  <Button type="primary" onClick={handleReset}>
-                    Clear
+                  <Button
+                    danger
+                    onClick={() => handleSaveVerificationStatus(0)}
+                  >
+                    Unverify
                   </Button>
                 </Form.Item>
               </Col>
@@ -950,7 +790,8 @@ const ResultEntry = () => {
       </div>
       <div>
         <Modal
-          width={"60rem"}
+          width={"65rem"}
+          height={"auto"}
           centered
           title={
             <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>
@@ -961,22 +802,14 @@ const ResultEntry = () => {
           maskClosable={false}
           footer={null}
           onCancel={handleCancel}
-          bodyStyle={{
-            maxHeight: "70vh", // Set max height
-            overflowY: "auto", // Enable vertical scroll
-          }}
         >
-          {ckModalOpen && (
-            <CkEditor
-              key={editorKey}
-              initialData={templateEditorData}
-              printButton={true}
-              onChange={(event, editor) => {
-                const data = editor.getData();
-                setTemplateEditorData(data);
-              }}
-            />
-          )}
+          <CkEditor
+            key={key ? key : customKey}
+            initialData={templateEditorData}
+            printButton={true}
+            setData={setTemplateEditorData}
+            isDisable={true}
+          />
           <Row gutter={16} justify={"end"} style={{ marginTop: "1rem" }}>
             <Col>
               <Button type="primary" onClick={handleTemplateSave}>
@@ -990,9 +823,39 @@ const ResultEntry = () => {
             </Col>
           </Row>
         </Modal>
+
+        <div>
+          {error && <div>Error: {error}</div>}
+
+          <Modal
+            centered
+            title="Report"
+            open={isModalVisible}
+            onCancel={() => setIsModalVisible(false)}
+            footer={[
+              <Button
+                key="close"
+                danger
+                onClick={() => setIsModalVisible(false)}
+              >
+                Close
+              </Button>,
+            ]}
+            width={"60rem"} // You can adjust the width as needed
+            height={"auto"}
+          >
+            {reportUrl && (
+              <iframe
+                src={reportUrl}
+                style={{ width: "100%", height: "500px", border: "none" }}
+                title="Report"
+              />
+            )}
+          </Modal>
+        </div>
       </div>
     </Layout>
   );
 };
 
-export default ResultEntry;
+export default RadiologyVerification;

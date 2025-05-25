@@ -22,6 +22,7 @@ import {
   Modal,
   Table,
   Tooltip,
+  DatePicker,
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import Title from "antd/es/typography/Title";
@@ -40,6 +41,7 @@ import customAxios from "../../../../components/customAxios/customAxios";
 import OrderingAttributeModal from "./OrderingAttributeModal";
 import MedicalCodeModal from "./MedicalCodeModal";
 import TurnAroundTimeTableModal from "./TurnAroundTimeTableModal";
+import PackageIndicationModal from "./PackageIndicationModal";
 const { Panel } = Collapse;
 function CreateService() {
   const [form] = Form.useForm();
@@ -57,27 +59,28 @@ function CreateService() {
   const [isMedicalModalVisible, setIsMedicalModalVisible] = useState(false);
   const [isTurnAroundTimeModalVisible, setIsTurnAroundTimeModalVisible] =
     useState(false);
+  const [ispackageModalVisible, setIsPackageModalVisible] = useState(false);
   const [orderAtributeDropdown, setOrderAtributeDropDown] = useState([]);
   console.log("Serviceclassificationid", Serviceclassificationid);
   const [ageGenderRestriction, setAgeGenderRestriction] = useState([]);
   const [turnAroundTime, setTurnAroundTime] = useState([]);
+  const [packageInd, setPackageInd] = useState([]);
   const [medicalCode, setMedicalCode] = useState([]);
   const [keyCounter, setKeyCounter] = useState(0);
   const [keyCounterTAT, setKeyCounterTAT] = useState(0);
+  const [keyCounterPAK, setKeyCounterPAK] = useState(0);
   const [keyCounterMED, setKeyCounterMED] = useState(0);
   const [serviceDropDown, setServiceDropDown] = useState({
     Genders: [],
     Uoms: [],
     MedicalCodeTypes: [],
+    Indicators: [],
   });
   const [templateList, setTemplateList] = useState([]);
   const [templatedisable, setTemplateDisable] = useState(true);
   const [reultTypeDisable, setResultTypeDisable] = useState(false);
   const [isTestValuesDisabled, setIsTestValuesDisabled] = useState(true);
-
   const [isRadiologyChecked, setIsRadiologyChecked] = useState(false);
-
-  // State to hold filtered templates
   const [filteredTemplates, setFilteredTemplates] = useState([]);
   const [testoptions, setTestOptions] = useState([]);
 
@@ -90,7 +93,6 @@ function CreateService() {
         );
         if (response.status === 200 && response.data.data != null) {
           const data = response.data.data;
-          console.log("dataaaaa", data);
           setTestResultTypes(data.TestResultTypes);
           setUom(data.Uoms);
           setCategory(data.Category);
@@ -261,18 +263,33 @@ function CreateService() {
     debugger;
     values.ServiceClassificationId = Serviceclassificationid;
     values.ServiceId = ServiceId ? ServiceId : 0;
-    values.IsFromTestValues = values.IsFromTestValues
-      ? values.IsFromTestValues
-      : false;
-    values.IsRadiology = values.IsRadiology ? values.IsRadiology : false;
-    values.IsSubTest = values.IsSubTest ? values.IsSubTest : false;
+
+    values.FromDate = values.PackageFromDate.format("DD-MM-YYYY");
+    values.ToDate = values.PackageToDate.format("DD-MM-YYYY");
+
+  
+    values.PackageDays = values.PackageDays ? values.PackageDays : 0;
+    values.PackageAmount = values.PackageAmount ? values.PackageAmount : 0;
+    values.PackageNumberEncounter = values.PackageNumberEncounter
+      ? values.PackageNumberEncounter
+      : 0;
+
+
+      values.PackageIsHealth = values.PackageIsHealth ? "true" : "false";
+      values.PackageIsMultiEncounter = values.PackageIsMultiEncounter ? "true" : "false";
+      values.IsFromTestValues = values.IsFromTestValues ? true : false;
+      values.IsRadiology = values.IsRadiology ? true : false;
+      values.IsSubTest = values.IsSubTest ? true : false;
+      
+
+
     const Service = {
       AddNewService: values,
       ListServiceOrdering: null,
       ListServiceTat: null,
       ListServiceMedicalCode: null,
       ServiceLabAttribute: null,
-      ServicePackage: null,
+      ServicePackage: packageInd?.length>0  ? packageInd :null,
     };
 
     const url = ServiceId ? urlUpdateService : urlAddNewService;
@@ -311,8 +328,12 @@ function CreateService() {
   const showMedicalCodeModel = () => {
     setIsMedicalModalVisible(true);
   };
+
   const showTurnArountTimeModel = () => {
     setIsTurnAroundTimeModalVisible(true);
+  };
+  const showPackageModal = () => {
+    setIsPackageModalVisible(true);
   };
 
   const handleSubmit = (values) => {
@@ -371,6 +392,24 @@ function CreateService() {
     setTurnAroundTime((prev) => [...prev, ...valuesWithKeys]);
   };
 
+  const handlePackageIndicatiotrSubmit = (values) => {
+    debugger;
+
+    const valuesArray = Array.isArray(values) ? values : [values];
+
+    // Map the incoming values and add a key to each
+    const valuesWithKeys = valuesArray.map((value, index) => ({
+      ...value,
+      key: keyCounterPAK + index,
+    }));
+
+    // Increment the key counter
+    setKeyCounterPAK(keyCounterPAK + valuesArray.length);
+
+    // Update the state with the new values with keys
+    setPackageInd((prev) => [...prev, ...valuesWithKeys]);
+  };
+
   const columns = [
     {
       title: "Gender",
@@ -398,6 +437,128 @@ function CreateService() {
       key: "EndAgeUnitShortName",
     },
   ];
+  // const columnsPackageInd = [
+  //   {
+  //     title: "Indicator",
+  //     dataIndex: "OrderPriorityId",
+  //     key: "OrderPriorityId",
+  //   },
+  //   {
+  //     title: "Description",
+  //     dataIndex: "TatValue",
+  //     key: "TatValue",
+  //   },
+  //   {
+  //     title: "Excluded",
+  //     dataIndex: "UOM",
+  //     key: "UOM",
+  //   },
+  //   {
+  //     title: "Replacable",
+  //     dataIndex: "OrderPriorityId",
+  //     key: "OrderPriorityId",
+  //   },
+  //   {
+  //     title: "Qty",
+  //     dataIndex: "TatValue",
+  //     key: "TatValue",
+  //   },
+  //   {
+  //     title: "UOM",
+  //     dataIndex: "UOM",
+  //     key: "UOM",
+  //   },
+  //   {
+  //     title: "Amt",
+  //     dataIndex: "UOM",
+  //     key: "UOM",
+  //   },
+  //   {
+  //     title: "Pref",
+  //     dataIndex: "UOM",
+  //     key: "UOM",
+  //   },
+  //   {
+  //     title: "Pkg Price",
+  //     dataIndex: "UOM",
+  //     key: "UOM",
+  //   },
+  //   {
+  //     title: "Allowed Refund",
+  //     dataIndex: "UOM",
+  //     key: "UOM",
+  //   },
+  //   {
+  //     title: "Refund Amount",
+  //     dataIndex: "UOM",
+  //     key: "UOM",
+  //   },
+  // ];
+
+  const columnsPackageInd = [
+    {
+      title: "Indicator",
+      dataIndex: ["Indicator", "text"],
+    },
+    {
+      title: "Description",
+      dataIndex: ["DescriptionName"],
+    },
+    {
+      title: "Excluded",
+      dataIndex: "IsExcluded",
+    },
+    {
+      title: "Replaceable",
+      dataIndex: "IsReplaceable",
+    },
+    {
+      title: "Qty",
+      dataIndex: "MaxQty",
+    },
+    {
+      title: "UOM",
+      dataIndex: ["UomName"],
+    },
+    {
+      title: "Amount",
+      dataIndex: "MaxAmount",
+    },
+    {
+      title: "Preference",
+      dataIndex: "Preference",
+    },
+    {
+      title: "PackagePrice",
+      dataIndex: "PkgPrice",
+    },
+    {
+      title: "Allowed Refund",
+      dataIndex: "AllowFund",
+    },
+    {
+      title: "Refund Amt",
+      dataIndex: "MaximunRefundAmount",
+    },
+    {
+      title: "Action",
+      dataIndex: "Action",
+      delete: "delete",
+      render: (text, record) => (
+        <Button
+          type="link"
+          onClick={() => {
+            setPackageInd((prev) =>
+              prev.filter((item) => item.key !== record.key)
+            );
+          }}
+        >
+          Delete
+        </Button>
+      ),
+    },
+  ];
+
   const columnsTurnAroundTime = [
     {
       title: "Order Priority",
@@ -415,6 +576,7 @@ function CreateService() {
       key: "UOM",
     },
   ];
+
   const columnMedicalCode = [
     {
       title: "Medical Code Type",
@@ -492,7 +654,7 @@ function CreateService() {
           </Row>
 
           <Form
-            style={{ margin: "1rem 2rem" }}
+            style={{ margin: "0.5rem 1rem" }}
             layout="vertical"
             form={form}
             onFinish={onFinish}
@@ -612,8 +774,173 @@ function CreateService() {
                 </Form.Item>
               </Col>
             </Row>
+            {servicegroupname.includes("Package Services") && (
+              <Collapse
+                accordion
+                defaultActiveKey={["6"]}
+                style={{ marginTop: "0.5rem" }}
+              >
+                <Panel
+                  header={
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <span>Package</span>
+                      <Button
+                        type="text"
+                        icon={<PlusCircleOutlined />}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent closing the panel
+                          showPackageModal();
+                        }}
+                      />
+                    </div>
+                  }
+                  key="6"
+                >
+                  <Row gutter={16}>
+                    <Col span={24}>
+                      <Row gutter={16}>
+                        <Col span={4}>
+                          <Form.Item
+                            label={
+                              <span>
+                                Pkg Days
+                                <Tooltip title="PKG Days">
+                                  <span style={{ cursor: "pointer" }}>🛈</span>
+                                </Tooltip>
+                              </span>
+                            }
+                            name="PackageDays"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Required",
+                              },
+                            ]}
+                          >
+                            <Input />
+                          </Form.Item>
+                        </Col>
+                        <Col span={4}>
+                          <Form.Item
+                            label={
+                              <span>
+                                Pkg Amount
+                                <Tooltip title=" PKG Amount">
+                                  <span style={{ cursor: "pointer" }}>🛈</span>
+                                </Tooltip>
+                              </span>
+                            }
+                            name="PackageAmount"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Required",
+                              },
+                            ]}
+                          >
+                            <Input />
+                          </Form.Item>
+                        </Col>
+                        <Col span={4}>
+                          <Form.Item
+                            label="EffectiveFrom"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Required",
+                              },
+                            ]}
+                            name="PackageFromDate"
+                          >
+                            <DatePicker
+                              style={{ width: "100%" }}
+                              // onChange={handleEfeectiveFrom}
+                              format="DD-MM-YYYY"
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={4}>
+                          <Form.Item
+                            label="EffectiveTo"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Required",
+                              },
+                            ]}
+                            name="PackageToDate"
+                          >
+                            <DatePicker
+                              style={{ width: "100%" }}
+                              // onChange={handleEfeectiveTo}
+                              format="DD-MM-YYYY"
+                            />
+                          </Form.Item>
+                        </Col>
 
-            <Collapse accordion>
+                        <Col span={3}>
+                          <Form.Item
+                            label="Health Check"
+                            name="PackageIsHealth"
+                            valuePropName="checked"
+                          >
+                            <Checkbox onChange={handleCheckboxChange} />
+                          </Form.Item>
+                        </Col>
+
+                        <Col span={3}>
+                          <Form.Item
+                            label="Multi Encounter"
+                            name="PackageIsMultiEncounter"
+                            valuePropName="checked"
+                          >
+                            <Checkbox onChange={handleCheckboxChange} />
+                          </Form.Item>
+                        </Col>
+                        <Col span={2}>
+                          <Form.Item
+                            label={
+                              <span>
+                                No Of Encs
+                              </span>
+                            }
+                            name="PackageNumberEncounter"
+                          >
+                            <Input />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    </Col>
+                  </Row>
+                  <Table
+                    // style={{ padding: '0rem 2rem' }}
+                    dataSource={packageInd}
+                    columns={columnsPackageInd}
+                    pagination={false}
+                    //rowKey={(row) => row.ChargeID} // Specify the custom id property here
+                    locale={{
+                      emptyText: (
+                        <span style={{ color: "" }}>No data available</span>
+                      ),
+                    }}
+                    bordered
+                  ></Table>
+                  <PackageIndicationModal
+                    options={serviceDropDown}
+                    open={ispackageModalVisible}
+                    handleClose={() => setIsPackageModalVisible(false)}
+                    handleSubmit={handlePackageIndicatiotrSubmit}
+                  />
+                </Panel>
+              </Collapse>
+            )}
+            <Collapse accordion style={{ marginTop: "0.5rem" }}>
               <Panel header="Lab Details" key="1">
                 <Row gutter={16}>
                   <Col span={24}>

@@ -169,6 +169,13 @@ import CreateDischargeSummary from "./pages/ClinicalDocuments/DischargeSummary/C
 import ClaimSubmission from "./pages/ClaimManagement/ClaimSubmission/index.jsx";
 import ClaimProcess from "./pages/ClaimManagement/ClaimProcess/index.jsx";
 import EditPriceTariffRevision from "./pages/Masters/GeneralMasters/AccountManagement/EditPriceTariffRevision.jsx";
+import ProcedureCharges from "./pages/AccountManagement/ProcedureCharges/index.jsx";
+import PackageSubscription from "./pages/AccountManagement/PackageSubscription/index.jsx";
+import CreateProcedure from "./pages/AccountManagement/ProcedureCharges/CreateProcedure.jsx";
+import CreatePackage from "./pages/AccountManagement/PackageSubscription/CreatePackage.jsx";
+import RadiologyDashboard from "./pages/Laboratory/radiologyDashboard.jsx";
+import RadiologyResultEntry from "./pages/Laboratory/RadiologyResultEntry/index.jsx";
+import RadiologyVerification from "./pages/Laboratory/RadiologyVerification/index.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -1344,7 +1351,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-              <Route
+            <Route
               path="/EditPriceTariffRevision"
               element={
                 <ProtectedRoute>
@@ -1472,6 +1479,71 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/ProcedureCharges"
+              element={
+                <ProtectedRoute>
+                  <ProcedureCharges />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/PackageSubscription"
+              element={
+                <ProtectedRoute>
+                  <PackageSubscription />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ProcedureCharges"
+              element={
+                <ProtectedRoute>
+                  <ProcedureCharges />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/CreateProcedure"
+              element={
+                <ProtectedRoute>
+                  <CreateProcedure />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/CreatePackage"
+              element={
+                <ProtectedRoute>
+                  <CreatePackage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/RadiologyDashboard"
+              element={
+                <ProtectedRoute>
+                  <RadiologyDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/RadiologyResultEntry"
+              element={
+                <ProtectedRoute>
+                  <RadiologyResultEntry />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/RadiologyVerification"
+              element={
+                <ProtectedRoute>
+                  <RadiologyVerification />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="*" element={<Error />} />
           </Route>
           <Route path="login" element={<Login />} />

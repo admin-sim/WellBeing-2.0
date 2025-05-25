@@ -49,8 +49,7 @@ function PriceChargeModal({
   const [descriptionDisabled, setDescriptionDisabled] = useState(true);
 
   const IndicatorOnchange = (value, option) => {
-    console.log("Selected value:", value);
-    console.log("Selected option:", option);
+
     form.setFieldsValue({ IndicatorDescriptionId: undefined });
     setData([]);
 

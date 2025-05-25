@@ -424,8 +424,13 @@ const CreateBilling = () => {
         {
           title: "ChargeAmt",
           dataIndex: "ChargeAmount",
-          // render: (value) => value.toFixed(2), // Format with toFixed
-        },
+          render: (_, record) => {
+            // Check if ServiceType is "P" (after trimming) and return appropriate value
+            return record.ServiceType?.trim() === "P"
+              ? record.Rate?.toFixed(2)
+              : record.ChargeAmount?.toFixed(2);
+          },
+        },        
         {
           title: "Qty",
           dataIndex: "Quantity",

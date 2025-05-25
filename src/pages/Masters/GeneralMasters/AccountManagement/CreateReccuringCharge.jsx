@@ -107,7 +107,8 @@ const CreateReccuringCharge = () => {
           name={`facilityName-${index}`} // Ensure dynamic naming with index
           initialValue={record.facilityName}
           rules={[{ required: true, message: "Facility Name is required!" }]}
-          className="form-item-no-padding"
+          style={{ margin: 0 }}
+          //className="form-item-no-padding"
         >
           <Select
             placeholder="Select Facility"
@@ -277,10 +278,12 @@ const CreateReccuringCharge = () => {
           style={{ margin: 0 }}
         >
           <DatePicker
-            style={{ width: 100 }}
+            style={{ width: 120 }}
+            size="small"
             format="DD-MM-YYYY"
-            onChange={(date, dateString) =>
-              handleFieldChange(dateString, record.key, "effectiveFrom")
+            value={record.effectiveFrom}
+            onChange={(date) =>
+              handleFieldChange(date, record.key, "effectiveFrom")
             }
           />
         </Form.Item>
@@ -298,10 +301,12 @@ const CreateReccuringCharge = () => {
           style={{ margin: 0 }}
         >
           <DatePicker
-            style={{ width: 100 }}
+            style={{ width: 120 }}
+            size="small"
             format="DD-MM-YYYY"
-            onChange={(date, dateString) =>
-              handleFieldChange(dateString, record.key, "effectiveTo")
+            value={record.effectiveTo}
+            onChange={(date) =>
+              handleFieldChange(date, record.key, "effectiveTo")
             }
           />
         </Form.Item>
@@ -325,6 +330,7 @@ const CreateReccuringCharge = () => {
           style={{ margin: 0 }}
         >
           <Input
+            size="small" // ✅ key change
             type="number"
             value={record.quantity}
             onChange={(e) =>
