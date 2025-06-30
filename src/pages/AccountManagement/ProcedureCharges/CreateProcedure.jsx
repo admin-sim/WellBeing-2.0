@@ -2,11 +2,11 @@ import {
   Button,
   Checkbox,
   Col,
-  DatePicker,
   Form,
   Input,
   InputNumber,
   Layout,
+  message,
   Popconfirm,
   Row,
   Select,
@@ -16,46 +16,50 @@ import React, { useEffect, useState } from "react";
 import PageHeader from "../../../components/PageHeader";
 import PatientHeader from "../../../components/PatientHeader";
 import { useForm } from "antd/es/form/Form";
-
 import { FaAnglesLeft } from "react-icons/fa6";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, useLocation } from "react-router-dom";
 import {
+  urlDeleteSelectedProcedureCharges,
   urlGetCreateProcedure,
   urlGetPatientHeaderDetails,
   urlGetProcedureName,
   urlGetServiceChargeforProcedure,
   urlSaveNewProcedureCharges,
 } from "../../../../endpoints";
-
 import customAxios from "../../../components/customAxios/customAxios";
-import { useLocation } from "react-router-dom";
-import { ColWithSixSpan } from "../../../components/customGridColumns";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 function CreateProcedure() {
   const [form] = Form.useForm();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Fix: Use optional chaining to avoid TypeError if location.state is null
+  const PatientId = location.state?.patientId;
+  const EncounterId = location.state?.encounterId;
+
+  // Redirect if PatientId or EncounterId is missing
+  useEffect(() => {
+    if (!PatientId || !EncounterId) {
+      message.error("Missing patient or encounter information.");
+      navigate("/ProcedureCharges");
+    }
+    // eslint-disable-next-line
+  }, [PatientId, EncounterId, navigate]);
+
   const [patientData, setPatientData] = useState(null);
-  const PatientId = location.state.patientId;
-  const EncounterId = location.state.encounterId;
-
   const [anesthesiaType, setAnesthesiaType] = useState(null);
-
   const [chargeType, setChargeType] = useState(null);
-
   const [groupId, setGroupId] = useState(null);
   const [procedures, setProcedures] = useState(null);
   const [providers, setProviders] = useState(null);
   const [existingprocedures, setExistingProcedures] = useState(null);
-
-  const navigate = useNavigate();
+  const [hoveredRowKey, setHoveredRowKey] = useState(null);
 
   useEffect(() => {
-    debugger;
-
-    fetchDataHeader();
-  }, []);
+    if (PatientId && EncounterId) fetchDataHeader();
+    // eslint-disable-next-line
+  }, [PatientId, EncounterId]);
 
   const fetchDataHeader = async () => {
     try {
@@ -65,16 +69,14 @@ function CreateProcedure() {
       if (response.status === 200 && response.data != null) {
         const detailsheader = response.data.data.EncounterModel;
         setPatientData(detailsheader);
-      } else {
       }
     } catch (error) {}
   };
 
   useEffect(() => {
-    debugger;
-
-    fetchdata();
-  }, []);
+    if (PatientId && EncounterId) fetchdata();
+    // eslint-disable-next-line
+  }, [PatientId, EncounterId]);
 
   const fetchdata = async () => {
     try {
@@ -86,97 +88,12 @@ function CreateProcedure() {
         setAnesthesiaType(AnesthesiaType);
         const chargeType = response.data.data.AnesthesiaChargeType;
         setChargeType(chargeType);
-     
-      } else {
       }
     } catch (error) {}
   };
 
   const [anesthesiaTypeId, setAnesthesiaTypeId] = useState(null);
   const [chargeTypeId, setChargeTypeId] = useState(null);
-  useEffect(() => {
-    const fetchProcedureName = async () => {
-      if (anesthesiaTypeId && chargeTypeId && PatientId && EncounterId) {
-            // Clear existing data before making the API call
-      setReceiptInsAmtData([]);
-      form.setFields([]);
-        try {
-          const response = await customAxios.get(
-            `${urlGetProcedureName}?AnesthesiaTypeId=${anesthesiaTypeId}&AnesthesiaChargeTypeId=${chargeTypeId}&Patient=${PatientId}&EncounterId=${EncounterId}`
-          );
-          
-          if (response.status === 200 && response.data) {
-            setProcedures(response.data.data.Services);
-            setProviders(response.data.data.Provider);
-            setExistingProcedures(response.data.data.ProcedureCharges);
-            
-            if (response.data.data.ProcedureCharges?.length > 0) {
-              const procedureCharges = response.data.data.ProcedureCharges;
-              setGroupId(
-                response.data.data.ServiceGroupId ?? 1045
-              );
-              // Format the data for table display
-              const formattedCharges = procedureCharges.map((item, index) => ({
-                key: index + 1,
-                IsChargeable: item.IsChargeable ?? false,
-                ServiceId: item.ProcedureId ?? "",
-                Rate: item.Rate ?? 0,
-                ChargeAmount: item.ChargeAmount ?? 0,
-                ProviderId: item.ProviderId ?? "",
-                Priority: item.Priority ?? 0,
-                DiscP: item.DiscountRate ?? 0,
-                DiscAmount: item.Discount ?? 0,
-                ServiceTax: item.ServiceTax ?? false,
-                NetAmount: item.NetAmount ?? 0,
-                TaxAmount: item.TaxAmount ?? 0,
-                ServiceClassificationID: item.ServiceClassificationID ?? 0,
-              }));
-              
-              // Update the table data state
-              setReceiptInsAmtData(formattedCharges);
-              
-              // Reset the form first to clear any existing values
-              form.resetFields();
-              
-              // Now set each field individually
-              const fieldsToSet = [];
-              
-              formattedCharges.forEach((item, index) => {
-                fieldsToSet.push(
-                  { name: ["IsChargeable", index], value: item.IsChargeable },
-                  { name: ["ServiceId", index], value: item.ServiceId },
-                  { name: ["Rate", index], value: item.Rate },
-                  { name: ["ChargeAmount", index], value: item.ChargeAmount },
-                  { name: ["ProviderId", index], value: item.ProviderId },
-                  { name: ["Priority", index], value: item.Priority },
-                  { name: ["DiscP", index], value: item.DiscP },
-                  { name: ["DiscAmount", index], value: item.DiscAmount },
-                  { name: ["ServiceTax", index], value: item.ServiceTax },
-                  { name: ["NetAmount", index], value: item.NetAmount }
-                );
-              });
-              
-              // Set all fields at once
-              form.setFields(fieldsToSet);
-              
-              // Force form to validate and update UI
-              setTimeout(() => {
-                form.validateFields();
-              }, 0);
-            } else {
-              // If no existing data, keep default
-              setReceiptInsAmtData(initialDataSource);
-              form.resetFields();
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching procedure name", error);
-        }
-      }
-    };
-    
-    fetchProcedureName();
-  }, [anesthesiaTypeId, chargeTypeId, PatientId, EncounterId]);
 
   const initialDataSource = [
     {
@@ -192,66 +109,140 @@ function CreateProcedure() {
       ServiceTax: true,
       NetAmount: 0,
       ServiceClassificationID: 0,
-      TaxAmount:0
+      TaxAmount: 0,
     },
   ];
+
   const [receiptInsAmtData, setReceiptInsAmtData] = useState(initialDataSource);
 
-const handleInputChange = (value, column, key) => {
-  const newData = receiptInsAmtData.map((item) => {
-    if (item.key === key) {
-      let newValue = value;
+  const fetchProcedureName = async () => {
+    if (anesthesiaTypeId && chargeTypeId && PatientId && EncounterId) {
+      setReceiptInsAmtData([]);
+      form.setFields([]);
+      try {
+        const response = await customAxios.get(
+          `${urlGetProcedureName}?AnesthesiaTypeId=${anesthesiaTypeId}&AnesthesiaChargeTypeId=${chargeTypeId}&Patient=${PatientId}&EncounterId=${EncounterId}`
+        );
 
-      // If DiscP is being updated, enforce max 100
-      if (column === "DiscP") {
-        let discP = parseFloat(value) || 0;
+        if (response.status === 200 && response.data) {
+          setProcedures(response.data.data.Services);
+          setProviders(response.data.data.Provider);
+          setExistingProcedures(response.data.data.ProcedureCharges);
 
-        if (discP > 100) {
-          discP = 100;
-          newValue = 100; // Force the value to 100
+          if (response.data.data.ProcedureCharges?.length > 0) {
+            const procedureCharges = response.data.data.ProcedureCharges;
+            setGroupId(response.data.data.ServiceGroupId ?? 1045);
+            const formattedCharges = procedureCharges.map((item, index) => ({
+              key: index + 1,
+              ProcedureChargeId: item.ProcedureChargeId,
+              IsChargeable: item.IsChargeable ?? false,
+              ServiceId: item.ProcedureId ?? "",
+              Rate: item.Rate ?? 0,
+              ChargeAmount: item.ChargeAmount ?? 0,
+              ProviderId: item.ProviderId ?? "",
+              Priority: item.Priority ?? 0,
+              DiscP: item.DiscountRate ?? 0,
+              DiscAmount: item.Discount ?? 0,
+              ServiceTax: item.ServiceTax ?? false,
+              NetAmount: item.NetAmount ?? 0,
+              TaxAmount: item.TaxAmount ?? 0,
+              ServiceClassificationID: item.ServiceClassificationID ?? 0,
+            }));
+
+            setReceiptInsAmtData(formattedCharges);
+
+            form.resetFields();
+
+            const fieldsToSet = [];
+
+            formattedCharges.forEach((item, index) => {
+              fieldsToSet.push(
+                { name: ["IsChargeable", index], value: item.IsChargeable },
+                { name: ["ServiceId", index], value: item.ServiceId },
+                { name: ["Rate", index], value: item.Rate },
+                { name: ["ChargeAmount", index], value: item.ChargeAmount },
+                { name: ["ProviderId", index], value: item.ProviderId },
+                { name: ["Priority", index], value: item.Priority },
+                { name: ["DiscP", index], value: item.DiscP },
+                { name: ["DiscAmount", index], value: item.DiscAmount },
+                { name: ["ServiceTax", index], value: item.ServiceTax },
+                { name: ["NetAmount", index], value: item.NetAmount }
+              );
+            });
+
+            form.setFields(fieldsToSet);
+
+            setTimeout(() => {
+              form.validateFields();
+            }, 0);
+          } else {
+            setReceiptInsAmtData(initialDataSource);
+            form.resetFields();
+          }
         }
+      } catch (error) {
+        console.error("Error fetching procedure name", error);
+      }
+    }
+  };
 
-        const rate = parseFloat(item.Rate) || 0;
-        const chargeAmount = parseFloat(item.ChargeAmount) || 0;
-        const discAmount = (rate * discP) / 100;
-        const netAmount = chargeAmount - discAmount;
+  useEffect(() => {
+    fetchProcedureName();
+    // eslint-disable-next-line
+  }, [anesthesiaTypeId, chargeTypeId, PatientId, EncounterId]);
+
+  const handleInputChange = (value, column, key) => {
+    const newData = receiptInsAmtData.map((item) => {
+      if (item.key === key) {
+        let newValue = value;
+
+        if (column === "DiscP") {
+          let discP = parseFloat(value) || 0;
+
+          if (discP > 100) {
+            discP = 100;
+            newValue = 100;
+          }
+
+          const rate = parseFloat(item.Rate) || 0;
+          const chargeAmount = parseFloat(item.ChargeAmount) || 0;
+          const discAmount = (rate * discP) / 100;
+          const netAmount = chargeAmount - discAmount;
+
+          return {
+            ...item,
+            [column]: discP,
+            DiscAmount: discAmount,
+            NetAmount: netAmount,
+          };
+        }
 
         return {
           ...item,
-          [column]: discP,
-          DiscAmount: discAmount,
-          NetAmount: netAmount,
+          [column]: newValue,
         };
       }
 
-      return {
-        ...item,
-        [column]: newValue,
-      };
-    }
-
-    return item;
-  });
-
-  setReceiptInsAmtData(newData);
-
-  // Optionally update form values to reflect DiscAmount and NetAmount
-  const updatedItem = newData.find((item) => item.key === key);
-  if (updatedItem) {
-    form.setFieldsValue({
-      [`DiscAmount`]: {
-        [key - 1]: updatedItem.DiscAmount,
-      },
-      [`NetAmount`]: {
-        [key - 1]: updatedItem.NetAmount,
-      },
-      [`DiscP`]: {
-        [key - 1]: updatedItem.DiscP,
-      },
+      return item;
     });
-  }
-};
 
+    setReceiptInsAmtData(newData);
+
+    const updatedItem = newData.find((item) => item.key === key);
+    if (updatedItem) {
+      form.setFieldsValue({
+        [`DiscAmount`]: {
+          [key - 1]: updatedItem.DiscAmount,
+        },
+        [`NetAmount`]: {
+          [key - 1]: updatedItem.NetAmount,
+        },
+        [`DiscP`]: {
+          [key - 1]: updatedItem.DiscP,
+        },
+      });
+    }
+  };
 
   const fetchProcedureDetails = async (serviceId, recordKey) => {
     try {
@@ -260,7 +251,6 @@ const handleInputChange = (value, column, key) => {
       );
 
       if (response.status === 200 && response.data) {
-        console.log("Procedure details:", response.data);
         const priceDef = response.data.data.ServicePriceDefinition;
 
         const price = priceDef?.Price || 0;
@@ -282,107 +272,162 @@ const handleInputChange = (value, column, key) => {
           )
         );
 
-        // Update form fields if needed (optional, if using Form.setFieldsValue)
         form.setFieldsValue({
           [`Rate`]: { [recordKey - 1]: price },
           [`ChargeAmount`]: { [recordKey - 1]: price },
           [`NetAmount`]: { [recordKey - 1]: price },
           [`ServiceClassificationID`]: { [recordKey - 1]: serviceClassId },
-          // 👇 Clear discount-related form fields too
           [`DiscP`]: { [recordKey - 1]: 0 },
           [`DiscAmount`]: { [recordKey - 1]: 0 },
         });
-        // You can update form state or fields here if needed
       }
     } catch (error) {
       console.error("Failed to fetch procedure details", error);
     }
   };
 
+  async function handleInstrumentDelete(record) {
+    try {
+      const response = await customAxios.get(
+        `${urlDeleteSelectedProcedureCharges}?ProcedureChargeId=${record.ProcedureChargeId}`
+      );
+      if (response.status === 200 && response.data) {
+        fetchProcedureName();
+      }
+    } catch (error) {
+      console.error("Error fetching procedure name", error);
+    }
+  }
+
+  function handleAddRow() {
+    const lastRow = receiptInsAmtData[receiptInsAmtData.length - 1];
+    if (
+      !lastRow.ServiceId ||
+      !lastRow.Rate ||
+      !lastRow.ChargeAmount ||
+      !lastRow.ProviderId
+    ) {
+      message.warning("Please ensure all required fields in the current row are completed before adding a new entry.");
+      return;
+    }
+
+    const newKey = receiptInsAmtData.length + 1;
+    setReceiptInsAmtData([
+      ...receiptInsAmtData,
+      {
+        key: newKey,
+        IsChargeable: true,
+        ServiceId: "",
+        Rate: 0,
+        ChargeAmount: 0,
+        ProviderId: "",
+        Priority: 1,
+        DiscP: 0,
+        DiscAmount: 0,
+        ServiceTax: true,
+        NetAmount: 0,
+        ServiceClassificationID: 0,
+        TaxAmount: 0,
+      },
+    ]);
+  }
+
+  // Remove all width properties for auto table width
   const receiptInscolumns = [
     {
       title: "Chargeable",
       dataIndex: "IsChargeable",
       key: "IsChargeable",
-      width: 40,
       render: (text, record) => (
         <Form.Item
           name={["IsChargeable", record.key - 1]}
           valuePropName="checked"
           initialValue={true}
+          style={{ marginBottom: 0 }}
         >
           <Checkbox
-            onChange={(e) =>
+            style={{ margin: 0, padding: 0 }}
+            onChange={e =>
               handleInputChange(e.target.checked, "IsChargeable", record.key)
             }
-          >
-            
-          </Checkbox>
-        </Form.Item>
-      ),
-    },
-    {
-      title: "ProcedureName",
-      dataIndex: "ServiceId",
-      width: 500,
-      key: "ServiceId",
-      render: (text, record, index) => (
-        <Form.Item
-          name={["ServiceId", record.key - 1]}
-          rules={[{ required: true, message: "Required" }]}
-        >
-          <Select
-            onChange={(value) => {
-              handleInputChange(value, "ServiceId", record.key);
-              fetchProcedureDetails(value, record.key); // 👈 API call
-            }}
-          >
-            {procedures?.map((option) => (
-              <Option key={option.ServiceId} value={option.ServiceId}>
-                {option.LongName}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-      ),
-    },
-
-    {
-      title: "Rate",
-      dataIndex: "Rate",
-      width: 150,
-      key: "Rate",
-      render: (text, record) => (
-        <Form.Item
-          name={["Rate", record.key - 1]}
-          style={{ width: "100%" }}
-          rules={[{ required: true, message: "Required" }]}
-        >
-          <InputNumber
-            style={{ width: "100%" }}
-            min={0}
-            onChange={(value) => handleInputChange(value, "Rate", record.key)}
           />
         </Form.Item>
       ),
     },
     {
-      title: "ChargeAmount",
-      dataIndex: "ChargeAmount",
-      width: 100,
-      key: "ChargeAmount",
+      title: "Procedure",
+      dataIndex: "ServiceId",
+      key: "ServiceId",
+      ellipsis: false,
+      width: 220, // Set a fixed width for the cell
+      render: (text, record) => {
+        const selectedServiceIds = receiptInsAmtData
+          .filter(item => item.key !== record.key)
+          .map(item => item.ServiceId);
+
+        return (
+          <Form.Item
+            name={["ServiceId", record.key - 1]}
+            rules={[{ required: true, message: "Required" }]}
+            style={{ marginBottom: 0 }}
+          >
+            <Select
+              showSearch
+              style={{ width: 210 }}
+              dropdownMatchSelectWidth={false}
+              dropdownStyle={{ minWidth: 350, maxWidth: 500 }}
+              optionFilterProp="children"
+              onChange={value => {
+                handleInputChange(value, "ServiceId", record.key);
+                fetchProcedureDetails(value, record.key);
+              }}
+            >
+              {procedures
+                ?.filter(option => !selectedServiceIds.includes(option.ServiceId))
+                .map(option => (
+                  <Select.Option key={option.ServiceId} value={option.ServiceId}>
+                    {option.LongName}
+                  </Select.Option>
+                ))}
+            </Select>
+          </Form.Item>
+        );
+      },
+    },
+    {
+      title: "Rate",
+      dataIndex: "Rate",
+      key: "Rate",
       render: (text, record) => (
         <Form.Item
-          name={["ChargeAmount", record.key - 1]}
-          style={{ width: "100%" }}
+          name={["Rate", record.key - 1]}
+          style={{ marginBottom: 0 }}
           rules={[{ required: true, message: "Required" }]}
         >
           <InputNumber
             style={{ width: "100%" }}
             min={0}
-            onChange={(value) =>
-              handleInputChange(value, "ChargeAmount", record.key)
-            }
+            size="small"
+            onChange={value => handleInputChange(value, "Rate", record.key)}
+          />
+        </Form.Item>
+      ),
+    },
+    {
+      title: "Amount",
+      dataIndex: "ChargeAmount",
+      key: "ChargeAmount",
+      render: (text, record) => (
+        <Form.Item
+          name={["ChargeAmount", record.key - 1]}
+          style={{ marginBottom: 0 }}
+          rules={[{ required: true, message: "Required" }]}
+        >
+          <InputNumber
+            style={{ width: "100%" }}
+            min={0}
+            size="small"
+            onChange={value => handleInputChange(value, "ChargeAmount", record.key)}
           />
         </Form.Item>
       ),
@@ -390,27 +435,29 @@ const handleInputChange = (value, column, key) => {
     {
       title: "Provider",
       dataIndex: "ProviderId",
-      width: 350,
       key: "ProviderId",
-      render: (text, record, index) => (
+      ellipsis: false,
+      width: 200, // Set a fixed width for the cell
+      render: (text, record) => (
         <Form.Item
           name={["ProviderId", record.key - 1]}
-          rules={[
-            {
-              required: true,
-              message: "Provider is required.",
-            },
-          ]}
+          rules={[{ required: true, message: "Provider is required." }]}
+          style={{ marginBottom: 0 }}
         >
           <Select
-            onChange={(value) =>
+            showSearch
+            style={{ width: 190 }}
+            dropdownMatchSelectWidth={false}
+            dropdownStyle={{ minWidth: 300, maxWidth: 400 }}
+            optionFilterProp="children"
+            onChange={value =>
               handleInputChange(value, "ProviderId", record.key)
             }
           >
-            {providers?.map((option) => (
-              <Option key={option.ProviderId} value={option.ProviderId}>
+            {providers?.map(option => (
+              <Select.Option key={option.ProviderId} value={option.ProviderId}>
                 {`${option.ProviderFirstName} ${option.ProviderLastName}`}
-              </Option>
+              </Select.Option>
             ))}
           </Select>
         </Form.Item>
@@ -420,17 +467,16 @@ const handleInputChange = (value, column, key) => {
       title: "Priority",
       dataIndex: "Priority",
       key: "Priority",
-      render: (text, record, index) => (
+      render: (text, record) => (
         <Form.Item
           name={["Priority", record.key - 1]}
-          style={{ width: "100%" }}
-          // initialValue={record.Branch}
+          style={{ marginBottom: 0 }}
         >
           <Input
-            // disabled
             min={0}
             defaultValue={text}
-            onChange={(e) =>
+            size="small"
+            onChange={e =>
               handleInputChange(e.target.value, "Priority", record.key)
             }
           />
@@ -441,19 +487,15 @@ const handleInputChange = (value, column, key) => {
       title: "DiscP",
       dataIndex: "DiscP",
       key: "DiscP",
-      render: (text, record, index) => (
-        <Form.Item
-          name={["DiscP", record.key - 1]}
-          style={{ width: "100%" }}
-          //initialValue={record.IfscCode}
-        >
+      render: (text, record) => (
+        <Form.Item name={["DiscP", record.key - 1]} style={{ marginBottom: 0 }}>
           <Input
             min={0}
             defaultValue={text}
-            onChange={(e) =>
+            size="small"
+            onChange={e =>
               handleInputChange(e.target.value, "DiscP", record.key)
             }
-            // disabled
           />
         </Form.Item>
       ),
@@ -462,19 +504,13 @@ const handleInputChange = (value, column, key) => {
       title: "DiscAmount",
       dataIndex: "DiscAmount",
       key: "DiscAmount",
-      render: (text, record, index) => (
-        <Form.Item
-          name={["DiscAmount", record.key - 1]}
-          style={{ width: "100%" }}
-          //initialValue={record.AuthRefNo}
-        >
+      render: (text, record) => (
+        <Form.Item name={["DiscAmount", record.key - 1]} style={{ marginBottom: 0 }}>
           <Input
             disabled
             min={0}
             defaultValue={text}
-            onChange={(e) =>
-              handleInputChange(e.target.value, "DiscAmount", record.key)
-            }
+            size="small"
           />
         </Form.Item>
       ),
@@ -483,20 +519,18 @@ const handleInputChange = (value, column, key) => {
       title: "ServiceTax?",
       dataIndex: "ServiceTax",
       key: "ServiceTax",
-      width: 40,
       render: (text, record) => (
         <Form.Item
           name={["ServiceTax", record.key - 1]}
           valuePropName="checked"
           initialValue={true}
+          style={{ marginBottom: 0 }}
         >
           <Checkbox
-            onChange={(e) =>
+            onChange={e =>
               handleInputChange(e.target.checked, "ServiceTax", record.key)
             }
-          >
-    
-          </Checkbox>
+          />
         </Form.Item>
       ),
     },
@@ -504,17 +538,13 @@ const handleInputChange = (value, column, key) => {
       title: "NetAmount",
       dataIndex: "NetAmount",
       key: "NetAmount",
-      render: (text, record, index) => (
-        <Form.Item
-          name={["NetAmount", record.key - 1]}
-          style={{ width: "100%" }}
-          //initialValue={record.AuthRefNo}
-        >
+      render: (text, record) => (
+        <Form.Item name={["NetAmount", record.key - 1]} style={{ marginBottom: 0 }}>
           <Input
-            // disabled
             min={0}
             defaultValue={text}
-            onChange={(e) =>
+            size="small"
+            onChange={e =>
               handleInputChange(e.target.value, "NetAmount", record.key)
             }
           />
@@ -522,31 +552,67 @@ const handleInputChange = (value, column, key) => {
       ),
     },
     {
+      title: (
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={handleAddRow}
+          size="small"
+        />
+      ),
       dataIndex: "add",
       key: "add",
-      width: 50,
       render: (text, record) => (
         <Popconfirm
           title="Sure to delete?"
-          onConfirm={() => handleInstrumentDelete(record)}
+          onConfirm={() => {
+            if (record.ProcedureChargeId) {
+              handleInstrumentDelete(record);
+            } else {
+              setReceiptInsAmtData(prev =>
+                prev.filter(item => item.key !== record.key)
+              );
+            }
+          }}
         >
-          <DeleteOutlined />
+          <Button type="text" icon={<DeleteOutlined />} size="small" />
         </Popconfirm>
       ),
-      //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>
     },
   ];
 
+  const [saving, setSaving] = useState(false);
 
   const handleFinish = async (values) => {
     try {
+      setSaving(true);
+
+      const filledRows = receiptInsAmtData.filter(
+        item =>
+          item.ServiceId &&
+          item.Rate &&
+          item.ChargeAmount &&
+          item.ProviderId
+      );
+
+      if (filledRows.length !== receiptInsAmtData.length) {
+        setReceiptInsAmtData(filledRows);
+        message.info("Empty/incomplete rows were removed.");
+      }
+
+      const unsavedRows = filledRows.filter(item => !item.ProcedureChargeId);
+
+      if (unsavedRows.length === 0) {
+        message.info("No new procedures to save.");
+        setSaving(false);
+        return;
+      }
+
       let saved = false;
-  
-      for (const item of receiptInsAmtData) {
+      for (const item of unsavedRows) {
         const charamt = parseFloat(item.ChargeAmount) || 0;
         const discamt = parseFloat(item.DiscAmount) || 0;
         const temp = true;
-  
         if (charamt >= discamt && temp === true) {
           const object = {
             FacilityId: 1,
@@ -568,40 +634,38 @@ const handleInputChange = (value, column, key) => {
             ServiceGroupId: groupId,
             ServiceclassificationId: item.ServiceClassificationID,
           };
-  
-          //const procedurelist = getProcedureList(item.ServiceClassificationID);
-  
           const payload = {
             AddNewProcedureCharges: object,
-            ProcedureChargesDetails: [], // required by API
+            ProcedureChargesDetails: [],
           };
-  
-          const response = await customAxios.post(urlSaveNewProcedureCharges, payload, {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-  
+          const response = await customAxios.post(
+            urlSaveNewProcedureCharges,
+            payload,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
           if (response.status === 200) {
-            //alert("Procedure saved successfully!");
-            message.success("Procedure saved successfully");
             saved = true;
           }
-  
-          break; // ✅ exit after saving one, since API only supports single object
         }
       }
-  
-      if (!saved) {
-        alert("No valid procedures to save.");
+      if (saved) {
+        message.success("Procedures saved successfully");
+        fetchProcedureName(); // reload all saved procedures
+      } else {
+        message.info("No valid new procedures to save.");
       }
     } catch (error) {
       console.error("Save failed:", error);
       alert("Something went wrong while saving.");
+    } finally {
+      setSaving(false);
     }
   };
-  
-  
+
   return (
     <Layout
       style={{
@@ -621,9 +685,8 @@ const handleInputChange = (value, column, key) => {
         <PatientHeader patient={patientData} style={{ marginBottom: "1rem" }} />
       </div>
       <div style={{ margin: "1rem" }}>
-        {/* These selects are now outside the Form */}
         <Row gutter={16} style={{ marginBottom: "1rem" }}>
-          <ColWithSixSpan>
+          <Col>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <label style={{ marginBottom: "8px" }}>AnesthesiaType</label>
               <Select
@@ -652,8 +715,8 @@ const handleInputChange = (value, column, key) => {
                 ))}
               </Select>
             </div>
-          </ColWithSixSpan>
-          <ColWithSixSpan>
+          </Col>
+          <Col>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <label style={{ marginBottom: "8px" }}>ChargeType</label>
               <Select
@@ -682,42 +745,47 @@ const handleInputChange = (value, column, key) => {
                 ))}
               </Select>
             </div>
-          </ColWithSixSpan>
+          </Col>
         </Row>
-  
-        {/* The Form now only contains the table and action buttons */}
-        <Form
-          form={form}
-          layout="vertical"
-          size="small"
-          onFinish={handleFinish}
-        >
-          <Table
-            dataSource={receiptInsAmtData}
-            columns={receiptInscolumns}
-            rowClassName={(record) => (record.disabled ? "disabled-row" : "")}
+        {/* Only show the table and form if both types are selected */}
+        {(anesthesiaTypeId && chargeTypeId) && (
+          <Form
+            form={form}
+            layout="vertical"
             size="small"
-            bordered
-            pagination={false}
-            style={{ marginBottom: 24 }}
-          />
-          <Row justify={"end"} gutter={16}>
-            <Col>
-              <Form.Item>
-                <Button htmlType="submit" type="primary">
-                  Save
-                </Button>
-              </Form.Item>
-            </Col>
-            <Col>
-              <Form.Item>
-                <Button danger onClick={() => alert("Cancel Clicked")}>
-                  Cancel
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
+            onFinish={handleFinish}
+          >
+            <Table
+              dataSource={receiptInsAmtData}
+              columns={receiptInscolumns}
+              rowClassName={(record) => (record.disabled ? "disabled-row" : "")}
+              size="small"
+              bordered
+              pagination={false}
+              style={{ marginBottom: 12 }}
+              onRow={(record) => ({
+                onMouseEnter: () => setHoveredRowKey(record.key),
+                onMouseLeave: () => setHoveredRowKey(null),
+              })}
+            />
+            <Row justify={"end"} gutter={16}>
+              <Col>
+                <Form.Item>
+                  <Button htmlType="submit" type="primary" loading={saving}>
+                    Save
+                  </Button>
+                </Form.Item>
+              </Col>
+              <Col>
+                <Form.Item>
+                  <Button danger onClick={() => navigate("/ProcedureCharges")}>
+                    Cancel
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        )}
       </div>
     </Layout>
   );

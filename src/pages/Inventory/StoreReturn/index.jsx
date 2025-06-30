@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
-import Layout from 'antd/es/layout/layout';
-import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import dayjs from 'dayjs';
+import Layout from "antd/es/layout/layout";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
+import dayjs from "dayjs";
 import {
   Spin,
   Tag,
@@ -21,7 +25,10 @@ import {
 } from "antd";
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
-import { urlGetPurshaseOrderDetails, urlSearchStoreReturn } from "../../../../endpoints.js";
+import {
+  urlGetPurshaseOrderDetails,
+  urlSearchStoreReturn,
+} from "../../../../endpoints.js";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import CustomTable from "../../../components/customTable/index.jsx";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
@@ -34,7 +41,7 @@ const StoreReturn = () => {
     DocumentType: [],
     StoreDetails: [],
     SupplierList: [],
-    DateFormat: []
+    DateFormat: [],
   });
 
   const [filteredData, setFilteredData] = useState([]);
@@ -44,6 +51,8 @@ const StoreReturn = () => {
   const [reportUrl, setReportUrl] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const userContext = useSelector((state) => state.userContext.value);
+  const [fromDate, setFromDate] = useState(dayjs().subtract(1, "day"));
+  const [toDate, setToDate] = useState(dayjs());
 
   useEffect(() => {
     try {
@@ -54,12 +63,24 @@ const StoreReturn = () => {
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
-    form.submit()
+    form.submit();
   }, []);
 
   const navigate = useNavigate();
   const handleAddTemplate = () => {
     navigate(`/CreateStoreReturn`);
+  };
+
+  const disableFromDate = (current) => {
+    return current && current.isAfter(dayjs().endOf("day"));
+  };
+
+  const disableToDate = (current) => {
+    return (
+      current &&
+      (current.isBefore(fromDate, "day") ||
+        current.isAfter(dayjs().endOf("day")))
+    );
   };
 
   const colorMapping = {
@@ -82,9 +103,15 @@ const StoreReturn = () => {
       sorter: (a, b) => a.ReturnNumber - b.ReturnNumber,
       sortDirections: ["descend", "ascend"],
       render: (text, record, index) => {
-        if (record.ReturnStatus === "Created" || record.ReturnStatus === "Draft") {
+        if (
+          record.ReturnStatus === "Created" ||
+          record.ReturnStatus === "Draft"
+        ) {
           return (
-            <Button type="link" onClick={() => GetModelDetails(record.ReturnHeaderId)}>
+            <Button
+              type="link"
+              onClick={() => GetModelDetails(record.ReturnHeaderId)}
+            >
               {text}
             </Button>
           );
@@ -110,7 +137,8 @@ const StoreReturn = () => {
       title: "Returned to Location",
       dataIndex: "ReturnStoreName",
       key: "ReturnStoreName",
-      sorter: (a, b) => new Date(a.ReturnStoreName) - new Date(b.ReturnStoreName),
+      sorter: (a, b) =>
+        new Date(a.ReturnStoreName) - new Date(b.ReturnStoreName),
       sortDirections: ["descend", "ascend"],
     },
     {
@@ -129,26 +157,28 @@ const StoreReturn = () => {
     },
     {
       render: (_, record) => (
-        <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>
+        <Button type="link" onClick={(value) => handleReport(value, record)}>
+          Report
+        </Button>
       ),
     },
   ];
 
   const handleReport = async (value, record) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const request = {
         PONo: record.ReturnHeaderId,
-        use: 'admin',
+        use: "admin",
         FileType: "pdf", // or 'excel'
-        AppUser: userContext.AppUserName
+        AppUser: userContext.AppUserName,
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       setError(error.message);
     }
   };
@@ -166,13 +196,13 @@ const StoreReturn = () => {
     );
 
     if (!response.ok) {
-      setLoading(false)
+      setLoading(false);
       throw new Error("Failed to fetch report");
     }
 
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
-    setLoading(false)
+    setLoading(false);
     return { url, blob };
   }
 
@@ -181,10 +211,14 @@ const StoreReturn = () => {
     try {
       const postData1 = {
         Store: values.ReturningStore ? values.ReturningStore : 0,
-        ReturnedToStore: values.ReturnedToLocation ? values.ReturnedToLocation : 0,
-        Status: values.Status == 'All' ? '' : values.Status,
-        FromDateString: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : null,
-        ToDateString: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : null
+        ReturnedToStore: values.ReturnedToLocation
+          ? values.ReturnedToLocation
+          : 0,
+        Status: values.Status == "All" ? "" : values.Status,
+        FromDateString: values.FromDate
+          ? values.FromDate.format("DD-MM-YYYY")
+          : null,
+        ToDateString: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : null,
       };
       customAxios
         .get(
@@ -200,9 +234,9 @@ const StoreReturn = () => {
         .then((response) => {
           setFilteredData(response.data.data.ReturnDetails);
           setLoading(false);
-        })
+        });
     } catch (error) {
-      // Handle any errors here      
+      // Handle any errors here
     }
   };
 
@@ -211,8 +245,15 @@ const StoreReturn = () => {
   };
 
   return (
-    <Layout style={{ zIndex: '999999999' }}>
-      <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
+    <Layout style={{ zIndex: "999999999" }}>
+      <div
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
         <PageHeader
           title={"Store Return"}
           buttonLabel="Add Store Return"
@@ -230,18 +271,21 @@ const StoreReturn = () => {
               maxWidth: 1500,
             }}
             initialValues={{
-              FromDate: dayjs().subtract(1, 'day'),
+              FromDate: dayjs().subtract(1, "day"),
               ToDate: dayjs(),
-              Status: 'All',
+              Status: "All",
             }}
             onFinish={onFinish}
           >
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={6}>
                 <Form.Item label="Returning Location" name="ReturningStore">
-                  <Select allowClear placeholder='Select Value'>
+                  <Select allowClear placeholder="Select Value">
                     {StoreReturnDropdown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                      <Select.Option
+                        key={option.StoreId}
+                        value={option.StoreId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -249,10 +293,16 @@ const StoreReturn = () => {
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
-                <Form.Item name="ReturnedToLocation" label="Returned To Location">
-                  <Select allowClear placeholder='Select Value'>
+                <Form.Item
+                  name="ReturnedToLocation"
+                  label="Returned To Location"
+                >
+                  <Select allowClear placeholder="Select Value">
                     {StoreReturnDropdown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                      <Select.Option
+                        key={option.StoreId}
+                        value={option.StoreId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -261,21 +311,36 @@ const StoreReturn = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="FromDate" label="From Date">
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker
+                    value={fromDate}
+                    onChange={(date) => setFromDate(date)}
+                    disabledDate={disableFromDate}
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                  />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="ToDate" label="To Date">
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                  <DatePicker
+                    value={toDate}
+                    onChange={(date) => setToDate(date)}
+                    disabledDate={disableToDate}
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
+                  />
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="Status" label="Status">
                   <Select>
-                    <Select.Option key='All' value='All'></Select.Option>
-                    <Select.Option key='Create' value='Create'></Select.Option>
-                    <Select.Option key='Draft' value='Draft'></Select.Option>
-                    <Select.Option key='Finalize' value='Finalize'></Select.Option>
+                    <Select.Option key="All" value="All"></Select.Option>
+                    <Select.Option key="Create" value="Create"></Select.Option>
+                    <Select.Option key="Draft" value="Draft"></Select.Option>
+                    <Select.Option
+                      key="Finalize"
+                      value="Finalize"
+                    ></Select.Option>
                   </Select>
                 </Form.Item>
               </Col>
@@ -283,11 +348,7 @@ const StoreReturn = () => {
             <Row justify="end">
               <Col>
                 <Form.Item>
-                  <Button
-                    type="primary"
-                    loading={loading}
-                    htmlType="submit"
-                  >
+                  <Button type="primary" loading={loading} htmlType="submit">
                     Search
                   </Button>
                 </Form.Item>

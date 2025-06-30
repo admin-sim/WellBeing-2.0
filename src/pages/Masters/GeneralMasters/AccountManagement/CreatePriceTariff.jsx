@@ -55,7 +55,6 @@ function CreatePriceTariff() {
   const [priceTariffId, setPriceTariffId] = useState(0);
   const [linedata, setLinedata] = useState(null);
 
-
   const [editedpriceTarifflineId, setEditedPriceTariffLineId] = useState(null);
   const [pricetariffDropdown, setPriceariffDropdown] = useState({
     PatientType: [],
@@ -70,7 +69,7 @@ function CreatePriceTariff() {
     WardTypeFlag: false,
     FamilyIncomeFlag: false,
     ProviderFlag: false,
-    PayerFlag:false
+    PayerFlag: false,
   });
   const [editpricetariffDropdown, setEditPriceariffDropdown] = useState({
     PatientType: [],
@@ -85,7 +84,7 @@ function CreatePriceTariff() {
     WardTypeFlag: false,
     FamilyIncomeFlag: false,
     ProviderFlag: false,
-    PayerFlag:false
+    PayerFlag: false,
   });
 
   const handleCancel = () => {
@@ -119,7 +118,6 @@ function CreatePriceTariff() {
       if (response.status === 200 && response.data.data != null) {
         setColumnData(response.data.data.BillTariffLineModels);
         message.success("Deleted Sucessfully..");
-      
       } else {
         console.error("Failed to fetch patient details");
       }
@@ -127,7 +125,6 @@ function CreatePriceTariff() {
       console.error("Error fetching data:", error);
     }
   };
-
 
   useEffect(() => {
     fetchData();
@@ -216,23 +213,23 @@ function CreatePriceTariff() {
 
   const onFinish = async (values) => {
     setLoading(true);
-  
+    debugger;
     values = {
       ...values,
       EffectiveFromDate: values.EffectiveFrom?.format("DD-MM-YYYY") || "",
       EffectiveToDate: values.EffectiveTo?.format("DD-MM-YYYY") || "",
       PriceTariffId: EditedPricetariffId > 0 ? EditedPricetariffId : 0,
     };
-  
+
     const url = EditedPricetariffId > 0 ? urlUpdatePriceTariff : urlSaveNewPriceTariff;
-  
+
     try {
       const response = await customAxios.post(url, values, {
         headers: {
           "Content-Type": "application/json",
         },
       });
-  
+
       if (response.status === 200 && response.data) {
         if (response.data > 0) {
           if (EditedPricetariffId > 0) {
@@ -244,7 +241,9 @@ function CreatePriceTariff() {
           }
         } else {
           message.error(
-            EditedPricetariffId > 0 ? "Something Went Wrong" : "PriceTariff With Same Name Already Exists"
+            EditedPricetariffId > 0
+              ? "Something Went Wrong"
+              : "PriceTariff With Same Name Already Exists"
           );
         }
       }
@@ -255,7 +254,6 @@ function CreatePriceTariff() {
       setLoading(false);
     }
   };
-  
 
   const showModal = async () => {
     if (targetKeys.length === 0) {
@@ -489,7 +487,7 @@ function CreatePriceTariff() {
                 </Col>
               </Row>
               <Row justify="end">
-                <Col>
+                <Col style={{ marginRight: "1rem" }}>
                   <Form.Item
                     style={{
                       display:
@@ -624,7 +622,9 @@ function CreatePriceTariff() {
                     options={pricetariffDropdown}
                     open={isModalOpen}
                     handleClose={() => setIsModalOpen(false)}
-                    priceTariffId={priceTariffId ? priceTariffId : EditedPricetariffId }
+                    priceTariffId={
+                      priceTariffId ? priceTariffId : EditedPricetariffId
+                    }
                     setColumnData={setColumnData}
                   />
                   <EditPriceChargeModal

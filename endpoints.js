@@ -635,5 +635,20 @@ export const urlGetAllServiceAsync= `${baseURL}/api/Service/GetAllServiceAsync`;
 export const urlLoadRadioSampleCollectionGrid = `${baseURL}/api/Laboratory/LoadRadioSampleCollectionGrid`;
 export const urlRadiologyResultEntryIndex = `${baseURL}/api/Laboratory/RadiologyResultEntryIndex`;
 export const urlRadiologyVerificationIndex = `${baseURL}/api/Laboratory/RadiologyVerificationIndex`;
+export const urlDeleteSelectedProcedureCharges = `${baseURL}/api/ProcedureCharge/DeleteSelectedProcedureCharges`;
+export const urlManagePagkage = `${baseURL}/api/Package/ManagePagkage`; 
+export const urlDeactivateseletededP = `${baseURL}/api/Package/DeactivateseletededP`; 
+export const urlSearchPatientAccountcharge = `${baseURL}/api/Package/SearchPatientAccountcharge`; 
+export const urlIncludeInPackage = `${baseURL}/api/Package/IncludeInPackage`; 
 
-//XYZ
+//  export  const urlGetWardCategory1 = `${baseURL}/api/BedManager/GetWardCategory`;
+//  export const urlShowWards = `${baseURL}/api/BedManager/ShowWards`;
+//  export const urlShowAwaitingPatients1 = `${baseURL}/api/BedManager/ShowAwaitingPatients`;
+//  export const urlShowRequests = `${baseURL}/api/BedManager/ShowRequests`;
+
+// Bed Management Endpoints
+export const urlGetWardCategory1 = `${baseURL}/api/BedManager/Index`
+export const urlShowWards = `${baseURL}/api/BedManager/ShowWards`;
+// export const urlShowPatientsList = `${baseURL}/api/BedManager/ShowPatientsList`;
+export const urlShowAwaitingPatients1 = `${baseURL}/api/BedManager/ShowAwaitingPatients`;
+export const urlShowRequests = `${baseURL}/api/BedManager/ShowRequests`;

@@ -103,9 +103,21 @@ function PayerRegistration() {
           setPayerDropdown(apiData);
           setPayerDetails(response.data.data.AddNewPayer);
           setIdentifierDetails(payerIdentificationData);
-          setStates(response.data.data.States);
-          setPlaces(response.data.data.Places);
-          setAreas(response.data.data.Areas);
+          setStates(
+            response.data.data.States.filter(
+              (i) => i.CountryId === apiData.AddNewPayer.CountryId
+            )
+          );
+          setPlaces(
+            response.data.data.Places.filter(
+              (i) => i.StateId === apiData.AddNewPayer.StateId
+            )
+          );
+          setAreas(
+            response.data.data.Areas.filter(
+              (i) => i.PlaceId === apiData.AddNewPayer.PlaceId
+            )
+          );
           setLoading(false);
         });
     } else {
@@ -208,7 +220,6 @@ function PayerRegistration() {
 
   const handleCountriesChange = async (value) => {
     // setCountrySelectValue(value);
-
     try {
       // Update the options for the second select based on the value of the first select
       if (value != null) {
@@ -217,7 +228,6 @@ function PayerRegistration() {
         );
         if (response.status === 200) {
           const states = response.data.data.States;
-
           // form.setFieldsValue({
           //   State: null,
           //   City: null,
@@ -226,6 +236,11 @@ function PayerRegistration() {
           setStates(states);
           setPlaces([]);
           setAreas([]);
+          form.setFieldsValue({
+            State: null,
+            City: null,
+            Area: null,
+          });
         }
       } else {
         setStates([]);
@@ -236,7 +251,6 @@ function PayerRegistration() {
           City: null,
           Area: null,
         });
-
         // form.resetFields();
       }
     } catch (error) {
@@ -257,10 +271,13 @@ function PayerRegistration() {
         );
         if (response.status === 200) {
           const places = response.data.data.Places;
-
           setPlaces(places);
           setAreas([]);
         }
+        form.setFieldsValue({
+          City: null,
+          Area: null,
+        });
       } else {
         setPlaces([]);
         setAreas([]);
@@ -274,7 +291,6 @@ function PayerRegistration() {
 
   const handlePlacesChange = async (value) => {
     // setCountrySelectValue(value);
-
     try {
       // Update the options for the second select based on the value of the first select
       if (value != null) {
@@ -283,14 +299,13 @@ function PayerRegistration() {
         );
         if (response.status === 200) {
           const areas = response.data.data.AreaModel;
-
           setAreas(areas);
           // form.setFieldsValue({ Area: null });
         }
+        form.setFieldsValue({ Area: null });
       } else {
         setAreas([]);
         form.setFieldsValue({ Area: null });
-
         // form.resetFields();
       }
     } catch (error) {

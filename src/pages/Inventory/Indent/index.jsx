@@ -406,7 +406,7 @@ const Indent = () => {
                 </Form.Item>
               </Col>
             </Row>
-            <Row justify="end">
+            <Row justify="end" gutter={16}>
               <Col>
                 <Form.Item>
                   <Button type="primary" htmlType="submit" loading={loading}>

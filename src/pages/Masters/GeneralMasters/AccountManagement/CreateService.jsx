@@ -42,6 +42,7 @@ import OrderingAttributeModal from "./OrderingAttributeModal";
 import MedicalCodeModal from "./MedicalCodeModal";
 import TurnAroundTimeTableModal from "./TurnAroundTimeTableModal";
 import PackageIndicationModal from "./PackageIndicationModal";
+import dayjs from "dayjs";
 const { Panel } = Collapse;
 function CreateService() {
   const [form] = Form.useForm();
@@ -61,7 +62,6 @@ function CreateService() {
     useState(false);
   const [ispackageModalVisible, setIsPackageModalVisible] = useState(false);
   const [orderAtributeDropdown, setOrderAtributeDropDown] = useState([]);
-  console.log("Serviceclassificationid", Serviceclassificationid);
   const [ageGenderRestriction, setAgeGenderRestriction] = useState([]);
   const [turnAroundTime, setTurnAroundTime] = useState([]);
   const [packageInd, setPackageInd] = useState([]);
@@ -86,7 +86,6 @@ function CreateService() {
 
   useEffect(() => {
     const fetchData = async () => {
-      debugger;
       try {
         const response = await customAxios.get(
           `${urlCreateNewService}?ServiceClassificationId=${Serviceclassificationid}`
@@ -131,6 +130,7 @@ function CreateService() {
             LongName: data.LongName,
             UomId: data.UomId,
             CategoryId: data.CategoryId,
+            IsAtomic: data.IsAtomic === "Y" ? true : false,
             Status: data.Status,
             Remarks: data.Remarks,
             IsSubTest: data.IsSubTest,
@@ -142,6 +142,15 @@ function CreateService() {
             TestValues: data.TestValues,
             NormalValForTestVal: data.NormalValForTestVal,
             LabUOM: data.LabUOM,
+            // Pakages
+            PackageToDate: dayjs(data.PackageToDateString, "DD-MM-YYYY"),
+            PackageNumberEncounter: data.PackageNumberEncounter,
+            PackageIsMultiEncounter:
+              data.PackageIsMultiEncounter === "Y" ? true : false,
+            PackageIsHealth: data.PackageIsHealth === "Y" ? true : false,
+            PackageFromDate: dayjs(data.PackageFromDateString, "DD-MM-YYYY"),
+            PackageDays: data.PackageDays,
+            PackageAmount: data.PackageAmount,
           });
 
           if (data.IsFromTestValues) {
@@ -164,8 +173,6 @@ function CreateService() {
   };
 
   useEffect(() => {
-    debugger;
-    // Filter the templateList based on checkbox state
     const filtered = isRadiologyChecked
       ? templateList.filter((template) => template.IsRadiology)
       : templateList.filter((template) => template.IsLab);
@@ -174,8 +181,6 @@ function CreateService() {
   }, [isRadiologyChecked, templateList]);
 
   const handleResultTypeChange = (value, option) => {
-    debugger;
-    // Check if the selected value's option children is "Template"
     if (option.children === "Template") {
       setTemplateDisable(false);
     } else {
@@ -263,25 +268,24 @@ function CreateService() {
     debugger;
     values.ServiceClassificationId = Serviceclassificationid;
     values.ServiceId = ServiceId ? ServiceId : 0;
+    values.IsAtomic = values.IsAtomic ? "True" : "False";
 
-    values.FromDate = values.PackageFromDate.format("DD-MM-YYYY");
-    values.ToDate = values.PackageToDate.format("DD-MM-YYYY");
+    values.FromDate = values.PackageFromDate?.format("DD-MM-YYYY");
+    values.ToDate = values.PackageToDate?.format("DD-MM-YYYY");
 
-  
-    values.PackageDays = values.PackageDays ? values.PackageDays : 0;
+    values.PackageDays = values.PackageDays ?? values.PackageDays;
     values.PackageAmount = values.PackageAmount ? values.PackageAmount : 0;
     values.PackageNumberEncounter = values.PackageNumberEncounter
       ? values.PackageNumberEncounter
       : 0;
 
-
-      values.PackageIsHealth = values.PackageIsHealth ? "true" : "false";
-      values.PackageIsMultiEncounter = values.PackageIsMultiEncounter ? "true" : "false";
-      values.IsFromTestValues = values.IsFromTestValues ? true : false;
-      values.IsRadiology = values.IsRadiology ? true : false;
-      values.IsSubTest = values.IsSubTest ? true : false;
-      
-
+    values.PackageIsHealth = values.PackageIsHealth ? "True" : "False";
+    values.PackageIsMultiEncounter = values.PackageIsMultiEncounter
+      ? "True"
+      : "False";
+    values.IsFromTestValues = values.IsFromTestValues ? true : false;
+    values.IsRadiology = values.IsRadiology ? true : false;
+    values.IsSubTest = values.IsSubTest ? true : false;
 
     const Service = {
       AddNewService: values,
@@ -289,7 +293,7 @@ function CreateService() {
       ListServiceTat: null,
       ListServiceMedicalCode: null,
       ServiceLabAttribute: null,
-      ServicePackage: packageInd?.length>0  ? packageInd :null,
+      ServicePackage: packageInd?.length > 0 ? packageInd : null,
     };
 
     const url = ServiceId ? urlUpdateService : urlAddNewService;
@@ -337,76 +341,54 @@ function CreateService() {
   };
 
   const handleSubmit = (values) => {
-    debugger;
     console.log(values);
-    // Ensure values is an array
     const valuesArray = Array.isArray(values) ? values : [values];
 
-    // Map the incoming values and add a key to each
     const valuesWithKeys = valuesArray.map((value, index) => ({
       ...value,
       key: keyCounter + index,
     }));
 
-    // Increment the key counter
     setKeyCounter(keyCounter + valuesArray.length);
 
-    // Update the state with the new values with keys
     setAgeGenderRestriction((prev) => [...prev, ...valuesWithKeys]);
   };
 
   const handleMedicalCodeSubmit = (values) => {
-    debugger;
-    console.log(values);
-
-    // Ensure values is an array
     const valuesArray = Array.isArray(values) ? values : [values];
 
-    // Map the incoming values and add a key to each
     const valuesWithKeys = valuesArray.map((value, index) => ({
       ...value,
       key: keyCounterMED + index,
     }));
 
-    // Increment the key counter
     setKeyCounterMED(keyCounterMED + valuesArray.length);
 
-    // Update the state with the new values with keys
     setMedicalCode((prev) => [...prev, ...valuesWithKeys]);
   };
   const handleTurnAroundTimeSubmit = (values) => {
-    debugger;
-
     const valuesArray = Array.isArray(values) ? values : [values];
 
-    // Map the incoming values and add a key to each
     const valuesWithKeys = valuesArray.map((value, index) => ({
       ...value,
       key: keyCounterTAT + index,
     }));
 
-    // Increment the key counter
     setKeyCounterTAT(keyCounterTAT + valuesArray.length);
 
-    // Update the state with the new values with keys
     setTurnAroundTime((prev) => [...prev, ...valuesWithKeys]);
   };
 
   const handlePackageIndicatiotrSubmit = (values) => {
-    debugger;
-
     const valuesArray = Array.isArray(values) ? values : [values];
 
-    // Map the incoming values and add a key to each
     const valuesWithKeys = valuesArray.map((value, index) => ({
       ...value,
       key: keyCounterPAK + index,
     }));
 
-    // Increment the key counter
     setKeyCounterPAK(keyCounterPAK + valuesArray.length);
 
-    // Update the state with the new values with keys
     setPackageInd((prev) => [...prev, ...valuesWithKeys]);
   };
 
@@ -605,11 +587,7 @@ function CreateService() {
     },
   ];
 
-  const handleClick = () => {
-    // Your handle click logic here
-
-    console.log("Plus icon clicked");
-  };
+  const handleClick = () => {};
 
   return (
     <>
@@ -652,12 +630,19 @@ function CreateService() {
               </Button>
             </Col>
           </Row>
-
           <Form
             style={{ margin: "0.5rem 1rem" }}
             layout="vertical"
             form={form}
             onFinish={onFinish}
+            initialValues={{
+              IsAtomic: true,
+              IsOrderable: true,
+              EmergencyPatient: true,
+              InPatient: true,
+              AmbulatoryPatient: true,
+              ShortStayPatient: true,
+            }}
           >
             <Row gutter={32}>
               <Col span={8}>
@@ -697,7 +682,6 @@ function CreateService() {
                   <Input style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
-
               <Col span={6}>
                 <Form.Item
                   name="UomId"
@@ -753,6 +737,15 @@ function CreateService() {
             <Row gutter={18}>
               <Col span={6}>
                 <Form.Item
+                  name="IsAtomic"
+                  label="Is Automic"
+                  valuePropName="checked"
+                >
+                  <Checkbox />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
                   name="Status"
                   label="Status"
                   rules={[
@@ -771,6 +764,44 @@ function CreateService() {
                   <Form.Item name="Remarks" noStyle>
                     <Input.TextArea />
                   </Form.Item>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={18}>
+              <Col span={6}>
+                <Form.Item
+                  name="IsProviderRequired"
+                  label="Is Provider Required"
+                  valuePropName="checked"
+                >
+                  <Checkbox />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="IsServiceEditable"
+                  label="Is Service Editable"
+                  valuePropName="checked"
+                >
+                  <Checkbox />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="IsAssociateCharge"
+                  label="Is Associate Charge"
+                  valuePropName="checked"
+                >
+                  <Checkbox />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="IsSurgeryCharge"
+                  label="Is Surgery Charge"
+                  valuePropName="checked"
+                >
+                  <Checkbox />
                 </Form.Item>
               </Col>
             </Row>
@@ -905,11 +936,7 @@ function CreateService() {
                         </Col>
                         <Col span={2}>
                           <Form.Item
-                            label={
-                              <span>
-                                No Of Encs
-                              </span>
-                            }
+                            label={<span>No Of Encs</span>}
                             name="PackageNumberEncounter"
                           >
                             <Input />
@@ -1075,7 +1102,7 @@ function CreateService() {
                   <Col span={5}>
                     <Form.Item
                       label="Is Orderable"
-                      name="Is Orderable"
+                      name="IsOrderable"
                       valuePropName="checked"
                     >
                       <Checkbox>Is Orderable ?</Checkbox>
@@ -1084,7 +1111,7 @@ function CreateService() {
                   <Col span={5}>
                     <Form.Item
                       label="Frequency Applicable"
-                      name="Frequency Applicable"
+                      name="FrequencyApplicable"
                       valuePropName="checked"
                     >
                       <Checkbox> Frequency Applicable ? </Checkbox>
@@ -1094,7 +1121,7 @@ function CreateService() {
                   <Col span={5}>
                     <Form.Item
                       label="Schedule Applicable"
-                      name="Schedule Applicable"
+                      name="ScheduleApplicable"
                       valuePropName="checked"
                     >
                       <Checkbox> Schedule Applicable? </Checkbox>
@@ -1103,7 +1130,7 @@ function CreateService() {
                   <Col span={5}>
                     <Form.Item
                       label="Is Quantity Applicable"
-                      name="Is Quantity Applicable"
+                      name="IsQuantityApplicable"
                       valuePropName="checked"
                     >
                       <Checkbox>Is Quantity Applicable ?</Checkbox>
@@ -1111,11 +1138,11 @@ function CreateService() {
                   </Col>
                 </Row>
                 <Row gutter={16}>
-                  <Divider orientation="left"> ApplicablePatientType</Divider>
+                  <Divider orientation="left"> Applicable Patient Type</Divider>
                   <Col span={5}>
                     <Form.Item
                       label="Emergency Patient"
-                      name="Emergency Patient"
+                      name="EmergencyPatient"
                       valuePropName="checked"
                     >
                       <Checkbox>Emergency Patient</Checkbox>
@@ -1123,8 +1150,8 @@ function CreateService() {
                   </Col>
                   <Col span={5}>
                     <Form.Item
-                      label="Frequency Applicable"
-                      name="Frequency Applicable"
+                      label="In Patient"
+                      name="InPatient"
                       valuePropName="checked"
                     >
                       <Checkbox>In Patient </Checkbox>
@@ -1134,7 +1161,7 @@ function CreateService() {
                   <Col span={5}>
                     <Form.Item
                       label="Ambulatory Patient"
-                      name="Ambulatory Patient"
+                      name="AmbulatoryPatient"
                       valuePropName="checked"
                     >
                       <Checkbox>Ambulatory Patient </Checkbox>
@@ -1143,7 +1170,7 @@ function CreateService() {
                   <Col span={5}>
                     <Form.Item
                       label="Short Stay Patient"
-                      name="Short Stay Patient"
+                      name="ShortStayPatient"
                       valuePropName="checked"
                     >
                       <Checkbox>Short Stay Patient</Checkbox>
@@ -1339,17 +1366,18 @@ function CreateService() {
             </Collapse>
             <Row gutter={32} style={{ marginTop: "1.5rem" }}>
               {" "}
-              {/* Added this line */}
               <Col offset={20} span={2}>
                 <Form.Item>
                   <Button type="primary" htmlType="submit">
-                    Save
+                    {ServiceId > 0 ? "Update" : "Save"}
                   </Button>
                 </Form.Item>
               </Col>
               <Col span={2}>
                 <Form.Item>
-                  <Button type="default">Cancel</Button>
+                  <Button type="default" onClick={() => navigate("/Service")}>
+                    Cancel
+                  </Button>
                 </Form.Item>
               </Col>
             </Row>

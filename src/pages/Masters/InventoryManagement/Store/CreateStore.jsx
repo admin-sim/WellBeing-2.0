@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import customAxios from "../../../../components/customAxios/customAxios.jsx";
-import { PlusOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { PlusOutlined, PlusCircleOutlined, LeftOutlined } from "@ant-design/icons";
 import Layout from "antd/es/layout/layout";
 import { useNavigate } from "react-router";
 import {
@@ -27,6 +27,7 @@ import {
 } from "../../../../../endpoints.js";
 import { useLocation } from "react-router-dom";
 import FormItem from "antd/es/form/FormItem/index.js";
+import PageHeader from "../../../../components/PageHeader/index.jsx";
 
 const CreateStore = () => {
   const [DropDown, setDropDown] = useState({
@@ -586,7 +587,7 @@ const CreateStore = () => {
           borderRadius: "10px",
         }}
       >
-        <Row
+        {/* <Row
           style={{
             padding: "0.5rem 2rem 0.5rem 2rem",
             backgroundColor: "#40A2E3",
@@ -615,7 +616,13 @@ const CreateStore = () => {
               Back
             </Button>
           </Col>
-        </Row>
+        </Row> */}
+        <PageHeader
+          title={"Create Store"}
+          buttonLabel="Back"
+          buttonIcon={<LeftOutlined />}
+          onButtonClick={handleSearch}
+        />
         <Card>
           <Form
             form={form}
@@ -729,7 +736,7 @@ const CreateStore = () => {
               </Col>
             </Row>
             <Row justify="end">
-              <Col>
+              <Col style={{ marginRight: "1rem" }}>
                 <Form.Item>
                   <Button type="primary" htmlType="submit">
                     {buttonTitle}
