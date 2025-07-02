@@ -149,31 +149,31 @@ const CreateManagePackages = () => {
       key: "actions",
       align: "center",
       width: 100,
-      render: (text, record) => {
-        const msg = record.IsIncludeInPackage
-          ? "Are you sure to Include Service In Package?"
-          : "Are you sure to Exclude Service From Package?";
-        const icon = !record.IsIncludeInPackage ? (
-          <DeleteOutlined />
-        ) : (
-          <UndoOutlined />
-        );
+      // render: (text, record) => {
+      //   const msg = record.IsIncludeInPackage
+      //     ? "Are you sure to Include Service In Package?"
+      //     : "Are you sure to Exclude Service From Package?";
+      //   const icon = !record.IsIncludeInPackage ? (
+      //     <DeleteOutlined />
+      //   ) : (
+      //     <UndoOutlined />
+      //   );
 
-        return (
-          <Popconfirm
-            title={msg}
-            onConfirm={() =>
-              handleDelete(
-                record.ChargeID,
-                record.IsIncludeInPackage ? 0 : 1,
-                1
-              )
-            }
-          >
-            <Button type="text" icon={icon} size="medium" />
-          </Popconfirm>
-        );
-      },
+      //   return (
+      //     <Popconfirm
+      //       title={msg}
+      //       onConfirm={() =>
+      //         handleDelete(
+      //           record.ChargeID,
+      //           record.IsIncludeInPackage ? 0 : 1,
+      //           1
+      //         )
+      //       }
+      //     >
+      //       <Button type="text" icon={icon} size="medium" />
+      //     </Popconfirm>
+      //   );
+      // },
     },
   ];
 

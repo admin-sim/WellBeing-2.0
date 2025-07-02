@@ -34,23 +34,21 @@ function CreateProcedure() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Fix: Use optional chaining to avoid TypeError if location.state is null
   const PatientId = location.state?.patientId;
   const EncounterId = location.state?.encounterId;
 
-  // Redirect if PatientId or EncounterId is missing
   useEffect(() => {
     if (!PatientId || !EncounterId) {
       message.error("Missing patient or encounter information.");
       navigate("/ProcedureCharges");
     }
-    // eslint-disable-next-line
+
   }, [PatientId, EncounterId, navigate]);
 
   const [patientData, setPatientData] = useState(null);
   const [anesthesiaType, setAnesthesiaType] = useState(null);
   const [chargeType, setChargeType] = useState(null);
-  const [groupId, setGroupId] = useState(null);
+  const [groupId, setGroupId] = useState(null); // This state will hold the ServiceGroupId ***  important for saving procedures  ***
   const [procedures, setProcedures] = useState(null);
   const [providers, setProviders] = useState(null);
   const [existingprocedures, setExistingProcedures] = useState(null);
@@ -70,12 +68,14 @@ function CreateProcedure() {
         const detailsheader = response.data.data.EncounterModel;
         setPatientData(detailsheader);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("Error fetching patient header details:", error);
+      message.error("Failed to load Patient & Encounter header details.");
+    }
   };
 
   useEffect(() => {
     if (PatientId && EncounterId) fetchdata();
-    // eslint-disable-next-line
   }, [PatientId, EncounterId]);
 
   const fetchdata = async () => {
@@ -89,7 +89,10 @@ function CreateProcedure() {
         const chargeType = response.data.data.AnesthesiaChargeType;
         setChargeType(chargeType);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("Error fetching initial create procedure data:", error);
+      message.error("Failed to load initial procedure data.");
+    }
   };
 
   const [anesthesiaTypeId, setAnesthesiaTypeId] = useState(null);
@@ -108,8 +111,8 @@ function CreateProcedure() {
       DiscAmount: 0,
       ServiceTax: true,
       NetAmount: 0,
-      ServiceClassificationID: 0,
-      TaxAmount: 0,
+      ServiceClassificationID: 0, 
+      TaxAmount: 0
     },
   ];
 
@@ -117,8 +120,8 @@ function CreateProcedure() {
 
   const fetchProcedureName = async () => {
     if (anesthesiaTypeId && chargeTypeId && PatientId && EncounterId) {
-      setReceiptInsAmtData([]);
-      form.setFields([]);
+      setReceiptInsAmtData([]); // Clear existing data before fetching new
+      form.resetFields(); // Reset form fields to clear old values
       try {
         const response = await customAxios.get(
           `${urlGetProcedureName}?AnesthesiaTypeId=${anesthesiaTypeId}&AnesthesiaChargeTypeId=${chargeTypeId}&Patient=${PatientId}&EncounterId=${EncounterId}`
@@ -127,16 +130,18 @@ function CreateProcedure() {
         if (response.status === 200 && response.data) {
           setProcedures(response.data.data.Services);
           setProviders(response.data.data.Provider);
-          setExistingProcedures(response.data.data.ProcedureCharges);
+          setExistingProcedures(response.data.data.ProcedureCharges); 
+
+         
+          setGroupId(response.data.data.ServiceGroupId); // This should get the "Surgical Services" ID
 
           if (response.data.data.ProcedureCharges?.length > 0) {
             const procedureCharges = response.data.data.ProcedureCharges;
-            setGroupId(response.data.data.ServiceGroupId ?? 1045);
             const formattedCharges = procedureCharges.map((item, index) => ({
               key: index + 1,
               ProcedureChargeId: item.ProcedureChargeId,
               IsChargeable: item.IsChargeable ?? false,
-              ServiceId: item.ProcedureId ?? "",
+              ServiceId: item.ProcedureId ?? "", 
               Rate: item.Rate ?? 0,
               ChargeAmount: item.ChargeAmount ?? 0,
               ProviderId: item.ProviderId ?? "",
@@ -151,10 +156,7 @@ function CreateProcedure() {
 
             setReceiptInsAmtData(formattedCharges);
 
-            form.resetFields();
-
             const fieldsToSet = [];
-
             formattedCharges.forEach((item, index) => {
               fieldsToSet.push(
                 { name: ["IsChargeable", index], value: item.IsChargeable },
@@ -169,79 +171,65 @@ function CreateProcedure() {
                 { name: ["NetAmount", index], value: item.NetAmount }
               );
             });
-
             form.setFields(fieldsToSet);
-
             setTimeout(() => {
               form.validateFields();
             }, 0);
           } else {
             setReceiptInsAmtData(initialDataSource);
-            form.resetFields();
+            form.resetFields(); 
           }
         }
       } catch (error) {
-        console.error("Error fetching procedure name", error);
+        console.error("Error fetching procedure name and data:", error);
+        message.error("Failed to load procedure names or existing charges.");
       }
     }
   };
 
   useEffect(() => {
     fetchProcedureName();
-    // eslint-disable-next-line
   }, [anesthesiaTypeId, chargeTypeId, PatientId, EncounterId]);
 
   const handleInputChange = (value, column, key) => {
     const newData = receiptInsAmtData.map((item) => {
       if (item.key === key) {
-        let newValue = value;
+        let updatedItem = { ...item, [column]: value };
 
-        if (column === "DiscP") {
-          let discP = parseFloat(value) || 0;
+        // Recalculate DiscAmount and NetAmount if Rate, ChargeAmount, or DiscP changes
+        if (column === "Rate" || column === "ChargeAmount" || column === "DiscP") {
+          const rate = parseFloat(updatedItem.Rate) || 0;
+          const chargeAmount = parseFloat(updatedItem.ChargeAmount) || 0;
+          let discP = parseFloat(updatedItem.DiscP) || 0;
 
-          if (discP > 100) {
-            discP = 100;
-            newValue = 100;
+          if (column === "DiscP") {
+            if (discP > 100) {
+              discP = 100;
+              updatedItem.DiscP = 100;
+              form.setFieldsValue({ [`DiscP`]: { [key - 1]: 100 } }); 
+            }
           }
 
-          const rate = parseFloat(item.Rate) || 0;
-          const chargeAmount = parseFloat(item.ChargeAmount) || 0;
-          const discAmount = (rate * discP) / 100;
+          const discAmount = (rate * discP) / 100; 
           const netAmount = chargeAmount - discAmount;
 
-          return {
-            ...item,
-            [column]: discP,
+          updatedItem = {
+            ...updatedItem,
             DiscAmount: discAmount,
             NetAmount: netAmount,
           };
+
+          form.setFieldsValue({
+            [`DiscAmount`]: { [key - 1]: updatedItem.DiscAmount },
+            [`NetAmount`]: { [key - 1]: updatedItem.NetAmount },
+          });
         }
-
-        return {
-          ...item,
-          [column]: newValue,
-        };
+        return updatedItem;
       }
-
       return item;
     });
 
     setReceiptInsAmtData(newData);
-
-    const updatedItem = newData.find((item) => item.key === key);
-    if (updatedItem) {
-      form.setFieldsValue({
-        [`DiscAmount`]: {
-          [key - 1]: updatedItem.DiscAmount,
-        },
-        [`NetAmount`]: {
-          [key - 1]: updatedItem.NetAmount,
-        },
-        [`DiscP`]: {
-          [key - 1]: updatedItem.DiscP,
-        },
-      });
-    }
   };
 
   const fetchProcedureDetails = async (serviceId, recordKey) => {
@@ -254,7 +242,7 @@ function CreateProcedure() {
         const priceDef = response.data.data.ServicePriceDefinition;
 
         const price = priceDef?.Price || 0;
-        const serviceClassId = priceDef?.ServiceClassificationId || "";
+        const serviceClassId = priceDef?.ServiceClassificationId || 0; 
 
         setReceiptInsAmtData((prevData) =>
           prevData.map((item) =>
@@ -283,31 +271,44 @@ function CreateProcedure() {
       }
     } catch (error) {
       console.error("Failed to fetch procedure details", error);
+      message.error("Failed to get service charge details.");
     }
   };
 
   async function handleInstrumentDelete(record) {
     try {
-      const response = await customAxios.get(
-        `${urlDeleteSelectedProcedureCharges}?ProcedureChargeId=${record.ProcedureChargeId}`
-      );
-      if (response.status === 200 && response.data) {
-        fetchProcedureName();
+      if (record.ProcedureChargeId) {
+        const response = await customAxios.get(
+          `${urlDeleteSelectedProcedureCharges}?ProcedureChargeId=${record.ProcedureChargeId}`
+        );
+        if (response.status === 200 && response.data) {
+          message.success("Procedure charge deleted successfully.");
+          fetchProcedureName(); 
+        } else {
+          message.error("Failed to delete procedure charge on server.");
+        }
+      } else {
+        setReceiptInsAmtData((prev) =>
+          prev.filter((item) => item.key !== record.key)
+        );
+        message.info("Unsaved procedure row removed.");
       }
     } catch (error) {
-      console.error("Error fetching procedure name", error);
+      console.error("Error deleting procedure charge:", error);
+      message.error("An error occurred while trying to delete the procedure charge.");
     }
   }
 
   function handleAddRow() {
     const lastRow = receiptInsAmtData[receiptInsAmtData.length - 1];
     if (
-      !lastRow.ServiceId ||
-      !lastRow.Rate ||
-      !lastRow.ChargeAmount ||
-      !lastRow.ProviderId
+      !lastRow.ProcedureChargeId && 
+      (!lastRow.ServiceId ||
+        lastRow.Rate === 0 || 
+        lastRow.ChargeAmount === 0 || 
+        !lastRow.ProviderId)
     ) {
-      message.warning("Please ensure all required fields in the current row are completed before adding a new entry.");
+      message.warning("Please ensure all required fields (Procedure, Rate, Amount, Provider) in the current row are completed before adding a new entry.");
       return;
     }
 
@@ -332,17 +333,17 @@ function CreateProcedure() {
     ]);
   }
 
-  // Remove all width properties for auto table width
   const receiptInscolumns = [
     {
       title: "Chargeable",
       dataIndex: "IsChargeable",
       key: "IsChargeable",
+      align: "center",
       render: (text, record) => (
         <Form.Item
           name={["IsChargeable", record.key - 1]}
           valuePropName="checked"
-          initialValue={true}
+          initialValue={true} 
           style={{ marginBottom: 0 }}
         >
           <Checkbox
@@ -359,7 +360,7 @@ function CreateProcedure() {
       dataIndex: "ServiceId",
       key: "ServiceId",
       ellipsis: false,
-      width: 220, // Set a fixed width for the cell
+      width: 220,
       render: (text, record) => {
         const selectedServiceIds = receiptInsAmtData
           .filter(item => item.key !== record.key)
@@ -373,17 +374,18 @@ function CreateProcedure() {
           >
             <Select
               showSearch
-              style={{ width: 210 }}
+              style={{ width: 250 }}
               dropdownMatchSelectWidth={false}
-              dropdownStyle={{ minWidth: 350, maxWidth: 500 }}
+              dropdownStyle={{ width: 350 }}
               optionFilterProp="children"
               onChange={value => {
                 handleInputChange(value, "ServiceId", record.key);
                 fetchProcedureDetails(value, record.key);
               }}
+              disabled={record.ProcedureChargeId ? true : false} 
             >
               {procedures
-                ?.filter(option => !selectedServiceIds.includes(option.ServiceId))
+                ?.filter(option => !selectedServiceIds.includes(option.ServiceId) || option.ServiceId === record.ServiceId) 
                 .map(option => (
                   <Select.Option key={option.ServiceId} value={option.ServiceId}>
                     {option.LongName}
@@ -405,7 +407,7 @@ function CreateProcedure() {
           rules={[{ required: true, message: "Required" }]}
         >
           <InputNumber
-            style={{ width: "100%" }}
+            style={{ width: 80 }}
             min={0}
             size="small"
             onChange={value => handleInputChange(value, "Rate", record.key)}
@@ -424,7 +426,7 @@ function CreateProcedure() {
           rules={[{ required: true, message: "Required" }]}
         >
           <InputNumber
-            style={{ width: "100%" }}
+            style={{ width: 100 }}
             min={0}
             size="small"
             onChange={value => handleInputChange(value, "ChargeAmount", record.key)}
@@ -437,7 +439,7 @@ function CreateProcedure() {
       dataIndex: "ProviderId",
       key: "ProviderId",
       ellipsis: false,
-      width: 200, // Set a fixed width for the cell
+      width: 220,
       render: (text, record) => (
         <Form.Item
           name={["ProviderId", record.key - 1]}
@@ -446,17 +448,28 @@ function CreateProcedure() {
         >
           <Select
             showSearch
-            style={{ width: 190 }}
-            dropdownMatchSelectWidth={false}
-            dropdownStyle={{ minWidth: 300, maxWidth: 400 }}
+            style={{ width: 210 }}
+            dropdownStyle={{ minWidth: 250, maxWidth: 350 }}
             optionFilterProp="children"
             onChange={value =>
               handleInputChange(value, "ProviderId", record.key)
             }
           >
             {providers?.map(option => (
-              <Select.Option key={option.ProviderId} value={option.ProviderId}>
-                {`${option.ProviderFirstName} ${option.ProviderLastName}`}
+              <Select.Option
+                key={option.ProviderId}
+                value={option.ProviderId}
+                title={`${option.ProviderFirstName} ${option.ProviderLastName}`}
+              >
+                <span style={{
+                  display: "inline-block",
+                  maxWidth: 200,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  verticalAlign: "middle"
+                }}>
+                  {`${option.ProviderFirstName} ${option.ProviderLastName}`}
+                </span>
               </Select.Option>
             ))}
           </Select>
@@ -476,6 +489,7 @@ function CreateProcedure() {
             min={0}
             defaultValue={text}
             size="small"
+            style={{ width: 50 }}
             onChange={e =>
               handleInputChange(e.target.value, "Priority", record.key)
             }
@@ -484,7 +498,7 @@ function CreateProcedure() {
       ),
     },
     {
-      title: "DiscP",
+      title: "Disc % ",
       dataIndex: "DiscP",
       key: "DiscP",
       render: (text, record) => (
@@ -493,6 +507,7 @@ function CreateProcedure() {
             min={0}
             defaultValue={text}
             size="small"
+            style={{ width: 50 }}
             onChange={e =>
               handleInputChange(e.target.value, "DiscP", record.key)
             }
@@ -501,22 +516,23 @@ function CreateProcedure() {
       ),
     },
     {
-      title: "DiscAmount",
+      title: "Disc Amt",
       dataIndex: "DiscAmount",
       key: "DiscAmount",
       render: (text, record) => (
         <Form.Item name={["DiscAmount", record.key - 1]} style={{ marginBottom: 0 }}>
           <Input
-            disabled
+            disabled // This should be calculated, not directly editable
             min={0}
             defaultValue={text}
             size="small"
+            style={{ width: 60 }}
           />
         </Form.Item>
       ),
     },
     {
-      title: "ServiceTax?",
+      title: "STax?",
       dataIndex: "ServiceTax",
       key: "ServiceTax",
       render: (text, record) => (
@@ -538,45 +554,59 @@ function CreateProcedure() {
       title: "NetAmount",
       dataIndex: "NetAmount",
       key: "NetAmount",
+      fixed: "right",
       render: (text, record) => (
         <Form.Item name={["NetAmount", record.key - 1]} style={{ marginBottom: 0 }}>
           <Input
+            disabled // This should be calculated, not directly editable
             min={0}
             defaultValue={text}
             size="small"
-            onChange={e =>
-              handleInputChange(e.target.value, "NetAmount", record.key)
-            }
+            style={{ width: 80 }}
           />
         </Form.Item>
       ),
     },
     {
       title: (
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={handleAddRow}
-          size="small"
-        />
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 48 }}>
+          <Button
+            type="primary"
+            shape="circle"
+            icon={<PlusOutlined />}
+            onClick={handleAddRow}
+            size="small"
+            style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+          />
+        </div>
       ),
-      dataIndex: "add",
-      key: "add",
+      key: "actions",
+      fixed: "right",
+      width: 60,
       render: (text, record) => (
-        <Popconfirm
-          title="Sure to delete?"
-          onConfirm={() => {
-            if (record.ProcedureChargeId) {
-              handleInstrumentDelete(record);
-            } else {
-              setReceiptInsAmtData(prev =>
-                prev.filter(item => item.key !== record.key)
-              );
-            }
-          }}
-        >
-          <Button type="text" icon={<DeleteOutlined />} size="small" />
-        </Popconfirm>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 48 }}>
+          <Popconfirm
+            title="Sure to delete?"
+            onConfirm={() => {
+              handleInstrumentDelete(record); //  delete logic...
+            }}
+          >
+            <Button
+              type="text"
+              icon={<DeleteOutlined />}
+              size="small"
+              danger
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                color: "red",
+                border: "1px solid #ff4d4f",
+                borderRadius: "50%"
+              }}
+            />
+          </Popconfirm>
+        </div>
       ),
     },
   ];
@@ -587,80 +617,97 @@ function CreateProcedure() {
     try {
       setSaving(true);
 
-      const filledRows = receiptInsAmtData.filter(
+      // Filter out incomplete rows and only get the "new" ones (without ProcedureChargeId)
+      const unsavedNewRows = receiptInsAmtData.filter(
         item =>
+          !item.ProcedureChargeId && // Only new items
           item.ServiceId &&
-          item.Rate &&
-          item.ChargeAmount &&
+          item.Rate !== 0 && // Rate must be non-zero
+          item.ChargeAmount !== 0 && // ChargeAmount must be non-zero
           item.ProviderId
       );
 
-      if (filledRows.length !== receiptInsAmtData.length) {
-        setReceiptInsAmtData(filledRows);
-        message.info("Empty/incomplete rows were removed.");
-      }
-
-      const unsavedRows = filledRows.filter(item => !item.ProcedureChargeId);
-
-      if (unsavedRows.length === 0) {
-        message.info("No new procedures to save.");
+      if (unsavedNewRows.length === 0) {
+        message.info("No new, valid procedures to save.");
         setSaving(false);
         return;
       }
 
-      let saved = false;
-      for (const item of unsavedRows) {
+      let allNewProceduresSavedSuccessfully = true;
+
+      for (const item of unsavedNewRows) {
         const charamt = parseFloat(item.ChargeAmount) || 0;
         const discamt = parseFloat(item.DiscAmount) || 0;
-        const temp = true;
-        if (charamt >= discamt && temp === true) {
-          const object = {
-            FacilityId: 1,
-            PatientId: PatientId,
-            EncounterId: EncounterId,
-            AnesthesiaTypeId: anesthesiaTypeId,
-            AnesthesiaTypeChargeId: chargeTypeId,
-            IsChargeable: item.IsChargeable,
-            ProcedureId: item.ServiceId,
-            Rate: item.Rate,
-            ChargeAmount: item.ChargeAmount,
-            ProviderId: item.ProviderId,
-            Priority: item.Priority,
-            Discount: item.DiscAmount,
-            DiscountRate: item.DiscP,
-            ServiceTax: item.ServiceTax || false,
-            TaxAmount: item.TaxAmount || 0,
-            NetAmount: item.NetAmount,
-            ServiceGroupId: groupId,
-            ServiceclassificationId: item.ServiceClassificationID,
-          };
-          const payload = {
-            AddNewProcedureCharges: object,
-            ProcedureChargesDetails: [],
-          };
-          const response = await customAxios.post(
-            urlSaveNewProcedureCharges,
-            payload,
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          if (response.status === 200) {
-            saved = true;
+
+        if (charamt < discamt) {
+          message.error(`Charge amount (${charamt}) cannot be less than discount amount (${discamt}) for a procedure.`);
+          allNewProceduresSavedSuccessfully = false;
+          continue; // Skip this item
+        }
+        
+        if (!groupId) {
+             message.error("Service Group ID (Surgical Services) is missing. Cannot save procedures.");
+             allNewProceduresSavedSuccessfully = false;
+             continue;
+        }
+
+        const procedureChargeObject = {
+          FacilityId: 1, // Confirm this ID with your backend's expectation
+          PatientId: PatientId,
+          EncounterId: EncounterId,
+          AnesthesiaTypeId: anesthesiaTypeId,
+          AnesthesiaTypeChargeId: chargeTypeId,
+          IsChargeable: item.IsChargeable,
+          ProcedureId: item.ServiceId, 
+          Rate: item.Rate,
+          ChargeAmount: item.ChargeAmount,
+          ProviderId: item.ProviderId,
+          Priority: item.Priority,
+          Discount: item.DiscAmount,
+          DiscountRate: item.DiscP,
+          ServiceTax: item.ServiceTax || false,
+          TaxAmount: item.TaxAmount || 0,
+          NetAmount: item.NetAmount,
+          ServiceGroupId: groupId, 
+          ServiceClassificationId: item.ServiceClassificationID, 
+        };
+
+        const payload = {
+ 
+         AddNewProcedureCharges: procedureChargeObject,
+          ProcedureChargesDetails: [], 
+        };
+
+        console.log("Attempting to save new procedure with payload:", payload);
+
+        const response = await customAxios.post(
+          urlSaveNewProcedureCharges,
+          payload,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
+        );
+
+        if (response.status === 200) {
+          message.success(`Procedure for saved successfully.`);
+        } else {
+          allNewProceduresSavedSuccessfully = false;
+          message.error(`Failed to save procedure: ${item.ServiceId}. Server responded with status ${response.status}.`);
         }
       }
-      if (saved) {
-        message.success("Procedures saved successfully");
-        fetchProcedureName(); // reload all saved procedures
-      } else {
-        message.info("No valid new procedures to save.");
+
+      if (allNewProceduresSavedSuccessfully && unsavedNewRows.length > 0) {
+        message.success("All new procedures saved successfully!");
+        fetchProcedureName(); 
+      } else if (!allNewProceduresSavedSuccessfully) {
+        message.warn("Some new procedures failed to save. Check console for details.");
       }
+
     } catch (error) {
-      console.error("Save failed:", error);
-      alert("Something went wrong while saving.");
+      console.error("Overall Save failed:", error.response ? error.response.data : error.message);
+      message.error(`An error occurred during saving: ${error.response?.data?.message || error.message}`);
     } finally {
       setSaving(false);
     }
@@ -747,7 +794,6 @@ function CreateProcedure() {
             </div>
           </Col>
         </Row>
-        {/* Only show the table and form if both types are selected */}
         {(anesthesiaTypeId && chargeTypeId) && (
           <Form
             form={form}
@@ -763,6 +809,7 @@ function CreateProcedure() {
               bordered
               pagination={false}
               style={{ marginBottom: 12 }}
+              scroll={{ x: 'max-content' }}
               onRow={(record) => ({
                 onMouseEnter: () => setHoveredRowKey(record.key),
                 onMouseLeave: () => setHoveredRowKey(null),
