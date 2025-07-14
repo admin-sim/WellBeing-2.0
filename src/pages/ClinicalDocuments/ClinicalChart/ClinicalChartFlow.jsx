@@ -1,299 +1,528 @@
 import React, { useState, useEffect } from "react";
-import { Tabs, Button, Table, Layout, Card, Row, Form, Input, Col } from 'antd'
+import {
+  Tabs,
+  Button,
+  Table,
+  Layout,
+  Card,
+  Row,
+  Form,
+  Input,
+  Col,
+  Modal,
+} from "antd";
 import customAxios from "../../../components/customAxios/customAxios";
-import { urlClinicalChartFlows, urlGetAllEncounterByPatientId } from "../../../../endpoints";
+import {
+  urlClinicalChartFlows,
+  urlGetAllEncounterByPatientId,
+  urlGetTemplateDataByProviderId,
+} from "../../../../endpoints";
 import { useNavigate } from "react-router";
-import PageHeader from '../../../components/PageHeader/index'
-import UhidSelectComponet from '../../../components/UhidSelectComponent/index'
+import PageHeader from "../../../components/PageHeader/index";
+import UhidSelectComponet from "../../../components/UhidSelectComponent/index";
+import CkEditor from "../../../components/CKEditor";
 
 function ClinicalChartFlow() {
-    const [form1] = Form.useForm();
-    const [defaultActiveKey, setDefaultActiveKey] = useState("2");
-    const [tableData, setTableData] = useState([])
-    const [loading, setLoading] = useState()
-    const navigate = useNavigate();
-    const SelectPatient = (record) => {
-        navigate("/ClinicalChart", { state: { record } });
+  const [form1] = Form.useForm();
+  const [defaultActiveKey, setDefaultActiveKey] = useState("2");
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState();
+  const navigate = useNavigate();
+  const [ckModalOpen, setCkModalOpen] = useState(false);
+  const [templateEditorData, setTemplateEditorData] = useState("");
+  const [key, setKey] = useState(1);
+  const [editorKey, setEditorKey] = useState(0);
+  const [currentRecord, setCurrentRecord] = useState(null);
+
+  useEffect(() => {
+    if (!ckModalOpen) handleCancelModel();
+  }, [ckModalOpen]);
+
+  const handleCancelModel = () => {
+    setTemplateEditorData("");
+    setCkModalOpen(false);
+    setEditorKey((prevKey) => prevKey + 1);
+  };
+
+  const SelectPatient = (record) => {
+    navigate("/ClinicalChart", { state: { record } });
+  };
+
+  useEffect(() => {
+    fetch("Ambulatory Patient");
+  }, []);
+
+  async function fetch(type) {
+    setLoading(true);
+    const response = await customAxios.get(
+      `${urlClinicalChartFlows}?PatientType=${type}`
+    );
+    if (response.status == 200) {
+      const newData = response.data.data.PatientList.map((item, index) => {
+        return {
+          ...item,
+          key: index + 1,
+        };
+      });
+      setTableData(newData);
+      setLoading(false);
     }
+  }
 
-    useEffect(() => {
-        fetch('Ambulatory Patient')
-    }, [])
+  const onTabChange = async (key) => {
+    if (key == "1") {
+      await form1.validateFields();
+      form1.submit();
+    } else if (key == "22") {
+      fetch("Ambulatory Patient");
+    } else if (key == "23") {
+      fetch("InPatient");
+    } else if (key == "24") {
+      fetch("Day Care");
+    } else {
+      fetch("Emergency");
+    }
+    setDefaultActiveKey(key);
+  };
 
-    async function fetch(type) {
-        setLoading(true)
-        const response = await customAxios.get(`${urlClinicalChartFlows}?PatientType=${type}`)
-        if (response.status == 200) {
-            const newData = response.data.data.PatientList.map((item, index) => {
-                return {
+  async function handleSelectPatient(params) {
+    debugger;
+    SelectPatient(params);
+  }
+
+  const columns = [
+    {
+      title: "Sl. No.",
+      dataIndex: "key",
+    },
+    {
+      title: "UHID",
+      dataIndex: "UhId",
+    },
+    {
+      title: "Encounter",
+      dataIndex: "GeneratedEncounterId",
+      render: (text, record) => {
+        return (
+          <Button type="link" onClick={() => handleSelectPatient(record)}>
+            {record.GeneratedEncounterId}
+          </Button>
+        );
+      },
+    },
+    {
+      title: "Provider",
+      dataIndex: "ProviderName",
+    },
+    {
+      title: "Name",
+      dataIndex: "PatientFirstName",
+    },
+    // {
+    //   title: "Template",
+    //   dataIndex: "GeneratedEncounterId",
+    //   render: (text, record) => {
+    //     return (
+    //       <Button type="link" onClick={() => handleTemplateClick(record)}>
+    //         Template
+    //       </Button>
+    //     );
+    //   },
+    // },
+  ];
+
+  async function handleSelectUHID(va, op) {
+    debugger;
+    if (op != undefined) {
+      form1.setFieldsValue({ PatientId: op.data.PatientId });
+      form1.setFieldsValue({
+        Name: op.data.PatientFirstName + " " + op.data.PatientLastName,
+      });
+      form1.setFieldsValue({ UHID: op.value });
+    }
+  }
+
+  const handleTemplateSave = () => {
+    if (currentRecord) {
+      const updatedRecord = {
+        ...currentRecord,
+        ObservedValues: templateEditorData,
+        // ResId: currentRecord.ResId > 0 ? currentRecord.ResId : 1, // Assign a non-zero value if it's a new entry
+      };
+      updateRecords(updatedRecord);
+      setCkModalOpen(false);
+    }
+  };
+
+  const handleTemplateClick = async (record) => {
+    debugger;
+    setCurrentRecord(record); // Store current record
+    let templateData = "";
+
+    // Create a table for patient details with wrapper comments
+    // const generatePatientTableHTML = (patient) => {
+    //   if (!patient) return "";
+
+    //   return `
+    //       <!-- PATIENT_TABLE_START -->
+    //       <table border="1" cellpadding="8" cellspacing="0" style="width:100%; border-collapse: collapse; font-size:14px;">
+    //         <tr>
+    //           <th>UHID</th>
+    //           <th>Name</th>
+    //           <th>Age</th>
+    //           <th>Gender</th>
+    //           <th>Generated Encounter ID</th>
+    //         </tr>
+    //         <tr>
+    //           <td>${patient?.UhId || ""}</td>
+    //           <td>${patient?.PatientName || ""}</td>
+    //           <td>${patient?.Age || ""}</td>
+    //           <td>${patient?.PatientGender || ""}</td>
+    //           <td>${patient?.GeneratedEncounterId || ""}</td>
+    //         </tr>
+    //       </table>
+    //       <br/>
+    //       <!-- PATIENT_TABLE_END -->
+    //     `;
+    // };
+
+    try {
+      // Fetch template data if not already available
+      if (record.ResId > 0 || record.ObservedValues) {
+        templateData = record.ObservedValues;
+      } else {
+        const response = await customAxios.get(
+          `${urlGetTemplateDataByProviderId}?PatientId=${record.PatientId}&EncounterId=${record.Encounter}&ProviderId=${record.ProviderId}`
+        );
+        if (response.status === 200 && response.data.data !== null) {
+          templateData = response.data.data.TempData;
+        }
+      }
+
+      // Remove previously injected patient table if present
+      //   const cleanedTemplateData = templateData.replace(
+      //     /<!-- PATIENT_TABLE_START -->[\s\S]*?<!-- PATIENT_TABLE_END -->/g,
+      //     ""
+      //   );
+
+      //   // Generate new patient table and combine with cleaned template
+      //   const patientTableHTML = generatePatientTableHTML(patientData);
+      //   const fullTemplateContent = `${patientTableHTML}${cleanedTemplateData}`;
+
+      // Update state and open modal
+      setTemplateEditorData(templateData);
+      setEditorKey((prevKey) => prevKey + 1); // Force CKEditor to rerender
+      setCkModalOpen(true); // Show modal
+    } catch (error) {
+      console.error("Error fetching template data:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to load template data. Please try again.",
+      });
+    }
+  };
+
+  const updateRecords = (updatedRecord) => {
+    setResultEntry((prevRecords) =>
+      prevRecords.map((record) =>
+        record.key === updatedRecord.key ? updatedRecord : record
+      )
+    );
+
+    // Update the services state to reflect the changes
+    setServices((prevServices) =>
+      prevServices.map((service) =>
+        service.key === updatedRecord.key
+          ? {
+              ...service,
+              ObservedValues: updatedRecord.ObservedValues,
+              ResId: updatedRecord.ResId,
+            }
+          : service
+      )
+    );
+  };
+
+  return (
+    <Layout style={{ zIndex: "999999999" }}>
+      <div
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <PageHeader title={"Clinical Chart"} button={false} />
+        <Card>
+          <Form
+            layout="vertical"
+            form={form1}
+            onFinish={async (values) => {
+              debugger;
+              setLoading(true);
+              const response = await customAxios.get(
+                `${urlGetAllEncounterByPatientId}?PatientId=${values.PatientId}`
+              );
+              if (response.status == 200) {
+                const newData = response.data.data.map((item, index) => {
+                  return {
                     ...item,
-                    key: index + 1
+                    key: index + 1,
+                  };
+                });
+                setTableData(newData);
+                setDefaultActiveKey("1");
+                setLoading(false);
+              }
+            }}
+          >
+            <Row gutter={32}>
+              <Col span={6}>
+                <Form.Item
+                  name="UHID"
+                  label="UHID"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter UHID",
+                    },
+                  ]}
+                >
+                  <UhidSelectComponet handleSelectUHID={handleSelectUHID} />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item name="Name" label="Name">
+                  <Input />
+                </Form.Item>
+                <Form.Item name="PatientId" hidden>
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item label="&nbsp;">
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    onClick={() => form1.submit()}
+                  >
+                    Search
+                  </Button>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <Tabs
+              defaultActiveKey="22"
+              size="small"
+              onChange={onTabChange}
+              tabBarGutter={0}
+              activeKey={defaultActiveKey}
+              // type="card"
+              style={{ marginTop: "1rem" }}
+              // tabBarStyle={{ display: "flex", justifyContent: "right" }}
+            >
+              <Tabs.TabPane
+                tab={
+                  <div
+                    // style={{
+                    //     width: "3vw",
+                    //     textAlign: "center",
+                    //     fontWeight: "600",
+                    // }}
+                    style={{
+                      width: "15vw",
+                      textAlign: "center",
+                      fontWeight: "600",
+                      border:
+                        defaultActiveKey === "1"
+                          ? "2px solid #1890ff"
+                          : "2px solid transparent",
+                      borderRadius: "8px",
+                      backgroundColor:
+                        defaultActiveKey === "22" ? "#e6f7ff" : "transparent",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    ALL
+                  </div>
                 }
-            })
-            setTableData(newData)
-            setLoading(false)
-        }
-    }
-
-    const onTabChange = async (key) => {
-        if (key == '1') {
-            await form1.validateFields()
-            form1.submit()
-        } else if (key == '22') {
-            fetch('Ambulatory Patient')
-        } else if (key == '23') {
-            fetch('InPatient')
-        } else if (key == '24') {
-            fetch('Day Care')
-        } else {
-            fetch('Emergency')
-        }
-        setDefaultActiveKey(key)
-    };
-
-    async function handleSelectPatient(params) {
-        debugger
-        SelectPatient(params)
-    }
-    const columns = [
-        {
-            title: "Sl. No.",
-            dataIndex: "key",
-        },
-        {
-            title: "UHID",
-            dataIndex: "UhId",
-        },
-        {
-            title: "Encounter",
-            dataIndex: "GeneratedEncounterId",
-            render: (text, record) => {
-                return (
-                    <Button type="link" onClick={() => handleSelectPatient(record)}>{record.GeneratedEncounterId}</Button>
-                );
-
-            },
-        },
-        {
-            title: "Provider",
-            dataIndex: "ProviderName",
-        },
-        {
-            title: "Name",
-            dataIndex: "PatientFirstName"
-        }
-    ];
-
-    async function handleSelectUHID(va, op) {
-        debugger
-        if (op != undefined) {
-            form1.setFieldsValue({ 'PatientId': op.data.PatientId })
-            form1.setFieldsValue({ 'Name': op.data.PatientFirstName + ' ' + op.data.PatientLastName })
-            form1.setFieldsValue({ 'UHID': op.value })
-        }
-    }
-
-    return (
-        <Layout style={{ zIndex: '999999999' }}>
-            <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-                <PageHeader title={"Clinical Chart"} button={false} />
-                <Card>
-                    <Form
-                        layout="vertical"
-                        form={form1}
-                        onFinish={async (values) => {
-                            debugger
-                            setLoading(true)
-                            const response = await customAxios.get(`${urlGetAllEncounterByPatientId}?PatientId=${values.PatientId}`)
-                            if (response.status == 200) {
-                                const newData = response.data.data.map((item, index) => {
-                                    return {
-                                        ...item,
-                                        key: index + 1
-                                    }
-                                })
-                                setTableData(newData)
-                                setDefaultActiveKey('1')
-                                setLoading(false)
-                            }
-                        }}>
-                        <Row gutter={32}>
-                            <Col span={6}>
-                                <Form.Item name='UHID' label='UHID'
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message: "Please enter UHID",
-                                        },
-                                    ]}
-                                >
-                                    <UhidSelectComponet handleSelectUHID={handleSelectUHID} />
-                                </Form.Item>
-                            </Col>
-                            <Col span={6}>
-                                <Form.Item name='Name' label='Name'>
-                                    <Input />
-                                </Form.Item>
-                                <Form.Item name='PatientId' hidden>
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-                            <Col span={6}>
-                                <Form.Item label="&nbsp;">
-                                    <Button type="primary" htmlType="submit" onClick={() => form1.submit()}>
-                                        Search
-                                    </Button>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Form>
-                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                        <Tabs
-                            defaultActiveKey="22"
-                            size="small"
-                            onChange={onTabChange}
-                            tabBarGutter={0}
-                            activeKey={defaultActiveKey}
-                            // type="card"
-                            style={{ marginTop: "1rem" }}
-                        // tabBarStyle={{ display: "flex", justifyContent: "right" }}
-                        >
-                            <Tabs.TabPane
-                                tab={
-                                    <div
-                                        // style={{
-                                        //     width: "3vw",
-                                        //     textAlign: "center",
-                                        //     fontWeight: "600",
-                                        // }}
-                                        style={{
-                                            width: "15vw",
-                                            textAlign: "center",
-                                            fontWeight: "600",
-                                            border: defaultActiveKey === "1" ? "2px solid #1890ff" : "2px solid transparent",
-                                            borderRadius: "8px",
-                                            backgroundColor: defaultActiveKey === "22" ? "#e6f7ff" : "transparent",
-                                            transition: "all 0.3s ease",
-                                        }}
-                                    >
-                                        ALL
-                                    </div>
-                                }
-                                key="1"
-                            >
-                                {/* <Table columns={columns} dataSource={tableData} /> */}
-                            </Tabs.TabPane>
-                            <Tabs.TabPane
-                                tab={
-                                    <div
-                                        // style={{
-                                        //     width: "3vw",
-                                        //     textAlign: "center",
-                                        //     fontWeight: "600",
-                                        // }}
-                                        style={{
-                                            width: "15vw",
-                                            textAlign: "center",
-                                            fontWeight: "600",
-                                            border: defaultActiveKey === "22" ? "2px solid #1890ff" : "2px solid transparent",
-                                            borderRadius: "8px",
-                                            backgroundColor: defaultActiveKey === "22" ? "#e6f7ff" : "transparent",
-                                            transition: "all 0.3s ease",
-                                        }}
-                                    >
-                                        OP
-                                    </div>
-                                }
-                                key="22"
-                            >
-                                {/* <Table columns={columns} dataSource={tableData} /> */}
-                            </Tabs.TabPane>
-                            <Tabs.TabPane
-                                tab={
-                                    <div
-                                        // style={{
-                                        //     width: "3vw",
-                                        //     textAlign: "center",
-                                        //     fontWeight: "600",
-                                        // }}
-                                        style={{
-                                            width: "15vw",
-                                            textAlign: "center",
-                                            fontWeight: "600",
-                                            border: defaultActiveKey === "23" ? "2px solid #1890ff" : "2px solid transparent",
-                                            borderRadius: "8px",
-                                            backgroundColor: defaultActiveKey === "23" ? "#e6f7ff" : "transparent",
-                                            transition: "all 0.3s ease",
-                                        }}
-                                    >
-                                        IP
-                                    </div>
-                                }
-                                key="23"
-                            >
-                                {/* <Table columns={columns} dataSource={tableData} /> */}
-                            </Tabs.TabPane>
-                            <Tabs.TabPane
-                                tab={
-                                    <div
-                                        // style={{
-                                        //     width: "3vw",
-                                        //     textAlign: "center",
-                                        //     fontWeight: "600",
-                                        // }}
-                                        style={{
-                                            width: "15vw",
-                                            textAlign: "center",
-                                            fontWeight: "600",
-                                            border: defaultActiveKey === "24" ? "2px solid #1890ff" : "2px solid transparent",
-                                            borderRadius: "8px",
-                                            backgroundColor: defaultActiveKey === "24" ? "#e6f7ff" : "transparent",
-                                            transition: "all 0.3s ease",
-                                        }}
-                                    >
-                                        DM
-                                    </div>
-                                }
-                                key="24"
-                            >
-                                {/* <Table columns={columns} dataSource={tableData} /> */}
-                            </Tabs.TabPane>
-                            <Tabs.TabPane
-                                tab={
-                                    <div
-                                        // style={{
-                                        //     width: "3vw",
-                                        //     textAlign: "center",
-                                        //     fontWeight: "600",
-                                        // }}
-                                        style={{
-                                            width: "15vw",
-                                            textAlign: "center",
-                                            fontWeight: "600",
-                                            color  : "red",
-                                            border: defaultActiveKey === "25" ? "2px solid #1890ff" : "2px solid transparent",
-                                            borderRadius: "8px",
-                                            backgroundColor: defaultActiveKey === "25" ? "#e6f7ff" : "transparent",
-                                            transition: "all 0.3s ease",
-                                        }}
-                                    >
-                                        EM
-                                    </div>
-                                }
-                                key="25"
-                            >
-                                {/* <Table columns={columns} dataSource={tableData} loading={loading} /> */}
-                            </Tabs.TabPane>
-                        </Tabs>
-                    </div>
-                    <Table columns={columns} dataSource={tableData} loading={loading} />
-                </Card>
-            </div>
-        </Layout>
-    )
+                key="1"
+              >
+                {/* <Table columns={columns} dataSource={tableData} /> */}
+              </Tabs.TabPane>
+              <Tabs.TabPane
+                tab={
+                  <div
+                    // style={{
+                    //     width: "3vw",
+                    //     textAlign: "center",
+                    //     fontWeight: "600",
+                    // }}
+                    style={{
+                      width: "15vw",
+                      textAlign: "center",
+                      fontWeight: "600",
+                      border:
+                        defaultActiveKey === "22"
+                          ? "2px solid #1890ff"
+                          : "2px solid transparent",
+                      borderRadius: "8px",
+                      backgroundColor:
+                        defaultActiveKey === "22" ? "#e6f7ff" : "transparent",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    OP
+                  </div>
+                }
+                key="22"
+              >
+                {/* <Table columns={columns} dataSource={tableData} /> */}
+              </Tabs.TabPane>
+              <Tabs.TabPane
+                tab={
+                  <div
+                    // style={{
+                    //     width: "3vw",
+                    //     textAlign: "center",
+                    //     fontWeight: "600",
+                    // }}
+                    style={{
+                      width: "15vw",
+                      textAlign: "center",
+                      fontWeight: "600",
+                      border:
+                        defaultActiveKey === "23"
+                          ? "2px solid #1890ff"
+                          : "2px solid transparent",
+                      borderRadius: "8px",
+                      backgroundColor:
+                        defaultActiveKey === "23" ? "#e6f7ff" : "transparent",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    IP
+                  </div>
+                }
+                key="23"
+              >
+                {/* <Table columns={columns} dataSource={tableData} /> */}
+              </Tabs.TabPane>
+              <Tabs.TabPane
+                tab={
+                  <div
+                    // style={{
+                    //     width: "3vw",
+                    //     textAlign: "center",
+                    //     fontWeight: "600",
+                    // }}
+                    style={{
+                      width: "15vw",
+                      textAlign: "center",
+                      fontWeight: "600",
+                      border:
+                        defaultActiveKey === "24"
+                          ? "2px solid #1890ff"
+                          : "2px solid transparent",
+                      borderRadius: "8px",
+                      backgroundColor:
+                        defaultActiveKey === "24" ? "#e6f7ff" : "transparent",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    DM
+                  </div>
+                }
+                key="24"
+              >
+                {/* <Table columns={columns} dataSource={tableData} /> */}
+              </Tabs.TabPane>
+              <Tabs.TabPane
+                tab={
+                  <div
+                    // style={{
+                    //     width: "3vw",
+                    //     textAlign: "center",
+                    //     fontWeight: "600",
+                    // }}
+                    style={{
+                      width: "15vw",
+                      textAlign: "center",
+                      fontWeight: "600",
+                      color: "red",
+                      border:
+                        defaultActiveKey === "25"
+                          ? "2px solid #1890ff"
+                          : "2px solid transparent",
+                      borderRadius: "8px",
+                      backgroundColor:
+                        defaultActiveKey === "25" ? "#e6f7ff" : "transparent",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    EM
+                  </div>
+                }
+                key="25"
+              >
+                {/* <Table columns={columns} dataSource={tableData} loading={loading} /> */}
+              </Tabs.TabPane>
+            </Tabs>
+          </div>
+          <Table columns={columns} dataSource={tableData} loading={loading} />
+        </Card>
+      </div>
+      <div>
+        <Modal
+          width={"Auto"}
+          centered
+          title={
+            <span style={{ fontSize: "1.5rem", fontWeight: "600" }}>
+              Template
+            </span>
+          }
+          open={ckModalOpen}
+          maskClosable={false}
+          footer={null}
+          onCancel={handleCancelModel}
+          //   bodyStyle={{
+          //     maxHeight: "70vh", // Set max height
+          //     overflowY: "auto", // Enable vertical scroll
+          //   }}
+        >
+          {ckModalOpen && (
+            <CkEditor
+              key={editorKey}
+              initialData={templateEditorData}
+              printButton={true}
+              onChange={(event, editor) => {
+                const data = editor.getData();
+                setTemplateEditorData(data);
+              }}
+            />
+          )}
+          <Row gutter={16} justify={"end"} style={{ marginTop: "1rem" }}>
+            <Col>
+              <Button type="primary" onClick={handleTemplateSave}>
+                Save
+              </Button>
+            </Col>
+            <Col style={{ marginRight: "1rem" }}>
+              <Button danger onClick={handleCancelModel}>
+                Cancel
+              </Button>
+            </Col>
+          </Row>
+        </Modal>
+      </div>
+    </Layout>
+  );
 }
 
-export default ClinicalChartFlow
+export default ClinicalChartFlow;
 
 // import React, { useState, useEffect } from "react";
 // import Layout from 'antd/es/layout/layout';

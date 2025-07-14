@@ -652,3 +652,6 @@ export const urlShowWards = `${baseURL}/api/BedManager/ShowWards`;
 // export const urlShowPatientsList = `${baseURL}/api/BedManager/ShowPatientsList`;
 export const urlShowAwaitingPatients1 = `${baseURL}/api/BedManager/ShowAwaitingPatients`;
 export const urlShowRequests = `${baseURL}/api/BedManager/ShowRequests`;
+export const urlGetTemplateDataByProviderId = `${baseURL}/api/ClinicalChart/GetTemplateDataByProviderId`;
+export const urlSaveClinicalTemplate = `${baseURL}/api/ClinicalChart/SaveClinicalTemplate`;
+
