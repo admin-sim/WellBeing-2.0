@@ -1103,6 +1103,7 @@ function CreateChargeException() {
             open={modalVisible}
             maskClosable={false}
             cancelButtonProps={{ danger: "true" }}
+            width={1000}
           >
             <Form
               onFinishFailed={onFinishFailed}

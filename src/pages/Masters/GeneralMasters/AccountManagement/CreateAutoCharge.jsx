@@ -67,7 +67,6 @@ function CreateAutoCharge() {
   }, []);
 
   useEffect(() => {
-    debugger;
     if (AutoChargeId) {
       // Check if EditedPricetariffId exists
       const fetchData1 = async () => {
@@ -142,12 +141,17 @@ function CreateAutoCharge() {
 
   const onFinish = async (values) => {
     debugger;
-
     values.ServiceId = serviceId;
     values.ChargeProviderId = chargeProviderId;
     values.ActiveFlag = true;
+    values.IsOneTime = values.IsOneTime ?? false;
+    values.ChargeEncounterProvider = values.ChargeEncounterProvider ?? false;
+    values.FollowUpService = values.FollowUpService ?? false;
     if (values.DepartmentId === "All") {
       values.DepartmentId = -1;
+    }
+    if (values.PatientTypeId === 12155) {
+      values.PatientTypeId = undefined;
     }
     if (values.ProviderId === "All") {
       values.ProviderId = -1;
@@ -219,7 +223,6 @@ function CreateAutoCharge() {
   };
 
   const onChange = async (value) => {
-    debugger;
     setSelectedFacilityId(value);
     console.log(`selected ${value}`);
     if (value)
@@ -236,7 +239,6 @@ function CreateAutoCharge() {
   };
 
   const onChangeDept = async (value) => {
-    debugger;
     setSelectedDept(value);
     console.log(`selected ${value}`);
     if (value)
@@ -253,7 +255,6 @@ function CreateAutoCharge() {
   };
 
   const handleAutoCompleteChange = async (value) => {
-    debugger;
     const selectedfacility = form.getFieldValue("FacilityId");
     if (selectedfacility) {
       setLoading(true); // Start loading
@@ -293,11 +294,9 @@ function CreateAutoCharge() {
   };
 
   const handleSelect = async (value, option) => {
-    debugger;
     setSelectedServiceId(option.key);
   };
   const handleChargeProviderAutoCompleteChange = async (value) => {
-    debugger;
     try {
       if (!value.trim()) {
         setChargeProvider(null); // Set options to an empty array
