@@ -21,8 +21,9 @@ import {
   urlAddAndUpdateState,
   urlDeleteSelectedState,
 } from "../../../../endpoints";
-import CustomTable from "../../../components/customTable";
+import CustomSelectComponent from "../../../components/customSelectComponent";
 import PageHeader from "../../../components/PageHeader";
+import CustomTable from "../../../components/customTable";
 
 function States() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -286,7 +287,13 @@ function States() {
                   },
                 ]}
               >
-                <Select
+                <CustomSelectComponent
+                  options={Dropdown.Countries}
+                  valueField="LookupID"
+                  labelField="LookupDescription"
+                  placeholder="Select a Country"
+                />
+                {/* <Select
                   disabled={isEditing}
                   allowClear
                   placeholder="Select a type"
@@ -299,7 +306,7 @@ function States() {
                       {option.LookupDescription}
                     </Select.Option>
                   ))}
-                </Select>
+                </Select> */}
               </Form.Item>
               <Form.Item
                 name="StateCode"
@@ -307,7 +314,6 @@ function States() {
                 rules={[
                   {
                     required: true,
-
                     message: "Please enter state code",
                   },
                   {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Button,
   Col,
@@ -15,11 +15,13 @@ import {
   Tooltip,
   Skeleton,
   message,
+  ConfigProvider,
 } from "antd";
 import {
   EditOutlined,
   DeleteOutlined,
   PlusCircleOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import Layout from "antd/es/layout/layout";
 import { useNavigate } from "react-router";
@@ -34,6 +36,7 @@ import customAxios from "../../../../components/customAxios/customAxios";
 import Title from "antd/es/typography/Title";
 import { useLocation } from "react-router-dom";
 import dayjs from "dayjs";
+import { debounce } from "lodash";
 
 const EditPriceDefinition = () => {
   const [serviceGroups, setServiceGroups] = useState([]);
@@ -50,6 +53,7 @@ const EditPriceDefinition = () => {
 
   const location = useLocation();
   const value = location.state.value;
+  const [searchText, setSearchText] = useState("");
 
   const [form] = Form.useForm();
   // Convert strings to dayjs objects
@@ -268,6 +272,22 @@ const EditPriceDefinition = () => {
     },
   ];
 
+  const handleSearch = useCallback(
+    debounce((value) => setSearchText(value.trim()), 200),
+    []
+  );
+
+  const searchedData = searchText
+    ? services.filter((data) =>
+        columns.some((col) =>
+          data[col.dataIndex]
+            ?.toString()
+            .toLowerCase()
+            .includes(searchText.toLowerCase())
+        )
+      )
+    : services;
+
   const handleTableInputChange = (ServiceId, dataIndex, value) => {
     // Update the main `services` state
     setServices((prevServices) =>
@@ -382,7 +402,6 @@ const EditPriceDefinition = () => {
             </Title>
           </Col>
         </Row>
-
         <Form
           layout="vertical"
           onFinish={handleOnFinish}
@@ -479,16 +498,40 @@ const EditPriceDefinition = () => {
             </Col>
           </Row>
           <Divider orientation="left"></Divider>
-          <Table
-            style={{ padding: "0rem 2rem" }}
-            dataSource={services}
-            columns={columns}
-            rowKey={(row) => row.ServiceId} // Specify the custom id property here
-            size="small"
-            bordered
-            pagination={pagination}
-            onChange={(pagination) => setPagination(pagination)}
-          />
+          <Row justify={"end"}>
+            <Col xl={6} lg={7} md={8} sm={10} span={15}>
+              <Input
+                placeholder="Search in table"
+                suffix={<SearchOutlined />}
+                onChange={(e) => handleSearch(e.target.value)}
+                style={{ marginBottom: "0.8rem" }}
+              />
+            </Col>
+          </Row>
+          <Row>
+            <ConfigProvider
+              theme={{
+                components: {
+                  Table: {
+                    headerBg: "#E6E6FA",
+                  },
+                },
+              }}
+            >
+              <Col span={24}>
+                <Table
+                  // style={{ padding: "0rem 2rem" }}
+                  dataSource={searchedData}
+                  columns={columns}
+                  rowKey={(row) => row.ServiceId}
+                  size="small"
+                  bordered
+                  pagination={pagination}
+                  onChange={(pagination) => setPagination(pagination)}
+                />
+              </Col>
+            </ConfigProvider>
+          </Row>
         </Form>
       </div>
     </Layout>

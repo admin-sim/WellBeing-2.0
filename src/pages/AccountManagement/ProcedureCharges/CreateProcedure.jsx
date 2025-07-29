@@ -7,6 +7,7 @@ import {
   Input,
   InputNumber,
   Layout,
+  message,
   Popconfirm,
   Row,
   Select,
@@ -712,7 +713,7 @@ const handleInputChange = (value, column, key) => {
             </Col>
             <Col>
               <Form.Item>
-                <Button danger onClick={() => alert("Cancel Clicked")}>
+                <Button danger onClick={() => navigate("/ProcedureCharges")}>
                   Cancel
                 </Button>
               </Form.Item>

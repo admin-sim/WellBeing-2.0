@@ -227,7 +227,7 @@ function MainLayout() {
                       ? "Default Theme"
                       : "Light Mode"}
                 </Button>
-                <Button
+                {/* <Button
                   type="text"
                   style={{
                     width: "100%",
@@ -250,7 +250,7 @@ function MainLayout() {
                   }}
                 >
                   TIME SETTING
-                </Button>
+                </Button> */}
               </Space.Compact>
             </>
           }
@@ -297,7 +297,7 @@ function MainLayout() {
                 textAlign: "center",
                 textTransform: "uppercase",
                 letterSpacing: "1.5px",
-                backgroundColor: "#df0d0d",
+                backgroundColor: "#dd731cff",
                 color: "white",
                 fontWeight: 600,
                 fontSize: "20px",
@@ -510,7 +510,7 @@ function MainLayout() {
             className="toggle"
             onClick={() => setCollapsed(!collapsed)}
             type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            icon={collapsed ? <MenuUnfoldOutlined  style={{fontSize : "20px"}}/> : <MenuFoldOutlined style={{fontSize : "20px"}} />}
             style={{ height: "3rem", lineHeight: "3rem", width: "3rem" }} // Match button height to header
           />
           <Menu
