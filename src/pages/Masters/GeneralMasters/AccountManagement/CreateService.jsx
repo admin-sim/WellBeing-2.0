@@ -151,6 +151,10 @@ function CreateService() {
             PackageFromDate: dayjs(data.PackageFromDateString, "DD-MM-YYYY"),
             PackageDays: data.PackageDays,
             PackageAmount: data.PackageAmount,
+            IsProviderRequired: data.IsProviderRequired,
+            IsServiceEditable: data.IsServiceEditable,
+            IsAssociateCharge: data.IsAssociateCharge,
+            IsSurgeryCharge: data.IsSurgeryCharge,
           });
 
           if (data.IsFromTestValues) {
@@ -710,12 +714,12 @@ function CreateService() {
                 <Form.Item
                   name="CategoryId"
                   label="Category"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select category",
-                    },
-                  ]}
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //     message: "Please select category",
+                  //   },
+                  // ]}
                 >
                   <Select
                     style={{ width: "100%" }}
