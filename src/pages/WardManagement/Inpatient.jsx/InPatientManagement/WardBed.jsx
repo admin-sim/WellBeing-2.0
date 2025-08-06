@@ -129,6 +129,7 @@ function WardBed({ bed, ReLoad }) {
     StoreModel: [],
     ReasonForBlock: [],
     NewWardModel: {},
+    QueueList: []
   });
 
   const vacantBedItems = [
@@ -884,7 +885,7 @@ function WardBed({ bed, ReLoad }) {
       />
       <PatientVitalModal
         bed={bed}
-        Dropdown={dropDown}
+        Dropdown={dropDown1}
         patient={patientData}
         open={patientVitalModalOpen}
         handleClose={() => setPatientVitalModalOpen(false)}

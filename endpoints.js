@@ -654,4 +654,6 @@ export const urlShowAwaitingPatients1 = `${baseURL}/api/BedManager/ShowAwaitingP
 export const urlShowRequests = `${baseURL}/api/BedManager/ShowRequests`;
 export const urlGetTemplateDataByProviderId = `${baseURL}/api/ClinicalChart/GetTemplateDataByProviderId`;
 export const urlSaveClinicalTemplate = `${baseURL}/api/ClinicalChart/SaveClinicalTemplate`;
+export const urlAddNewStore = `${baseURL}/api/Store/AddNewStore`;
+export const urlUpdateStore = `${baseURL}/api/Store/UpdateStore`;
 

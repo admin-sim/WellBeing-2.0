@@ -9,10 +9,10 @@ import PageHeader from "../../../../components/PageHeader/index.jsx";
 
 const Store = () => {
   const [dataTable, setDataTable] = useState();
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setLoading(true)
+    setLoading(true);
     try {
       customAxios.get(urlStoreIndex, {}).then((response) => {
         const apiData = response.data.data;
@@ -25,10 +25,10 @@ const Store = () => {
           Status: item.Status,
         }));
         setDataTable(menuItems);
-        setLoading(false)
+        setLoading(false);
       });
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       console.error("Error fetching purchase order details:", error);
     }
   }, []);
@@ -109,12 +109,15 @@ const Store = () => {
                   <div style={{ flex: 2 }}>{record.DefaultParentStore}</div>
                   <div style={{ flex: 1 }}>{record.Status}</div>
                   <div style={{ flex: 0 }}>
-                    <Popconfirm
+                    {/* <Popconfirm
                       title="Sure to edit?"
                       onConfirm={() => ModelUpdate(record.key)}
-                    >
-                      <EditOutlined style={{ marginRight: "4px" }} />
-                    </Popconfirm>
+                    > */}
+                    <EditOutlined
+                      onClick={() => ModelUpdate(record.key)}
+                      style={{ marginRight: "4px" }}
+                    />
+                    {/* </Popconfirm> */}
                   </div>
                 </div>
               ),

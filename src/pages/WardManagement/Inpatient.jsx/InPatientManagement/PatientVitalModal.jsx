@@ -1,11 +1,4 @@
-import {
-  Button,
-  Col,
-  Form,
-  message,
-  Modal,
-  Row,
-} from "antd";
+import { Button, Col, Form, message, Modal, Row } from "antd";
 import React, { useState } from "react";
 
 import PatientHeader from "../../../../components/PatientHeader";
@@ -14,40 +7,52 @@ import CaptureVitalsModal from "../../../../components/CaptureVitalsModal";
 import { useSearchParams } from "react-router-dom";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import { FaHistory } from "react-icons/fa";
-import { urlAddNewPatientVital1, urlDeletePatientVital, urlGetPatientVitalForEdit } from "../../../../../endpoints";
+import {
+  urlAddNewPatientVital1,
+  urlDeletePatientVital,
+  urlGetPatientVitalForEdit,
+} from "../../../../../endpoints";
 import customAxios from "../../../../components/customAxios/customAxios";
 import dayjs from "dayjs";
 
 function PatientVitalModal({ bed, patient, Dropdown, open, handleClose }) {
   const [form] = Form.useForm();
-  const [showCaptureVitalsModal, setShowCaptureVitalsModal] = useState(false)
-  const [tableData, setTableData] = useState([])
-  const [formData, setFormData] = useState({})
+  const [showCaptureVitalsModal, setShowCaptureVitalsModal] = useState(false);
+  const [tableData, setTableData] = useState([]);
+  const [formData, setFormData] = useState({});
+  const [readOnly, setReadOnly] = useState();
 
   const handleCancel = () => {
     form.resetFields();
     handleClose();
   };
 
-  async function handleEdit(params) {
-    debugger
-    const response = await customAxios.get(`${urlGetPatientVitalForEdit}?PatientVitaId=${params.PatientVitalId}`)
+  async function handleEdit(params, flag) {
+    debugger;
+    const response = await customAxios.get(
+      `${urlGetPatientVitalForEdit}?PatientVitaId=${params.PatientVitalId}`
+    );
     if (response.status == 200) {
-      setFormData(response.data.data)
-      setShowCaptureVitalsModal(true)
+      setFormData(response.data.data);
+      setShowCaptureVitalsModal(true);
+      if (flag == 1) {
+        setReadOnly(true);
+      } else {
+        setReadOnly(false);
+      }
     }
   }
 
   async function handleDelete(params) {
-    debugger
-    const response = await customAxios.delete(`${urlDeletePatientVital}?PatientVitalId=${params.PatientVitalId}&PatientId=${patient.PatientId}&EncounterId=${patient.EncounterId}`)
+    const response = await customAxios.delete(
+      `${urlDeletePatientVital}?PatientVitalId=${params.PatientVitalId}&PatientId=${patient.PatientId}&EncounterId=${patient.EncounterId}`
+    );
     if (response.status == 200) {
-      setTableData(response.data.data)
+      setTableData(response.data.data);
     }
   }
 
   async function handleSubmit(values) {
-    debugger
     const vital = {
       PatientId: patient.PatientId,
       EncounterId: patient.EncounterId,
@@ -62,23 +67,23 @@ function PatientVitalModal({ bed, patient, Dropdown, open, handleClose }) {
       Position: values.position,
       RespiratoryRate: values.RespiratoryRate,
       Oxygensaturation: values.OxygenSaturation,
-      PvDate1: dayjs().format('DD-MM-YYYY'),
-      Time: dayjs().format('HH:mm:ss'),
+      PvDate1: dayjs().format("DD-MM-YYYY"),
+      Time: dayjs().format("HH:mm:ss"),
       Oedema: values.oedema,
       pallor: values.pallor,
       HeadCircumference: values.HeadCircumference,
       OtherComments: values.otherComments,
-      PatientVitalId: values.PatientVitalId ? values.PatientVitalId : 0
-    }
+      PatientVitalId: values.PatientVitalId ? values.PatientVitalId : 0,
+    };
     const response = await customAxios.post(urlAddNewPatientVital1, vital, {
       headers: {
         "Content-Type": "application/json",
       },
     });
     if (response.status == 200) {
-      message.success('Success')
-      setTableData(response.data.data)
-      return true
+      message.success("Success");
+      setTableData(response.data.data);
+      return true;
     }
   }
 
@@ -87,21 +92,25 @@ function PatientVitalModal({ bed, patient, Dropdown, open, handleClose }) {
       title: "Date",
       dataIndex: "DateOfBirthstring",
       key: "DateOfBirthstring",
+      width: 80,
     },
     {
       title: "Height",
       dataIndex: "height",
       key: "height",
+      width: 80,
     },
     {
       title: "Weight",
       dataIndex: "Weight",
       key: "Weight",
+      width: 80,
     },
     {
       title: "Heart Rate",
       dataIndex: "HeartRate",
       key: "HeartRate",
+      width: 80,
     },
   ];
 
@@ -122,7 +131,7 @@ function PatientVitalModal({ bed, patient, Dropdown, open, handleClose }) {
         onCancel={handleCancel}
       >
         <PatientHeader patient={patient} />
-        <Row gutter={32} style={{ marginTop: '20px' }}>
+        <Row gutter={32} style={{ marginTop: "20px" }}>
           <Col span={5}>
             <Button
               className="dfja"
@@ -144,12 +153,20 @@ function PatientVitalModal({ bed, patient, Dropdown, open, handleClose }) {
             </Button>
           </Col> */}
         </Row>
-        <CaptureVitalsModal onSet={formData}
+        <CaptureVitalsModal
+          onSet={formData}
           open={showCaptureVitalsModal}
           close={() => setShowCaptureVitalsModal(false)}
           onSubmit={handleSubmit}
+          readOnly={readOnly}
         />
-        <CustomTable dataSource={tableData} columns={columns} onEdit={handleEdit} onDelete={handleDelete} />
+        <CustomTable
+          dataSource={tableData.length != 0 ? tableData : Dropdown.QueueList}
+          columns={columns}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onView={(record) => handleEdit(record, 1)}
+        />
       </Modal>
     </div>
   );
