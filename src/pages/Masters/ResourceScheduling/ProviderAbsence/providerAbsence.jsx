@@ -383,7 +383,17 @@ function ProviderAbsence() {
                 },
               ]}
             >
+              {/* <Select
+                disabled={isEditing}
+                allowClear
+                placeholder="Select a provider"
+              > */}
               <Select
+                showSearch
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >=
+                  0
+                }
                 disabled={isEditing}
                 allowClear
                 placeholder="Select a provider"

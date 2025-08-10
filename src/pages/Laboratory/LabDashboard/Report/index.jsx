@@ -148,8 +148,6 @@ const Report = () => {
     setTemplateEditorData("");
     setCkModalOpen(false);
   };
- 
-
 
   const resultEntrycolumns = [
     {
@@ -160,7 +158,7 @@ const Report = () => {
     {
       title: "Template Name",
       render: (text, record) => {
-        console.log('IsTemplateTest:', record.IsTemplateTest); // Debugging step to see value
+        console.log("IsTemplateTest:", record.IsTemplateTest); // Debugging step to see value
         if (record.IsTemplateTest === true) {
           return (
             <span
@@ -175,17 +173,12 @@ const Report = () => {
         }
       },
       width: 120,
-    }
-    
+    },
   ];
-
-  
 
   const rowSelection = {
     selectedRowKeys,
     onChange: async (selectedRowKeys, selectedRows) => {
-      debugger;
-
       // Filter rows where IsResultEntryDone is true
       const filteredSelectedRows = selectedRows.filter(
         (row) => row.IsResultEntryDone
@@ -211,7 +204,7 @@ const Report = () => {
         } catch (error) {
           console.error("Error fetching template tests:", error);
         }
-      }else{
+      } else {
         setResultEntry([]);
       }
     },
@@ -291,19 +284,23 @@ const Report = () => {
     navigate("/SampleCollection", { state: { record } });
   };
   const handleResultEntry = () => {
+    record.IncludesRadiology
+      ? navigate("/RadiologyResultEntry", { state: { record } })
+      : navigate("/ResultEntry", { state: { record } });
     // Navigate to the desired page and pass the record object as a parameter
-    navigate("/ResultEntry", { state: { record } });
+    // navigate("/ResultEntry", { state: { record } });
   };
   const handleVerification = () => {
-    navigate("/Verification", { state: { record } });
+    record.IncludesRadiology
+      ? navigate("/RadiologyVerification", { state: { record } })
+      : navigate("/Verification", { state: { record } });
   };
 
   const handleReport = async () => {
     // Initialize the array to hold ChargeIds
-    debugger;
     setReportLoading(true);
     let ListOfSmplColResult = [];
-  
+
     // Assuming selectedRow is an array of selected rows
     selectedRow.forEach((row) => {
       // Check if IsResultEntryDone is true and IsTemplate is not true for each selected row
@@ -312,43 +309,42 @@ const Report = () => {
         ListOfSmplColResult.push(row.ChargeId);
       }
     });
-  
+
     // If there are ChargeIds in ListOfSmplColResult, proceed
     if (ListOfSmplColResult.length > 0) {
       // Join the ChargeIds into a comma-separated string
       const chargeIdStr = ListOfSmplColResult.join(",");
-  
+
       // Create the request object
       const request = {
-        ChargeId: chargeIdStr,  // Use the comma-separated ChargeIds string
+        ChargeId: chargeIdStr, // Use the comma-separated ChargeIds string
         PatientId: selectedRow[0].PatientId, // Assuming PatientId is the same across selected rows
         EncounterId: selectedRow[0].EncounterId, // Assuming EncounterId is the same across selected rows
       };
-  
+
       try {
         // Call the fetchReport function with the request
         const { url, blob } = await fetchReport(request);
-  
+
         // Handle the response (e.g., displaying the report URL or downloading the file)
         setReportUrl(url);
         setBlobData(blob);
         setIsModalVisible(true); // Display the modal with the report
       } catch (error) {
         console.error("Error fetching report:", error);
-      }
-      finally {
+      } finally {
         setReportLoading(false); // End loading
       }
     } else {
       console.log("No valid ChargeIds selected.");
-      message.warning('Please select  Tests ');
-      setReportLoading(false); 
+      message.warning("Please select  Tests ");
+      setReportLoading(false);
     }
   };
-  
+
   async function fetchReport(request) {
     const response = await fetch(
-    "https://192.168.29.254:808/api/ReportsApi/GetLabReport",
+      "https://192.168.29.254:808/api/ReportsApi/GetLabReport",
       {
         method: "POST",
         headers: {
@@ -380,9 +376,11 @@ const Report = () => {
         <PageHeader title={"Verification"} button={false} />
         <div style={{ padding: "0.5 1rem" }}>
           <Space style={{ margin: "1rem 1rem 0 1rem" }}>
-            <Button onClick={() => handleSampleCollection()}>
-              Sample Collection
-            </Button>
+            {!record.IncludesRadiology && (
+              <Button onClick={() => handleSampleCollection()}>
+                Sample Collection
+              </Button>
+            )}
             <Button onClick={() => handleResultEntry()}>Result Entry</Button>
             <Button onClick={() => handleVerification()}>Verification</Button>
             <Button type="primary">Report</Button>
@@ -424,7 +422,9 @@ const Report = () => {
             <Row justify="end" gutter={16} style={{ marginTop: "1rem" }}>
               <Col>
                 <Form.Item>
-                  <Button type="primary" onClick={() => handleReport()}>View Report</Button>
+                  <Button type="primary" onClick={() => handleReport()}>
+                    View Report
+                  </Button>
                 </Form.Item>
               </Col>
             </Row>
@@ -439,8 +439,6 @@ const Report = () => {
               size="small"
               bordered
             />
-
-           
           </Form>
         </div>
       </div>
@@ -480,23 +478,23 @@ const Report = () => {
           </Row>
         </Modal>
         {reportloading && (
-            <div
-              style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(255, 255, 255, 0.8)", // Light overlay
-                zIndex: 1000,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Spin size="large" />
-            </div>
-          )}
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(255, 255, 255, 0.8)", // Light overlay
+              zIndex: 1000,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Spin size="large" />
+          </div>
+        )}
         <div>
           {error && <div>Error: {error}</div>}
 

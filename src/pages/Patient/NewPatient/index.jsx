@@ -85,7 +85,6 @@ const NewPatient = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [identificationData, setIdentificationData] = useState();
 
-
   const [isVisitModalVisible, setIsVisitModalVisible] = useState(false);
   const [visitsDropdown, setVisitDropdown] = useState({});
   const [patientHeaderDetails, setPatientHeaderDetails] = useState({});
@@ -106,7 +105,6 @@ const NewPatient = () => {
     console.log("Full Base64 Image Data Length:", base64data.length); // Log the length
     setUploadedImage(base64data); // Ensure full data is set
   };
-
 
   const disabledDate = (current) => {
     // Disable dates that are in the future
@@ -364,7 +362,7 @@ const NewPatient = () => {
           : values.PatientFirstName,
       PatientMiddleName:
         values.PatientMiddleName === undefined ||
-          values.PatientMiddleName === ""
+        values.PatientMiddleName === ""
           ? null
           : values.PatientMiddleName,
       PatientLastName:
@@ -381,7 +379,7 @@ const NewPatient = () => {
           : values.titleFatherHusband,
       FatherHusbandName:
         values.FatherHusbandName === undefined ||
-          values.FatherHusbandName === ""
+        values.FatherHusbandName === ""
           ? null
           : values.FatherHusbandName,
       MaritalStatus:
@@ -413,7 +411,7 @@ const NewPatient = () => {
       ReligionId: values.Religion === undefined ? null : values.Religion,
       PermanentAddress1:
         values.permanentAddress1 === undefined ||
-          values.permanentAddress1 === ""
+        values.permanentAddress1 === ""
           ? null
           : values.permanentAddress1,
       PermanentCountryId: values?.permanentCountryId,
@@ -452,12 +450,12 @@ const NewPatient = () => {
           : values.BirthPlace,
       BirthIdentification1:
         values.birthIdentification1 === undefined ||
-          values.birthIdentification1 === ""
+        values.birthIdentification1 === ""
           ? null
           : values.birthIdentification1,
       BirthIdentification2:
         values.birthIdentification2 === undefined ||
-          values.birthIdentification2 === ""
+        values.birthIdentification2 === ""
           ? null
           : values.birthIdentification2,
     };
@@ -482,8 +480,6 @@ const NewPatient = () => {
       const data = response.data.data.PatientDetail.UhId;
 
       console.log("Response data: ", data);
-
-
 
       setLoadings(false);
       // After receiving the response and generating the report
@@ -672,7 +668,6 @@ const NewPatient = () => {
     });
   };
 
-
   const handlevisitmodal = async (record) => {
     try {
       setSelectedRecord(record);
@@ -681,8 +676,12 @@ const NewPatient = () => {
 
       // Fetch encounter details
       const [response, response1] = await Promise.all([
-        customAxios.get(`${urlGetEncounterDetails}?PatientId=${record.PatientId}&PatientType=0&AppointmentId=0`),
-        customAxios.get(`${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}`)
+        customAxios.get(
+          `${urlGetEncounterDetails}?PatientId=${record.PatientId}&PatientType=0&AppointmentId=0`
+        ),
+        customAxios.get(
+          `${urlGetPatientHeaderDetails}?PatientId=${record.PatientId}`
+        ),
       ]);
 
       // Check if responses are valid before setting data
@@ -700,10 +699,11 @@ const NewPatient = () => {
       } else {
         message.error("Failed to fetch visit details. Please try again.");
       }
-
     } catch (error) {
       console.error("Error fetching visit modal data:", error);
-      message.error("An error occurred while loading visit details. Please try again.");
+      message.error(
+        "An error occurred while loading visit details. Please try again."
+      );
     } finally {
       setModalLoader(false); // Hide loader in both success and error cases
     }
@@ -758,7 +758,7 @@ const NewPatient = () => {
         if (response.data.EncounterResult != null) {
           messageApi.warning({
             type: "warning",
-            content: response.data.EncounterResult
+            content: response.data.EncounterResult,
           });
         } else {
           const genVisitId = response.data.GeneratedEncounterId;
@@ -776,8 +776,6 @@ const NewPatient = () => {
         });
         form1.resetFields();
       }
-
-
     } catch (error) {
       // setIsSubmitLoader(false);
       if (error.errorFields) {
@@ -793,9 +791,6 @@ const NewPatient = () => {
       }
     }
   };
-
-
-
 
   return (
     <>
@@ -864,14 +859,27 @@ const NewPatient = () => {
                           required: true,
                           message: "Please add First Name",
                         },
+                        {
+                          pattern: new RegExp(/^[a-zA-Z]{1,30}$/),
+                          message: "Enter valid First Name",
+                        },
                       ]}
                     >
-                      <Input />
+                      <Input allowClear />
                     </Form.Item>
                   </Col>
                   <Col span={7}>
-                    <Form.Item name="PatientMiddleName" label="Middle Name">
-                      <Input />
+                    <Form.Item
+                      name="PatientMiddleName"
+                      label="Middle Name"
+                      rules={[
+                        {
+                          pattern: new RegExp(/^[a-zA-Z]{1,30}$/),
+                          message: "Enter valid Middle Name",
+                        },
+                      ]}
+                    >
+                      <Input allowClear />
                     </Form.Item>
                   </Col>
                   <Col span={7}>
@@ -883,9 +891,13 @@ const NewPatient = () => {
                           required: true,
                           message: "Please add Last Name",
                         },
+                        {
+                          pattern: new RegExp(/^[a-zA-Z]{1,30}$/),
+                          message: "Enter valid Last Name",
+                        },
                       ]}
                     >
-                      <Input />
+                      <Input allowClear />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -1449,7 +1461,12 @@ const NewPatient = () => {
             <Row justify="end" style={{ marginTop: "1rem" }}>
               <Col style={{ marginRight: "1rem" }}>
                 <Form.Item>
-                  <Button type="primary" disabled={loadings} htmlType="submit" size="middle">
+                  <Button
+                    type="primary"
+                    disabled={loadings}
+                    htmlType="submit"
+                    size="middle"
+                  >
                     Submit
                   </Button>
                 </Form.Item>
@@ -1548,7 +1565,6 @@ const NewPatient = () => {
           },
         }}
       >
-
         {contextHolder}
         {isVisitModalVisible && visitsDropdown.PatientType !== undefined && (
           <VisitModal

@@ -75,18 +75,18 @@ const RadiologyDashboard = () => {
     setSelectedUhId(option.value);
   };
 
-//   const handleSampleCollection = (record) => {
-//     // Navigate to the desired page and pass the record object as a parameter
-//     navigate("/SampleCollection", { state: { record } });
-//   };
+  //   const handleSampleCollection = (record) => {
+  //     // Navigate to the desired page and pass the record object as a parameter
+  //     navigate("/SampleCollection", { state: { record } });
+  //   };
   const handleResultEntry = (record) => {
     // Navigate to the desired page and pass the record object as a parameter
-    navigate("/RadiologyResultEntry",  { state: { record } });
+    navigate("/RadiologyResultEntry", { state: { record } });
   };
 
   const handleVerification = (record) => {
     // Navigate to the desired page and pass the record object as a parameter
-    navigate("/RadiologyVerification",   { state: { record } });
+    navigate("/RadiologyVerification", { state: { record } });
   };
 
   const formatDatefortable = (dateString) => {
@@ -226,13 +226,12 @@ const RadiologyDashboard = () => {
       render: (text, record) => (
         <Space direction="vertical">
           {record.IsbillCancelled ? (
-          <Space direction="vertical" align="start">
-          <label style={{ color: "red" }}>Bill Cancelled</label>
-          <span style={{  color: "gray" }}>
-            {record.ModifiedDateTimestring}
-          </span>
-        </Space>
-        
+            <Space direction="vertical" align="start">
+              <label style={{ color: "red" }}>Bill Cancelled</label>
+              <span style={{ color: "gray" }}>
+                {record.ModifiedDateTimestring}
+              </span>
+            </Space>
           ) : (
             <>
               {/* {record.IsSmpPartiallyCollected === true &&
@@ -282,11 +281,14 @@ const RadiologyDashboard = () => {
                   </Tooltip>
                 </Space>
               )} */}
-    
+
               {record.IsResEntryPartiallyDone === true &&
                 !record.IsAllResEntryDone && (
                   <Space align="start">
-                    <Button type="link" onClick={() => handleResultEntry(record)}>
+                    <Button
+                      type="link"
+                      onClick={() => handleResultEntry(record)}
+                    >
                       Result Entry
                     </Button>
                     <Tooltip
@@ -324,11 +326,14 @@ const RadiologyDashboard = () => {
                   </Tooltip>
                 </Space>
               )}
-    
+
               {record.IsVerificationPartiallyDone === true &&
                 !record.IsAllVerificationDone && (
                   <Space align="start">
-                    <Button type="link" onClick={() => handleVerification(record)}>
+                    <Button
+                      type="link"
+                      onClick={() => handleVerification(record)}
+                    >
                       Verification
                     </Button>
                     <Tooltip
@@ -355,7 +360,10 @@ const RadiologyDashboard = () => {
               {!record.IsVerificationPartiallyDone &&
                 !record.IsAllVerificationDone && (
                   <Space align="start">
-                    <Button type="link" onClick={() => handleVerification(record)}>
+                    <Button
+                      type="link"
+                      onClick={() => handleVerification(record)}
+                    >
                       Verification
                     </Button>
                     <Tooltip
@@ -371,8 +379,7 @@ const RadiologyDashboard = () => {
           )}
         </Space>
       ),
-    }
-    
+    },
   ];
 
   return (
@@ -439,7 +446,7 @@ const RadiologyDashboard = () => {
                 <Form.Item name="fromDate" label="From Date">
                   <DatePicker
                     style={{ width: "100%" }}
-
+                    format="DD-MM-YYYY"
                     // disabledDate={disabledDate}
                   />
                 </Form.Item>
@@ -448,7 +455,7 @@ const RadiologyDashboard = () => {
                 <Form.Item name="toDate" label="To Date">
                   <DatePicker
                     style={{ width: "100%" }}
-
+                    format="DD-MM-YYYY"
                     //disabledDate={disabledDate}
                   />
                 </Form.Item>

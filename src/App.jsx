@@ -188,6 +188,8 @@ import CreatePackage from "./pages/AccountManagement/PackageSubscription/CreateP
 import RadiologyDashboard from "./pages/Laboratory/radiologyDashboard.jsx";
 import RadiologyResultEntry from "./pages/Laboratory/RadiologyResultEntry/index.jsx";
 import RadiologyVerification from "./pages/Laboratory/RadiologyVerification/index.jsx";
+import ManagePackages from "./pages/AccountManagement/ManagePackages/index.jsx";
+import CreateManagePackages from "./pages/AccountManagement/ManagePackages/CreateManagePackages.jsx";
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -1616,6 +1618,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CreateProcedure />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ManagePackages"
+              element={
+                <ProtectedRoute>
+                  <ManagePackages />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/CreateManagePackages"
+              element={
+                <ProtectedRoute>
+                  <CreateManagePackages />
                 </ProtectedRoute>
               }
             />

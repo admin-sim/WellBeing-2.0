@@ -14,6 +14,7 @@ import VitalSigns from "../Components/VitalSigns.jsx";
 import PhysicalExamination from "../Components/PhysicalExamination.jsx";
 import ProvisionalDiagnosis from "../Components/ProvisionalDiagnosis.jsx";
 import Prescription from "../Components/Prescription.jsx";
+import ClinicalTemplate from "../Components/ClinicalTemplate.jsx";
 import Investigation from "../Components/Investigation.jsx";
 import {
   urlGetPatientHeaderDetails,
@@ -23,11 +24,14 @@ import customAxios from "../../../components/customAxios/customAxios";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router";
 import { asyncThunkCreator } from "@reduxjs/toolkit";
+import CkEditor from "../../../components/CKEditor/index.jsx";
 
 function ClinicalChart() {
   const location = useLocation();
   const Patient = location?.state?.record;
-  const [patientData, setPatientData] = useState()
+  const [patientData, setPatientData] = useState();
+  const [editorKey, setEditorKey] = useState(0);
+  const [templateEditorData, setTemplateEditorData] = useState("");
   const [initialData, setInitialData] = useState({
     ChiefList: [],
     MedicalHistoryList: [],
@@ -36,7 +40,7 @@ function ClinicalChart() {
     SocialHistoryList: [],
     NewAllergyList: [],
     PatientVital: [],
-    ClinicalAdvices: []
+    ClinicalAdvices: [],
   });
 
   useEffect(() => {
@@ -49,7 +53,7 @@ function ClinicalChart() {
           const detailsheader = response.data.data;
           setInitialData(detailsheader);
         }
-      } catch (error) { }
+      } catch (error) {}
     };
     fetch();
   }, []);
@@ -64,7 +68,7 @@ function ClinicalChart() {
           const detailsheader = response.data.data.EncounterModel;
           setPatientData(detailsheader);
         }
-      } catch (error) { }
+      } catch (error) {}
     };
     fetchDataHeader();
   }, []);
@@ -74,21 +78,21 @@ function ClinicalChart() {
   };
 
   function handleAllery(params) {
-    setInitialData(params)
+    setInitialData(params);
   }
 
   function handleClinicalAdvices(params) {
-    setInitialData(prevState => ({
+    setInitialData((prevState) => ({
       ...prevState,
-      ClinicalAdvices: params
+      ClinicalAdvices: params,
     }));
   }
 
   function handleVitals(params) {
-    debugger
-    setInitialData(prevState => ({
+    debugger;
+    setInitialData((prevState) => ({
       ...prevState,
-      PatientVital: params
+      PatientVital: params,
     }));
   }
 
@@ -183,10 +187,14 @@ function ClinicalChart() {
                 </Badge>
               ),
               key: 6,
-              children: <Allergy Patient={Patient}
-                initialData={initialData}
-                handleAllery={handleAllery}
-                handleUpdate={handleUpdate} />,
+              children: (
+                <Allergy
+                  Patient={Patient}
+                  initialData={initialData}
+                  handleAllery={handleAllery}
+                  handleUpdate={handleUpdate}
+                />
+              ),
             },
           ]}
         />
@@ -200,9 +208,19 @@ function ClinicalChart() {
           tabPosition="left"
           items={[
             {
-              label: <Badge dot={initialData.PatientVital.length > 0}>Vital Signs&nbsp;&nbsp;</Badge>,
+              label: (
+                <Badge dot={initialData.PatientVital.length > 0}>
+                  Vital Signs&nbsp;&nbsp;
+                </Badge>
+              ),
               key: 11,
-              children: <VitalSigns Patient={Patient} initialData={initialData} handleVitals={handleVitals} />,
+              children: (
+                <VitalSigns
+                  Patient={Patient}
+                  initialData={initialData}
+                  handleVitals={handleVitals}
+                />
+              ),
             },
             {
               label: `Physical Examination`,
@@ -221,9 +239,19 @@ function ClinicalChart() {
           tabPosition="left"
           items={[
             {
-              label: <Badge dot={initialData.ClinicalAdvices.length > 0}>Provisional Diagnosis&nbsp;&nbsp;</Badge>,
+              label: (
+                <Badge dot={initialData.ClinicalAdvices.length > 0}>
+                  Provisional Diagnosis&nbsp;&nbsp;
+                </Badge>
+              ),
               key: 11,
-              children: <ProvisionalDiagnosis Patient={Patient} initialData={initialData} handleClinicalAdvices={handleClinicalAdvices} />,
+              children: (
+                <ProvisionalDiagnosis
+                  Patient={Patient}
+                  initialData={initialData}
+                  handleClinicalAdvices={handleClinicalAdvices}
+                />
+              ),
             },
           ]}
         />
@@ -239,7 +267,9 @@ function ClinicalChart() {
             {
               label: `Investigation`,
               key: 11,
-              children: <Investigation Patient={Patient} patientData={patientData} />,
+              children: (
+                <Investigation Patient={Patient} patientData={patientData} />
+              ),
             },
           ]}
         />
@@ -256,6 +286,22 @@ function ClinicalChart() {
               label: `Prescription`,
               key: 11,
               children: <Prescription Patient={Patient} />,
+            },
+          ]}
+        />
+      ),
+    },
+    {
+      label: `Template`,
+      key: 6,
+      children: (
+        <Tabs
+          tabPosition="left"
+          items={[
+            {
+              label: `Template`,
+              key: 11,
+              children: <ClinicalTemplate Patient={Patient} />
             },
           ]}
         />

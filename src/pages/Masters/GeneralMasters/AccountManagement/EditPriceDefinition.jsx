@@ -1,13 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Col, Form, Input, InputNumber, Row, Select, DatePicker, Divider, notification, Table, Modal, Tooltip, Skeleton, message } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import Layout from 'antd/es/layout/layout';
-import { useNavigate } from 'react-router';
-import { urlGetAllServiceGroups, urlGetServiceClassificationsForServiceGroup, urlGetAllServicePricesForSelectedServiceClassification, urlRevisionServicePrices, urlAddOrUpdateServicePrices } from '../../../../../endpoints';
-import customAxios from '../../../../components/customAxios/customAxios';
-import Title from 'antd/es/typography/Title';
-import { useLocation } from 'react-router-dom';
-import dayjs from 'dayjs';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Button,
+  Col,
+  Form,
+  Input,
+  InputNumber,
+  Row,
+  Select,
+  DatePicker,
+  Divider,
+  notification,
+  Table,
+  Modal,
+  Tooltip,
+  Skeleton,
+  message,
+  ConfigProvider,
+} from "antd";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusCircleOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import Layout from "antd/es/layout/layout";
+import { useNavigate } from "react-router";
+import {
+  urlGetAllServiceGroups,
+  urlGetServiceClassificationsForServiceGroup,
+  urlGetAllServicePricesForSelectedServiceClassification,
+  urlRevisionServicePrices,
+  urlAddOrUpdateServicePrices,
+} from "../../../../../endpoints";
+import customAxios from "../../../../components/customAxios/customAxios";
+import Title from "antd/es/typography/Title";
+import { useLocation } from "react-router-dom";
+import dayjs from "dayjs";
+import { debounce } from "lodash";
 
 const EditPriceDefinition = () => {
   const [serviceGroups, setServiceGroups] = useState([]);
@@ -20,64 +49,60 @@ const EditPriceDefinition = () => {
     current: 1,
     pageSize: 10, // Change this value according to your pagination settings
   });
+  const navigate = useNavigate();
 
   const location = useLocation();
   const value = location.state.value;
-
+  const [searchText, setSearchText] = useState("");
 
   const [form] = Form.useForm();
   // Convert strings to dayjs objects
-  const effectiveFrom = dayjs(value.EffectiveFromDatestring, 'DD-MM-YYYY');
-  const effectiveTo = dayjs(value.EffectiveToDatestring, 'DD-MM-YYYY');
+  const effectiveFrom = dayjs(value.EffectiveFromDatestring, "DD-MM-YYYY");
+  const effectiveTo = dayjs(value.EffectiveToDatestring, "DD-MM-YYYY");
   // Set initial form values
   React.useEffect(() => {
-
     form.setFieldsValue({
       effectiveFrom,
-      effectiveTo
+      effectiveTo,
     });
   }, []);
 
-
-
   useEffect(() => {
     const fetchData = async () => {
-      debugger;
       try {
         const response = await customAxios.get(`${urlGetAllServiceGroups}`);
         if (response.status === 200) {
           const servicegroups = response.data.data.ServiceGroups; // Assuming your API response structure matches the provided data
           setServiceGroups(servicegroups);
         } else {
-          console.error('Failed to fetch patient details');
+          console.error("Failed to fetch patient details");
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
       }
     };
     fetchData();
   }, []);
 
   const handleServiceGroupChange = async (value) => {
-    debugger;
     if (value != null) {
-      // Call your API here using the selected LookupID
       setServiceClassifications([]);
       form.setFieldsValue({ ServiceClassifications: null });
-      const response = await customAxios.get(`${urlGetServiceClassificationsForServiceGroup}?ServiceGroupId=${value}`);
-      //const data = await response.json();
-      if (response.status === 200 && response.data.data.ServiceClassifications != null) {
-
+      const response = await customAxios.get(
+        `${urlGetServiceClassificationsForServiceGroup}?ServiceGroupId=${value}`
+      );
+      if (
+        response.status === 200 &&
+        response.data.data.ServiceClassifications != null
+      ) {
         const classification = response.data.data.ServiceClassifications;
         setServiceClassifications(classification);
       }
     } else {
-      // Clear the service classifications if the service group is cleared
       setServiceClassifications([]);
       form.setFieldsValue({ ServiceClassifications: null });
       setServices([]);
       setServiceClassificationId(null);
-
     }
   };
 
@@ -86,26 +111,23 @@ const EditPriceDefinition = () => {
     if (value) {
       setServiceClassificationId(value);
       try {
-        // Call your API here using the selected ServiceClassificationId
-        const response = await customAxios.get(`${urlGetAllServicePricesForSelectedServiceClassification}?ServiceClassificationId=${value}`);
-        // const data = await response.json();
+        const response = await customAxios.get(
+          `${urlGetAllServicePricesForSelectedServiceClassification}?ServiceClassificationId=${value}`
+        );
         if (response.status === 200) {
-          const ServicePriceDefinitions = response.data.data.ServicePriceDefinitions;
+          const ServicePriceDefinitions =
+            response.data.data.ServicePriceDefinitions;
 
           setServices(ServicePriceDefinitions);
         }
       } catch (error) {
-        // Handle any errors that occur during the API call
-        console.error('Error fetching services:', error);
+        console.error("Error fetching services:", error);
       }
     } else {
-      // Clear the services if the service classification is cleared
       setServices([]);
       setServiceClassificationId(null);
     }
   };
-
-
 
   const columns = [
     {
@@ -113,7 +135,6 @@ const EditPriceDefinition = () => {
       dataIndex: "LongName",
       key: "LongName",
       // width: 150,
-
     },
     {
       title: "Qty",
@@ -130,7 +151,7 @@ const EditPriceDefinition = () => {
               // message: 'required',
             },
             {
-              type: 'number',
+              type: "number",
               min: 0,
               // message: 'required',
             },
@@ -141,11 +162,7 @@ const EditPriceDefinition = () => {
             min={0}
             value={record.Qty}
             onChange={(value) =>
-              handleTableInputChange(
-                record.ServiceId,
-                "Qty",
-                value
-              )
+              handleTableInputChange(record.ServiceId, "Qty", value)
             }
           />
         </Form.Item>
@@ -156,7 +173,6 @@ const EditPriceDefinition = () => {
       dataIndex: "UomName",
       key: "UomName",
       width: 150,
-
     },
     {
       title: "Price",
@@ -170,12 +186,12 @@ const EditPriceDefinition = () => {
           rules={[
             {
               required: true,
-              message: 'Price is required',
+              message: "Price is required",
             },
             {
-              type: 'number',
+              type: "number",
               min: 0,
-              message: 'Price must be a non-negative number',
+              message: "Price must be a non-negative number",
             },
           ]}
         >
@@ -202,12 +218,12 @@ const EditPriceDefinition = () => {
           rules={[
             {
               required: true,
-              message: 'MinPrice is required',
+              message: "MinPrice is required",
             },
             {
-              type: 'number',
+              type: "number",
               min: 0,
-              message: 'MinPrice must be a non-negative number',
+              message: "MinPrice must be a non-negative number",
             },
           ]}
         >
@@ -234,12 +250,12 @@ const EditPriceDefinition = () => {
           rules={[
             {
               required: true,
-              message: 'MaxPrice is required',
+              message: "MaxPrice is required",
             },
             {
-              type: 'number',
+              type: "number",
               min: 0,
-              message: 'MaxPrice must be a non-negative number',
+              message: "MaxPrice must be a non-negative number",
             },
           ]}
         >
@@ -256,13 +272,27 @@ const EditPriceDefinition = () => {
     },
   ];
 
+  const handleSearch = useCallback(
+    debounce((value) => setSearchText(value.trim()), 200),
+    []
+  );
+
+  const searchedData = searchText
+    ? services.filter((data) =>
+        columns.some((col) =>
+          data[col.dataIndex]
+            ?.toString()
+            .toLowerCase()
+            .includes(searchText.toLowerCase())
+        )
+      )
+    : services;
+
   const handleTableInputChange = (ServiceId, dataIndex, value) => {
     // Update the main `services` state
     setServices((prevServices) =>
       prevServices.map((item) =>
-        item.ServiceId === ServiceId
-          ? { ...item, [dataIndex]: value }
-          : item
+        item.ServiceId === ServiceId ? { ...item, [dataIndex]: value } : item
       )
     );
 
@@ -291,44 +321,39 @@ const EditPriceDefinition = () => {
   };
 
   const handleOnFinish = async (values) => {
-    debugger;
-    console.log('Modified Services:', modifiedServices);
-    console.log(services);
-
-    // Validate the form fields
     await form.validateFields();
     if (modifiedServices.length === 0) {
       message.warning("please make any changes in price");
       return false;
     }
 
-    // Extract the EffectiveFromDate from the form values
     const effectiveFromDate = values.effectiveFrom;
     const effectiveToDate = values.effectiveTo;
 
-    // Initialize a variable to hold the updated services
-    let updatedServices = modifiedServices; // Start with the current modifiedServices
+    let updatedServices = modifiedServices;
 
-    // Check if effectiveFromDate is not null
     if (effectiveFromDate) {
-      // Format the date to a string (if needed, based on your date format)
-      const formattedDate = effectiveFromDate.format('DD-MM-YYYY'); // Assuming you want to format it as 'DD-MM-YYYY'
-      const formtodate = effectiveToDate.format('DD-MM-YYYY');
+      const formattedDate = effectiveFromDate.format("DD-MM-YYYY");
+      const formtodate = effectiveToDate.format("DD-MM-YYYY");
 
-      // Create a new array with the updated EffectiveFromDatestring
-      updatedServices = modifiedServices.map(service => ({
+      updatedServices = modifiedServices.map((service) => ({
         ...service,
+        BasePriceId: value.BasePriceId,
         EffectiveFromDatestring: formattedDate,
-        EffectiveToDatestring: formtodate
+        EffectiveToDatestring: formtodate,
       }));
     }
 
     try {
-      const response = await customAxios.post(urlAddOrUpdateServicePrices, updatedServices, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await customAxios.post(
+        urlAddOrUpdateServicePrices,
+        updatedServices,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       if (response.status === 200 && response.data.data === true) {
         notification.success({
           message: "Success",
@@ -354,27 +379,35 @@ const EditPriceDefinition = () => {
     }
   };
 
-
-
-
   return (
-    <Layout style={{ zIndex: '999999999' }}>
-      <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
-
-        <Row style={{ padding: '0.5rem 2rem 0rem 2rem', backgroundColor: '#40A2E3', borderRadius: '10px 10px 0px 0px ' }}>
+    <Layout style={{ zIndex: "999999999" }}>
+      <div
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
+        <Row
+          style={{
+            padding: "0.5rem 2rem 0rem 2rem",
+            backgroundColor: "#40A2E3",
+            borderRadius: "10px 10px 0px 0px ",
+          }}
+        >
           <Col span={16}>
-            <Title level={4} style={{ color: 'white', fontWeight: 500 }}>
-              EditPriceDefinition
+            <Title level={4} style={{ color: "white", fontWeight: 500 }}>
+              Edit Price Definition
             </Title>
           </Col>
         </Row>
-
         <Form
           layout="vertical"
           onFinish={handleOnFinish}
           variant="outlined"
           size="default"
-          style={{ padding: '0rem 2rem' }}
+          style={{ padding: "0rem 2rem" }}
           form={form}
         >
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
@@ -386,13 +419,16 @@ const EditPriceDefinition = () => {
                   rules={[
                     {
                       required: true,
-                      message: 'ServiceGroup Is Required'
-                    }
+                      message: "ServiceGroup Is Required",
+                    },
                   ]}
                 >
                   <Select allowClear onChange={handleServiceGroupChange}>
                     {serviceGroups.map((option) => (
-                      <Select.Option key={option.LookupID} value={option.LookupID}>
+                      <Select.Option
+                        key={option.LookupID}
+                        value={option.LookupID}
+                      >
                         {option.LookupDescription}
                       </Select.Option>
                     ))}
@@ -403,19 +439,25 @@ const EditPriceDefinition = () => {
             <Col className="gutter-row" span={6}>
               <div>
                 <Form.Item
-                  style={{ width: '100%' }}
+                  style={{ width: "100%" }}
                   label="Service Classifications"
                   name="ServiceClassifications"
                   rules={[
                     {
                       required: true,
-                      message: 'ServiceClassification Is Required'
-                    }
+                      message: "ServiceClassification Is Required",
+                    },
                   ]}
                 >
-                  <Select allowClear onChange={handleServiceClassificationChange}>
+                  <Select
+                    allowClear
+                    onChange={handleServiceClassificationChange}
+                  >
                     {serviceClassifications.map((option) => (
-                      <Select.Option key={option.ServiceClassificationId} value={option.ServiceClassificationId}>
+                      <Select.Option
+                        key={option.ServiceClassificationId}
+                        value={option.ServiceClassificationId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -425,17 +467,15 @@ const EditPriceDefinition = () => {
             </Col>
             <Col className="gutter-row" span={4}>
               <div>
-                <Form.Item label="EffectiveFromDate" name="effectiveFrom"
-                >
-                  <DatePicker format='DD-MM-YYYY' />
+                <Form.Item label="EffectiveFromDate" name="effectiveFrom">
+                  <DatePicker format="DD-MM-YYYY" />
                 </Form.Item>
               </div>
             </Col>
             <Col className="gutter-row" span={4}>
               <div>
-                <Form.Item label="EffectiveToDate" name="effectiveTo"
-                >
-                  <DatePicker format='DD-MM-YYYY' />
+                <Form.Item label="EffectiveToDate" name="effectiveTo">
+                  <DatePicker format="DD-MM-YYYY" />
                 </Form.Item>
               </div>
             </Col>
@@ -446,21 +486,52 @@ const EditPriceDefinition = () => {
                 </Button>
               </Form.Item>
             </Col>
+            <Col className="gutter-row" span={2}>
+              <Form.Item label="&nbsp;">
+                <Button
+                  type="default"
+                  onClick={() => navigate("/FacilityPriceDefinition")}
+                >
+                  Cancel
+                </Button>
+              </Form.Item>
+            </Col>
           </Row>
-
           <Divider orientation="left"></Divider>
-          <Table
-            style={{ padding: '0rem 2rem' }}
-            dataSource={services}
-            columns={columns}
-
-            rowKey={(row) => row.ServiceId} // Specify the custom id property here
-            size="small"
-            bordered
-            pagination={pagination}
-            onChange={(pagination) => setPagination(pagination)}
-          />
-
+          <Row justify={"end"}>
+            <Col xl={6} lg={7} md={8} sm={10} span={15}>
+              <Input
+                placeholder="Search in table"
+                suffix={<SearchOutlined />}
+                onChange={(e) => handleSearch(e.target.value)}
+                style={{ marginBottom: "0.8rem" }}
+              />
+            </Col>
+          </Row>
+          <Row>
+            <ConfigProvider
+              theme={{
+                components: {
+                  Table: {
+                    headerBg: "#E6E6FA",
+                  },
+                },
+              }}
+            >
+              <Col span={24}>
+                <Table
+                  // style={{ padding: "0rem 2rem" }}
+                  dataSource={searchedData}
+                  columns={columns}
+                  rowKey={(row) => row.ServiceId}
+                  size="small"
+                  bordered
+                  pagination={pagination}
+                  onChange={(pagination) => setPagination(pagination)}
+                />
+              </Col>
+            </ConfigProvider>
+          </Row>
         </Form>
       </div>
     </Layout>

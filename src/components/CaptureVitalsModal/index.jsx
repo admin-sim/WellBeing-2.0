@@ -18,10 +18,17 @@ import TextArea from "antd/es/input/TextArea";
 import { ColWithSixSpan, ColWithThreeSpan } from "../customGridColumns";
 import { IoCalendarOutline } from "react-icons/io5";
 
-function CaptureVitalsModal({ open, close, onSubmit, onSet, handleCancelProp }) {
+function CaptureVitalsModal({
+  open,
+  close,
+  onSubmit,
+  onSet,
+  handleCancelProp,
+  readOnly = false,
+}) {
   const [form] = useForm();
   const currentDate = new Date();
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const currentTimeString = currentDate.toLocaleString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -34,7 +41,7 @@ function CaptureVitalsModal({ open, close, onSubmit, onSet, handleCancelProp }) 
   });
 
   useEffect(() => {
-    debugger
+    debugger;
     if (onSet != null) {
       form.setFieldsValue({
         Height: onSet.height,
@@ -54,14 +61,14 @@ function CaptureVitalsModal({ open, close, onSubmit, onSet, handleCancelProp }) 
         oedema: onSet.Oedema,
         pallor: onSet.Pallor,
         otherComments: onSet.OtherComments,
-        PatientVitalId: onSet.PatientVitalId
+        PatientVitalId: onSet.PatientVitalId,
       });
       onHeightChange({ target: { value: onSet.height } });
       onWeightChange({ target: { value: onSet.Weight } });
       onDiastolicBPChange({ target: { value: onSet.DiastolicBP } });
       onSystolicBPChange({ target: { value: onSet.SystolicBP } });
     }
-  }, [onSet])
+  }, [onSet]);
 
   useEffect(() => {
     if (handleCancelProp) {
@@ -201,14 +208,17 @@ function CaptureVitalsModal({ open, close, onSubmit, onSet, handleCancelProp }) 
         onCancel={handleCancel}
         maskClosable={false}
         footer={[
-          <Button loading={loading}
-            key="submit"
-            size="middle"
-            type="primary"
-            onClick={() => form.submit()}
-          >
-            {form.getFieldValue('PatientVitalId') ? 'Update' : 'Save'}
-          </Button>,
+          !readOnly && (
+            <Button
+              loading={loading}
+              key="submit"
+              size="middle"
+              type="primary"
+              onClick={() => form.submit()}
+            >
+              {form.getFieldValue("PatientVitalId") ? "Update" : "Save"}
+            </Button>
+          ),
           <Button danger size="middle" onClick={handleCancel}>
             Cancel
           </Button>,
@@ -238,13 +248,13 @@ function CaptureVitalsModal({ open, close, onSubmit, onSet, handleCancelProp }) 
             form={form}
             layout="vertical"
             onFinish={async (values) => {
-              debugger
-              setLoading(true)
+              debugger;
+              setLoading(true);
               const flag = await onSubmit(values);
               if (flag) {
-                handleCancel()
+                handleCancel();
               }
-              setLoading(false)
+              setLoading(false);
             }}
           >
             <Row

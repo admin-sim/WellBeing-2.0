@@ -191,7 +191,7 @@ const CreateReccuringCharge = () => {
       title: "Service",
       dataIndex: "service",
       editable: true,
-
+      width: 230,
       render: (_, record) => (
         <Form.Item
           name={`service-${record.key}`}
@@ -202,7 +202,7 @@ const CreateReccuringCharge = () => {
             showSearch
             placeholder="Select Service"
             allowClear
-            style={{ width: 120 }}
+            style={{ width: 230 }}
             filterOption={false} // Disable client-side filtering
             onSearch={(value) => fetchRemoteServices(value)} // Trigger API call on search
             onChange={(value) =>

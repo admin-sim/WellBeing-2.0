@@ -191,7 +191,7 @@ function ShowAddNewTemplate() {
               </ColWithSixSpan>
               <ColWithSixSpan>
                 <Form.Item name="providerID" label="Providers">
-                  <Select style={{ width: "100%" }}>
+                  <Select style={{ width: "100%" }} allowClear>
                     {apiData?.Provider?.map((option) => (
                       <Select.Option
                         key={option.ProviderId}

@@ -52,8 +52,6 @@ function CreatePackage() {
   const [counter, setCounter] = useState(2);
   const [providerId, setProviderId] = useState(null);
   useEffect(() => {
-    debugger;
-
     fetchDataHeader();
     fetchPackageDetails();
   }, []);
@@ -66,7 +64,6 @@ function CreatePackage() {
       if (response.status === 200 && response.data != null) {
         const detailsheader = response.data.data.EncounterModel;
         setPatientData(detailsheader);
-        // ✅ Set form field explicitly here
         form.setFieldsValue({
           RecievedFrom: detailsheader?.PatientName,
         });
@@ -86,17 +83,15 @@ function CreatePackage() {
         setBanks(detailsheader.Banks);
         setPackages(detailsheader.Services);
         setProviders(detailsheader.Provider);
-        setProviderId(detailsheader.ProviderId); // capture ProviderID
+        setProviderId(detailsheader.ProviderId); 
 
-        // STEP 1: Set ProviderId for each row in packageData
         const updatedPackageData = packageData.map((row) => ({
           ...row,
           ProviderId: detailsheader.ProviderId,
         }));
 
-        setPackageData(updatedPackageData); // update your state
+        setPackageData(updatedPackageData); 
 
-        // STEP 2: Set values in form fields
         const formValues = {};
         updatedPackageData.forEach((row, index) => {
           formValues[`ProviderId[${index}]`] = detailsheader.ProviderId;
@@ -113,8 +108,8 @@ function CreatePackage() {
       key: 1,
       ServicePackageId: "",
       NoOfDays: "",
-      StartDateTime: dayjs(), // current date
-      EndDateTime: dayjs(), // current date
+      StartDateTime: dayjs(), 
+      EndDateTime: dayjs(), 
       ProviderId: "",
       PackageAmount: 1,
       DepositPaid: 0,
@@ -148,7 +143,7 @@ function CreatePackage() {
     setReceiptInsAmtData([
       ...receiptInsAmtData,
       {
-        key: counter, // use counter as key
+        key: counter, 
         PaymentTypeId: "",
         InstrumentAmount: "",
         BankId: "",
@@ -161,7 +156,7 @@ function CreatePackage() {
         Remarks: "",
       },
     ]);
-    setCounter(counter + 1); // increment counter
+    setCounter(counter + 1); 
   };
 
   const [receiptInsAmtData, setReceiptInsAmtData] = useState(
@@ -170,8 +165,7 @@ function CreatePackage() {
 
   const handleFinish = async () => {
     try {
-      // Step 1: Fetch IndicatorId
-      const indicatorResponse = await customAxios.get(urlGetAllServiceAsync); // your actual URL
+      const indicatorResponse = await customAxios.get(urlGetAllServiceAsync); 
 
       const indicatorId = indicatorResponse?.data?.data?.[0]?.LookupID;
 
@@ -180,7 +174,6 @@ function CreatePackage() {
         return;
       }
 
-      // Step 2: Get form values
       const receipt = {
         PatientId: PatientId,
         ReceivedFrom: form.getFieldValue("RecievedFrom"),
@@ -189,6 +182,7 @@ function CreatePackage() {
         ),
         ReceiptAmount: form.getFieldValue("ReceiptAmount"),
         BalanceAmt: form.getFieldValue("BalanceDeposit"),
+        EncounterId: EncounterId,
       };
 
       const packageModel = {
@@ -197,7 +191,6 @@ function CreatePackage() {
         ServicePackageId: packageData[0].ServicePackageId,
       };
 
-      // Step 3: Map packages
       const mappedPackages = packageData.map((item) => ({
         ServicePackageId: item.ServicePackageId,
         NoOfDays: item.NoOfDays,
@@ -217,14 +210,13 @@ function CreatePackage() {
         ServiceGroupId: item.ServiceGroupId,
       }));
 
-      // Step 4: Map allocations with fetched IndicatorId
       const mappedAllocations = receiptInsAmtData.map((item) => ({
         PaymentTypeId: item.PaymentTypeId,
         IndicatorId: indicatorId,
-        IndicatorDescriptionId:  packageData[0].ServicePackageId,
+        IndicatorDescriptionId: packageData[0].ServicePackageId,
         Balance: packageData[0].BalanceAmt,
-        EncounterID:EncounterId,    //form.getFieldValue("EncounterId"),
-        PatientId: PatientId//form.getFieldValue("PatientId"),
+        EncounterID: EncounterId, 
+        PatientId: PatientId,
       }));
 
       const formattedReceiptInsAmtData = receiptInsAmtData.map((item) => ({
@@ -243,7 +235,6 @@ function CreatePackage() {
         EncounterId: EncounterId || "",
       }));
 
-      // Step 5: Build final payload
       const postData = {
         ReceiptModel: receipt,
         Allocations: mappedAllocations,
@@ -252,7 +243,6 @@ function CreatePackage() {
         PackageModel: packageModel,
       };
 
-      // Step X: Validate amount consistency
       const receiptAmount =
         parseFloat(form.getFieldValue("ReceiptAmount")) || 0;
 
@@ -273,10 +263,8 @@ function CreatePackage() {
         message.error(
           `Mismatch in amounts: Receipt (${receiptAmount}), DepositPaid (${totalDepositPaid}), InstrumentAmount (${totalInstrumentAmount})`
         );
-        return; // Stop execution if values don't match
+        return; 
       }
-
-      // Step 6: Post data
 
       const response = await customAxios.post(
         urlSavePackageReceiptDetails,
@@ -289,16 +277,15 @@ function CreatePackage() {
         }
       );
 
-      const result = response.data.data; // assuming API returns { data: "true" } or { data: "some message" }
+      const result = response.data.data; 
 
       if (result === "true") {
         message.success("Package Details Saved Successfully");
         form.resetFields();
         setPackageData(initialDataSource);
         setReceiptInsAmtData(initialDataSourcePackage);
-    
       } else {
-        message.error("Error: " + result); // show actual error message
+        message.error("Error: " + result); 
       }
     } catch (error) {
       console.error("Save failed", error);
@@ -307,7 +294,6 @@ function CreatePackage() {
   };
 
   const handleInputChange = (value, fieldName, key) => {
-    // Update packageData state
     setReceiptInsAmtData((prevData) =>
       prevData.map((item) =>
         item.key === key ? { ...item, [fieldName]: value } : item
@@ -316,7 +302,6 @@ function CreatePackage() {
   };
 
   const handlePackageInputChange = (value, fieldName, key) => {
-    // Update packageData state
     setPackageData((prevData) =>
       prevData.map((item) =>
         item.key === key ? { ...item, [fieldName]: value } : item
@@ -347,7 +332,6 @@ function CreatePackage() {
         const currentDate = dayjs();
         const endDate = currentDate.add(noOfDays, "day");
 
-        // Calculate balance logic (assumes deposit = 0 initially)
         const deposit = 0;
         const balance = price - deposit;
 
@@ -375,7 +359,6 @@ function CreatePackage() {
           )
         );
 
-        // Set values in form
         form.setFieldsValue({
           ["PackageAmount"]: { [recordKey - 1]: price },
           ["DepositPaid"]: { [recordKey - 1]: deposit },
@@ -386,7 +369,6 @@ function CreatePackage() {
           ["ProviderId"]: { [recordKey - 1]: providerId },
         });
       } else {
-        // Handle case when price not found
         message.warning("No standard price defined for the selected package.");
 
         const resetDate = dayjs();
@@ -585,42 +567,42 @@ function CreatePackage() {
       ),
     },
     {
-  title: "Deposit",
-  dataIndex: "DepositPaid",
-  key: "DepositPaid",
-  render: (text, record, index) => (
-    <Form.Item
-      name={["DepositPaid", record.key - 1]}
-      style={{ width: "100%" }}
-      rules={[
-        {
-          validator: (_, value) => {
-            const deposit = parseFloat(value) || 0;
-            const packageAmount = parseFloat(record.PackageAmount) || 0;
-            if (deposit > packageAmount) {
-              return Promise.reject(
-                new Error("Deposit cannot be greater than Package Amount")
-              );
+      title: "Deposit",
+      dataIndex: "DepositPaid",
+      key: "DepositPaid",
+      render: (text, record, index) => (
+        <Form.Item
+          name={["DepositPaid", record.key - 1]}
+          style={{ width: "100%" }}
+          rules={[
+            {
+              validator: (_, value) => {
+                const deposit = parseFloat(value) || 0;
+                const packageAmount = parseFloat(record.PackageAmount) || 0;
+                if (deposit > packageAmount) {
+                  return Promise.reject(
+                    new Error("Deposit cannot be greater than Package Amount")
+                  );
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
+          <Input
+            min={0}
+            defaultValue={text}
+            onChange={(e) =>
+              handlePackageInputChange(
+                e.target.value,
+                "DepositPaid",
+                record.key
+              )
             }
-            return Promise.resolve();
-          },
-        },
-      ]}
-    >
-      <Input
-        min={0}
-        defaultValue={text}
-        onChange={(e) =>
-          handlePackageInputChange(
-            e.target.value,
-            "DepositPaid",
-            record.key
-          )
-        }
-      />
-    </Form.Item>
-  ),
-},
+          />
+        </Form.Item>
+      ),
+    },
 
     {
       title: "Balance Deposit",
@@ -633,7 +615,7 @@ function CreatePackage() {
           //initialValue={record.AuthRefNo}
         >
           <Input
-             disabled
+            disabled
             min={0}
             defaultValue={text}
             onChange={(e) =>
@@ -653,7 +635,7 @@ function CreatePackage() {
       key: "PaymentTypeId",
       render: (text, record, index) => (
         <Form.Item
-          name={["PaymentTypeId", record.key - 1]} // subtract 1 from key
+          name={["PaymentTypeId", record.key - 1]} 
           rules={[
             { required: true, message: "Required" },
             {
@@ -665,7 +647,6 @@ function CreatePackage() {
                   (row) => row.PaymentTypeId === value
                 );
                 if (duplicateExists) {
-                  // return Promise.reject('Payment Type already selected in another row');
                   return Promise.reject(
                     new Error("Payment Type should not be same")
                   );
@@ -798,7 +779,6 @@ function CreatePackage() {
         </Form.Item>
       ),
     },
-
     {
       title: "ExpiryDate",
       dataIndex: "CardExpiryDate",
@@ -822,11 +802,10 @@ function CreatePackage() {
           ]}
         >
           <DatePicker
-            format="MM-YYYY" // Date format
-            picker="month" // Month picker
+            format="MM-YYYY" 
+            picker="month" 
             placeholder="Select Date"
             disabledDate={(current) => {
-              // Disable dates before the current month
               return current && current.isBefore(dayjs().startOf("month"));
             }}
             onChange={(date, dateString) =>
@@ -836,7 +815,6 @@ function CreatePackage() {
         </Form.Item>
       ),
     },
-
     {
       title: "Card Number",
       dataIndex: "CardNumber",
@@ -858,7 +836,7 @@ function CreatePackage() {
       render: (_, record) => (
         <Form.Item
           style={{ width: "100%" }}
-          name={["Cheqdate", record.key - 1]} // Use record.key for dynamic name
+          name={["Cheqdate", record.key - 1]} 
           rules={[
             {
               validator: (_, value) =>
@@ -874,17 +852,15 @@ function CreatePackage() {
             format="DD-MM-YYYY" // Date format
             placeholder="Select Date"
             disabledDate={(current) => {
-              // Disable dates before today
               return current && current.isBefore(dayjs(), "day");
             }}
             onChange={(date, dateString) =>
               handleInputChange(dateString, "Cheqdate", record.key)
-            } // Pass the date, column name, and record.key to handleInputChange
+            } 
           />
         </Form.Item>
       ),
     },
-
     {
       title: "Remarks",
       dataIndex: "Remarks",
@@ -899,7 +875,6 @@ function CreatePackage() {
         </Form.Item>
       ),
     },
-
     {
       title: (
         <Button
@@ -1007,7 +982,7 @@ function CreatePackage() {
             </Col>
             <Col>
               <Form.Item>
-                <Button danger onClick={() => alert("Cancel Clicked")}>
+                <Button danger onClick={() => navigate("/PackageSubscription")}>
                   Cancel
                 </Button>
               </Form.Item>

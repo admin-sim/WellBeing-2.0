@@ -384,11 +384,11 @@ const RadiologyResultEntry = () => {
   const handleTemplateClick = async (record) => {
     setCurrentRecord(record); // Store current record
     let templateData = "";
-  
+
     // Create a table for patient details with wrapper comments
     const generatePatientTableHTML = (patient) => {
       if (!patient) return "";
-  
+
       return `
         <!-- PATIENT_TABLE_START -->
         <table border="1" cellpadding="8" cellspacing="0" style="width:100%; border-collapse: collapse; font-size:14px;">
@@ -411,7 +411,7 @@ const RadiologyResultEntry = () => {
         <!-- PATIENT_TABLE_END -->
       `;
     };
-  
+
     try {
       // Fetch template data if not already available
       if (record.ResId > 0 || record.ObservedValues) {
@@ -424,22 +424,21 @@ const RadiologyResultEntry = () => {
           templateData = response.data.data.TempData;
         }
       }
-  
+
       // Remove previously injected patient table if present
       const cleanedTemplateData = templateData.replace(
         /<!-- PATIENT_TABLE_START -->[\s\S]*?<!-- PATIENT_TABLE_END -->/g,
         ""
       );
-  
+
       // Generate new patient table and combine with cleaned template
       const patientTableHTML = generatePatientTableHTML(patientData);
       const fullTemplateContent = `${patientTableHTML}${cleanedTemplateData}`;
-  
+
       // Update state and open modal
       setTemplateEditorData(fullTemplateContent);
       setEditorKey((prevKey) => prevKey + 1); // Force CKEditor to rerender
       setCkModalOpen(true); // Show modal
-  
     } catch (error) {
       console.error("Error fetching template data:", error);
       notification.error({
@@ -448,7 +447,6 @@ const RadiologyResultEntry = () => {
       });
     }
   };
-  
 
   const handleCancel = () => {
     setTemplateEditorData("");
@@ -761,9 +759,9 @@ const RadiologyResultEntry = () => {
       if (record.IsVerificationDone) {
         return <span>Done</span>;
       }
-    //   if (!record.IsSampleCollected) {
-    //     return <span></span>;
-    //   }
+      //   if (!record.IsSampleCollected) {
+      //     return <span></span>;
+      //   }
       if (record.IsResultEntryDone) {
         setGreenRow("green-row");
       }
@@ -841,9 +839,9 @@ const RadiologyResultEntry = () => {
     } catch (error) {}
   };
 
-//   const handleSampleCollection = () => {
-//     navigate("/SampleCollection", { state: { record } });
-//   };
+  //   const handleSampleCollection = () => {
+  //     navigate("/SampleCollection", { state: { record } });
+  //   };
 
   const handleVerification = () => {
     navigate("/RadiologyVerification", { state: { record } });

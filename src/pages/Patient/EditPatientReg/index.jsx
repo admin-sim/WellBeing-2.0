@@ -77,7 +77,6 @@ const NewPatient = () => {
   const [filteredCities, setFilteredCities] = useState([]);
   const [filteredAreas, setFilteredAreas] = useState([]);
 
-
   const [loadings, setLoadings] = useState(false);
   const [isloading, setLoading] = useState(true);
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -127,10 +126,7 @@ const NewPatient = () => {
         setFilteredAreas(response.data.data.Areas);
         const dateOfBirth = dayjs(patientData.DateOfBirthstring, "DD-MM-YYYY");
         setDob(patientData.DateOfBirthstring);
-        handleDateChange(
-          dateOfBirth,
-          patientData.DateOfBirthstring
-        );
+        handleDateChange(dateOfBirth, patientData.DateOfBirthstring);
         setLoading(false);
       });
   }, []);
@@ -156,21 +152,21 @@ const NewPatient = () => {
         : undefined,
       Height: patientDetails.Height === 0 ? null : patientDetails.Height,
       Weight: patientDetails.Weight === 0 ? null : patientDetails.Weight,
-      presentAddress1: patientDetails.PermanentAddress1,
-      presentPinCode: patientDetails.PermanentPinCode
-        ? patientDetails.PermanentPinCode
+      presentAddress1: patientDetails.PresentAddress1,
+      presentPinCode: patientDetails.PresentPinCode
+        ? patientDetails.PresentPinCode
         : undefined,
-      presentCountryId: patientDetails.PermanentCountryId
-        ? patientDetails.PermanentCountryId
+      presentCountryId: patientDetails.PresentCountryId
+        ? patientDetails.PresentCountryId
         : undefined,
-      presentStateId: patientDetails.PermanentStateId
-        ? patientDetails.PermanentStateId
+      presentStateId: patientDetails.PresentStateId
+        ? patientDetails.PresentStateId
         : undefined,
-      presentPlaceId: patientDetails.PermanentPlaceId
-        ? patientDetails.PermanentPlaceId
+      presentPlaceId: patientDetails.PresentPlaceId
+        ? patientDetails.PresentPlaceId
         : undefined,
-      presentAreaId: patientDetails.PermanentAreaId
-        ? patientDetails.PermanentAreaId
+      presentAreaId: patientDetails.PresentAreaId
+        ? patientDetails.PresentAreaId
         : undefined,
       permanentAddress1: patientDetails.PermanentAddress1,
       permanentPinCode: patientDetails.PermanentPinCode
@@ -207,7 +203,6 @@ const NewPatient = () => {
       BirthPlace: patientDetails.BirthPlace,
       birthIdentification1: patientDetails.BirthIdentification1,
       birthIdentification2: patientDetails.BirthIdentification2,
-      
     });
     if (patientDetails.PhotoUrl) {
       handleImageUpload(patientDetails.PhotoUrl);
@@ -459,9 +454,9 @@ const NewPatient = () => {
   const handleOnFinish = async (values) => {
     setLoadings(true);
     console.log("Received values from form: ", values);
-  
+
     values.dob = selecteddob;
-  
+
     const patient = {
       UhId: patientDetails.UhId,
       PatientId: patientDetails.PatientId,
@@ -504,12 +499,12 @@ const NewPatient = () => {
       BirthIdentification2: values.birthIdentification2 || null,
       ActiveFlag: patientDetails.ActiveFlag,
     };
-  
+
     const postData = { patient };
-  
+
     try {
       const response = await customAxios.post(urlAddNewPatient, postData);
-  
+
       if (response.data !== null) {
         if (response.data === false) {
           notification.error({
@@ -519,15 +514,16 @@ const NewPatient = () => {
         } else {
           notification.success({
             message: "Patient details updated Successfully",
-            description: "The patient details have been successfully registered",
+            description:
+              "The patient details have been successfully registered",
           });
-  
+
           // Update patient record to pass to visit modal
           const updatedRecord = {
             ...patientDetails,
             PatientId: response.data.PatientId ?? patient.PatientId,
           };
-  
+
           // Navigate to /Patient/NewVisit and pass record
           navigate("/Patient/NewVisit", {
             state: { record: updatedRecord },
@@ -544,7 +540,6 @@ const NewPatient = () => {
       setLoadings(false);
     }
   };
-  
 
   const onEdit = async (record) => {
     debugger;
@@ -749,6 +744,11 @@ const NewPatient = () => {
       "presentPinCode",
     ]);
 
+    setSelectedCountry(presentAddressFields.presentCountryId);
+    setSelectedState(presentAddressFields.presentStateId);
+    setSelectedCity(presentAddressFields.presentPlaceId);
+    setSelectedArea(presentAddressFields.presentAreaId);
+
     form.setFieldsValue({
       permanentAddress1: presentAddressFields.presentAddress1,
       permanentCountryId: presentAddressFields.presentCountryId,
@@ -807,21 +807,21 @@ const NewPatient = () => {
                 : undefined,
               Height: patientDetails.Height,
               Weight: patientDetails.Weight,
-              presentAddress1: patientDetails.PermanentAddress1,
-              presentPinCode: patientDetails.PermanentPinCode
-                ? patientDetails.PermanentPinCode
+              presentAddress1: patientDetails.PresentAddress1,
+              presentPinCode: patientDetails.PresentPinCode
+                ? patientDetails.PresentPinCode
                 : undefined,
-              presentCountryId: patientDetails.PermanentCountryId
-                ? patientDetails.PermanentCountryId
+              presentCountryId: patientDetails.PresentCountryId
+                ? patientDetails.PresentCountryId
                 : undefined,
-              presentStateId: patientDetails.PermanentStateId
-                ? patientDetails.PermanentStateId
+              presentStateId: patientDetails.PresentStateId
+                ? patientDetails.PresentStateId
                 : undefined,
-              presentPlaceId: patientDetails.PermanentPlaceId
-                ? patientDetails.PermanentPlaceId
+              presentPlaceId: patientDetails.PresentPlaceId
+                ? patientDetails.PresentPlaceId
                 : undefined,
-              presentAreaId: patientDetails.PermanentAreaId
-                ? patientDetails.PermanentAreaId
+              presentAreaId: patientDetails.PresentAreaId
+                ? patientDetails.PresentAreaId
                 : undefined,
               permanentAddress1: patientDetails.PermanentAddress1,
               permanentPinCode: patientDetails.PermanentPinCode
@@ -1203,14 +1203,21 @@ const NewPatient = () => {
                         onChange={handlePresentStateChange}
                         allowClear
                       >
-                        {filteredStates.map((option) => (
-                          <Select.Option
-                            key={option.StateID}
-                            value={option.StateID}
-                          >
-                            {option.StateName}
-                          </Select.Option>
-                        ))}
+                        {filteredStates
+                          .filter(
+                            (i) =>
+                              i.CountryId ===
+                              (selectedCountry ||
+                                patientDetails.PresentCountryId)
+                          )
+                          .map((option) => (
+                            <Select.Option
+                              key={option.StateID}
+                              value={option.StateID}
+                            >
+                              {option.StateName}
+                            </Select.Option>
+                          ))}
                       </Select>
                     </Form.Item>
                   </Col>
@@ -1221,14 +1228,20 @@ const NewPatient = () => {
                         onChange={handlePresentCityChange}
                         allowClear
                       >
-                        {filteredCities.map((option) => (
-                          <Select.Option
-                            key={option.PlaceId}
-                            value={option.PlaceId}
-                          >
-                            {option.PlaceName}
-                          </Select.Option>
-                        ))}
+                        {filteredCities
+                          .filter(
+                            (i) =>
+                              i.StateId ===
+                              (selectedState || patientDetails.PresentStateId)
+                          )
+                          .map((option) => (
+                            <Select.Option
+                              key={option.PlaceId}
+                              value={option.PlaceId}
+                            >
+                              {option.PlaceName}
+                            </Select.Option>
+                          ))}
                       </Select>
                     </Form.Item>
                   </Col>
@@ -1239,14 +1252,20 @@ const NewPatient = () => {
                         onChange={(value) => setSelectedArea(value)}
                         allowClear
                       >
-                        {filteredAreas.map((option) => (
-                          <Select.Option
-                            key={option.AreaId}
-                            value={option.AreaId}
-                          >
-                            {option.AreaName}
-                          </Select.Option>
-                        ))}
+                        {filteredAreas
+                          .filter(
+                            (i) =>
+                              i.PlaceId ===
+                              (selectedCity || patientDetails.PresentPlaceId)
+                          )
+                          .map((option) => (
+                            <Select.Option
+                              key={option.AreaId}
+                              value={option.AreaId}
+                            >
+                              {option.AreaName}
+                            </Select.Option>
+                          ))}
                       </Select>
                     </Form.Item>
                   </Col>
@@ -1320,14 +1339,21 @@ const NewPatient = () => {
                         onChange={handlePermanentStateChange}
                         allowClear
                       >
-                        {filteredStates.map((option) => (
-                          <Select.Option
-                            key={option.StateID}
-                            value={option.StateID}
-                          >
-                            {option.StateName}
-                          </Select.Option>
-                        ))}
+                        {filteredStates
+                          .filter(
+                            (i) =>
+                              i.CountryId ===
+                              (selectedCountry ||
+                                patientDetails.PermanentCountryId)
+                          )
+                          .map((option) => (
+                            <Select.Option
+                              key={option.StateID}
+                              value={option.StateID}
+                            >
+                              {option.StateName}
+                            </Select.Option>
+                          ))}
                       </Select>
                     </Form.Item>
                   </Col>
@@ -1338,14 +1364,20 @@ const NewPatient = () => {
                         onChange={handleParmanentCityChange}
                         allowClear
                       >
-                        {filteredCities.map((option) => (
-                          <Select.Option
-                            key={option.PlaceId}
-                            value={option.PlaceId}
-                          >
-                            {option.PlaceName}
-                          </Select.Option>
-                        ))}
+                        {filteredCities
+                          .filter(
+                            (i) =>
+                              i.StateId ===
+                              (selectedState || patientDetails.PermanentStateId)
+                          )
+                          .map((option) => (
+                            <Select.Option
+                              key={option.PlaceId}
+                              value={option.PlaceId}
+                            >
+                              {option.PlaceName}
+                            </Select.Option>
+                          ))}
                       </Select>
                     </Form.Item>
                   </Col>
@@ -1356,14 +1388,20 @@ const NewPatient = () => {
                         onChange={(value) => setSelectedArea(value)}
                         allowClear
                       >
-                        {filteredAreas.map((option) => (
-                          <Select.Option
-                            key={option.AreaId}
-                            value={option.AreaId}
-                          >
-                            {option.AreaName}
-                          </Select.Option>
-                        ))}
+                        {filteredAreas
+                          .filter(
+                            (i) =>
+                              i.PlaceId ===
+                              (selectedCity || patientDetails.PermanentPlaceId)
+                          )
+                          .map((option) => (
+                            <Select.Option
+                              key={option.AreaId}
+                              value={option.AreaId}
+                            >
+                              {option.AreaName}
+                            </Select.Option>
+                          ))}
                       </Select>
                     </Form.Item>
                   </Col>

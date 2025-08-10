@@ -408,8 +408,8 @@ const NewVisit = () => {
         });
         message.error("Please fill all required fields.");
       } else {
-        console.error("Failed to send data to server: ", error);
-        message.error(`Error creating visit for patient: ${error.message}.`);
+        // console.error("Failed to send data to server: ", error);
+        // message.error(`Error creating visit for patient: ${error.message}.`);
         // form1.resetFields();
       }
     }

@@ -589,7 +589,7 @@ function CreateAdditionalCharge() {
                                     </Col>
                                 </Row>
                                 <Row justify="end">
-                                    <Col>
+                                    <Col style={{ marginRight: '10px' }}>
                                         <Form.Item hidden={isHideButton}>
                                             <Button type="primary" htmlType="submit" >
                                                 {buttonTitle}
