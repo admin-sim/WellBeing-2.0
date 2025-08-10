@@ -109,6 +109,7 @@ import ChargeException from "./pages/Masters/GeneralMasters/AccountManagement/Ch
 import CreateChargeException from "./pages/Masters/GeneralMasters/AccountManagement/CreateChargeException";
 import BillAggrement from "./pages/Masters/GeneralMasters/AccountManagement/BillAggrement";
 import CreateBillAgrement from "./pages/Masters/GeneralMasters/AccountManagement/CreateBillAgrement";
+import EditBillAgrementRevise from "./pages/Masters/GeneralMasters/AccountManagement/EditBillAgrementRevise";
 import UpdateItemReceipt from "./pages/Inventory/ItemReceipt/UpdateItemReceipt.jsx";
 import UpdatePatientIssue from "./pages/Inventory/PatientIssue/UpdatePatientIssue";
 import ShowCreateEditDefinition from "./pages/Masters/InventoryManagement/ProductDefinition/ShowCreateEditDefinition";
@@ -1143,6 +1144,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CreateBillAgrement />
+                </ProtectedRoute>
+              }
+            />
+              <Route
+              path="EditBillAgrementRevise"
+              element={
+                <ProtectedRoute>
+                  <EditBillAgrementRevise />
                 </ProtectedRoute>
               }
             />

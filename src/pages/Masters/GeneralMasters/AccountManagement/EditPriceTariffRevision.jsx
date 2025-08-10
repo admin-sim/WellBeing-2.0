@@ -26,6 +26,7 @@ import {
   urlEditPriceTariff,
   urlUpdatePriceTariff,
   urlDeletePriceTariffChargeParameter,
+  urlRevisePriceTariff,
 } from "../../../../../endpoints";
 import PriceChargeModal from "./PriceChargeModal";
 import EditPriceChargeModal from "./EditPriceChargeModal";
@@ -55,6 +56,7 @@ function EditPriceTariffRevision() {
   const [transferError, setTransferError] = useState(false);
   const [priceTariffId, setPriceTariffId] = useState(0);
   const [linedata, setLinedata] = useState(null);
+  const [newRevisionNo, setNewRevisionNo] = useState(0);
 
 
   const [editedpriceTarifflineId, setEditedPriceTariffLineId] = useState(null);
@@ -141,10 +143,11 @@ function EditPriceTariffRevision() {
     if (EditedPricetariffId) {
       // Check if EditedPricetariffId exists
       const fetchData1 = async () => {
-        const Revision = 0;
+        const Revision = revision ? revision : 0;
         try {
           const response = await customAxios.get(
-            `${urlEditPriceTariff}?PriceTariff=${EditedPricetariffId}&Revision=${Revision}`
+            //`${urlEditPriceTariff}?PriceTariff=${EditedPricetariffId}&Revision=${Revision}`
+            `${urlRevisePriceTariff}?PriceTariff=${EditedPricetariffId}&Revision=${Revision}`
           );
           if (response.status === 200 && response.data.data != null) {
             const editpricetariffdetail = response.data.data;
@@ -171,14 +174,8 @@ function EditPriceTariffRevision() {
                   )
                 : null,
             });
-            const filteredtransData =
-              editpricetariffdetail.SelectedChargeParameters.map((item) => ({
-                key: item.LookupID,
-                title: item.LookupDescription,
-                // Add more fields as needed
-              }));
-            // Set the pre-selected items in Transfer
-            setTargetKeys(filteredtransData.map((item) => item.key));
+  
+          setNewRevisionNo(editpricetariffdetail.RevisionNo + 1);
             setColumnData(editpricetariffdetail.BillTariffLineModels);
           } else {
             console.error("Failed to fetch patient details");
@@ -192,12 +189,7 @@ function EditPriceTariffRevision() {
     }
   }, []);
 
-  const handleChange = (nextTargetKeys) => {
-    if (nextTargetKeys.length > 0) {
-      setTransferError(false); // Reset the error state
-    }
-    setTargetKeys(nextTargetKeys);
-  };
+ 
 
   const fetchData = async () => {
     setLoading(true);
@@ -261,52 +253,52 @@ function EditPriceTariffRevision() {
   };
   
 
-  const showModal = async () => {
-    if (targetKeys.length === 0) {
-      setTransferError(true);
-      //message.error('Please select at least one item before proceeding.');
-      return; // Stop execution if targetKeys is empty
-    }
+  // const showModal = async () => {
+  //   if (targetKeys.length === 0) {
+  //     setTransferError(true);
+  //     //message.error('Please select at least one item before proceeding.');
+  //     return; // Stop execution if targetKeys is empty
+  //   }
 
-    setTransferError(false); // Reset the error state
+  //   setTransferError(false); // Reset the error state
 
-    try {
-      if (targetKeys.length > 0) {
-        // Check if targetKeys has elements
-        // Create an array of MasterModel objects using targetKeys
-        const masterModels = targetKeys.map((key) => ({
-          LookupID: key, // Assuming LookupID should be assigned targetKey
-          // You can assign other properties based on your requirement
-        }));
+  //   try {
+  //     if (targetKeys.length > 0) {
+  //       // Check if targetKeys has elements
+  //       // Create an array of MasterModel objects using targetKeys
+  //       const masterModels = targetKeys.map((key) => ({
+  //         LookupID: key, // Assuming LookupID should be assigned targetKey
+  //         // You can assign other properties based on your requirement
+  //       }));
 
-        const response = await customAxios.post(
-          urlGetDropDownsForPricetariif,
-          masterModels,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+  //       const response = await customAxios.post(
+  //         urlGetDropDownsForPricetariif,
+  //         masterModels,
+  //         {
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //           },
+  //         }
+  //       );
 
-        if (response.status === 200 && response.data.data != null) {
-          if (response.data.data) {
-            setPriceariffDropdown(response.data.data);
-            setIsModalOpen(true);
-            //message.success('PriceTariffCreated Successfully');
-          } else {
-            message.error("PriceTariff With Same Name Already Exists");
-          }
-        }
-      } else {
-        // Handle case when targetKeys is empty
-        message.error("No keys selected");
-      }
-    } catch (error) {
-      message.error("Something went wrong");
-      console.error(error);
-    }
-  };
+  //       if (response.status === 200 && response.data.data != null) {
+  //         if (response.data.data) {
+  //           setPriceariffDropdown(response.data.data);
+  //           setIsModalOpen(true);
+  //           //message.success('PriceTariffCreated Successfully');
+  //         } else {
+  //           message.error("PriceTariff With Same Name Already Exists");
+  //         }
+  //       }
+  //     } else {
+  //       // Handle case when targetKeys is empty
+  //       message.error("No keys selected");
+  //     }
+  //   } catch (error) {
+  //     message.error("Something went wrong");
+  //     console.error(error);
+  //   }
+  // };
 
   const columns = [
     // {
@@ -577,7 +569,7 @@ function EditPriceTariffRevision() {
                     />
                   </Form.Item>
                 </div> */}
-                <div
+                {/* <div
                   style={{
                     width: "100%",
                     backgroundColor: "white",
@@ -612,7 +604,7 @@ function EditPriceTariffRevision() {
                       ></Button>
                     </Col>
                   </Row>
-                </div>
+                </div> */}
                 <div>
                   <Spin spinning={loading}>
                     <CustomTable
@@ -639,6 +631,9 @@ function EditPriceTariffRevision() {
                     editedpriceTarifflineId={editedpriceTarifflineId}
                     setColumnData={setColumnData}
                     linedata={linedata}
+                    revisionNo={revision? revision : 0}
+                    newRevisionNo={newRevisionNo}
+                     mode="revise"
                   />
                 </div>
               </div>

@@ -42,7 +42,7 @@ function CreatePriceTariff() {
 
   const [facilities, setFacilities] = useState([]);
   const location = useLocation();
-  const EditedPricetariffId = location.state?.PriceTariffId;
+   const { EditedPricetariffId = 0, revision = 0 } = location.state || {};
   console.log("EditedPricetariffId", EditedPricetariffId);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -54,6 +54,7 @@ function CreatePriceTariff() {
   const [transferError, setTransferError] = useState(false);
   const [priceTariffId, setPriceTariffId] = useState(0);
   const [linedata, setLinedata] = useState(null);
+   const [newRevisionNo, setNewRevisionNo] = useState(0);
 
 
   const [editedpriceTarifflineId, setEditedPriceTariffLineId] = useState(null);
@@ -137,7 +138,7 @@ function CreatePriceTariff() {
     if (EditedPricetariffId) {
       // Check if EditedPricetariffId exists
       const fetchData1 = async () => {
-        const Revision = 0;
+      const Revision = revision ? revision : 0;
         try {
           const response = await customAxios.get(
             `${urlEditPriceTariff}?PriceTariff=${EditedPricetariffId}&Revision=${Revision}`
@@ -174,6 +175,7 @@ function CreatePriceTariff() {
                 // Add more fields as needed
               }));
             // Set the pre-selected items in Transfer
+             setNewRevisionNo(revision ? revision : 0);
             setTargetKeys(filteredtransData.map((item) => item.key));
             setColumnData(editpricetariffdetail.BillTariffLineModels);
           } else {
@@ -634,6 +636,9 @@ function CreatePriceTariff() {
                     editedpriceTarifflineId={editedpriceTarifflineId}
                     setColumnData={setColumnData}
                     linedata={linedata}
+                     revisionNo={revision? revision : 0}
+                    newRevisionNo={newRevisionNo}
+                     mode="edit"
                   />
                 </div>
               </div>

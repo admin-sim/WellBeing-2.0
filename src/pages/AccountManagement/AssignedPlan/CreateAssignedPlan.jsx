@@ -863,6 +863,20 @@ const CreateAssignedPlan = () => {
                   </Row>
                 );
               })}
+              <Button
+                type="primary"
+                style={{ margin: "1rem 1.5rem" }}
+                onClick={() =>
+                  navigate("/CreateBilling", {
+                    state: {
+                      patientId: PatientId,
+                      encounterId: EncounterId,
+                    },
+                  })
+                }
+              >
+                Back
+              </Button>
             </div>
           </Col>
           <Col span={18}>

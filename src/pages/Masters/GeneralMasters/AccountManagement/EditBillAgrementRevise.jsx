@@ -28,6 +28,7 @@ import {
   urlEditBillAgreementChargeParameter,
   urlUpdateBillAgreement,
   urlDeleteBillAgreementChargeParameter,
+  urlReviseBillAgreement,
 } from "../../../../../endpoints";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
@@ -37,14 +38,12 @@ import dayjs from "dayjs";
 import BillAggrementModal from "./BillAggrementModal";
 import EditBillAgrementModal from "./EditBillAgrementModal";
 
-function CreateBillAgrement() {
+function EditBillAgrementRevise() {
   const [form] = Form.useForm();
 
   const location = useLocation();
-
-
-  const { EditedAgreementId = 0, revision = 0 } = location.state || {};
-
+  const { EditedAgreementId, revision } = location.state || {};
+  console.log("EditedAgreementId", EditedAgreementId);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [transferData, setTransferData] = useState([]);
@@ -55,6 +54,7 @@ function CreateBillAgrement() {
   const [transferError, setTransferError] = useState(false);
   const [agreementId, setAgreementId] = useState(0);
   const [linedata, setLinedata] = useState(null);
+  const [newRevisionNo, setNewRevisionNo] = useState(0);
 
   const [editedAgrementlineId, setEditedAgrementLineId] = useState(null);
 
@@ -63,8 +63,6 @@ function CreateBillAgrement() {
     useState(false);
   const [isDeductibleIsRestrictedChecked, setIsDeductibleIsRestrictedChecked] =
     useState(false);
-
-  const [newRevisionNo, setNewRevisionNo] = useState(0);
 
   const handleCheckboxChange = (e) => {
     setIsChecked(e.target.checked);
@@ -147,10 +145,10 @@ function CreateBillAgrement() {
     if (EditedAgreementId) {
       // Check if EditedPricetariffId exists
       const fetchData1 = async () => {
-        const Revision = revision ? revision : 0;
+           const Revision = revision ? revision : 0;
         try {
           const response = await customAxios.get(
-            `${urlEditBillAgreement}?BillAgreement=${EditedAgreementId}&Revision=${Revision}`
+            `${urlReviseBillAgreement}?BillAgreement=${EditedAgreementId}&Revision=${Revision}`
           );
           if (response.status === 200 && response.data.data != null) {
             const editbillagrementdetail = response.data.data;
@@ -205,18 +203,18 @@ function CreateBillAgrement() {
                   )
                 : null,
             });
-            const filteredtransData =
-              editbillagrementdetail.SelectedChargeParameters.filter(
-                (item) => item.LookupDescription !== "Payer"
-              ).map((item) => ({
-                key: item.LookupID,
-                title: item.LookupDescription,
-                // Add more fields as needed
-              }));
+            // const filteredtransData =
+            //   editbillagrementdetail.SelectedChargeParameters.filter(
+            //     (item) => item.LookupDescription !== "Payer"
+            //   ).map((item) => ({
+            //     key: item.LookupID,
+            //     title: item.LookupDescription,
+            //     // Add more fields as needed
+            //   }));
 
             // Set the pre-selected items in Transfer
-            setNewRevisionNo(revision ? revision : 0);
-            setTargetKeys(filteredtransData.map((item) => item.key));
+            //setTargetKeys(filteredtransData.map((item) => item.key));
+            setNewRevisionNo(editbillagrementdetail.RevisionNo + 1);
             setColumnData(editbillagrementdetail.BillAgreementLineModels);
           } else {
             console.error("Failed to fetch patient details");
@@ -229,13 +227,6 @@ function CreateBillAgrement() {
       fetchData1(); // Call the fetchData function
     }
   }, []);
-
-  const handleChange = (nextTargetKeys) => {
-    if (nextTargetKeys.length > 0) {
-      setTransferError(false); // Reset the error state
-    }
-    setTargetKeys(nextTargetKeys);
-  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -347,61 +338,61 @@ function CreateBillAgrement() {
     setLoading(false);
   };
 
-  const showModal = async () => {
-    debugger;
-    await form.validateFields();
-    const formvalues = form.getFieldValue();
-    if (targetKeys.length === 0) {
-      setTransferError(true);
-      //message.error('Please select at least one item before proceeding.');
-      return; // Stop execution if targetKeys is empty
-    }
+  // const showModal = async () => {
+  //   debugger;
+  //   await form.validateFields();
+  //   const formvalues = form.getFieldValue();
+  //   if (targetKeys.length === 0) {
+  //     setTransferError(true);
+  //     //message.error('Please select at least one item before proceeding.');
+  //     return; // Stop execution if targetKeys is empty
+  //   }
 
-    setTransferError(false); // Reset the error state
+  //   setTransferError(false); // Reset the error state
 
-    try {
-      if (targetKeys.length > 0) {
-        // Check if targetKeys has elements
-        // Create an array of MasterModel objects using targetKeys
-        const masterModels = targetKeys.map((key) => ({
-          LookupID: key, // Assuming LookupID should be assigned targetKey
-          // You can assign other properties based on your requirement
-        }));
+  //   try {
+  //     if (targetKeys.length > 0) {
+  //       // Check if targetKeys has elements
+  //       // Create an array of MasterModel objects using targetKeys
+  //       const masterModels = targetKeys.map((key) => ({
+  //         LookupID: key, // Assuming LookupID should be assigned targetKey
+  //         // You can assign other properties based on your requirement
+  //       }));
 
-        // Prepare the payload for the POST request
-        const payload = {
-          SelectedValues: masterModels, // Array of MasterModel objects
-          Payer: formvalues.PayerId, // Payer ID value
-        };
+  //       // Prepare the payload for the POST request
+  //       const payload = {
+  //         SelectedValues: masterModels, // Array of MasterModel objects
+  //         Payer: formvalues.PayerId, // Payer ID value
+  //       };
 
-        const response = await customAxios.post(
-          urlGetDropDownsForBillAggrement, // Send payload in the request body
-          payload,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+  //       const response = await customAxios.post(
+  //         urlGetDropDownsForBillAggrement, // Send payload in the request body
+  //         payload,
+  //         {
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //           },
+  //         }
+  //       );
 
-        if (response.status === 200 && response.data.data != null) {
-          if (response.data.data) {
-            setBillAgrementChargeDropdown(response.data.data);
-            setIsModalOpen(true);
-            //message.success('PriceTariffCreated Successfully');
-          } else {
-            message.error("PriceTariff With Same Name Already Exists");
-          }
-        }
-      } else {
-        // Handle case when targetKeys is empty
-        message.error("No keys selected");
-      }
-    } catch (error) {
-      message.error("Something went wrong");
-      console.error(error);
-    }
-  };
+  //       if (response.status === 200 && response.data.data != null) {
+  //         if (response.data.data) {
+  //           setBillAgrementChargeDropdown(response.data.data);
+  //           setIsModalOpen(true);
+  //           //message.success('PriceTariffCreated Successfully');
+  //         } else {
+  //           message.error("PriceTariff With Same Name Already Exists");
+  //         }
+  //       }
+  //     } else {
+  //       // Handle case when targetKeys is empty
+  //       message.error("No keys selected");
+  //     }
+  //   } catch (error) {
+  //     message.error("Something went wrong");
+  //     console.error(error);
+  //   }
+  // };
 
   const columns = [
     {
@@ -888,7 +879,7 @@ function CreateBillAgrement() {
                     agreementId > 0 || EditedAgreementId > 0 ? "block" : "none",
                 }}
               >
-                <div>
+                {/* <div>
                   <Form.Item
                     label="Transfer"
                     validateStatus={transferError ? "error" : ""}
@@ -910,7 +901,7 @@ function CreateBillAgrement() {
                       disabled={columnData?.length > 0}
                     />
                   </Form.Item>
-                </div>
+                </div> */}
                 <div
                   style={{
                     width: "100%",
@@ -938,13 +929,13 @@ function CreateBillAgrement() {
                         }}
                       ></Title>
                     </Col>
-                    <Col offset={5} span={3}>
+                    {/* <Col offset={5} span={3}>
                       <Button
                         style={{ marginLeft: "8rem" }}
                         icon={<PlusCircleOutlined />}
                         onClick={showModal}
                       ></Button>
-                    </Col>
+                    </Col> */}
                   </Row>
                 </div>
                 <div>
@@ -975,7 +966,7 @@ function CreateBillAgrement() {
                     linedata={linedata}
                     revisionNo={revision ? revision : 0}
                     newRevisionNo={newRevisionNo}
-                    mode="edit"
+                    mode="revise"
                   />
                 </div>
               </div>
@@ -987,4 +978,4 @@ function CreateBillAgrement() {
   );
 }
 
-export default CreateBillAgrement;
+export default EditBillAgrementRevise;

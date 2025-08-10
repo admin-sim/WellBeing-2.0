@@ -19,6 +19,7 @@ import {
   urlPackageDescriptionServiceForInsurance,
   urlPackageDescriptionServiceGroup,
   urlPackageDescriptionServiceClassification,
+  urlRevisePriceTariffChargeParameter,
 } from "../../../../../endpoints";
 import dayjs from "dayjs";
 import { debounce } from "lodash";
@@ -30,6 +31,9 @@ function EditPriceChargeModal({
   editedpriceTarifflineId,
   setColumnData,
   linedata,
+  revisionNo,
+  newRevisionNo = 0, // Default to 0 if not provided
+  mode = "edit", // Default mode is 'edit'
 }) {
   const [form] = Form.useForm();
   // const [effectiveFromDatemodal, setEffectiveFromDateModal] = useState(null);
@@ -94,24 +98,30 @@ function EditPriceChargeModal({
       : "";
     values.PriceTariffId = linedata.PriceTariffId;
     values.PriceTariffLineId = editedpriceTarifflineId;
-    values.RevisionNo = 0;
+    values.RevisionNo = newRevisionNo ? newRevisionNo : 0;
     values.IndicatorDescriptionId = value;
     values.WardTypeId = values.WardType;
     values.TariffLineValue = values.TariffLineValue
       ? values.TariffLineValue
       : 0;
-      
+
     console.log(linedata, "linedata");
     try {
-      const response = await customAxios.post(
-        urlUpdatePriceTariffChargeParameter,
-        values,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+
+
+
+const url =
+  mode === "edit"
+    ? `${urlUpdatePriceTariffChargeParameter}?RevisionNo=${revisionNo}&NewRevisionNo=${newRevisionNo}`
+    : `${urlRevisePriceTariffChargeParameter}?RevisionNo=${revisionNo}&NewRevisionNo=${newRevisionNo}`;
+
+
+      const response = await customAxios.post(url, values, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
       if (response.status == 200 && response.data) {
         if (response.status === 200 && response.data.data != null) {
           const resdata = response.data.data;

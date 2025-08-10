@@ -16,11 +16,11 @@ import React, { useState, useEffect, useCallback } from "react";
 const { Text } = Typography;
 import customAxios from "../../../../components/customAxios/customAxios";
 import {
-  urlUpdatePriceTariffChargeParameter,
   urlPackageDescriptionServiceForInsurance,
   urlPackageDescriptionServiceGroup,
   urlPackageDescriptionServiceClassification,
   urlUpdateBillAgreementChargeParameter,
+  urlReviseBillAgreementChargeParameter,
 } from "../../../../../endpoints";
 import dayjs from "dayjs";
 import { debounce } from "lodash";
@@ -32,6 +32,9 @@ function EditBillAgrementModal({
   editedAgrementlineId,
   setColumnData,
   linedata,
+  revisionNo,
+  newRevisionNo = 0, // Default to 0 if not provided
+  mode = "edit", // Default mode is 'edit'
 }) {
   const [form] = Form.useForm();
 
@@ -43,7 +46,7 @@ function EditBillAgrementModal({
   const [amtIndDisable, setAmtIndDisable] = useState(false);
   const [priorityDisable, setpriorityDisable] = useState(false);
   const [isMaxCoverageRequired, setIsMaxCoverageRequired] = useState(false);
-  const  [IsExcludeDisable, setIsExcludeDisable] = useState(false);
+  const [IsExcludeDisable, setIsExcludeDisable] = useState(false);
   //setValue(linedata?.IndicatorDescriptionId);
   const [url, setUrl] = useState();
   useEffect(() => {
@@ -86,9 +89,8 @@ function EditBillAgrementModal({
       setIsMaxCoverageRequired(false);
       setAmtIndDisable(true);
       setpriorityDisable(true);
-     setIsExcludeDisable(true);
+      setIsExcludeDisable(true);
     }
-
   }, [linedata]);
 
   const handleCancel = () => {
@@ -109,29 +111,32 @@ function EditBillAgrementModal({
 
     values.AgreementId = linedata.AgreementId;
     values.AgreementLineId = editedAgrementlineId;
-    values.RevisionNo = 0;
+    values.RevisionNo = newRevisionNo ? newRevisionNo : 0;
     values.IndicatorDescriptionId = value;
     values.MaxQty = values.MaxQty ? values.MaxQty : null;
     values.MaxCoverage = values.MaxCoverage ? values.MaxCoverage : null;
-    values.Value = values.Value ? values.Value :null;
-    values.Deductible = values.Deductible ? values.Deductible :0;
+    values.Value = values.Value ? values.Value : null;
+    values.Deductible = values.Deductible ? values.Deductible : 0;
     console.log(linedata, "linedata");
     try {
-      const response = await customAxios.post(
-        urlUpdateBillAgreementChargeParameter,
-        values,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const url =
+        mode === "edit"
+          ? `${urlUpdateBillAgreementChargeParameter}?RevisionNo=${revisionNo}&NewRevisionNo=${newRevisionNo}`
+          : `${urlReviseBillAgreementChargeParameter}?RevisionNo=${revisionNo}&NewRevisionNo=${newRevisionNo}`;
+
+      const response = await customAxios.post(url, values, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       if (response.status == 200 && response.data) {
         if (response.status === 200 && response.data.data != null) {
           const resdata = response.data.data;
           setColumnData(resdata.BillAgreementLineModels);
           handleCancel();
-          message.success("BillAgrementChargeParameter Updated  Successfully...");
+          message.success(
+            "BillAgrementChargeParameter Updated  Successfully..."
+          );
         } else {
           message.error("Something Went Wrong");
         }
@@ -261,23 +266,23 @@ function EditBillAgrementModal({
         MaxQty: null,
         Priority: null,
         Value: null,
-        AmountIndicator:null,
-        Deductible:0,
-        CoverageType:null,
-        CoverageBy:null,
-        MaxCoverage:null,
-        ApplicableTo:null,
-        IsPreauthRequired:false,
-        IsShared:false,
+        AmountIndicator: null,
+        Deductible: 0,
+        CoverageType: null,
+        CoverageBy: null,
+        MaxCoverage: null,
+        ApplicableTo: null,
+        IsPreauthRequired: false,
+        IsShared: false,
       });
       setIsMaxCoverageRequired(false);
       setAmtIndDisable(true);
       setpriorityDisable(true);
-     setIsExcludeDisable(true);
-    }else{
+      setIsExcludeDisable(true);
+    } else {
       setAmtIndDisable(false);
       setpriorityDisable(false);
-     setIsExcludeDisable(false);
+      setIsExcludeDisable(false);
     }
   };
 
@@ -285,7 +290,13 @@ function EditBillAgrementModal({
     <div>
       <Spin spinning={loading}>
         <Modal
-          title="Edit Bill AgreementLine Details"
+          title={
+            mode === "edit"
+              ? "Edit Bill AgreementLine Details"
+              : mode === "revise"
+              ? "Revision Bill AgreementLine Details"
+              : "Bill AgreementLine Details"
+          }
           open={open}
           maskClosable={false}
           footer={null}
@@ -507,14 +518,17 @@ function EditBillAgrementModal({
                   name="IsExcluded"
                   label="&nbsp;"
                 >
-                  <Checkbox onChange={handleIsExcludedd} >Is Excluded</Checkbox>
+                  <Checkbox onChange={handleIsExcludedd}>Is Excluded</Checkbox>
                 </Form.Item>
               </Col>
             </Row>
             <Row gutter={16}>
               <Col span={8}>
                 <Form.Item name="MaxQty" label="Qty">
-                  <Input  disabled={IsExcludeDisable} onChange={handleQtyChange}></Input>
+                  <Input
+                    disabled={IsExcludeDisable}
+                    onChange={handleQtyChange}
+                  ></Input>
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
@@ -539,7 +553,10 @@ function EditBillAgrementModal({
               </Col>
               <Col span={8}>
                 <Form.Item initialValue={0} name="Value" label="Value">
-                  <Input  disabled={IsExcludeDisable} onChange={handleValueChange}></Input>
+                  <Input
+                    disabled={IsExcludeDisable}
+                    onChange={handleValueChange}
+                  ></Input>
                 </Form.Item>
               </Col>
             </Row>
@@ -566,7 +583,7 @@ function EditBillAgrementModal({
                   name="Deductible"
                   label="Deductible"
                 >
-                  <Input  disabled={IsExcludeDisable}></Input>
+                  <Input disabled={IsExcludeDisable}></Input>
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
@@ -575,7 +592,7 @@ function EditBillAgrementModal({
                   label="CoverageType"
                   // rules={[{ required: true }]}
                 >
-                  <Select  disabled={IsExcludeDisable}>
+                  <Select disabled={IsExcludeDisable}>
                     <Select.Option key="PD" value="PD">
                       Per day
                     </Select.Option>
@@ -593,7 +610,7 @@ function EditBillAgrementModal({
                   label="Coverage"
                   //rules={[{ required: true }]}
                 >
-                  <Select  disabled={IsExcludeDisable}>
+                  <Select disabled={IsExcludeDisable}>
                     <Select.Option key="Payer" value="Payer"></Select.Option>
                     <Select.Option
                       key="Patient"
@@ -632,7 +649,7 @@ function EditBillAgrementModal({
                   ]}
                 >
                   <Input
-                   disabled={IsExcludeDisable}
+                    disabled={IsExcludeDisable}
                     type="number"
                     maxLength={10}
                     onInput={(e) => {
@@ -651,7 +668,7 @@ function EditBillAgrementModal({
                   label="Applicable To"
                   //  rules={[{ required: true }]}
                 >
-                  <Select  disabled={IsExcludeDisable}>
+                  <Select disabled={IsExcludeDisable}>
                     <Select.Option key="L" value="L">
                       LifeTime
                     </Select.Option>
@@ -669,7 +686,7 @@ function EditBillAgrementModal({
                   name="IsPreauthRequired"
                   label="&nbsp;"
                 >
-                  <Checkbox  disabled={IsExcludeDisable}> Pre Auth?</Checkbox>
+                  <Checkbox disabled={IsExcludeDisable}> Pre Auth?</Checkbox>
                 </Form.Item>
               </Col>
               <Col span={8}>
@@ -678,7 +695,7 @@ function EditBillAgrementModal({
                   name="IsShared"
                   label="&nbsp;"
                 >
-                  <Checkbox  disabled={IsExcludeDisable}>Shared?</Checkbox>
+                  <Checkbox disabled={IsExcludeDisable}>Shared?</Checkbox>
                 </Form.Item>
               </Col>
             </Row>
