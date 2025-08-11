@@ -1,20 +1,34 @@
-import React, { useEffect, useState } from 'react';
-import Button from 'antd/es/button';
+import React, { useEffect, useState } from "react";
+import Button from "antd/es/button";
 import {
   urlGetPurshaseOrderDetails,
   urlAutocompleteProduct,
   urlVendorReturnSearchGrn,
   urlVenderReturnEdit,
   urlShowGrnList,
-  urlAddNewVendorReturn
-} from '../../../../endpoints';
-import Select from 'antd/es/select';
-import { ConfigProvider, Typography, Checkbox, Tag, Modal, Popconfirm, Card, Col, Divider, Row, AutoComplete, Radio, message } from 'antd';
-import Input from 'antd/es/input';
-import Form from 'antd/es/form';
-import { DatePicker } from 'antd';
-import Layout from 'antd/es/layout/layout';
-import { LeftOutlined } from '@ant-design/icons';
+  urlAddNewVendorReturn,
+} from "../../../../endpoints";
+import Select from "antd/es/select";
+import {
+  ConfigProvider,
+  Typography,
+  Checkbox,
+  Tag,
+  Modal,
+  Popconfirm,
+  Card,
+  Col,
+  Divider,
+  Row,
+  AutoComplete,
+  Radio,
+  message,
+} from "antd";
+import Input from "antd/es/input";
+import Form from "antd/es/form";
+import { DatePicker } from "antd";
+import Layout from "antd/es/layout/layout";
+import { LeftOutlined } from "@ant-design/icons";
 //import Typography from 'antd/es/typography';
 import { useNavigate } from "react-router";
 import { Table, InputNumber } from "antd";
@@ -22,9 +36,9 @@ import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { render } from "react-dom";
 import { useLocation } from "react-router-dom";
-import customAxios from '../../../components/customAxios/customAxios.jsx';
-import PageHeader from '../../../components/PageHeader/index.jsx';
-import CustomTable from '../../../components/customTable/index.jsx';
+import customAxios from "../../../components/customAxios/customAxios.jsx";
+import PageHeader from "../../../components/PageHeader/index.jsx";
+import CustomTable from "../../../components/customTable/index.jsx";
 
 const CreateVendorReturn = () => {
   const [DropDown, setDropDown] = useState({
@@ -60,24 +74,20 @@ const CreateVendorReturn = () => {
   const [vtoDate, setVToDate] = useState(dayjs());
 
   const pdisableToDate = (current) => {
-    return (
-      current &&
-      current.isBefore(pfromDate, "day")
-    );
+    return current && current.isBefore(pfromDate, "day");
   };
 
   const vdisableToDate = (current) => {
-    return (
-      current &&
-      current.isBefore(vfromDate, "day")
-    );
+    return current && current.isBefore(vfromDate, "day");
   };
 
   useEffect(() => {
-    customAxios.get(urlGetPurshaseOrderDetails).then((response) => {
-      const apiData = response.data.data;
-      setDropDown(apiData);
-    });
+    customAxios
+      .get(urlGetPurshaseOrderDetails, { params: { type: "Vendor Return" } })
+      .then((response) => {
+        const apiData = response.data.data;
+        setDropDown(apiData);
+      });
   }, []);
 
   useEffect(() => {
@@ -281,21 +291,21 @@ const CreateVendorReturn = () => {
   const handleCheckboxChange = (checked, record) => {
     const newSelectedRowKeys = checked
       ? [
-        ...selectedRowKeys,
-        {
-          GRNHeaderId: record.GRNHeaderId,
-          GrnBatchId: record.GrnBatchId,
-          GrnLineId: record.GrnLineId,
+          ...selectedRowKeys,
+          {
+            GRNHeaderId: record.GRNHeaderId,
+            GrnBatchId: record.GrnBatchId,
+            GrnLineId: record.GrnLineId,
 
-          StoreId: record.StoreId,
-          GRNNumber: record.GRNNumber,
-        },
-      ]
+            StoreId: record.StoreId,
+            GRNNumber: record.GRNNumber,
+          },
+        ]
       : selectedRowKeys.filter(
-        (key) =>
-          key.GRNHeaderId !== record.GRNHeaderId &&
-          key.GrnBatchId !== record.GrnBatchId
-      );
+          (key) =>
+            key.GRNHeaderId !== record.GRNHeaderId &&
+            key.GrnBatchId !== record.GrnBatchId
+        );
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
@@ -529,15 +539,14 @@ const CreateVendorReturn = () => {
   const handleReset = () => {
     form2.resetFields();
     setPFromDate(dayjs());
-    setPToDate(dayjs())
-    setVFromDate(dayjs())
-    setVToDate(dayjs())
+    setPToDate(dayjs());
+    setVFromDate(dayjs());
+    setVToDate(dayjs());
   };
 
-  const onFinishModel3 = (values) => {
-  };
+  const onFinishModel3 = (values) => {};
 
-  const onFinishFailed3 = () => { };
+  const onFinishFailed3 = () => {};
 
   const handleRadioChange = (group, value) => {
     setSelectedRadio(value);
@@ -573,20 +582,29 @@ const CreateVendorReturn = () => {
             }}
             onFinish={handleOnFinish}
           >
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
+            <Row
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+              style={{ padding: "1rem 2rem", marginBottom: "0" }}
+              align="Bottom"
+            >
               <Col className="gutter-row" span={8}>
                 <div>
-                  <Form.Item label="Returning Store" name="StoreId"
+                  <Form.Item
+                    label="Returning Store"
+                    name="StoreId"
                     rules={[
                       {
                         required: true,
-                        message: 'Please input!'
-                      }
+                        message: "Please input!",
+                      },
                     ]}
                   >
-                    <Select allowClear placeholder='Select Value'>
+                    <Select allowClear placeholder="Select Value">
                       {DropDown.StoreDetails.map((option) => (
-                        <Select.Option key={option.StoreId} value={option.StoreId}>
+                        <Select.Option
+                          key={option.StoreId}
+                          value={option.StoreId}
+                        >
                           {option.LongName}
                         </Select.Option>
                       ))}
@@ -599,17 +617,22 @@ const CreateVendorReturn = () => {
               </Col>
               <Col className="gutter-row" span={8}>
                 <div>
-                  <Form.Item label="Returning To Vendor" name="SupplierId"
+                  <Form.Item
+                    label="Returning To Vendor"
+                    name="SupplierId"
                     rules={[
                       {
                         required: true,
-                        message: 'Please input!'
-                      }
+                        message: "Please input!",
+                      },
                     ]}
                   >
-                    <Select allowClear placeholder='Select Value'>
+                    <Select allowClear placeholder="Select Value">
                       {DropDown.SupplierList.map((option) => (
-                        <Select.Option key={option.VendorId} value={option.VendorId}>
+                        <Select.Option
+                          key={option.VendorId}
+                          value={option.VendorId}
+                        >
                           {option.LongName}
                         </Select.Option>
                       ))}
@@ -619,52 +642,70 @@ const CreateVendorReturn = () => {
               </Col>
               <Col className="gutter-row" span={8}>
                 <div>
-                  <Form.Item label="Returning Date" name="ReturnDate"
+                  <Form.Item
+                    label="Returning Date"
+                    name="ReturnDate"
                     rules={[
                       {
                         required: true,
-                        message: 'Please input!'
-                      }
+                        message: "Please input!",
+                      },
                     ]}
                   >
-                    <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' disabled />
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      format="DD-MM-YYYY"
+                      disabled
+                    />
                   </Form.Item>
                 </div>
               </Col>
               <Col className="gutter-row" span={4}>
                 <div>
-                  <Form.Item label="Status" name="ReturnStatus"
+                  <Form.Item
+                    label="Status"
+                    name="ReturnStatus"
                     rules={[
                       {
                         required: issueStatus,
-                        message: 'Please input!'
-                      }
+                        message: "Please input!",
+                      },
                     ]}
                   >
-                    <Select allowClear placeholder='Select Value'>
-                      <Select.Option key='Draft' value='Draft'></Select.Option>
-                      <Select.Option key='Finalize' value='Finalize'></Select.Option>
+                    <Select allowClear placeholder="Select Value">
+                      <Select.Option key="Draft" value="Draft"></Select.Option>
+                      <Select.Option
+                        key="Finalize"
+                        value="Finalize"
+                      ></Select.Option>
                     </Select>
                   </Form.Item>
                 </div>
               </Col>
               <Col className="gutter-row" span={6}>
                 <div>
-                  <Form.Item name="SubmitCheck" valuePropName='checked'>
-                    <Checkbox onChange={SubmitChanged} style={{ marginTop: "33px" }}>Submit</Checkbox>
+                  <Form.Item name="SubmitCheck" valuePropName="checked">
+                    <Checkbox
+                      onChange={SubmitChanged}
+                      style={{ marginTop: "33px" }}
+                    >
+                      Submit
+                    </Checkbox>
                   </Form.Item>
                 </div>
               </Col>
               <Col className="gutter-row" span={6}>
                 <div>
-                  <Form.Item style={{ marginTop: '30px' }}>
-                    <Button type='link' onClick={OpenModel}>Search Product/Batch No</Button>
+                  <Form.Item style={{ marginTop: "30px" }}>
+                    <Button type="link" onClick={OpenModel}>
+                      Search Product/Batch No
+                    </Button>
                   </Form.Item>
                 </div>
               </Col>
             </Row>
-            <Row justify="end" style={{ padding: '0rem 1rem' }}>
-              <Col style={{ marginRight: '10px' }}>
+            <Row justify="end" style={{ padding: "0rem 1rem" }}>
+              <Col style={{ marginRight: "10px" }}>
                 <Form.Item>
                   <Button type="primary" htmlType="submit">
                     {buttonTitle}

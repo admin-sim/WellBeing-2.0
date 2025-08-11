@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
-import Layout from 'antd/es/layout/layout';
-import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import dayjs from 'dayjs';
+import Layout from "antd/es/layout/layout";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
+import dayjs from "dayjs";
 import {
   Spin,
   Skeleton,
@@ -23,7 +27,10 @@ import {
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
 
-import { urlGetPurshaseOrderDetails, urlSearchStock } from "../../../../endpoints.js";
+import {
+  urlGetPurshaseOrderDetails,
+  urlSearchStock,
+} from "../../../../endpoints.js";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import CustomTable from "../../../components/customTable/index.jsx";
@@ -36,7 +43,7 @@ const OpeningStock = () => {
     DocumentType: [],
     StoreDetails: [],
     SupplierList: [],
-    DateFormat: []
+    DateFormat: [],
   });
   const [filteredData, setFilteredData] = useState([]);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
@@ -53,15 +60,17 @@ const OpeningStock = () => {
 
   useEffect(() => {
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-        const apiData = response.data.data;
-        setDropDown(apiData);
-      });
+      customAxios
+        .get(urlGetPurshaseOrderDetails, { params: { type: "Opening Stock" } })
+        .then((response) => {
+          const apiData = response.data.data;
+          setDropDown(apiData);
+        });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
-    setDropDownLoading(false)
-    form.submit()
+    setDropDownLoading(false);
+    form.submit();
   }, []);
 
   const disableFromDate = (current) => {
@@ -96,7 +105,7 @@ const OpeningStock = () => {
     {
       title: "Sl No",
       key: "key",
-      dataIndex: 'key'
+      dataIndex: "key",
     },
     {
       title: "Opening Stock ID",
@@ -107,7 +116,10 @@ const OpeningStock = () => {
       render: (text, record, index) => {
         if (record.GRNStatus === "Created" || record.GRNStatus === "Draft") {
           return (
-            <Button type="link" onClick={() => handleAddTemplate(record.GRNHeaderId)}>
+            <Button
+              type="link"
+              onClick={() => handleAddTemplate(record.GRNHeaderId)}
+            >
               {text}
             </Button>
           );
@@ -122,7 +134,7 @@ const OpeningStock = () => {
       sorter: (a, b) => a.GRNDate.localeCompare(b.GRNDate),
       sortDirections: ["descend", "ascend"],
       render: (text) => {
-        const dateParts = text.split('T')[0].split('-');
+        const dateParts = text.split("T")[0].split("-");
         const year = dateParts[0];
         const month = dateParts[1];
         const day = dateParts[2];
@@ -156,26 +168,28 @@ const OpeningStock = () => {
     },
     {
       render: (_, record) => (
-        <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>
+        <Button type="link" onClick={(value) => handleReport(value, record)}>
+          Report
+        </Button>
       ),
     },
   ];
 
   const handleReport = async (value, record) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const request = {
         PONO: record.GRNNumber,
-        use: 'admin',
+        use: "admin",
         FileType: "pdf", // or 'excel'
-        AppUser: userContext.AppUserName
+        AppUser: userContext.AppUserName,
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       setError(error.message);
     }
   };
@@ -193,13 +207,13 @@ const OpeningStock = () => {
     );
 
     if (!response.ok) {
-      setLoading(false)
+      setLoading(false);
       throw new Error("Failed to fetch report");
     }
 
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
-    setLoading(false)
+    setLoading(false);
     return { url, blob };
   }
 
@@ -209,8 +223,8 @@ const OpeningStock = () => {
       const postData1 = {
         ReceivingStore: values.ReceivingStore ? values.ReceivingStore : 0,
         Status: values.Status === 0 ? null : values.Status,
-        FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : '',
-        ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : '',
+        FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : "",
+        ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
       };
       customAxios
         .get(
@@ -224,15 +238,17 @@ const OpeningStock = () => {
           }
         )
         .then((response) => {
-          const ApiData = response.data.data.GRNAgainstPODetails.map((item, index) => {
-            return {
-              ...item,
-              key: index + 1
+          const ApiData = response.data.data.GRNAgainstPODetails.map(
+            (item, index) => {
+              return {
+                ...item,
+                key: index + 1,
+              };
             }
-          })
+          );
           setFilteredData(ApiData);
           setLoading(false);
-        })
+        });
     } catch (error) {
       console.error("Error:", error);
     }
@@ -278,9 +294,16 @@ const OpeningStock = () => {
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={6}>
                 <Form.Item label="Receiving Store" name="ReceivingStore">
-                  <Select allowClear placeholder='Select Value' loading={dropDownLoad}>
+                  <Select
+                    allowClear
+                    placeholder="Select Value"
+                    loading={dropDownLoad}
+                  >
                     {Dropdown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                      <Select.Option
+                        key={option.StoreId}
+                        value={option.StoreId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -312,10 +335,18 @@ const OpeningStock = () => {
               <Col className="gutter-row" span={6}>
                 <Form.Item name="Status" label="Status">
                   <Select>
-                    <Select.Option key={0} value={0}>All</Select.Option>
-                    <Select.Option key='Created' value='Created'></Select.Option>
-                    <Select.Option key='Draft' value='Draft'></Select.Option>
-                    <Select.Option key='Finalize' value='Finalize'></Select.Option>
+                    <Select.Option key={0} value={0}>
+                      All
+                    </Select.Option>
+                    <Select.Option
+                      key="Created"
+                      value="Created"
+                    ></Select.Option>
+                    <Select.Option key="Draft" value="Draft"></Select.Option>
+                    <Select.Option
+                      key="Finalize"
+                      value="Finalize"
+                    ></Select.Option>
                   </Select>
                 </Form.Item>
               </Col>

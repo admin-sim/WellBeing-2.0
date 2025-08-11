@@ -29,6 +29,7 @@ import { useNavigate } from "react-router";
 
 import {
   urlGetPurshaseOrderDetails,
+  urlIndentIndex,
   urlSearchIndent,
 } from "../../../../endpoints.js";
 import PageHeader from "../../../components/PageHeader/index.jsx";
@@ -38,9 +39,8 @@ import { useSelector } from "react-redux";
 
 const Indent = () => {
   const [IndentDropdown, setIndentDropDown] = useState({
-    DocumentType: [],
-    StoreDetails: [],
-    SupplierList: [],
+    RequestingStoreDetails: [],
+    IssueingStoreDetails: [],
     DateFormat: [],
   });
 
@@ -58,7 +58,7 @@ const Indent = () => {
 
   useEffect(() => {
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
+      customAxios.get(urlIndentIndex, {}).then((response) => {
         const apiData = response.data.data;
         setIndentDropDown(apiData);
       });
@@ -135,9 +135,9 @@ const Indent = () => {
       title: "Indent Date",
       dataIndex: "IndentDatestring",
       key: "IndentDatestring",
-      sorter: (a, b) => new Date(a.IndentDatestring) - new Date(b.IndentDatestring),
+      sorter: (a, b) =>
+        new Date(a.IndentDatestring) - new Date(b.IndentDatestring),
       sortDirections: ["descend", "ascend"],
-
     },
     {
       title: "Issue Store",
@@ -159,7 +159,6 @@ const Indent = () => {
       key: "CreatedBy",
       sorter: (a, b) => a.CreatedBy.localeCompare(b.CreatedBy),
       sortDirections: ["descend", "ascend"],
-
     },
     {
       title: "Status",
@@ -176,7 +175,11 @@ const Indent = () => {
       },
     },
     {
-      render: (_, record) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
+      render: (_, record) => (
+        <Button type="link" onClick={(value) => handleReport(value, record)}>
+          Report
+        </Button>
+      ),
     },
   ];
 
@@ -204,9 +207,11 @@ const Indent = () => {
           }
         )
         .then((response) => {
-          const newColumnData = response.data.data.IndentDetails.map((obj, index) => {
-            return { ...obj, key: index + 1 };
-          });
+          const newColumnData = response.data.data.IndentDetails.map(
+            (obj, index) => {
+              return { ...obj, key: index + 1 };
+            }
+          );
           setFilteredData(newColumnData);
           setLoading(false);
         });
@@ -217,19 +222,19 @@ const Indent = () => {
   };
 
   const handleReport = async (value, record) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const request = {
         IndentNumber: record.IndentNumber,
         FileType: "pdf", // or 'excel'
-        AppUser: userContext.AppUserName
+        AppUser: userContext.AppUserName,
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       setError(error.message);
     }
   };
@@ -247,13 +252,13 @@ const Indent = () => {
     );
 
     if (!response.ok) {
-      setLoading(false)
+      setLoading(false);
       throw new Error("Failed to fetch report");
     }
 
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
-    setLoading(false)
+    setLoading(false);
     return { url, blob };
   }
 
@@ -354,7 +359,7 @@ const Indent = () => {
                     allowClear
                     placeholder="Select Value"
                   >
-                    {IndentDropdown.StoreDetails.map((option) => (
+                    {IndentDropdown.RequestingStoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
                         value={option.StoreId}
@@ -372,7 +377,7 @@ const Indent = () => {
                     allowClear
                     placeholder="Select Value"
                   >
-                    {IndentDropdown.StoreDetails.map((option) => (
+                    {IndentDropdown.IssueingStoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
                         value={option.StoreId}
@@ -423,7 +428,8 @@ const Indent = () => {
               </Col>
             </Row>
           </Form>
-          <CustomTable actionColumn={false}
+          <CustomTable
+            actionColumn={false}
             isFilter={true}
             dataSource={filteredData}
             columns={columns}

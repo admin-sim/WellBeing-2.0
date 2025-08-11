@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
-import Layout from 'antd/es/layout/layout';
-import { EditOutlined, DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import dayjs from 'dayjs';
+import Layout from "antd/es/layout/layout";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
+import dayjs from "dayjs";
 import {
   Spin,
   Skeleton,
@@ -21,7 +25,10 @@ import {
   Modal,
 } from "antd";
 import { useNavigate } from "react-router";
-import { urlGetPurshaseOrderDetails, urlSearchVendorReturn } from "../../../../endpoints.js";
+import {
+  urlGetPurshaseOrderDetails,
+  urlSearchVendorReturn,
+} from "../../../../endpoints.js";
 import CustomTable from "../../../components/customTable/index.jsx";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
@@ -32,7 +39,7 @@ const VendorReturn = () => {
     DocumentType: [],
     StoreDetails: [],
     SupplierList: [],
-    DateFormat: []
+    DateFormat: [],
   });
   const [paginationSize, setPaginationSize] = useState(5);
   const [filteredData, setFilteredData] = useState([]);
@@ -50,14 +57,16 @@ const VendorReturn = () => {
 
   useEffect(() => {
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-        const apiData = response.data.data;
-        setDropDown(apiData);
-      });
+      customAxios
+        .get(urlGetPurshaseOrderDetails, { params: { type: "Vendor Return" } })
+        .then((response) => {
+          const apiData = response.data.data;
+          setDropDown(apiData);
+        });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
-    form.submit()
+    form.submit();
   }, []);
 
   const disableFromDate = (current) => {
@@ -96,9 +105,15 @@ const VendorReturn = () => {
       sorter: (a, b) => a.ReturnNumber - b.ReturnNumber,
       sortDirections: ["descend", "ascend"],
       render: (text, record, index) => {
-        if (record.ReturnStatus === "Created" || record.ReturnStatus === "Draft") {
+        if (
+          record.ReturnStatus === "Created" ||
+          record.ReturnStatus === "Draft"
+        ) {
           return (
-            <Button type="link" onClick={() => GetModelDetails(record.ReturnHeaderId)}>
+            <Button
+              type="link"
+              onClick={() => GetModelDetails(record.ReturnHeaderId)}
+            >
               {text}
             </Button>
           );
@@ -143,26 +158,28 @@ const VendorReturn = () => {
     },
     {
       render: (_, record) => (
-        <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>
+        <Button type="link" onClick={(value) => handleReport(value, record)}>
+          Report
+        </Button>
       ),
     },
   ];
 
   const handleReport = async (value, record) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const request = {
         PONO: record.ReturnHeaderId,
-        use: 'admin',
+        use: "admin",
         FileType: "pdf", // or 'excel'
-        AppUser: userContext.AppUserName
+        AppUser: userContext.AppUserName,
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       setError(error.message);
     }
   };
@@ -180,13 +197,13 @@ const VendorReturn = () => {
     );
 
     if (!response.ok) {
-      setLoading(false)
+      setLoading(false);
       throw new Error("Failed to fetch report");
     }
 
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
-    setLoading(false)
+    setLoading(false);
     return { url, blob };
   }
 
@@ -198,9 +215,9 @@ const VendorReturn = () => {
       const postData1 = {
         Store: values.ReturningStore ? values.ReturningStore : 0,
         Supplier: values.ReturnedToVendor ? values.ReturnedToVendor : 0,
-        Status: values.Status === 0 ? 'null' : values.Status,
+        Status: values.Status === 0 ? "null" : values.Status,
         FromDate: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : null,
-        ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : null
+        ToDate: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : null,
       };
       customAxios
         .get(
@@ -216,11 +233,12 @@ const VendorReturn = () => {
         .then((response) => {
           debugger;
           setFilteredData(response.data.data.ReturnDetails);
-        }).finally(() => {
-          setLoading(false);
         })
+        .finally(() => {
+          setLoading(false);
+        });
     } catch (error) {
-      // Handle any errors here      
+      // Handle any errors here
     }
     setIsSearchLoading(false);
   };
@@ -230,8 +248,15 @@ const VendorReturn = () => {
   };
 
   return (
-    <Layout style={{ zIndex: '999999999' }}>
-      <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
+    <Layout style={{ zIndex: "999999999" }}>
+      <div
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
         <PageHeader
           title={"Vendor Return"}
           buttonLabel="Add Vendor Return"
@@ -249,7 +274,7 @@ const VendorReturn = () => {
               maxWidth: 1500,
             }}
             initialValues={{
-              FromDate: dayjs().subtract(1, 'day'),
+              FromDate: dayjs().subtract(1, "day"),
               ToDate: dayjs(),
               Status: 0,
             }}
@@ -258,9 +283,12 @@ const VendorReturn = () => {
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={6}>
                 <Form.Item label="Returning Store" name="ReturningStore">
-                  <Select allowClear placeholder='Select Value'>
+                  <Select allowClear placeholder="Select Value">
                     {Dropdown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                      <Select.Option
+                        key={option.StoreId}
+                        value={option.StoreId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -269,9 +297,12 @@ const VendorReturn = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="ReturnedToVendor" label="Returned To Vendor">
-                  <Select allowClear placeholder='Select Value'>
+                  <Select allowClear placeholder="Select Value">
                     {Dropdown.SupplierList.map((option) => (
-                      <Select.Option key={option.VendorId} value={option.VendorId}>
+                      <Select.Option
+                        key={option.VendorId}
+                        value={option.VendorId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -303,10 +334,18 @@ const VendorReturn = () => {
               <Col className="gutter-row" span={6}>
                 <Form.Item name="Status" label="Status">
                   <Select>
-                    <Select.Option key={0} value={0}>All</Select.Option>
-                    <Select.Option key='Created' value='Created'></Select.Option>
-                    <Select.Option key='Draft' value='Draft'></Select.Option>
-                    <Select.Option key='Finalize' value='Finalize'></Select.Option>
+                    <Select.Option key={0} value={0}>
+                      All
+                    </Select.Option>
+                    <Select.Option
+                      key="Created"
+                      value="Created"
+                    ></Select.Option>
+                    <Select.Option key="Draft" value="Draft"></Select.Option>
+                    <Select.Option
+                      key="Finalize"
+                      value="Finalize"
+                    ></Select.Option>
                   </Select>
                 </Form.Item>
               </Col>
@@ -314,7 +353,11 @@ const VendorReturn = () => {
             <Row justify="end">
               <Col>
                 <Form.Item>
-                  <Button type="primary" loading={isSearchLoading} htmlType="submit">
+                  <Button
+                    type="primary"
+                    loading={isSearchLoading}
+                    htmlType="submit"
+                  >
                     Search
                   </Button>
                 </Form.Item>
@@ -328,7 +371,8 @@ const VendorReturn = () => {
               </Col>
             </Row>
           </Form>
-          <CustomTable loading={loading}
+          <CustomTable
+            loading={loading}
             dataSource={filteredData}
             columns={columns}
             isFilter={true}

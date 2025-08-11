@@ -34,6 +34,7 @@ import customAxios from "../../../components/customAxios/customAxios";
 import { useLocation } from "react-router-dom";
 import { ColWithSixSpan } from "../../../components/customGridColumns";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { use } from "react";
 
 function CreateProcedure() {
   const [form] = Form.useForm();
@@ -94,9 +95,7 @@ function CreateProcedure() {
 
   useEffect(() => {
     const fetchProcedureName = async () => {
-      debugger;
       if (anesthesiaTypeId && chargeTypeId && PatientId && EncounterId) {
-        // Clear existing data before making the API call
         setReceiptInsAmtData([]);
         form.setFields([]);
         try {
@@ -111,17 +110,16 @@ function CreateProcedure() {
             setAdditionalChargesSurgery(
               response.data.data.AdditionalChargesSurgery
             );
+            setGroupId(response.data.data.ServiceGroupId ?? 1045);
             if (response.data.data.ProcedureCharges?.length > 0) {
               const procedureCharges = response.data.data.ProcedureCharges;
-              setGroupId(response.data.data.ServiceGroupId ?? 1045);
-              // Format the data for table display
               const formattedCharges = procedureCharges.map((item, index) => ({
                 key: index + 1,
                 IsChargeable: item.IsChargeable ?? false,
                 ServiceId: item.ProcedureId ?? "",
                 Rate: item.Rate ?? 0,
                 ChargeAmount: item.ChargeAmount ?? 0,
-                ProviderId: item.ProviderId ?? "",
+                ProviderId: providerId ?? 0,
                 Priority: item.Priority ?? 0,
                 DiscP: item.DiscountRate ?? 0,
                 DiscAmount: item.Discount ?? 0,
@@ -131,13 +129,8 @@ function CreateProcedure() {
                 ServiceClassificationID: item.ServiceClassificationID ?? 0,
               }));
 
-              // Update the table data state
               setReceiptInsAmtData(formattedCharges);
-
-              // Reset the form first to clear any existing values
               form.resetFields();
-
-              // Now set each field individually
               const fieldsToSet = [];
 
               formattedCharges.forEach((item, index) => {
@@ -155,15 +148,29 @@ function CreateProcedure() {
                 );
               });
 
-              // Set all fields at once
               form.setFields(fieldsToSet);
-
-              // Force form to validate and update UI
               setTimeout(() => {
                 form.validateFields();
               }, 0);
+              const newSurgeryData =
+                response.data.data.ProcedureCharges[0].ProcedureChargesDetails.map(
+                  (item) => {
+                    const found =
+                      response.data.data.AdditionalChargesSurgery.find(
+                        (i) =>
+                          i.ChargeEntryCatalogId === item.AssociativeServiceId
+                      );
+
+                    return {
+                      ...item,
+                      SurgeryRuleId: item.AssociativeServiceId,
+                      ...(found || {}),
+                    };
+                  }
+                );
+
+              setAdditionalChargesSurgery(newSurgeryData);
             } else {
-              // If no existing data, keep default
               setReceiptInsAmtData(initialDataSource);
               form.resetFields();
             }
@@ -223,16 +230,6 @@ function CreateProcedure() {
           };
         }
 
-        const newSurgeryData = additionalChargesSurgery.map((it) => {
-          return {
-            ...it,
-            [column]: value,
-            ChargeAmount: (item.ChargeAmount * it.ChargeValue) / 100,
-            NetAmount: (item.ChargeAmount * it.ChargeValue) / 100,
-          };
-        });
-        setAdditionalChargesSurgery(newSurgeryData);
-
         return {
           ...item,
           [column]: newValue,
@@ -289,7 +286,72 @@ function CreateProcedure() {
           )
         );
 
-        // Update form fields if needed (optional, if using Form.setFieldsValue)
+        const newSurgeryData = additionalChargesSurgery.map(
+          (item, index, arr) => {
+            if (index === 0) {
+              form.setFieldsValue({
+                ChargeAmount: {
+                  [item.SurgeryRuleId]: (price * item.ChargeValue) / 100,
+                },
+                NetAmount: {
+                  [item.SurgeryRuleId]: (price * item.ChargeValue) / 100,
+                },
+                DiscountRate: {
+                  [item.SurgeryRuleId]: 0,
+                },
+                DiscountAmount: {
+                  [item.SurgeryRuleId]: 0,
+                },
+              });
+              return {
+                ...item,
+                ChargeAmount: (price * item.ChargeValue) / 100,
+                NetAmount: (price * item.ChargeValue) / 100,
+                DiscountRate: 0,
+                DiscountAmount: 0,
+                ProviderId: providerId,
+                IsChargeable: true,
+                ServiceQty: 1,
+                AssociativeServiceId: item.ChargeEntryCatalogId,
+                ServiceGroupId: groupId,
+              };
+            } else {
+              const prevItem = arr[index - 1];
+              const prevChargeAmount = (price * prevItem.ChargeValue) / 100;
+              form.setFieldsValue({
+                ChargeAmount: {
+                  [item.SurgeryRuleId]:
+                    (prevChargeAmount * item.ChargeValue) / 100,
+                },
+                NetAmount: {
+                  [item.SurgeryRuleId]:
+                    (prevChargeAmount * item.ChargeValue) / 100,
+                },
+                DiscountRate: {
+                  [item.SurgeryRuleId]: 0,
+                },
+                DiscountAmount: {
+                  [item.SurgeryRuleId]: 0,
+                },
+              });
+              return {
+                ...item,
+                ChargeAmount: (prevChargeAmount * item.ChargeValue) / 100,
+                NetAmount: (prevChargeAmount * item.ChargeValue) / 100,
+                DiscountRate: 0,
+                DiscountAmount: 0,
+                ProviderId: providerId,
+                IsChargeable: true,
+                ServiceQty: 1,
+                AssociativeServiceId: item.ChargeEntryCatalogId,
+                ServiceGroupId: groupId,
+              };
+            }
+          }
+        );
+
+        setAdditionalChargesSurgery(newSurgeryData);
+
         form.setFieldsValue({
           [`Rate`]: { [recordKey - 1]: price },
           [`ChargeAmount`]: { [recordKey - 1]: price },
@@ -319,9 +381,9 @@ function CreateProcedure() {
           initialValue={true}
         >
           <Checkbox
-            onChange={(e) =>
-              handleInputChange(e.target.checked, "IsChargeable", record.key)
-            }
+          // onChange={(e) =>
+          //   handleInputChange(e.target.checked, "IsChargeable", record.key)
+          // }
           ></Checkbox>
         </Form.Item>
       ),
@@ -339,7 +401,7 @@ function CreateProcedure() {
           <Select
             onChange={(value) => {
               handleInputChange(value, "ServiceId", record.key);
-              fetchProcedureDetails(value, record.key); // 👈 API call
+              fetchProcedureDetails(value, record.key);
             }}
           >
             {procedures?.map((option) => (
@@ -363,6 +425,7 @@ function CreateProcedure() {
           rules={[{ required: true, message: "Required" }]}
         >
           <InputNumber
+            disabled
             style={{ width: "100%" }}
             min={0}
             onChange={(value) => handleInputChange(value, "Rate", record.key)}
@@ -382,6 +445,7 @@ function CreateProcedure() {
           rules={[{ required: true, message: "Required" }]}
         >
           <InputNumber
+            disabled
             style={{ width: "100%" }}
             min={0}
             onChange={(value) =>
@@ -541,6 +605,7 @@ function CreateProcedure() {
   ];
 
   const handleFinish = async (values) => {
+    debugger;
     try {
       let saved = false;
 
@@ -560,7 +625,7 @@ function CreateProcedure() {
             ProcedureId: item.ServiceId,
             Rate: item.Rate,
             ChargeAmount: item.ChargeAmount,
-            ProviderId: item.ProviderId,
+            ProviderId: providerId,
             Priority: item.Priority,
             Discount: item.DiscAmount,
             DiscountRate: item.DiscP,
@@ -571,11 +636,11 @@ function CreateProcedure() {
             ServiceclassificationId: item.ServiceClassificationID,
           };
 
-          //const procedurelist = getProcedureList(item.ServiceClassificationID);
+          const procedurelist = additionalChargesSurgery;
 
           const payload = {
             AddNewProcedureCharges: object,
-            ProcedureChargesDetails: [], // required by API
+            ProcedureChargesDetails: procedurelist,
           };
 
           const response = await customAxios.post(
@@ -607,11 +672,48 @@ function CreateProcedure() {
     }
   };
 
-  const expandDataSource = additionalChargesSurgery.map((i) => {
+  const expandDataSource = (additionalChargesSurgery || []).map((i) => {
     return {
       ...i,
     };
   });
+
+  function DiscountRateChange(value, column, record) {
+    const discPer = parseFloat(value) || 0;
+    const chargeAmount = parseFloat(record.ChargeAmount) || 0;
+    const discountAmt = (chargeAmount * discPer) / 100;
+    const netAmount = chargeAmount - discountAmt;
+
+    const newSurgeryData = additionalChargesSurgery.map((item) => {
+      if (item.SurgeryRuleId === record.SurgeryRuleId) {
+        return {
+          ...item,
+          NetAmount: netAmount,
+          DiscountRate: value,
+          DiscountAmount: discountAmt,
+        };
+      }
+      return item;
+    });
+
+    setAdditionalChargesSurgery(newSurgeryData);
+
+    form.setFieldsValue({
+      DiscountAmount: {
+        [record.SurgeryRuleId]: discountAmt,
+      },
+      NetAmount: {
+        [record.SurgeryRuleId]: netAmount,
+      },
+    });
+    //   return {
+    //     ...item,
+    //     DiscountRate: discPer,
+    //     DiscountAmount: discountAmt,
+    //     NetAmount: netAmount,
+    //   };
+    // }
+  }
 
   const expandColumns = [
     { title: "Associated Services", dataIndex: "ChargeEntryCatalogName" },
@@ -620,45 +722,53 @@ function CreateProcedure() {
       dataIndex: "ProviderId",
       width: 200,
       render: (text, record, index) => (
-        <Form.Item
-          name={["ProviderId", record.key - 1]}
-          rules={[
-            {
-              required: true,
-              message: "Provider is required.",
-            },
-          ]}
-          initialValue={providerId}
-        >
-          <Select
-            onChange={(value) =>
-              handleInputChange(value, "ProviderId", record.key)
-            }
+        <>
+          <Form.Item
+            name={["ProviderId", record.SurgeryRuleId]}
+            rules={[
+              {
+                required: true,
+                message: "Provider is required.",
+              },
+            ]}
+            initialValue={providerId}
           >
-            {providers?.map((option) => (
-              <Option key={option.ProviderId} value={option.ProviderId}>
-                {`${option.ProviderFirstName} ${option.ProviderLastName}`}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
+            <Select>
+              {providers?.map((option) => (
+                <Option key={option.ProviderId} value={option.ProviderId}>
+                  {`${option.ProviderFirstName} ${option.ProviderLastName}`}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name={["IsChargeable", record.SurgeryRuleId]}
+            initialValue={true}
+            hidden
+            valuePropName="checked"
+          >
+            <Checkbox />
+          </Form.Item>
+          <Form.Item
+            name={["AssociativeServiceId", record.SurgeryRuleId]}
+            initialValue={record.ChargeEntryCatalogId}
+            hidden
+          >
+            <input />
+          </Form.Item>
+        </>
       ),
     },
     {
       title: "Qty",
-      dataIndex: "Qty",
+      dataIndex: "ServiceQty",
       render: (text, record) => (
         <Form.Item
-          name={["Qty", record.key - 1]}
+          name={["ServiceQty", record.SurgeryRuleId]}
           style={{ width: "100%" }}
           initialValue={1}
         >
-          <InputNumber
-            disabled
-            style={{ width: "100%" }}
-            min={0}
-            // onChange={(value) => handleInputChange(value, "Rate", record.key)}
-          />
+          <InputNumber disabled style={{ width: "100%" }} min={0} />
         </Form.Item>
       ),
     },
@@ -667,12 +777,12 @@ function CreateProcedure() {
       dataIndex: "ChargeAmount",
       render: (text, record) => (
         <Form.Item
-          name={["ChargeAmount", record.key - 1]}
+          name={["ChargeAmount", record.SurgeryRuleId]}
           style={{ width: "100%" }}
           rules={[{ required: true, message: "Required" }]}
           initialValue={record.ChargeAmount}
         >
-          <InputNumber value={record.ChargeAmount}
+          <InputNumber
             style={{ width: "100%" }}
             min={0}
             // onChange={(value) => handleInputChange(value, "Rate", record.key)}
@@ -682,36 +792,36 @@ function CreateProcedure() {
     },
     {
       title: "Disc(%)",
-      dataIndex: "Disc(%)",
+      dataIndex: "DiscountRate",
       render: (text, record) => (
         <Form.Item
-          name={["Disc(%)", record.key - 1]}
+          name={["DiscountRate", record.SurgeryRuleId]}
           style={{ width: "100%" }}
           rules={[{ required: true, message: "Required" }]}
+          initialValue={record.DiscountRate}
         >
           <InputNumber
             style={{ width: "100%" }}
             min={0}
-            onChange={(value) => handleInputChange(value, "Rate", record.key)}
+            max={100}
+            onChange={(value) =>
+              DiscountRateChange(value, "DiscountRate", record)
+            }
           />
         </Form.Item>
       ),
     },
     {
       title: "Discount",
-      dataIndex: "Discount",
+      dataIndex: "DiscountAmount",
       render: (text, record) => (
         <Form.Item
-          name={["Discount", record.key - 1]}
+          name={["DiscountAmount", record.SurgeryRuleId]}
           style={{ width: "100%" }}
           rules={[{ required: true, message: "Required" }]}
+          initialValue={record.DiscountAmount}
         >
-          <InputNumber
-            disabled
-            style={{ width: "100%" }}
-            min={0}
-            onChange={(value) => handleInputChange(value, "Rate", record.key)}
-          />
+          <InputNumber disabled style={{ width: "100%" }} min={0} />
         </Form.Item>
       ),
     },
@@ -720,15 +830,15 @@ function CreateProcedure() {
       dataIndex: "NetAmount",
       render: (text, record) => (
         <Form.Item
-          name={["NetAmount", record.key - 1]}
+          name={["NetAmount", record.SurgeryRuleId]}
           style={{ width: "100%" }}
           rules={[{ required: true, message: "Required" }]}
           initialValue={record.NetAmount}
         >
-          <InputNumber value={record.NetAmount}
+          <InputNumber
+            value={record.NetAmount}
             style={{ width: "100%" }}
             min={0}
-            onChange={(value) => handleInputChange(value, "Rate", record.key)}
           />
         </Form.Item>
       ),

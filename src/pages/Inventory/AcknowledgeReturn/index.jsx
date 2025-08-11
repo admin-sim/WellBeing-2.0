@@ -59,13 +59,15 @@ const AcknowledageReturn = () => {
   const userContext = useSelector((state) => state.userContext.value);
 
   useEffect(() => {
-    setLoading(true)
+    setLoading(true);
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-        const apiData = response.data.data;
-        setDropDown(apiData);
-        setLoading(false)
-      });
+      customAxios
+        .get(urlGetPurshaseOrderDetails, { params: { type: "Purchase Order" } })
+        .then((response) => {
+          const apiData = response.data.data;
+          setDropDown(apiData);
+          setLoading(false);
+        });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
@@ -189,26 +191,28 @@ const AcknowledageReturn = () => {
     },
     {
       render: (_, record) => (
-        <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>
+        <Button type="link" onClick={(value) => handleReport(value, record)}>
+          Report
+        </Button>
       ),
     },
   ];
 
   const handleReport = async (value, record) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const request = {
         PONO: record.GRNNumber,
-        use: 'admin',
+        use: "admin",
         FileType: "pdf", // or 'excel'
-        AppUser: userContext.AppUserName
+        AppUser: userContext.AppUserName,
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       setError(error.message);
     }
   };
@@ -226,19 +230,19 @@ const AcknowledageReturn = () => {
     );
 
     if (!response.ok) {
-      setLoading(false)
+      setLoading(false);
       throw new Error("Failed to fetch report");
     }
 
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
-    setLoading(false)
+    setLoading(false);
     return { url, blob };
   }
 
   const onFinish = async (values) => {
     debugger;
-    setLoading(true)
+    setLoading(true);
     try {
       const postData1 = {
         ReturnID: values.ReturnID ? values.ReturnID : "",
@@ -268,7 +272,7 @@ const AcknowledageReturn = () => {
         )
         .then((response) => {
           setFilteredData(response.data.data.AcknowledgeReturnDetails);
-          setLoading(false)
+          setLoading(false);
         });
     } catch (error) {
       // Handle any errors here
@@ -444,7 +448,8 @@ const AcknowledageReturn = () => {
               </Col>
             </Row>
           </Form>
-          <CustomTable loading={loading}
+          <CustomTable
+            loading={loading}
             dataSource={filteredData}
             columns={columns}
             isFilter={true}

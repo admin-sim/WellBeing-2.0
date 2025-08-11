@@ -73,39 +73,39 @@ const CreatePurchaseOrder = () => {
   const [deliveryRecord, setDeliveryRecord] = useState([]);
   const [poStatus, setPoStatus] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [amount, setAmount] = useState()
-  const [poAmount, setPoAmount] = useState()
-  const [GSTTax, setGSTTax] = useState()
-  const [alternateUoms, setAlternateUoms] = useState([])
+  const [amount, setAmount] = useState();
+  const [poAmount, setPoAmount] = useState();
+  const [GSTTax, setGSTTax] = useState();
+  const [alternateUoms, setAlternateUoms] = useState([]);
 
   const initialDataSource =
     PoHeaderId === 0
       ? [
-        {
-          key: uuidv4(),
-          ProductName: "",
-          // ProductId: 0,
-          PoLineId: 0,
-          UomId: "",
-          PoQuantity: "",
-          BonusQuantity: "",
-          PoRate: "",
-          DiscountRate: "",
-          DiscountAmount: 0,
-          MrpExpected: "",
-          TaxType1: "",
-          TaxAmount1: 0,
-          TaxType2: "",
-          TaxAmount2: 0,
-          LineAmount: 0,
-          TotalAmount: 0,
-          AvailableQuantity: "",
-          deliverySchedule: "",
-          LongName: "",
-          ShortName: "",
-          ActiveFlag: true,
-        },
-      ]
+          {
+            key: uuidv4(),
+            ProductName: "",
+            // ProductId: 0,
+            PoLineId: 0,
+            UomId: "",
+            PoQuantity: "",
+            BonusQuantity: "",
+            PoRate: "",
+            DiscountRate: "",
+            DiscountAmount: 0,
+            MrpExpected: "",
+            TaxType1: "",
+            TaxAmount1: 0,
+            TaxType2: "",
+            TaxAmount2: 0,
+            LineAmount: 0,
+            TotalAmount: 0,
+            AvailableQuantity: "",
+            deliverySchedule: "",
+            LongName: "",
+            ShortName: "",
+            ActiveFlag: true,
+          },
+        ]
       : [];
 
   const [data, setData] = useState(initialDataSource);
@@ -113,26 +113,28 @@ const CreatePurchaseOrder = () => {
   const initialDeliveryDataSource =
     PoHeaderId === 0
       ? [
-        {
-          key: uuidv4(),
-          ProductId: "",
-          UomId: "",
-          PoDeliveryId: 0,
-          DeliveryQuantity: "",
-          DelDate: "",
-          DeliveryLocation: "",
-          ActiveFlag: true,
-        },
-      ]
+          {
+            key: uuidv4(),
+            ProductId: "",
+            UomId: "",
+            PoDeliveryId: 0,
+            DeliveryQuantity: "",
+            DelDate: "",
+            DeliveryLocation: "",
+            ActiveFlag: true,
+          },
+        ]
       : [];
 
   const [schedule, setSchedule] = useState(initialDeliveryDataSource);
 
   useEffect(() => {
-    customAxios.get(urlCreatePurchaseOrder).then((response) => {
-      const apiData = response.data.data;
-      setDropDown(apiData);
-    });
+    customAxios
+      .get(urlCreatePurchaseOrder, { params: { type: "Purchase Order" } })
+      .then((response) => {
+        const apiData = response.data.data;
+        setDropDown(apiData);
+      });
     setDropDownLoad(false);
   }, []);
 
@@ -160,8 +162,12 @@ const CreatePurchaseOrder = () => {
               ...item,
               key,
               TotalAmount: item.LineAmount + item.TaxAmount1 + item.TaxAmount2,
-              UOM: response.data.data.UOM.filter(i =>
-                item.AlternateUoms.some(j => j.EquivalentUOM === i.UomId || j.AlternateUom === i.UomId) || item.UomId === i.UomId
+              UOM: response.data.data.UOM.filter(
+                (i) =>
+                  item.AlternateUoms.some(
+                    (j) =>
+                      j.EquivalentUOM === i.UomId || j.AlternateUom === i.UomId
+                  ) || item.UomId === i.UomId
               ),
             };
           });
@@ -175,9 +181,9 @@ const CreatePurchaseOrder = () => {
           // );
           setData(products);
           const formdata = editeddata.newPurchaseOrderModel;
-          setPoAmount(formdata.PoPurchaseValue)
-          setAmount(formdata.PoPurchaseValue - formdata.PoTaxAmount)
-          setGSTTax(formdata.PoTaxAmount)
+          setPoAmount(formdata.PoPurchaseValue);
+          setAmount(formdata.PoPurchaseValue - formdata.PoTaxAmount);
+          setGSTTax(formdata.PoTaxAmount);
           form1.setFieldsValue({
             SupplierId: formdata.VendorId,
             StoreId: formdata.ProcurementStoreId,
@@ -210,7 +216,7 @@ const CreatePurchaseOrder = () => {
   };
 
   const handleOnFinish = async (values) => {
-    setLoading(true)
+    setLoading(true);
     const products = data
       .filter((item) => item !== undefined)
       .map((item) => ({
@@ -240,7 +246,7 @@ const CreatePurchaseOrder = () => {
       SupplierId: values.SupplierId,
       ProcurementStoreId: values.StoreId,
       DocumentType: values.DocumentType,
-      PurchaseDate: values.PODate.format('DD-MM-YYYY'),
+      PurchaseDate: values.PODate.format("DD-MM-YYYY"),
       PoStatus: poStatus ? values.PoStatus : "Created",
       Remarks: values.Remarks,
       PoPurchaseValue: values.TotalAmount,
@@ -255,7 +261,7 @@ const CreatePurchaseOrder = () => {
     );
     if (activeProducts.length === 0) {
       message.warning("Please Add Product");
-      setLoading(false)
+      setLoading(false);
       return false;
     }
 
@@ -373,8 +379,8 @@ const CreatePurchaseOrder = () => {
     let sum = {
       LineAmount: 0,
       TotalAmount: 0,
-      GstTax: 0
-    }
+      GstTax: 0,
+    };
     data.forEach((item) => {
       if (
         item.ActiveFlag &&
@@ -391,34 +397,39 @@ const CreatePurchaseOrder = () => {
   }
 
   function UomChange(params) {
-    setInitialData(prevState => ({
+    setInitialData((prevState) => ({
       ...prevState,
-      ClinicalAdvices: params
+      ClinicalAdvices: params,
     }));
   }
 
   const handleSelect = (value, option, column, record) => {
-    debugger
+    debugger;
     customAxios
       .get(`${urlGetProductDetailsById}?ProductId=${option.key}`)
       .then((response) => {
         const apiData = response.data.data;
-        let uoms = []
+        let uoms = [];
         if (apiData.AlternateUoms.length > 0) {
           // setAlternateUoms(apiData.AlternateUoms)
           setAlternateUoms((prev) => [
             ...prev,
             { key: record.key, data: apiData.AlternateUoms },
           ]);
-          uoms = DropDown.UOM.filter(
-            i =>
-              apiData.AlternateUoms.find(i1 => i1.AlternateUom === i.UomId || i.UomId === option.UomId)
-          )
+          uoms = DropDown.UOM.filter((i) =>
+            apiData.AlternateUoms.find(
+              (i1) => i1.AlternateUom === i.UomId || i.UomId === option.UomId
+            )
+          );
         } else {
-          uoms = DropDown.UOM.filter(i => i.UomId === option.UomId)
+          uoms = DropDown.UOM.filter((i) => i.UomId === option.UomId);
         }
         form1.setFieldsValue({ [record.key]: { ProductId: option.key } });
-        form1.setFieldsValue({ [record.key]: { PoRate: apiData.PORate !== null ? apiData.PORate.PoRate : 0 } });
+        form1.setFieldsValue({
+          [record.key]: {
+            PoRate: apiData.PORate !== null ? apiData.PORate.PoRate : 0,
+          },
+        });
         const newData = data.map((item) => {
           if (item.key === record.key) {
             const updatedItem = {
@@ -429,7 +440,7 @@ const CreatePurchaseOrder = () => {
               ProductId: option.key,
               PoRate: apiData.PORate !== null ? apiData.PORate.PoRate : 0,
               Uom: apiData.UOMPrimaryUOMname,
-              UOM: uoms
+              UOM: uoms,
             };
             return updatedItem;
           }
@@ -441,7 +452,7 @@ const CreatePurchaseOrder = () => {
   };
 
   const handleInputChange = async (e, column, index, record) => {
-    debugger
+    debugger;
     const value = e.target.value;
     let updatedData = [...data];
 
@@ -452,27 +463,44 @@ const CreatePurchaseOrder = () => {
       return item;
     });
 
-    if (["PoQuantity", "PoRate", 'BonusQuantity', "DiscountRate", 'MrpExpected', "TaxType1", "TaxType2", 'UomId'].includes(column)) {
+    if (
+      [
+        "PoQuantity",
+        "PoRate",
+        "BonusQuantity",
+        "DiscountRate",
+        "MrpExpected",
+        "TaxType1",
+        "TaxType2",
+        "UomId",
+      ].includes(column)
+    ) {
       const currentRecord = updatedData.find((item) => item.key === record.key);
 
-      const altUomData = alternateUoms.find(i => i.key == currentRecord.key)
-      const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == currentRecord.UomId) : undefined
+      const altUomData = alternateUoms.find((i) => i.key == currentRecord.key);
+      const altUom = altUomData
+        ? altUomData.data.find((i1) => i1.AlternateUom == currentRecord.UomId)
+        : undefined;
 
-      const poQuantity = (currentRecord.PoQuantity || 0) * (altUom ? altUom.EquivalentUOMUnits : 1);
-      const poRate = (currentRecord.PoRate || 0);
-      const discountRate = (currentRecord.DiscountRate || 0);
+      const poQuantity =
+        (currentRecord.PoQuantity || 0) *
+        (altUom ? altUom.EquivalentUOMUnits : 1);
+      const poRate = currentRecord.PoRate || 0;
+      const discountRate = currentRecord.DiscountRate || 0;
       const discountAmount = (poQuantity * poRate * discountRate) / 100;
       const amount = poQuantity * poRate - discountAmount;
       const taxType1 = currentRecord.TaxType1;
       const taxType2 = currentRecord.TaxType2;
 
       let taxAmount = 0;
-      let temp = 0
-      if (taxType1 != '' && taxType1) {
+      let temp = 0;
+      if (taxType1 != "" && taxType1) {
         try {
-          const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${taxType1}`);
+          const response = await customAxios.get(
+            `${urlGetTaxDetails}?AdditionalChargeId=${taxType1}`
+          );
           const taxDetails = response.data.data[0];
-          temp = taxDetails.AdditionalChargeType == 'Tax(Exclusive)' ? 0 : 1
+          temp = taxDetails.AdditionalChargeType == "Tax(Exclusive)" ? 0 : 1;
           taxAmount = calculateTax(amount, taxDetails, currentRecord);
 
           currentRecord.TaxAmount1 = taxAmount;
@@ -482,11 +510,13 @@ const CreatePurchaseOrder = () => {
       } else {
         currentRecord.TaxAmount1 = 0;
       }
-      if (taxType2 != '' && taxType2) {
+      if (taxType2 != "" && taxType2) {
         try {
-          const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${taxType2}`);
+          const response = await customAxios.get(
+            `${urlGetTaxDetails}?AdditionalChargeId=${taxType2}`
+          );
           const taxDetails = response.data.data[0];
-          temp = taxDetails.AdditionalChargeType == 'Tax(Exclusive)' ? 0 : 1
+          temp = taxDetails.AdditionalChargeType == "Tax(Exclusive)" ? 0 : 1;
           taxAmount = calculateTax(amount, taxDetails, currentRecord);
 
           currentRecord.TaxAmount2 = taxAmount;
@@ -499,11 +529,17 @@ const CreatePurchaseOrder = () => {
 
       currentRecord.DiscountAmount = discountAmount;
       if (temp == 1) {
-        currentRecord.LineAmount = amount - (currentRecord.TaxAmount1 || 0) - (currentRecord.TaxAmount2 || 0);
+        currentRecord.LineAmount =
+          amount -
+          (currentRecord.TaxAmount1 || 0) -
+          (currentRecord.TaxAmount2 || 0);
         currentRecord.TotalAmount = amount;
       } else {
         currentRecord.LineAmount = amount;
-        currentRecord.TotalAmount = amount + (currentRecord.TaxAmount1 || 0) + (currentRecord.TaxAmount2 || 0);
+        currentRecord.TotalAmount =
+          amount +
+          (currentRecord.TaxAmount1 || 0) +
+          (currentRecord.TaxAmount2 || 0);
       }
 
       form1.setFieldsValue({
@@ -532,14 +568,17 @@ const CreatePurchaseOrder = () => {
   };
 
   const calculateTax = (amount, taxDetails, record) => {
-    debugger
+    debugger;
     let taxAmount = 0;
-    let temp = 0
+    let temp = 0;
     // const altUom = alternateUoms.find(i => i.AlternateUom == record.UomId)
-    const altUomData = alternateUoms.find(i => i.key == record.key)
-    const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == record.UomId) : undefined
-    let poQuantity = record.PoQuantity * (altUom ? altUom.EquivalentUOMUnits : 1)
-    const mrp = (record.MrpExpected || 0)
+    const altUomData = alternateUoms.find((i) => i.key == record.key);
+    const altUom = altUomData
+      ? altUomData.data.find((i1) => i1.AlternateUom == record.UomId)
+      : undefined;
+    let poQuantity =
+      record.PoQuantity * (altUom ? altUom.EquivalentUOMUnits : 1);
+    const mrp = record.MrpExpected || 0;
     if (taxDetails.IncludeBonusQuantity) {
       poQuantity = (poQuantity || 0) + (record.BonusQuantity || 0);
       amount = poQuantity * (record.PoRate || 0) - (record.DiscountAmount || 0);
@@ -547,41 +586,51 @@ const CreatePurchaseOrder = () => {
     if (true) {
       switch (taxDetails.ChargeType) {
         case "Percentage":
-          if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
+          if (taxDetails.AdditionalChargeType == "Tax(Exclusive)") {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
-              taxAmount = (amount + record.DiscountAmount) * taxDetails.ChargeValue / 100;
+              taxAmount =
+                ((amount + record.DiscountAmount) * taxDetails.ChargeValue) /
+                100;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
-              taxAmount = amount * taxDetails.ChargeValue / 100;
+              taxAmount = (amount * taxDetails.ChargeValue) / 100;
             } else {
-              taxAmount = (mrp * poQuantity) * taxDetails.ChargeValue / 100;
+              taxAmount = (mrp * poQuantity * taxDetails.ChargeValue) / 100;
             }
           } else {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
               // taxAmount = (parseInt(amount) + parseInt(record.DiscountAmount)) - ((parseInt(amount) + parseInt(record.DiscountAmount)) / (1 + taxDetails.ChargeValue / 100));
-              taxAmount = (amount + record.DiscountAmount) - ((amount + record.DiscountAmount) / (1 + taxDetails.ChargeValue / 100));
+              taxAmount =
+                amount +
+                record.DiscountAmount -
+                (amount + record.DiscountAmount) /
+                  (1 + taxDetails.ChargeValue / 100);
               temp = 1;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
-              taxAmount = amount - (amount / (1 + taxDetails.ChargeValue / 100));
+              taxAmount = amount - amount / (1 + taxDetails.ChargeValue / 100);
               temp = 1;
             } else {
-              taxAmount = (mrp * poQuantity) - ((mrp * poQuantity) / (1 + taxDetails.ChargeValue / 100));
+              taxAmount =
+                mrp * poQuantity -
+                (mrp * poQuantity) / (1 + taxDetails.ChargeValue / 100);
               temp = 1;
             }
           }
           break;
 
         case "Amount":
-          if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
+          if (taxDetails.AdditionalChargeType == "Tax(Exclusive)") {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
-              taxAmount = (amount + record.DiscountAmount) + taxDetails.ChargeValue;
+              taxAmount =
+                amount + record.DiscountAmount + taxDetails.ChargeValue;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
               taxAmount = amount + taxDetails.ChargeValue;
             } else {
-              taxAmount = (mrp * poQuantity) + taxDetails.ChargeValue;
+              taxAmount = mrp * poQuantity + taxDetails.ChargeValue;
             }
           } else {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
-              taxAmount = (amount + record.DiscountAmount) - taxDetails.ChargeValue;
+              taxAmount =
+                amount + record.DiscountAmount - taxDetails.ChargeValue;
               temp = 1;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
               taxAmount = amount - taxDetails.ChargeValue;
@@ -639,12 +688,12 @@ const CreatePurchaseOrder = () => {
       TotalPoAmount: totalAmount.LineAmount,
       TaxAmount1: totalAmount.GstTax,
     });
-    setAmount(totalAmount.LineAmount)
-    setPoAmount(totalAmount.TotalAmount)
-    setGSTTax(totalAmount.GstTax)
+    setAmount(totalAmount.LineAmount);
+    setPoAmount(totalAmount.TotalAmount);
+    setGSTTax(totalAmount.GstTax);
   };
 
-  const onFinishModel = async (values) => { };
+  const onFinishModel = async (values) => {};
 
   const handleOpenModal = async (record) => {
     await form1.validateFields([
@@ -673,7 +722,7 @@ const CreatePurchaseOrder = () => {
   };
 
   const handleSaveModal = async () => {
-    debugger
+    debugger;
     await form2.validateFields();
     const values = form2.getFieldsValue();
     const valuesArray = Object.values(values);
@@ -737,7 +786,7 @@ const CreatePurchaseOrder = () => {
       title: "Quantity",
       dataIndex: "DeliveryQuantity",
       width: 100,
-      key: 'DeliveryQuantity',
+      key: "DeliveryQuantity",
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "DeliveryQuantity"]}
@@ -752,7 +801,7 @@ const CreatePurchaseOrder = () => {
     {
       title: "UOM",
       dataIndex: "UomId",
-      key: 'UomId',
+      key: "UomId",
       width: 100,
       render: (text, record, index) => (
         <Form.Item name={[record.key, "UomId"]}>
@@ -767,7 +816,7 @@ const CreatePurchaseOrder = () => {
     {
       title: "Date of Delivery",
       dataIndex: "DelDate",
-      key: 'DelDate',
+      key: "DelDate",
       width: 250,
       render: (text, record, index) => (
         <Form.Item
@@ -789,7 +838,7 @@ const CreatePurchaseOrder = () => {
     {
       title: "Delivery Location",
       dataIndex: "DeliveryLocation",
-      key: 'DeliveryLocation',
+      key: "DeliveryLocation",
       width: 250,
       render: (text, record, index) => (
         <Form.Item
@@ -807,7 +856,7 @@ const CreatePurchaseOrder = () => {
       title: "Product",
       dataIndex: "ProductName",
       fixed: "left",
-      key: 'ProductName',
+      key: "ProductName",
       width: isMobile ? 200 : 300,
       render: (text, record, index) => (
         <>
@@ -857,7 +906,7 @@ const CreatePurchaseOrder = () => {
     {
       title: "UOM",
       dataIndex: "UomId",
-      key: 'UomId',
+      key: "UomId",
       width: 150,
       render: (text, record, index) => (
         <Form.Item
@@ -872,15 +921,15 @@ const CreatePurchaseOrder = () => {
               handleUomChange(option, "UomId", index, record);
               handleInputChange({ target: { value } }, "UomId", index, record);
             }}
-          // onChange={(value, option) =>
-          //   handleUomChange(option, "UomId", index, record);
-          //   handleInputChange(
-          //     { target: { value } },
-          //     "UomId",
-          //     index,
-          //     record
-          //   );
-          // }
+            // onChange={(value, option) =>
+            //   handleUomChange(option, "UomId", index, record);
+            //   handleInputChange(
+            //     { target: { value } },
+            //     "UomId",
+            //     index,
+            //     record
+            //   );
+            // }
           >
             {(record.UOM || []).map((option) => (
               <Option key={option.UomId} value={option.UomId}>
@@ -896,7 +945,7 @@ const CreatePurchaseOrder = () => {
       title: "PO Qty",
       dataIndex: "PoQuantity",
       width: 100,
-      key: 'PoQuantity',
+      key: "PoQuantity",
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "PoQuantity"]}
@@ -928,7 +977,7 @@ const CreatePurchaseOrder = () => {
       title: "Bonus Qty",
       dataIndex: "BonusQuantity",
       width: 100,
-      key: 'BonusQuantity',
+      key: "BonusQuantity",
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "BonusQuantity"]}
@@ -955,7 +1004,7 @@ const CreatePurchaseOrder = () => {
       title: "Po Rate",
       dataIndex: "PoRate",
       width: 100,
-      key: 'PoRate',
+      key: "PoRate",
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "PoRate"]}
@@ -982,7 +1031,7 @@ const CreatePurchaseOrder = () => {
       title: "Discount %",
       dataIndex: "DiscountRate",
       width: 100,
-      key: 'DiscountRate',
+      key: "DiscountRate",
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "DiscountRate"]}
@@ -1009,7 +1058,7 @@ const CreatePurchaseOrder = () => {
       title: "Discount Amount",
       dataIndex: "DiscountAmount",
       width: 100,
-      key: 'DiscountAmount',
+      key: "DiscountAmount",
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "DiscountAmount"]}
@@ -1026,7 +1075,7 @@ const CreatePurchaseOrder = () => {
       title: "Expected MRP",
       dataIndex: "MrpExpected",
       width: 100,
-      key: 'MrpExpected',
+      key: "MrpExpected",
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "MrpExpected"]}
@@ -1052,14 +1101,15 @@ const CreatePurchaseOrder = () => {
     {
       title: "CGST",
       dataIndex: "TaxType1",
-      key: 'TaxType1',
+      key: "TaxType1",
       width: 100,
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "TaxType1"]}
-        // name={["TaxType1", record.key]}
+          // name={["TaxType1", record.key]}
         >
-          <Select allowClear
+          <Select
+            allowClear
             defaultValue={text}
             onChange={(value) =>
               handleInputChange(
@@ -1083,7 +1133,7 @@ const CreatePurchaseOrder = () => {
       title: "CGST Amount",
       dataIndex: "TaxAmount1",
       width: 100,
-      key: 'TaxAmount1',
+      key: "TaxAmount1",
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "TaxAmount1"]}
@@ -1097,11 +1147,13 @@ const CreatePurchaseOrder = () => {
     {
       title: "SGST",
       dataIndex: "TaxType2",
-      key: 'TaxType2',
+      key: "TaxType2",
       width: 100,
       render: (text, record, index) => (
         <Form.Item name={[record.key, "TaxType2"]}>
-          <Select defaultValue={text} allowClear
+          <Select
+            defaultValue={text}
+            allowClear
             onChange={(value) =>
               handleInputChange(
                 { target: { value } },
@@ -1124,7 +1176,7 @@ const CreatePurchaseOrder = () => {
       title: "SGST Amount",
       dataIndex: "TaxAmount2",
       width: 100,
-      key: 'TaxAmount2',
+      key: "TaxAmount2",
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "TaxAmount2"]}
@@ -1139,7 +1191,7 @@ const CreatePurchaseOrder = () => {
       title: "Amount",
       dataIndex: "LineAmount",
       width: 100,
-      key: 'LineAmount',
+      key: "LineAmount",
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "LineAmount"]}
@@ -1154,7 +1206,7 @@ const CreatePurchaseOrder = () => {
       title: "Total Amount",
       dataIndex: "Total Amount",
       width: 100,
-      key: 'TotalAmount',
+      key: "TotalAmount",
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "TotalAmount"]}
@@ -1169,7 +1221,7 @@ const CreatePurchaseOrder = () => {
       title: "Avl Qty",
       dataIndex: "AvailableQuantity",
       width: 100,
-      key: 'AvailableQuantity',
+      key: "AvailableQuantity",
       render: (text, record, index) => (
         <Form.Item
           // name={["AvailableQuantity", record.key]}
@@ -1184,7 +1236,7 @@ const CreatePurchaseOrder = () => {
     {
       title: "Delivery Schedule",
       dataIndex: "deliverySchedule",
-      key: 'deliverySchedule',
+      key: "deliverySchedule",
       width: 100,
       render: (text, record, index) => (
         <Button
@@ -1348,7 +1400,9 @@ const CreatePurchaseOrder = () => {
               // style={{ marginTop: "30px" }}
               valuePropName="checked"
             >
-              <Checkbox onChange={SubmitChanged} style={{ marginTop: "33px" }}>Submit</Checkbox>
+              <Checkbox onChange={SubmitChanged} style={{ marginTop: "33px" }}>
+                Submit
+              </Checkbox>
             </Form.Item>
           </ColWithSixSpan>
         </Row>
@@ -1389,41 +1443,51 @@ const CreatePurchaseOrder = () => {
         </Spin>
         <Row justify={"end"}>
           <ColWithEightSpan>
-            <Form.Item
-              name="TotalAmount"
-              style={{ marginRight: "16px" }}
-            >
+            <Form.Item name="TotalAmount" style={{ marginRight: "16px" }}>
               <Row gutter={16}>
                 <Col span={12}>
                   <span>Amount : </span>
                 </Col>
                 <Col span={12}>
-                  <InputNumber style={{ width: "100%" }} min={0} precision={4} value={amount} disabled />
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    min={0}
+                    precision={4}
+                    value={amount}
+                    disabled
+                  />
                 </Col>
               </Row>
             </Form.Item>
-            <Form.Item
-              name="TaxAmount1"
-              style={{ marginRight: "16px" }}
-            >
+            <Form.Item name="TaxAmount1" style={{ marginRight: "16px" }}>
               <Row gutter={16} style={{ marginTop: "5px" }}>
                 <Col span={12}>
                   <span>GST Tax : </span>
                 </Col>
                 <Col span={12}>
-                  <InputNumber style={{ width: "100%" }} min={0} precision={4} disabled value={GSTTax} />
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    min={0}
+                    precision={4}
+                    disabled
+                    value={GSTTax}
+                  />
                 </Col>
               </Row>
             </Form.Item>
-            <Form.Item name="TotalPoAmount"
-              style={{ marginRight: "16px" }}
-            >
+            <Form.Item name="TotalPoAmount" style={{ marginRight: "16px" }}>
               <Row gutter={16} style={{ marginTop: "5px" }}>
                 <Col span={12}>
                   <span>Total PO Amount :</span>
                 </Col>
                 <Col span={12}>
-                  <InputNumber style={{ width: "100%" }} min={0} disabled precision={4} value={poAmount} />
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    min={0}
+                    disabled
+                    precision={4}
+                    value={poAmount}
+                  />
                 </Col>
               </Row>
             </Form.Item>
@@ -1470,11 +1534,11 @@ const CreatePurchaseOrder = () => {
               dataSource={
                 deliveryRecord.ProductId
                   ? schedule.filter(
-                    (item) =>
-                      (item.ProductId === deliveryRecord.ProductId &&
-                        item.ActiveFlag) ||
-                      (item.ProductId === "" && item.ActiveFlag)
-                  )
+                      (item) =>
+                        (item.ProductId === deliveryRecord.ProductId &&
+                          item.ActiveFlag) ||
+                        (item.ProductId === "" && item.ActiveFlag)
+                    )
                   : initialDeliveryDataSource
               }
             />

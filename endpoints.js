@@ -660,4 +660,8 @@ export const urlGetTemplateDataByProviderId = `${baseURL}/api/ClinicalChart/GetT
 export const urlSaveClinicalTemplate = `${baseURL}/api/ClinicalChart/SaveClinicalTemplate`;
 export const urlAddNewStore = `${baseURL}/api/Store/AddNewStore`;
 export const urlUpdateStore = `${baseURL}/api/Store/UpdateStore`;
-
+export const urlIndentIndex = `${baseURL}/api/Indent/IndentIndex`;
+export const urlCreateIndent = `${baseURL}/api/Indent/CreateIndent`;
+export const urlPatientIndentIndex = `${baseURL}/api/PatientIndent/PatientIndentIndex`;
+export const urlCreatePatientIndent = `${baseURL}/api/PatientIndent/CreatePatientIndent`;
+export const urlPatientIssueIndex = `${baseURL}/api/PatientIssue/PatientIssueIndex`;

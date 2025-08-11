@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import Layout from 'antd/es/layout/layout';
+import Layout from "antd/es/layout/layout";
 import { PlusCircleOutlined } from "@ant-design/icons";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 import {
   Spin,
   Tag,
@@ -16,7 +16,10 @@ import {
 } from "antd";
 import { useNavigate } from "react-router";
 import CustomTable from "../../../components/customTable/index.jsx";
-import { urlGetPurshaseOrderDetails, urlSearchStoreConsumption } from "../../../../endpoints.js";
+import {
+  urlGetPurshaseOrderDetails,
+  urlSearchStoreConsumption,
+} from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import { useSelector } from "react-redux";
@@ -42,14 +45,18 @@ const StoreConsumption = () => {
 
   useEffect(() => {
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-        const apiData = response.data.data;
-        setDropDown(apiData);
-      });
+      customAxios
+        .get(urlGetPurshaseOrderDetails, {
+          params: { type: "Store Consumption" },
+        })
+        .then((response) => {
+          const apiData = response.data.data;
+          setDropDown(apiData);
+        });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
-    form.submit()
+    form.submit();
   }, []);
 
   const disableFromDate = (current) => {
@@ -82,7 +89,7 @@ const StoreConsumption = () => {
     {
       title: "Sl No",
       key: "key",
-      dataIndex: 'key',
+      dataIndex: "key",
     },
     {
       title: "Consumption Number",
@@ -92,10 +99,14 @@ const StoreConsumption = () => {
       sortDirections: ["descend", "ascend"],
       render: (text, record) => {
         if (record.IssueStatus == "Finalize") {
-          return <Tag style={{ marginLeft: '15px' }}>{text}</Tag>;
+          return <Tag style={{ marginLeft: "15px" }}>{text}</Tag>;
         }
-        return <Button type='link' onClick={() => handleAddTemplate(record.IssueId)}>{text}</Button>
-      }
+        return (
+          <Button type="link" onClick={() => handleAddTemplate(record.IssueId)}>
+            {text}
+          </Button>
+        );
+      },
     },
     {
       title: "Consumption Date",
@@ -127,7 +138,9 @@ const StoreConsumption = () => {
     },
     {
       render: (_, record) => (
-        <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>
+        <Button type="link" onClick={(value) => handleReport(value, record)}>
+          Report
+        </Button>
       ),
     },
   ];
@@ -162,7 +175,9 @@ const StoreConsumption = () => {
       const postData1 = {
         IssuingStore: values.IssuingStore ? values.IssuingStore : 0,
         IssueStatus: values.IssueStatus === 0 ? null : values.IssueStatus,
-        FromDateString: values.FromDate ? values.FromDate.format("DD-MM-YYYY") : "",
+        FromDateString: values.FromDate
+          ? values.FromDate.format("DD-MM-YYYY")
+          : "",
         ToDateString: values.ToDate ? values.ToDate.format("DD-MM-YYYY") : "",
       };
       customAxios
@@ -177,12 +192,14 @@ const StoreConsumption = () => {
           }
         )
         .then((response) => {
-          const ApiData = response.data.data.newIndentIssueModel.map((item, index) => {
-            return {
-              ...item,
-              key: index + 1
+          const ApiData = response.data.data.newIndentIssueModel.map(
+            (item, index) => {
+              return {
+                ...item,
+                key: index + 1,
+              };
             }
-          })
+          );
           setFilteredData(ApiData);
         })
         .finally(() => {
@@ -200,20 +217,20 @@ const StoreConsumption = () => {
   };
 
   const handleReport = async (value, record) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const request = {
         PONO: record.IssueNumber,
-        use: 'admin',
+        use: "admin",
         FileType: "pdf", // or 'excel'
-        AppUser: userContext.AppUserName
+        AppUser: userContext.AppUserName,
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       setError(error.message);
     }
   };
@@ -231,19 +248,26 @@ const StoreConsumption = () => {
     );
 
     if (!response.ok) {
-      setLoading(false)
+      setLoading(false);
       throw new Error("Failed to fetch report");
     }
 
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
-    setLoading(false)
+    setLoading(false);
     return { url, blob };
   }
 
   return (
-    <Layout style={{ zIndex: '999999999' }}>
-      <div style={{ width: '100%', backgroundColor: 'white', minHeight: 'max-content', borderRadius: '10px' }}>
+    <Layout style={{ zIndex: "999999999" }}>
+      <div
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          minHeight: "max-content",
+          borderRadius: "10px",
+        }}
+      >
         <PageHeader
           title={"Store Consumption"}
           buttonLabel="Add Store Consumption"
@@ -263,7 +287,7 @@ const StoreConsumption = () => {
             initialValues={{
               FromDate: fromDate,
               ToDate: toDate,
-              IssueStatus: 0
+              IssueStatus: 0,
             }}
             onFinish={onFinish}
           >
@@ -292,9 +316,14 @@ const StoreConsumption = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="IssuingStore" label="Issuing Store">
-                  <Select allowClear placeholder='Select Value'>
+                  <Select allowClear placeholder="Select Value">
                     {Dropdown.StoreDetails.map((Option) => (
-                      <Select.Option key={Option.StoreId} value={Option.StoreId}>{Option.LongName}</Select.Option>
+                      <Select.Option
+                        key={Option.StoreId}
+                        value={Option.StoreId}
+                      >
+                        {Option.LongName}
+                      </Select.Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -302,9 +331,14 @@ const StoreConsumption = () => {
               <Col className="gutter-row" span={6}>
                 <Form.Item name="IssueStatus" label="Issue Status">
                   <Select>
-                    <Select.Option key={0} value={0}>All</Select.Option>
-                    <Select.Option key='Draft' value='Draft'></Select.Option>
-                    <Select.Option key='Finalize' value='Finalize'></Select.Option>
+                    <Select.Option key={0} value={0}>
+                      All
+                    </Select.Option>
+                    <Select.Option key="Draft" value="Draft"></Select.Option>
+                    <Select.Option
+                      key="Finalize"
+                      value="Finalize"
+                    ></Select.Option>
                   </Select>
                 </Form.Item>
               </Col>

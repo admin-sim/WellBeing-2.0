@@ -61,18 +61,18 @@ const PatientConsumption = () => {
   const initialDataSource =
     issueId === 0
       ? [
-        {
-          key: uuidv4(),
-          ProductName: "",
-          ProductId: "",
-          UomId: "",
-          IssueQty: "",
-          AvlatIssueQty: "",
-          ReasonforConsumption: "",
-          Batch: "",
-          ActiveFlag: true,
-        },
-      ]
+          {
+            key: uuidv4(),
+            ProductName: "",
+            ProductId: "",
+            UomId: "",
+            IssueQty: "",
+            AvlatIssueQty: "",
+            ReasonforConsumption: "",
+            Batch: "",
+            ActiveFlag: true,
+          },
+        ]
       : [];
 
   const [form1] = Form.useForm();
@@ -99,13 +99,15 @@ const PatientConsumption = () => {
   const [batchRecord, setBatchRecord] = useState();
 
   useEffect(() => {
-    customAxios.get(urlCreatePurchaseOrder).then((response) => {
-      const apiData = response.data.data;
-      setDropDown(apiData);
-    });
+    customAxios
+      .get(urlCreatePurchaseOrder, { params: { type: "Patient Consumption" } })
+      .then((response) => {
+        const apiData = response.data.data;
+        setDropDown(apiData);
+      });
     if (issueId > 0) {
-      debugger
-      setLoading(true)
+      debugger;
+      setLoading(true);
       setButtonTitle("Update");
       try {
         customAxios
@@ -116,17 +118,19 @@ const PatientConsumption = () => {
               apiData.newIndentIssueModel != null &&
               apiData.newIndentIssueModel.length > 0
             ) {
-              const products = apiData.newIndentIssueModel.map((item, index) => ({
-                ...item,
-                key: uuidv4(),
-                AvlQtyAtIssue: item.StockBalanceQty,
-                ReasonforConsumption: item.Remarks,
-                index: index + 1
-              }));
+              const products = apiData.newIndentIssueModel.map(
+                (item, index) => ({
+                  ...item,
+                  key: uuidv4(),
+                  AvlQtyAtIssue: item.StockBalanceQty,
+                  ReasonforConsumption: item.Remarks,
+                  index: index + 1,
+                })
+              );
               setData(products);
               setCounter(products.length);
               const formdata = apiData.newPatientIssueModel;
-              setUhId(formdata.UhId)
+              setUhId(formdata.UhId);
               form1.setFieldsValue({
                 IssueingStoreId: formdata.IssueingStoreId,
                 // IndentType: formdata.IndentType,
@@ -134,7 +138,7 @@ const PatientConsumption = () => {
                 IndentNumber: formdata.IndentNumber,
                 Status:
                   formdata.IssueStatus == "Created" ||
-                    formdata.IssueStatus == "Pending"
+                  formdata.IssueStatus == "Pending"
                     ? undefined
                     : formdata.IssueStatus,
                 UHID: formdata.UhId,
@@ -153,28 +157,30 @@ const PatientConsumption = () => {
               };
             });
             setDataModal(newData);
-            setLoading(false)
+            setLoading(false);
           });
       } catch (error) {
-        message.error('Error at fetch data')
-        setLoading(false)
+        message.error("Error at fetch data");
+        setLoading(false);
       }
     } else if (Patient) {
-      setUhId(Patient.UhId)
-      GetEncounter(Patient.PatientId)
+      setUhId(Patient.UhId);
+      GetEncounter(Patient.PatientId);
       form1.setFieldsValue({
         UHID: Patient.UhId,
         Name: Patient.PatientName,
         Encounter: Patient.EncounterId,
         EncounterId: Patient.EncounterId,
         PatientId: Patient.PatientId,
-      })
+      });
     }
   }, []);
 
   function handleSelect(value, option) {
     if (value) {
-      form1.setFieldsValue({ Name: option.data.PatientFirstName + ' ' + option.data.PatientLastName });
+      form1.setFieldsValue({
+        Name: option.data.PatientFirstName + " " + option.data.PatientLastName,
+      });
       form1.setFieldsValue({ UHID: value });
       customAxios
         .get(`${urlGetLastEncounter}?patientId=${option.data.PatientId}`)
@@ -182,7 +188,9 @@ const PatientConsumption = () => {
           const apiData = response.data;
           if (apiData.length > 0) {
             setEncounter(apiData);
-            form1.setFieldsValue({ Encounter: apiData[0].GeneratedEncounterId });
+            form1.setFieldsValue({
+              Encounter: apiData[0].GeneratedEncounterId,
+            });
             form1.setFieldsValue({ EncounterId: apiData[0].EncounterId });
             form1.setFieldsValue({ PatientId: option.data.PatientId });
           } else {
@@ -199,7 +207,7 @@ const PatientConsumption = () => {
       form1.setFieldsValue({ PatientId: "" });
       form1.setFieldsValue({ Name: "" });
     }
-  };
+  }
 
   const onOkModal = () => {
     form2.submit();
@@ -261,7 +269,7 @@ const PatientConsumption = () => {
   };
 
   const handleOnFinish = async (values) => {
-    debugger
+    debugger;
     if (!values.EncounterId) {
       message.warning("Selected Patient Encounter Is Not Created");
       return false;
@@ -282,13 +290,13 @@ const PatientConsumption = () => {
           values.IssueStatus == "Finalize"
             ? values[it.key].IssueQty - values[it.key].PendingQty
             : values[it.key].PendingQty,
-        Remarks: values[it.key].ReasonforConsumption
+        Remarks: values[it.key].ReasonforConsumption,
       };
       products.push(product);
-    })
+    });
 
     if (products.length === 0) {
-      message.warning("Please Add Products")
+      message.warning("Please Add Products");
       return false;
     }
 
@@ -432,7 +440,7 @@ const PatientConsumption = () => {
         const batch = ApiData.Batch.map((item, index) => {
           if (
             item.ProductId ===
-            ApiData.ProductDefinitionModel.ProductDefinitionId &&
+              ApiData.ProductDefinitionModel.ProductDefinitionId &&
             item.ActiveFlag !== false
           ) {
             if (item.IssueBatchId !== 0) {
@@ -519,23 +527,28 @@ const PatientConsumption = () => {
   };
 
   async function GetEncounter(value) {
-    debugger
-    await customAxios.get(`${urlGetLastEncounter}?patientId=${value}`).then((response) => {
-      const apiData = response.data;
-      if (apiData.length > 0) {
-        setEncounter(apiData);
-        form1.setFieldsValue({ Encounter: apiData[0].EncounterId });
-        form1.setFieldsValue({ EncounterId: apiData[0].EncounterId });
-      }
-    })
+    debugger;
+    await customAxios
+      .get(`${urlGetLastEncounter}?patientId=${value}`)
+      .then((response) => {
+        const apiData = response.data;
+        if (apiData.length > 0) {
+          setEncounter(apiData);
+          form1.setFieldsValue({ Encounter: apiData[0].EncounterId });
+          form1.setFieldsValue({ EncounterId: apiData[0].EncounterId });
+        }
+      });
   }
 
   const BatchSelect = (selectedStockId, recordKey) => {
     debugger;
-    batchDetails
+    batchDetails;
     // Check if selectedStockId already exists in dataModel with ActiveFlag true
     const existingBatch = dataModal.find(
-      (item) => item.StockId === selectedStockId && item.ActiveFlag === true && item.key != recordKey
+      (item) =>
+        item.StockId === selectedStockId &&
+        item.ActiveFlag === true &&
+        item.key != recordKey
     );
 
     if (existingBatch) {
@@ -550,21 +563,21 @@ const PatientConsumption = () => {
       const updatedDataModel = dataModal.map((item) =>
         item.key === recordKey
           ? {
-            ...item,
-            BatchNo: selectedBatch.BatchNo,
-            StockId: selectedBatch.StockId,
-            IssueBatchId: selectedBatch.IssueBatchId,
-            IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
-            IssueRate: selectedBatch.MRP,
-            //LineAmount:item.LineAmount,
-            BalanceQty: selectedBatch.BalanceQty,
-            EXPDate: selectedBatch.EXPDate
-              ? dayjs(selectedBatch.EXPDate)
-              : null,
-            MRP: selectedBatch.MRP,
-            // qty:item.qty,
-            amount: selectedBatch.amount,
-          }
+              ...item,
+              BatchNo: selectedBatch.BatchNo,
+              StockId: selectedBatch.StockId,
+              IssueBatchId: selectedBatch.IssueBatchId,
+              IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
+              IssueRate: selectedBatch.MRP,
+              //LineAmount:item.LineAmount,
+              BalanceQty: selectedBatch.BalanceQty,
+              EXPDate: selectedBatch.EXPDate
+                ? dayjs(selectedBatch.EXPDate)
+                : null,
+              MRP: selectedBatch.MRP,
+              // qty:item.qty,
+              amount: selectedBatch.amount,
+            }
           : item
       );
 
@@ -692,7 +705,7 @@ const PatientConsumption = () => {
               UomId: option.UomId,
               ProductId: option.key,
               AvlQtyAtIssue: qty,
-              Uom: apiData.UOMPrimaryUOMname
+              Uom: apiData.UOMPrimaryUOMname,
             };
             return updatedItem;
           }
@@ -820,8 +833,8 @@ const PatientConsumption = () => {
               required: true,
               type: "number",
               min: 1,
-              message: 'value must greater than 0!'
-            }
+              message: "value must greater than 0!",
+            },
           ]}
         >
           <InputNumber min={0} style={{ width: "100%" }} disabled />
@@ -919,12 +932,12 @@ const PatientConsumption = () => {
       prevDataModel.map((item) =>
         item.key === key
           ? {
-            ...item,
-            amount: amount.toFixed(4),
-            qty: qty,
-            IssueQty: qty,
-            LineAmount: amount,
-          }
+              ...item,
+              amount: amount.toFixed(4),
+              qty: qty,
+              IssueQty: qty,
+              LineAmount: amount,
+            }
           : item
       )
     );
@@ -1039,7 +1052,9 @@ const PatientConsumption = () => {
         return (
           <Form.Item name={[record.key, "Uom"]}>
             {/* {record.Uom} */}
-            <Tag color="#7C00FE">{record.Uom ? record.Uom : productDetails.Uom}</Tag>
+            <Tag color="#7C00FE">
+              {record.Uom ? record.Uom : productDetails.Uom}
+            </Tag>
           </Form.Item>
         );
       },
@@ -1049,7 +1064,8 @@ const PatientConsumption = () => {
       dataIndex: "EXPDate",
       key: "EXPDate",
       render: (text, record) => (
-        <Form.Item name={[record.key, "EXPDate"]}
+        <Form.Item
+          name={[record.key, "EXPDate"]}
           rules={[
             {
               validator: (_, value) => {
@@ -1057,7 +1073,6 @@ const PatientConsumption = () => {
                 if (!value) {
                   // return Promise.reject(new Error("Invalid date format!"));
                   return Promise.resolve();
-
                 }
                 const today = dayjs();
                 if (value.isBefore(today, "day")) {
@@ -1076,8 +1091,8 @@ const PatientConsumption = () => {
                 record.Expiry === "Month wise"
                   ? "MMMM YYYY"
                   : record.Expiry === "Date wise"
-                    ? "DD-MM-YYYY"
-                    : "DD-MM-YYYY"
+                  ? "DD-MM-YYYY"
+                  : "DD-MM-YYYY"
               }
               defaultValue={dayjs(record.EXPDate)}
               disabled
@@ -1240,7 +1255,10 @@ const PatientConsumption = () => {
                       disabled={!!issueId}
                     >
                       {DropDown.StoreDetails.map((option) => (
-                        <Select.Option key={option.StoreId} value={option.StoreId}>
+                        <Select.Option
+                          key={option.StoreId}
+                          value={option.StoreId}
+                        >
                           {option.LongName}
                         </Select.Option>
                       ))}
@@ -1284,7 +1302,10 @@ const PatientConsumption = () => {
                       ]}
                     >
                       <Select allowClear placeholder="Select Value">
-                        <Select.Option key="Draft" value="Draft"></Select.Option>
+                        <Select.Option
+                          key="Draft"
+                          value="Draft"
+                        ></Select.Option>
                         <Select.Option
                           key="Finalize"
                           value="Finalize"
@@ -1325,7 +1346,10 @@ const PatientConsumption = () => {
                       value={uhId}
                       allowClear
                     /> */}
-                      <UhidSelectComponent selectedUhId={uhId} handleSelectUHID={handleSelect} />
+                      <UhidSelectComponent
+                        selectedUhId={uhId}
+                        handleSelectUHID={handleSelect}
+                      />
                     </Form.Item>
                   </div>
                 </Col>
@@ -1338,7 +1362,9 @@ const PatientConsumption = () => {
                 </Col>
                 <Col className="gutter-row" span={6}>
                   <div>
-                    <Form.Item label="Encounter" name="Encounter"
+                    <Form.Item
+                      label="Encounter"
+                      name="Encounter"
                       rules={[
                         {
                           required: true,
@@ -1348,7 +1374,12 @@ const PatientConsumption = () => {
                     >
                       <Select disabled={encounter.length > 1 ? false : true}>
                         {encounter.map((option) => (
-                          <Select.Option key={option.EncounterId} value={option.EncounterId}>{option.GeneratedEncounterId}</Select.Option>
+                          <Select.Option
+                            key={option.EncounterId}
+                            value={option.EncounterId}
+                          >
+                            {option.GeneratedEncounterId}
+                          </Select.Option>
                         ))}
                       </Select>
                     </Form.Item>
@@ -1399,11 +1430,13 @@ const PatientConsumption = () => {
                 columns={columns}
                 isFilter={false}
                 // actionColumn={false}
-                actionColumnName={<Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={handleAdd}
-                ></Button>}
+                actionColumnName={
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={handleAdd}
+                  ></Button>
+                }
                 onDelete={handleDelete}
                 bordered
               />
@@ -1448,16 +1481,17 @@ const PatientConsumption = () => {
                 <Tag color="#52c41a">
                   Issued Quantity: {productDetails.IssueQty}
                 </Tag>{" "}
-                <Table scroll
+                <Table
+                  scroll
                   columns={columnsModel}
                   dataSource={
                     batchRecord?.ProductId
                       ? dataModal.filter(
-                        (item) =>
-                          (item.ProductId == batchRecord.ProductId &&
-                            item.ActiveFlag) ||
-                          (item.ProductId == "" && item.ActiveFlag)
-                      )
+                          (item) =>
+                            (item.ProductId == batchRecord.ProductId &&
+                              item.ActiveFlag) ||
+                            (item.ProductId == "" && item.ActiveFlag)
+                        )
                       : []
                   }
                   size="small"

@@ -50,7 +50,7 @@ const StockExpiry = () => {
 
   useEffect(() => {
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
+      customAxios.get(urlGetPurshaseOrderDetails, {params:{type:"Purchase Order"}}).then((response) => {
         const apiData = response.data.data;
         setStockExpiryDropDown(apiData);
         setIsLoading(false);

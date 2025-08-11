@@ -45,10 +45,12 @@ const GRNAgainstPO = () => {
 
   useEffect(() => {
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-        const apiData = response.data.data;
-        setDropDown(apiData);
-      });
+      customAxios
+        .get(urlGetPurshaseOrderDetails, { params: { type: "GRN Against PO" } })
+        .then((response) => {
+          const apiData = response.data.data;
+          setDropDown(apiData);
+        });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
@@ -174,7 +176,11 @@ const GRNAgainstPO = () => {
       title: "Actions",
       dataIndex: "actions",
       key: "actions",
-      render: (text, record, index) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
+      render: (text, record, index) => (
+        <Button type="link" onClick={(value) => handleReport(value, record)}>
+          Report
+        </Button>
+      ),
     },
   ];
 
@@ -224,20 +230,20 @@ const GRNAgainstPO = () => {
   };
 
   const handleReport = async (value, record) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const request = {
         PONO: record.GRNNumber,
-        use: 'admin',
+        use: "admin",
         FileType: "pdf", // or 'excel'
-        AppUser: userContext.AppUserName
+        AppUser: userContext.AppUserName,
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       setError(error.message);
     }
   };
@@ -256,13 +262,13 @@ const GRNAgainstPO = () => {
     console.log("respo", response);
 
     if (!response.ok) {
-      setLoading(false)
+      setLoading(false);
       throw new Error("Failed to fetch report");
     }
 
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
-    setLoading(false)
+    setLoading(false);
     return { url, blob };
   }
 
@@ -408,7 +414,8 @@ const GRNAgainstPO = () => {
           </Col>
         </Row>
       </Form>
-      <CustomTable loading={loading}
+      <CustomTable
+        loading={loading}
         dataSource={filteredData}
         columns={columns}
         isFilter={true}

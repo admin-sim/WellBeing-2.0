@@ -56,10 +56,12 @@ const StoreReturn = () => {
 
   useEffect(() => {
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-        const apiData = response.data.data;
-        setStoreReturnDropDown(apiData);
-      });
+      customAxios
+        .get(urlGetPurshaseOrderDetails, { params: { type: "Store Return" } })
+        .then((response) => {
+          const apiData = response.data.data;
+          setStoreReturnDropDown(apiData);
+        });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }

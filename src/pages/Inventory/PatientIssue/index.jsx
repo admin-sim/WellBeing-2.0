@@ -31,6 +31,7 @@ import {
   urlSearchPatientIssue,
   urlSearchUHID,
   urlGetLastEncounter,
+  urlPatientIssueIndex,
 } from "../../../../endpoints.js";
 import CustomTable from "../../../components/customTable/index.jsx";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
@@ -41,9 +42,8 @@ import { useSelector } from "react-redux";
 
 const PatientIssue = () => {
   const [PatientIssueDropdown, setPatientIssueDropDown] = useState({
-    DocumentType: [],
-    StoreDetails: [],
-    SupplierList: [],
+    IssueingStoreDetails: [],
+    RequestingStoreDetails: [],
     DateFormat: [],
     Patient: [],
   });
@@ -67,7 +67,7 @@ const PatientIssue = () => {
 
   useEffect(() => {
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
+      customAxios.get(urlPatientIssueIndex, {}).then((response) => {
         const apiData = response.data.data;
         setPatientIssueDropDown(apiData);
       });
@@ -145,14 +145,6 @@ const PatientIssue = () => {
       key: "IndentDatestring",
       sorter: (a, b) => new Date(a.IndentDatestring) - new Date(b.IndentDatestring),
       sortDirections: ["descend", "ascend"],
-      // render: (text) => {
-      //   const dateParts = text.split("T")[0].split("-");
-      //   const year = dateParts[0];
-      //   const month = dateParts[1];
-      //   const day = dateParts[2];
-
-      //   return `${day}-${month}-${year}`;
-      // },
     },
     {
       title: "UHID",
@@ -444,7 +436,7 @@ const PatientIssue = () => {
               <Col className="gutter-row" span={8}>
                 <Form.Item label="Issuing Store" name="IssuingStore">
                   <Select allowClear placeholder="Select Value">
-                    {PatientIssueDropdown.StoreDetails.map((option) => (
+                    {PatientIssueDropdown.IssueingStoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
                         value={option.StoreId}

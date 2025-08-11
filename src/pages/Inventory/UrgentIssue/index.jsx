@@ -60,10 +60,12 @@ const UrgentIssue = () => {
 
   useEffect(() => {
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-        const apiData = response.data.data;
-        setUrgentIssueDropDown(apiData);
-      });
+      customAxios
+        .get(urlGetPurshaseOrderDetails, { params: { type: "Purchase Order" } })
+        .then((response) => {
+          const apiData = response.data.data;
+          setUrgentIssueDropDown(apiData);
+        });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
@@ -150,25 +152,29 @@ const UrgentIssue = () => {
       },
     },
     {
-      render: (_, record) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
+      render: (_, record) => (
+        <Button type="link" onClick={(value) => handleReport(value, record)}>
+          Report
+        </Button>
+      ),
     },
   ];
 
   const handleReport = async (value, record) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const request = {
         PONo: record.IssueNumber,
-        use: 'admin',
+        use: "admin",
         FileType: "pdf", // or 'excel'
-        AppUser: userContext.AppUserName
+        AppUser: userContext.AppUserName,
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       setError(error.message);
     }
   };
@@ -186,13 +192,13 @@ const UrgentIssue = () => {
     );
 
     if (!response.ok) {
-      setLoading(false)
+      setLoading(false);
       throw new Error("Failed to fetch report");
     }
 
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
-    setLoading(false)
+    setLoading(false);
     return { url, blob };
   }
 

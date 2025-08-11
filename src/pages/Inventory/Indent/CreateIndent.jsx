@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import Button from "antd/es/button";
 import {
@@ -8,6 +7,8 @@ import {
   urlAddNewIndent,
   urlEditIndent,
   urlUpdateIndent,
+  urlIndentIndex,
+  urlCreateIndent,
 } from "../../../../endpoints.js";
 import { v4 as uuidv4 } from "uuid";
 import Select from "antd/es/select";
@@ -48,11 +49,10 @@ import CustomTable from "../../../components/customTable/index.jsx";
 
 const CreateIndent = () => {
   const [DropDown, setDropDown] = useState({
-    DocumentType: [],
-    StoreDetails: [],
-    SupplierList: [],
+    IssueingStoreDetails: [],
+    RequestingStoreDetails: [],
+    newIndentModel: [],
     UOM: [],
-    TaxType: [],
     DateFormat: [],
   });
 
@@ -80,27 +80,29 @@ const CreateIndent = () => {
   const initialDataSource =
     indentId === 0
       ? [
-        {
-          key: uuidv4(),
-          ProductName: "",
-          // ProductId: '',
-          UomId: "",
-          RequestingQty: "",
-          RequestingStoreStock: "",
-          IssuingStoreStock: "",
-          Favourite: false,
-          ActiveFlag: true,
-        },
-      ]
+          {
+            key: uuidv4(),
+            ProductName: "",
+            // ProductId: '',
+            UomId: "",
+            RequestingQty: "",
+            RequestingStoreStock: "",
+            IssuingStoreStock: "",
+            Favourite: false,
+            ActiveFlag: true,
+          },
+        ]
       : [];
 
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    customAxios.get(urlCreatePurchaseOrder).then((response) => {
-      const apiData = response.data.data;
-      setDropDown(apiData);
-    });
+    customAxios
+      .get(urlCreateIndent, { params: { LocationId: undefined } })
+      .then((response) => {
+        const apiData = response.data.data;
+        setDropDown(apiData);
+      });
     setDropDownLoading(false);
   }, []);
 
@@ -144,12 +146,12 @@ const CreateIndent = () => {
             IndentStatus:
               formdata.IndentStatus === "Created" ? "" : formdata.IndentStatus,
             IndentId: formdata.IndentId,
-            IndentTemplateId: ""
+            IndentTemplateId: "",
           });
           setLoading(false);
         });
     }
-  }
+  };
 
   const handleToIndent = () => {
     const url = "/Indent";
@@ -221,9 +223,11 @@ const CreateIndent = () => {
     if (va.RequestingStoreId !== undefined && va.IssueingStoreId != undefined) {
       if (va.RequestingStoreId !== va.IssueingStoreId) {
         setIstablevisible(true);
-        setData(initialDataSource)
+        setData(initialDataSource);
       } else {
-        setData((prevState) => { return [] })
+        setData((prevState) => {
+          return [];
+        });
         form1.resetFields();
         setIstablevisible(false);
         message.warning("Please select Different Stores");
@@ -255,8 +259,9 @@ const CreateIndent = () => {
         `${urlAutocompleteProduct}?Product=${searchText}`
       );
       const apiData = response.data.data;
-      const filteredApiData = apiData.filter(apiItem =>
-        !data.some(option => option.ProductId === apiItem.ProductId)
+      const filteredApiData = apiData.filter(
+        (apiItem) =>
+          !data.some((option) => option.ProductId === apiItem.ProductId)
       );
       const newOptions = filteredApiData.map((item) => ({
         value: item.LongName,
@@ -294,11 +299,14 @@ const CreateIndent = () => {
   };
 
   const validateEqualValue = (record, value) => {
-    debugger
+    debugger;
     if (value <= record.IssuingStoreStock) {
       const newdata = data.map((item) => {
         if (item.ProductId === record.ProductId) {
-          const updated = { ...item, RequestingQty: value == null ? undefined : value };
+          const updated = {
+            ...item,
+            RequestingQty: value == null ? undefined : value,
+          };
           return updated;
         }
         return item;
@@ -314,7 +322,7 @@ const CreateIndent = () => {
       title: "Product",
       dataIndex: "ProductName",
       fixed: "left",
-      key: 'ProductName',
+      key: "ProductName",
       width: 250,
       render: (text, record, index) => (
         <>
@@ -361,7 +369,7 @@ const CreateIndent = () => {
     {
       title: "UOM",
       dataIndex: "UomId",
-      key: 'UomId',
+      key: "UomId",
       width: 100,
       render: (text, record, index) => (
         <>
@@ -391,7 +399,7 @@ const CreateIndent = () => {
     {
       title: "Requesting Qty",
       dataIndex: "RequestingQty",
-      key: 'RequestingQty',
+      key: "RequestingQty",
       width: 100,
       render: (text, record) => (
         <Form.Item
@@ -414,7 +422,7 @@ const CreateIndent = () => {
     {
       title: "Requesting Store Stock",
       dataIndex: "RequestingStoreStock",
-      key: 'RequestingStoreStock',
+      key: "RequestingStoreStock",
       width: 100,
       render: (text, record) => (
         <Form.Item
@@ -433,7 +441,7 @@ const CreateIndent = () => {
     {
       title: "Issuing Store Stock",
       dataIndex: "IssuingStoreStock",
-      key: 'IssuingStoreStock',
+      key: "IssuingStoreStock",
       width: 100,
       render: (text, record) => (
         <Form.Item
@@ -444,15 +452,11 @@ const CreateIndent = () => {
               required: true,
               type: "number",
               min: 1,
-              message: 'value must greater than 0!'
-            }
+              message: "value must greater than 0!",
+            },
           ]}
         >
-          <InputNumber
-            min={0}
-            disabled
-            style={{ width: "100%" }}
-          />
+          <InputNumber min={0} disabled style={{ width: "100%" }} />
         </Form.Item>
       ),
     },
@@ -460,7 +464,7 @@ const CreateIndent = () => {
       title: "Fav",
       dataIndex: "Favourite",
       width: 50,
-      key: 'Favourite',
+      key: "Favourite",
       render: (text, record) => (
         <Form.Item
           initialValue={record.Favourite}
@@ -474,7 +478,6 @@ const CreateIndent = () => {
     },
     {
       title: (
-
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -482,7 +485,7 @@ const CreateIndent = () => {
         ></Button>
       ),
       dataIndex: "add",
-      key: 'add',
+      key: "add",
       width: 50,
       render: (text, record) => (
         <Popconfirm
@@ -566,8 +569,8 @@ const CreateIndent = () => {
   // };
 
   const handleOnFinish = async (values) => {
-    setLoading(true)
-    const newdata = data.filter(item => item.ProductId)
+    setLoading(true);
+    const newdata = data.filter((item) => item.ProductId);
     const products = newdata
       .filter((item, index) => index <= newdata.length && item !== undefined)
       .map((item) => ({
@@ -582,9 +585,12 @@ const CreateIndent = () => {
         ActiveFlag: item.ActiveFlag,
       }));
 
-    if (products.length === 0 || !products.some(product => product.ActiveFlag)) {
+    if (
+      products.length === 0 ||
+      !products.some((product) => product.ActiveFlag)
+    ) {
       message.warning("Please Add Products");
-      setLoading(false)
+      setLoading(false);
       return false;
     }
     const activeProducts = products.filter((product) => product.ActiveFlag);
@@ -621,10 +627,11 @@ const CreateIndent = () => {
       }
     } catch (error) {
       console.error("Error submitting form: ", error);
-      message.error("An error occurred while submitting the form. Please try again.");
+      message.error(
+        "An error occurred while submitting the form. Please try again."
+      );
     }
   };
-
 
   const SubmitCheck = (event) => {
     setIndentStatus(event.target.checked);
@@ -651,9 +658,11 @@ const CreateIndent = () => {
             layout="vertical"
             onFinish={handleOnFinish}
             variant="outlined"
-            style={{
-              //   maxWidth: 1500,
-            }}
+            style={
+              {
+                //   maxWidth: 1500,
+              }
+            }
             name="trigger"
             form={form1}
             initialValues={{
@@ -709,7 +718,7 @@ const CreateIndent = () => {
                     onChange={handleSelect}
                     disabled={!!form1.getFieldValue("IndentId")}
                   >
-                    {DropDown.StoreDetails.map((option) => (
+                    {DropDown.RequestingStoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
                         value={option.StoreId}
@@ -738,7 +747,7 @@ const CreateIndent = () => {
                     onChange={handleSelect}
                     disabled={!!form1.getFieldValue("IndentId")}
                   >
-                    {DropDown.StoreDetails.map((option) => (
+                    {DropDown.IssueingStoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
                         value={option.StoreId}

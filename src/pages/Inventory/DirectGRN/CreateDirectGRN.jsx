@@ -27,7 +27,7 @@ import {
   Card,
   AutoComplete,
   Spin,
-  DatePicker
+  DatePicker,
 } from "antd";
 import Input from "antd/es/input";
 import Form from "antd/es/form";
@@ -66,60 +66,60 @@ const CreateDirectGRN = () => {
   const location = useLocation();
   const grnHeaderId = location.state.GRNHeaderId;
   const [batchRecord, setBatchRecord] = useState([]);
-  const [poAmount, setPoAmount] = useState()
-  const [gstTax, setGSTTax] = useState()
-  const [totaoPoAmount, setTotalPoAmount] = useState()
-  const [productId, setProductId] = useState()
-  const [alternateUoms, setAlternateUoms] = useState([])
+  const [poAmount, setPoAmount] = useState();
+  const [gstTax, setGSTTax] = useState();
+  const [totaoPoAmount, setTotalPoAmount] = useState();
+  const [productId, setProductId] = useState();
+  const [alternateUoms, setAlternateUoms] = useState([]);
 
   const initialDataSource =
     grnHeaderId === 0
       ? [
-        {
-          key: uuidv4(),
-          ProductName: "",
-          UomId: "",
-          GrnLineId: 0,
-          ReceivedQty: 0,
-          BonusQuantity: 0,
-          PoRate: 0,
-          DiscountRate: 0,
-          DiscountAmount: 0,
-          Batch: "",
-          LineAmount: 0,
-          TaxAmount1: 0,
-          TotalAmount: 0,
-          Replaceable: true,
-          ActiveFlag: true
-        },
-      ]
+          {
+            key: uuidv4(),
+            ProductName: "",
+            UomId: "",
+            GrnLineId: 0,
+            ReceivedQty: 0,
+            BonusQuantity: 0,
+            PoRate: 0,
+            DiscountRate: 0,
+            DiscountAmount: 0,
+            Batch: "",
+            LineAmount: 0,
+            TaxAmount1: 0,
+            TotalAmount: 0,
+            Replaceable: true,
+            ActiveFlag: true,
+          },
+        ]
       : [];
 
   const initialModelDataSource =
     grnHeaderId === 0
       ? [
-        {
-          key: uuidv4(),
-          BarCode: "",
-          BatchNo: "",
-          BatchQty: 0,
-          UomId: null,
-          BatchBonusQty: 0,
-          MFGDateString: "",
-          EXPDateString: "",
-          rate: 0,
-          BatchMrp: 0,
-          DiscountRate: 0,
-          TaxType1: 0,
-          TaxType2: 0,
-          TaxAmount1: 0,
-          TaxAmount2: 0,
-          StockLocator: "",
-          ProductId: '',
-          GrnBatchId: 0,
-          ActiveFlag: true,
-        },
-      ]
+          {
+            key: uuidv4(),
+            BarCode: "",
+            BatchNo: "",
+            BatchQty: 0,
+            UomId: null,
+            BatchBonusQty: 0,
+            MFGDateString: "",
+            EXPDateString: "",
+            rate: 0,
+            BatchMrp: 0,
+            DiscountRate: 0,
+            TaxType1: 0,
+            TaxType2: 0,
+            TaxAmount1: 0,
+            TaxAmount2: 0,
+            StockLocator: "",
+            ProductId: "",
+            GrnBatchId: 0,
+            ActiveFlag: true,
+          },
+        ]
       : [];
 
   const [form1] = Form.useForm();
@@ -139,10 +139,12 @@ const CreateDirectGRN = () => {
   const [taxTemp, setTaxTemp] = useState();
 
   useEffect(() => {
-    customAxios.get(urlCreatePurchaseOrder).then((response) => {
-      const apiData = response.data.data;
-      setDropDown(apiData);
-    });
+    customAxios
+      .get(urlCreatePurchaseOrder, { params: { type: "Direct GRN" } })
+      .then((response) => {
+        const apiData = response.data.data;
+        setDropDown(apiData);
+      });
     setDropDownLoading(false);
   }, []);
 
@@ -170,8 +172,12 @@ const CreateDirectGRN = () => {
               ...item,
               key,
               Replaceable: item.Replaceable === "Y" ? true : false,
-              UOM: response.data.data.UOM.filter(i =>
-                item.AlternateUoms.some(j => j.EquivalentUOM === i.UomId || j.AlternateUom === i.UomId) || item.UomId === i.UomId
+              UOM: response.data.data.UOM.filter(
+                (i) =>
+                  item.AlternateUoms.some(
+                    (j) =>
+                      j.EquivalentUOM === i.UomId || j.AlternateUom === i.UomId
+                  ) || item.UomId === i.UomId
               ),
             };
           });
@@ -183,14 +189,14 @@ const CreateDirectGRN = () => {
           //     Replaceable: item.Replaceable === "Y" ? true : false,
           //     UOM: response.data.data.UOM.filter(i =>
           //       item.AlternateUoms.some(j => j.EquivalentUOM === i.UomId || j.AlternateUom === i.UomId)
-          //     )              
+          //     )
           //   }}
           // );
           setData(products);
           const formdata = editeddata.newGRNAgainstPOModel;
-          setPoAmount(formdata.TotalAmount)
-          setTotalPoAmount(formdata.TotalPoAmount)
-          setGSTTax(formdata.TaxAmount1)
+          setPoAmount(formdata.TotalAmount);
+          setTotalPoAmount(formdata.TotalPoAmount);
+          setGSTTax(formdata.TaxAmount1);
           form1.setFieldsValue({
             SupplierId: formdata.SupplierId,
             StoreId: formdata.StoreId,
@@ -223,7 +229,7 @@ const CreateDirectGRN = () => {
           const batch = editeddata.BatchDetails.map((item, index) => ({
             ...item,
             key: uuidv4(),
-            temp: item.PoStatus == 'Tax(Inclusive)' ? 1 : 0
+            temp: item.PoStatus == "Tax(Inclusive)" ? 1 : 0,
           }));
           setDataModel(batch);
           // setCounterModel(editeddata.BatchDetails.length + 1);
@@ -247,26 +253,29 @@ const CreateDirectGRN = () => {
         item.LineAmount !== null &&
         item.LineAmount !== undefined
       ) {
-        totalAmount += taxTemp == 0 ? item.LineAmount + item.TaxAmount1 : item.TotalAmount;
+        totalAmount +=
+          taxTemp == 0 ? item.LineAmount + item.TaxAmount1 : item.TotalAmount;
         taxAmount += item.TaxAmount1;
-        amount += item.LineAmount
+        amount += item.LineAmount;
       }
     });
-    return totalAmount = {
+    return (totalAmount = {
       amount: amount,
       taxAmount: taxAmount,
       totalAmount: totalAmount,
-    };
+    });
   }
 
   const handleInputChange = (e, column, index, record) => {
     let newData;
-    if (["ReceivedQty", "PoRate", "DiscountRate", 'UomId'].includes(column)) {
+    if (["ReceivedQty", "PoRate", "DiscountRate", "UomId"].includes(column)) {
       newData = data.map((item) => {
         if (item.key === record.key) {
           const updatedItem = { ...item, [column]: e.target.value };
-          const altUomData = alternateUoms.find(i => i.key == record.key)
-          const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == updatedItem.UomId) : undefined
+          const altUomData = alternateUoms.find((i) => i.key == record.key);
+          const altUom = altUomData
+            ? altUomData.data.find((i1) => i1.AlternateUom == updatedItem.UomId)
+            : undefined;
           const recievingQty =
             column === "ReceivedQty" ? e.target.value : item.ReceivedQty;
           const poRate = column === "PoRate" ? e.target.value : item.PoRate;
@@ -278,7 +287,9 @@ const CreateDirectGRN = () => {
           if (poRate != null && recievingQty != null) {
             const discount = discountRate != null ? discountRate : 0;
             discountAmount = (poRate * recievingQty * discount) / 100;
-            amount = poRate * recievingQty * (altUom ? altUom.EquivalentUOMUnits : 1) - discountAmount;
+            amount =
+              poRate * recievingQty * (altUom ? altUom.EquivalentUOMUnits : 1) -
+              discountAmount;
           }
           updatedItem.TaxAmount1 = column === "UomId" ? 0 : item.TaxAmount1;
           updatedItem.DiscountAmount = discountAmount;
@@ -305,16 +316,16 @@ const CreateDirectGRN = () => {
       });
     }
 
-    if (["ReceivedQty", "PoRate", "DiscountRate", 'UomId'].includes(column)) {
+    if (["ReceivedQty", "PoRate", "DiscountRate", "UomId"].includes(column)) {
       const totalAmount = calculateTotalAmount(newData);
       form1.setFieldsValue({
         TotalAmount: totalAmount.amount,
         GSTTax: totalAmount.taxAmount,
         TotalPoAmount: totalAmount.totalAmount,
       });
-      setPoAmount(totalAmount.amount)
-      setTotalPoAmount(totalAmount.totalAmount)
-      setGSTTax(totalAmount.taxAmount)
+      setPoAmount(totalAmount.amount);
+      setTotalPoAmount(totalAmount.totalAmount);
+      setGSTTax(totalAmount.taxAmount);
     }
     setData(newData);
   };
@@ -334,7 +345,8 @@ const CreateDirectGRN = () => {
     const taxamt1 = valuesArray.reduce(
       (total, item) => (item ? total + (item.TaxAmount1 || 0) : total),
       0
-    ); const taxamt2 = valuesArray.reduce(
+    );
+    const taxamt2 = valuesArray.reduce(
       (total, item) => (item ? total + (item.TaxAmount2 || 0) : total),
       0
     );
@@ -373,25 +385,31 @@ const CreateDirectGRN = () => {
               BatchNo: values[key].BatchNo,
               EXPDateString: values[key].GrnBatchId
                 ? values[key].EXPDateString &&
-                values[key].EXPDateString.format("DD-MM-YYYY")
+                  values[key].EXPDateString.format("DD-MM-YYYY")
                 : batchRecord.Expiry === "Month wise"
-                  ? values[key].EXPDateString &&
+                ? values[key].EXPDateString &&
                   `01-${String(values[key].EXPDateString.$M + 1).padStart(
                     2,
                     "0"
                   )}-${values[key].EXPDateString.$y}`
-                  : batchRecord.Expiry === "Date wise"
-                    ? values[key].EXPDateString &&
-                    values[key].EXPDateString.format("DD-MM-YYYY")
-                    : null,
+                : batchRecord.Expiry === "Date wise"
+                ? values[key].EXPDateString &&
+                  values[key].EXPDateString.format("DD-MM-YYYY")
+                : null,
               rate: values[key].rate,
               MRP: values[key].MRP,
-              DiscountRate: values[key].DiscountRate == "" ? 0 : values[key].DiscountRate,
+              DiscountRate:
+                values[key].DiscountRate == "" ? 0 : values[key].DiscountRate,
               DiscountAmount: values[key].DiscountAmount,
               StockLocator: 0,
-              PoLineId: values[key].PoLineId === undefined ? 0 : values[key].PoLineId,
-              TaxType1: values[key].TaxType1 ? values[key].TaxType1 : item.TaxType1,
-              TaxType2: values[key].TaxType2 ? values[key].TaxType2 : item.TaxType2
+              PoLineId:
+                values[key].PoLineId === undefined ? 0 : values[key].PoLineId,
+              TaxType1: values[key].TaxType1
+                ? values[key].TaxType1
+                : item.TaxType1,
+              TaxType2: values[key].TaxType2
+                ? values[key].TaxType2
+                : item.TaxType2,
             };
           }
           return item;
@@ -399,15 +417,26 @@ const CreateDirectGRN = () => {
         return item;
       });
       setDataModel(updatedBatch);
-      batchRecord.LineAmount = (batchRecord.LineAmount || 0)
-      batchRecord.TotalAmount = (batchRecord.TotalAmount || 0)
-      batchRecord.DiscountAmount = (batchRecord.DiscountAmount || 0)
-      const altUomData = alternateUoms.find(i => i.key == batchRecord.key)
-      const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == batchRecord.UomId) : undefined
+      batchRecord.LineAmount = batchRecord.LineAmount || 0;
+      batchRecord.TotalAmount = batchRecord.TotalAmount || 0;
+      batchRecord.DiscountAmount = batchRecord.DiscountAmount || 0;
+      const altUomData = alternateUoms.find((i) => i.key == batchRecord.key);
+      const altUom = altUomData
+        ? altUomData.data.find((i1) => i1.AlternateUom == batchRecord.UomId)
+        : undefined;
       batchRecord.LineAmount = updatedBatch.reduce((total, item) => {
         if (item.ProductId == batchRecord.ProductId && item.ActiveFlag) {
-          const taxAdjustment = item.temp === 0 ? 0 : (item.TaxAmount1 || 0) + (item.TaxAmount2 || 0);
-          return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.rate - taxAdjustment;
+          const taxAdjustment =
+            item.temp === 0
+              ? 0
+              : (item.TaxAmount1 || 0) + (item.TaxAmount2 || 0);
+          return (
+            total +
+            item.Quantity *
+              (altUom ? altUom.EquivalentUOMUnits : 1) *
+              item.rate -
+            taxAdjustment
+          );
         }
 
         return total;
@@ -416,9 +445,20 @@ const CreateDirectGRN = () => {
       batchRecord.TotalAmount = updatedBatch.reduce((total, item) => {
         if (item.ProductId == batchRecord.ProductId && item.ActiveFlag) {
           if (item.temp === 0) {
-            return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.rate + ((item.TaxAmount1 || 0) + (item.TaxAmount2 || 0));
+            return (
+              total +
+              item.Quantity *
+                (altUom ? altUom.EquivalentUOMUnits : 1) *
+                item.rate +
+              ((item.TaxAmount1 || 0) + (item.TaxAmount2 || 0))
+            );
           } else {
-            return total + (item.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)) * item.rate;
+            return (
+              total +
+              item.Quantity *
+                (altUom ? altUom.EquivalentUOMUnits : 1) *
+                item.rate
+            );
           }
         }
 
@@ -432,28 +472,30 @@ const CreateDirectGRN = () => {
             ...item,
             TaxAmount1: taxamt1 + taxamt2,
             LineAmount: batchRecord.LineAmount - batchRecord.DiscountAmount,
-            TotalAmount: batchRecord.TotalAmount - batchRecord.DiscountAmount
-          }
+            TotalAmount: batchRecord.TotalAmount - batchRecord.DiscountAmount,
+          };
         }
-        return item
-      })
-      form1.setFieldsValue({ [batchRecord.key]: { TaxAmount1: taxamt1 + taxamt2 } });
+        return item;
+      });
+      form1.setFieldsValue({
+        [batchRecord.key]: { TaxAmount1: taxamt1 + taxamt2 },
+      });
       form1.setFieldsValue({
         [batchRecord.key]: {
           LineAmount: batchRecord.LineAmount - batchRecord.DiscountAmount,
-          TotalAmount: batchRecord.TotalAmount - batchRecord.DiscountAmount
-        }
+          TotalAmount: batchRecord.TotalAmount - batchRecord.DiscountAmount,
+        },
       });
-      setData(newData)
+      setData(newData);
       const totalAmount = calculateTotalAmount(newData);
       form1.setFieldsValue({
         TotalAmount: totalAmount.amount,
         GSTTax: totalAmount.taxAmount,
         TotalPoAmount: totalAmount.totalAmount,
       });
-      setPoAmount(totalAmount.amount)
-      setTotalPoAmount(totalAmount.totalAmount)
-      setGSTTax(totalAmount.taxAmount)
+      setPoAmount(totalAmount.amount);
+      setTotalPoAmount(totalAmount.totalAmount);
+      setGSTTax(totalAmount.taxAmount);
       setModalVisible(false);
     } else {
       message.warning(
@@ -499,7 +541,7 @@ const CreateDirectGRN = () => {
     ]);
     setLoading(true);
     setBatchRecord(record);
-    setProductId(record.ProductId)
+    setProductId(record.ProductId);
     setModalVisible(true);
     setLoading(false);
   };
@@ -571,7 +613,7 @@ const CreateDirectGRN = () => {
     setLoading(true);
     const newdata = data.filter((item) => item.ProductId);
 
-    const productform = form1.getFieldsValue()
+    const productform = form1.getFieldsValue();
 
     const products = newdata
       .filter((item) => item !== undefined)
@@ -585,7 +627,8 @@ const CreateDirectGRN = () => {
         DiscountAmount: item.DiscountAmount ?? 0,
         TaxAmount1: item.TaxAmount1 || 0,
         TotalAmount: productform[item.key].TotalAmount,
-        Replaceable: item.Replaceable === true || item.Replaceable == "Y" ? "Y" : "N",
+        Replaceable:
+          item.Replaceable === true || item.Replaceable == "Y" ? "Y" : "N",
         LineAmount: item.LineAmount,
         PoLineId: item.PoLineId || 0,
         GrnLineId: item.GrnLineId || 0,
@@ -659,10 +702,10 @@ const CreateDirectGRN = () => {
         grnHeaderId === 0
           ? activeProducts
           : products.filter(
-            (product) =>
-              product.GrnLineId > 0 ||
-              (product.GrnLineId === 0 && product.ActiveFlag === true)
-          ),
+              (product) =>
+                product.GrnLineId > 0 ||
+                (product.GrnLineId === 0 && product.ActiveFlag === true)
+            ),
       BatchDetails: grnHeaderId === 0 ? filteredBatchwithactive : filteredBatch,
     };
 
@@ -692,18 +735,19 @@ const CreateDirectGRN = () => {
       .get(`${urlGetProductDetailsById}?ProductId=${option.key}`)
       .then((response) => {
         const apiData = response.data.data;
-        let uoms = []
+        let uoms = [];
         if (apiData.AlternateUoms.length > 0) {
           setAlternateUoms((prev) => [
             ...prev,
             { key: record.key, data: apiData.AlternateUoms },
           ]);
-          uoms = DropDown.UOM.filter(
-            i =>
-              apiData.AlternateUoms.find(i1 => i1.AlternateUom === i.UomId || i.UomId === option.UomId)
-          )
+          uoms = DropDown.UOM.filter((i) =>
+            apiData.AlternateUoms.find(
+              (i1) => i1.AlternateUom === i.UomId || i.UomId === option.UomId
+            )
+          );
         } else {
-          uoms = DropDown.UOM.filter(i => i.UomId === option.UomId)
+          uoms = DropDown.UOM.filter((i) => i.UomId === option.UomId);
         }
         form1.setFieldsValue({ [record.key]: { ProductId: option.key } });
         const newData = data.map((item) => {
@@ -716,7 +760,7 @@ const CreateDirectGRN = () => {
               ProductId: option.key,
               Uom: option.Uom,
               Expiry: option.Expiry,
-              UOM: uoms
+              UOM: uoms,
             };
             return updatedItem;
           }
@@ -728,7 +772,7 @@ const CreateDirectGRN = () => {
   };
 
   const handleAdd = async () => {
-    debugger
+    debugger;
     setProductOptions([]);
     // const allFields = form1.getFieldsValue();
     // const excludeFields = ["InvoiceAmount", "InvoiceNumber"];
@@ -767,7 +811,7 @@ const CreateDirectGRN = () => {
         TaxAmount1: 0,
         TotalAmount: 0,
         Replaceable: true,
-        ActiveFlag: true
+        ActiveFlag: true,
       },
     ]);
   };
@@ -788,7 +832,7 @@ const CreateDirectGRN = () => {
         key: item.ProductId,
         UomId: item.UOMPrimaryUOM,
         Expiry: item.Expiry,
-        Uom: item.UOMPrimaryUOMname
+        Uom: item.UOMPrimaryUOMname,
       }));
       setProductOptions(newOptions);
     }
@@ -797,8 +841,8 @@ const CreateDirectGRN = () => {
   function handleUomChange(option, column, index, record) {
     form1.setFieldsValue({ [record.key]: { UomId: option.value } });
     form1.setFieldsValue({ [record.key]: { TaxAmount1: 0 } });
-    form1.setFieldsValue({ [record.key]: { PoRate: '' } });
-    form1.setFieldsValue({ [record.key]: { ReceivedQty: '' } });
+    form1.setFieldsValue({ [record.key]: { PoRate: "" } });
+    form1.setFieldsValue({ [record.key]: { ReceivedQty: "" } });
     form1.setFieldsValue({ [record.key]: { LineAmount: 0 } });
     form1.setFieldsValue({ [record.key]: { TotalAmount: 0 } });
     const newData = data.map((item) => {
@@ -812,7 +856,7 @@ const CreateDirectGRN = () => {
           PoRate: 0,
           ReceivedQty: 0,
           LineAmount: 0,
-          TotalAmount: 0
+          TotalAmount: 0,
         };
         return updatedItem;
       }
@@ -826,18 +870,18 @@ const CreateDirectGRN = () => {
       GSTTax: totalAmount.taxAmount,
       TotalPoAmount: totalAmount.totalAmount,
     });
-    setPoAmount(totalAmount.amount)
-    setTotalPoAmount(totalAmount.totalAmount)
-    setGSTTax(totalAmount.taxAmount)
+    setPoAmount(totalAmount.amount);
+    setTotalPoAmount(totalAmount.totalAmount);
+    setGSTTax(totalAmount.taxAmount);
 
     const newdataModel = dataModel.map((i) => {
       if (i.ProductId === record.ProductId) {
         return { ...i, ActiveFlag: false };
       }
-      return i
-    })
-    setDataModel(newdataModel)
-  };
+      return i;
+    });
+    setDataModel(newdataModel);
+  }
 
   const ReplaceableChanged = (record, checked) => {
     const newData = data.map((item) => {
@@ -855,7 +899,7 @@ const CreateDirectGRN = () => {
       title: "Product",
       dataIndex: "ProductName",
       fixed: "left",
-      key: 'ProductName',
+      key: "ProductName",
       width: isMobile ? 200 : 300,
       render: (text, record, index) => (
         <>
@@ -912,10 +956,11 @@ const CreateDirectGRN = () => {
     {
       title: "UOM",
       dataIndex: "UomId",
-      key: 'UomId',
+      key: "UomId",
       width: 150,
       render: (text, record, index) => (
-        <Form.Item preserve
+        <Form.Item
+          preserve
           name={[record.key, "UomId"]}
           rules={[{ required: true, message: "Required" }]}
           initialValue={
@@ -925,7 +970,7 @@ const CreateDirectGRN = () => {
           <Select
             defaultValue={record.UomId}
             onChange={(value, option) => {
-              handleUomChange(option, "UomId", index, record)
+              handleUomChange(option, "UomId", index, record);
             }}
           >
             {(record.UOM || []).map((option) => (
@@ -934,14 +979,14 @@ const CreateDirectGRN = () => {
               </Option>
             ))}
           </Select>
-        </Form.Item >
+        </Form.Item>
       ),
     },
     {
       title: "Recieved Qty",
       dataIndex: "ReceivedQty",
       width: 110,
-      key: 'ReceivedQty',
+      key: "ReceivedQty",
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "ReceivedQty"]}
@@ -972,7 +1017,7 @@ const CreateDirectGRN = () => {
       title: "Bonus Qty",
       dataIndex: "BonusQuantity",
       width: 100,
-      key: 'BonusQuantity',
+      key: "BonusQuantity",
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "BonusQuantity"]}
@@ -1004,7 +1049,7 @@ const CreateDirectGRN = () => {
       title: "PO Rate",
       dataIndex: "PoRate",
       width: 100,
-      key: 'PoRate',
+      key: "PoRate",
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "PoRate"]}
@@ -1029,7 +1074,7 @@ const CreateDirectGRN = () => {
       title: "Discount%",
       dataIndex: "DiscountRate",
       width: 100,
-      key: 'DiscountRate',
+      key: "DiscountRate",
       render: (text, record, index) => (
         <Form.Item name={[record.key, "DiscountRate"]} initialValue={text}>
           <InputNumber
@@ -1052,10 +1097,15 @@ const CreateDirectGRN = () => {
       title: "Discount Amount",
       dataIndex: "DiscountAmount",
       width: 120,
-      key: 'DiscountAmount',
+      key: "DiscountAmount",
       render: (text, record) => (
         <Form.Item name={[record.key, "DiscountAmount"]} initialValue={text}>
-          <InputNumber disabled style={{ width: "100%" }} defaultValue={text} precision={4} />
+          <InputNumber
+            disabled
+            style={{ width: "100%" }}
+            defaultValue={text}
+            precision={4}
+          />
         </Form.Item>
       ),
     },
@@ -1063,7 +1113,7 @@ const CreateDirectGRN = () => {
       title: "Batch",
       dataIndex: "Batch",
       width: 100,
-      key: 'Batch',
+      key: "Batch",
       render: (value, record) => (
         <Button
           style={{ marginBottom: "24px" }}
@@ -1078,7 +1128,7 @@ const CreateDirectGRN = () => {
       title: "Amount",
       dataIndex: "LineAmount",
       width: 100,
-      key: 'LineAmount',
+      key: "LineAmount",
       render: (text, record) => (
         <Form.Item
           name={[record.key, "LineAmount"]}
@@ -1098,7 +1148,7 @@ const CreateDirectGRN = () => {
       title: "Tax Amount",
       dataIndex: "TaxAmount1",
       width: 100,
-      key: 'TaxAmount1',
+      key: "TaxAmount1",
       render: (text, record) => (
         <Form.Item name={[record.key, "TaxAmount1"]} initialValue={text}>
           <InputNumber
@@ -1115,7 +1165,7 @@ const CreateDirectGRN = () => {
       title: "Total Amount",
       dataIndex: "TotalAmount",
       width: 100,
-      key: 'TotalAmount',
+      key: "TotalAmount",
       render: (text, record) => (
         <Form.Item
           name={[record.key, "TotalAmount"]}
@@ -1134,7 +1184,7 @@ const CreateDirectGRN = () => {
       title: "Replaceable",
       dataIndex: "Replaceable",
       width: 100,
-      key: 'Replaceable',
+      key: "Replaceable",
       render: (text, record) => (
         <Form.Item
           name={[record.key, "Replaceable"]}
@@ -1178,55 +1228,70 @@ const CreateDirectGRN = () => {
   };
 
   const calculateTax = (amount, taxDetails, record) => {
-    let taxAmount = 0
-    let temp = 0
-    const mrp = (record.MRP || 0)
-    const altUomData = alternateUoms.find(i => i.key == batchRecord.key)
-    const altUom = altUomData ? altUomData.data.find((i1) => i1.AlternateUom == batchRecord.UomId) : undefined
-    let poQuantity = record.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1)
-    amount = amount * (altUom ? altUom.EquivalentUOMUnits : 1)
+    let taxAmount = 0;
+    let temp = 0;
+    const mrp = record.MRP || 0;
+    const altUomData = alternateUoms.find((i) => i.key == batchRecord.key);
+    const altUom = altUomData
+      ? altUomData.data.find((i1) => i1.AlternateUom == batchRecord.UomId)
+      : undefined;
+    let poQuantity = record.Quantity * (altUom ? altUom.EquivalentUOMUnits : 1);
+    amount = amount * (altUom ? altUom.EquivalentUOMUnits : 1);
     if (taxDetails.IncludeBonusQuantity) {
       poQuantity = (poQuantity || 0) + (record.BatchBonusQty || 0);
-      amount = poQuantity * (batchRecord.PoRate || 0) - (batchRecord.DiscountAmount || 0);
+      amount =
+        poQuantity * (batchRecord.PoRate || 0) -
+        (batchRecord.DiscountAmount || 0);
     }
     if (true) {
       switch (taxDetails.ChargeType) {
         case "Percentage":
-          if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
+          if (taxDetails.AdditionalChargeType == "Tax(Exclusive)") {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
-              taxAmount = (amount + batchRecord.DiscountAmount) * taxDetails.ChargeValue / 100;
+              taxAmount =
+                ((amount + batchRecord.DiscountAmount) *
+                  taxDetails.ChargeValue) /
+                100;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
-              taxAmount = amount * taxDetails.ChargeValue / 100;
+              taxAmount = (amount * taxDetails.ChargeValue) / 100;
             } else {
-              taxAmount = (mrp * poQuantity) * taxDetails.ChargeValue / 100;
+              taxAmount = (mrp * poQuantity * taxDetails.ChargeValue) / 100;
             }
           } else {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
               // taxAmount = (parseInt(amount) + parseInt(record.DiscountAmount)) - ((parseInt(amount) + parseInt(record.DiscountAmount)) / (1 + taxDetails.ChargeValue / 100));
-              taxAmount = (amount + batchRecord.DiscountAmount) - ((amount + batchRecord.DiscountAmount) / (1 + taxDetails.ChargeValue / 100));
+              taxAmount =
+                amount +
+                batchRecord.DiscountAmount -
+                (amount + batchRecord.DiscountAmount) /
+                  (1 + taxDetails.ChargeValue / 100);
               temp = 1;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
-              taxAmount = amount - (amount / (1 + taxDetails.ChargeValue / 100));
+              taxAmount = amount - amount / (1 + taxDetails.ChargeValue / 100);
               temp = 1;
             } else {
-              taxAmount = (mrp * poQuantity) - ((mrp * poQuantity) / (1 + taxDetails.ChargeValue / 100));
+              taxAmount =
+                mrp * poQuantity -
+                (mrp * poQuantity) / (1 + taxDetails.ChargeValue / 100);
               temp = 1;
             }
           }
           break;
 
         case "Amount":
-          if (taxDetails.AdditionalChargeType == 'Tax(Exclusive)') {
+          if (taxDetails.AdditionalChargeType == "Tax(Exclusive)") {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
-              taxAmount = (amount + batchRecord.DiscountAmount) + taxDetails.ChargeValue;
+              taxAmount =
+                amount + batchRecord.DiscountAmount + taxDetails.ChargeValue;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
               taxAmount = amount + taxDetails.ChargeValue;
             } else {
-              taxAmount = (mrp * poQuantity) + taxDetails.ChargeValue;
+              taxAmount = mrp * poQuantity + taxDetails.ChargeValue;
             }
           } else {
             if (taxDetails.AdditionalChargeIndicator == "Gross") {
-              taxAmount = (amount + batchRecord.DiscountAmount) - taxDetails.ChargeValue;
+              taxAmount =
+                amount + batchRecord.DiscountAmount - taxDetails.ChargeValue;
               temp = 1;
             } else if (taxDetails.AdditionalChargeIndicator == "Net") {
               taxAmount = amount - taxDetails.ChargeValue;
@@ -1242,10 +1307,10 @@ const CreateDirectGRN = () => {
           break;
       }
     }
-    return taxAmount = {
+    return (taxAmount = {
       taxAmount: taxAmount,
-      temp: temp
-    };
+      temp: temp,
+    });
   };
 
   const handleBatchChange = async (e, column, index, record) => {
@@ -1259,7 +1324,11 @@ const CreateDirectGRN = () => {
       return item;
     });
 
-    if (["Quantity", "BatchBonusQty", 'MRP', "TaxType1", "TaxType2"].includes(column)) {
+    if (
+      ["Quantity", "BatchBonusQty", "MRP", "TaxType1", "TaxType2"].includes(
+        column
+      )
+    ) {
       const currentRecord = updatedData.find((item) => item.key === record.key);
 
       const poQuantity = parseFloat(currentRecord.Quantity || 0);
@@ -1271,31 +1340,35 @@ const CreateDirectGRN = () => {
       const taxType2 = currentRecord.TaxType2;
 
       let taxAmount = 0;
-      let temp = 0
-      if (taxType1 != '' && taxType1) {
+      let temp = 0;
+      if (taxType1 != "" && taxType1) {
         try {
-          const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${taxType1}`);
+          const response = await customAxios.get(
+            `${urlGetTaxDetails}?AdditionalChargeId=${taxType1}`
+          );
           const taxDetails = response.data.data[0];
           // currentRecord.temp = taxDetails.AdditionalChargeType == 'Tax(Exclusive)' ? 0 : 1
           taxAmount = calculateTax(amount, taxDetails, currentRecord);
 
           currentRecord.TaxAmount1 = taxAmount.taxAmount;
-          currentRecord.temp = taxAmount.temp
+          currentRecord.temp = taxAmount.temp;
         } catch (error) {
           console.error("Error fetching tax details:", error);
         }
       } else {
         currentRecord.TaxAmount1 = 0;
       }
-      if (taxType2 != '' && taxType2) {
+      if (taxType2 != "" && taxType2) {
         try {
-          const response = await customAxios.get(`${urlGetTaxDetails}?AdditionalChargeId=${taxType2}`);
+          const response = await customAxios.get(
+            `${urlGetTaxDetails}?AdditionalChargeId=${taxType2}`
+          );
           const taxDetails = response.data.data[0];
           // currentRecord.temp = taxDetails.AdditionalChargeType == 'Tax(Exclusive)' ? 0 : 1
           taxAmount = calculateTax(amount, taxDetails, currentRecord);
 
           currentRecord.TaxAmount2 = taxAmount.taxAmount;
-          currentRecord.temp = taxAmount.temp
+          currentRecord.temp = taxAmount.temp;
         } catch (error) {
           console.error("Error fetching tax details:", error);
         }
@@ -1321,7 +1394,7 @@ const CreateDirectGRN = () => {
     {
       title: "Bar Code",
       dataIndex: "BarCode",
-      key: 'BarCode',
+      key: "BarCode",
       width: 100,
       render: (text, record, index) => (
         <>
@@ -1355,7 +1428,7 @@ const CreateDirectGRN = () => {
     {
       title: "Batch Number",
       dataIndex: "BatchNo",
-      key: 'BatchNo',
+      key: "BatchNo",
       width: 100,
       render: (text, record, index) => {
         return (
@@ -1381,7 +1454,7 @@ const CreateDirectGRN = () => {
     {
       title: "Quantity",
       dataIndex: "Quantity",
-      key: 'Quantity',
+      key: "Quantity",
       width: 100,
       render: (text, record, index) => (
         <Form.Item
@@ -1394,7 +1467,9 @@ const CreateDirectGRN = () => {
             },
           ]}
         >
-          <InputNumber min={0} style={{ width: 80 }}
+          <InputNumber
+            min={0}
+            style={{ width: 80 }}
             onChange={(value) => {
               handleBatchChange(
                 { target: { value } },
@@ -1402,21 +1477,23 @@ const CreateDirectGRN = () => {
                 index,
                 record
               );
-            }} />
+            }}
+          />
         </Form.Item>
       ),
     },
     {
       title: "Bonus Qty",
       dataIndex: "BatchBonusQty",
-      key: 'BatchBonusQty',
+      key: "BatchBonusQty",
       width: 100,
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "BatchBonusQty"]}
           initialValue={record.BatchBonusQty}
         >
-          <InputNumber style={{ width: 80 }}
+          <InputNumber
+            style={{ width: 80 }}
             min={0}
             onChange={(value) => {
               handleBatchChange(
@@ -1433,7 +1510,7 @@ const CreateDirectGRN = () => {
     {
       title: "UOM",
       dataIndex: "UomId",
-      key: 'UomId',
+      key: "UomId",
       width: 100,
       render: (text, record, index) => (
         <Form.Item name={[record.key, "UomId"]}>
@@ -1444,7 +1521,7 @@ const CreateDirectGRN = () => {
     {
       title: "MFG Date",
       dataIndex: "MFGDateString",
-      key: 'MFGDateString',
+      key: "MFGDateString",
       width: 160,
       render: (text, record, index) => (
         <Form.Item
@@ -1455,7 +1532,8 @@ const CreateDirectGRN = () => {
               : null
           }
         >
-          <DatePicker style={{ width: 140 }}
+          <DatePicker
+            style={{ width: 140 }}
             format="DD-MM-YYYY"
             disabled={!!grnHeaderId && record.GrnBatchId}
             disabledDate={(current) => {
@@ -1469,7 +1547,7 @@ const CreateDirectGRN = () => {
     {
       title: "Exp Date",
       dataIndex: "EXPDateString",
-      key: 'EXPDateString',
+      key: "EXPDateString",
       width: 160,
       render: (text, record, index) => (
         <Form.Item
@@ -1488,13 +1566,14 @@ const CreateDirectGRN = () => {
             },
           ]}
         >
-          <DatePicker style={{ width: 140 }}
+          <DatePicker
+            style={{ width: 140 }}
             format={
               batchRecord.Expiry === "Month wise"
                 ? "MMMM YYYY"
                 : batchRecord.Expiry === "Date wise"
-                  ? "DD-MM-YYYY"
-                  : null
+                ? "DD-MM-YYYY"
+                : null
             }
             disabled={
               (!!grnHeaderId && record.GrnBatchId) ||
@@ -1513,21 +1592,26 @@ const CreateDirectGRN = () => {
     {
       title: "Rate",
       dataIndex: "rate",
-      key: 'rate',
+      key: "rate",
       width: 100,
       render: (text, record, index) => (
         <Form.Item
           name={[record.key, "rate"]}
           initialValue={batchRecord.PoRate}
         >
-          <InputNumber min={0} disabled style={{ width: 80 }} defaultValue={batchRecord.PoRate} />
+          <InputNumber
+            min={0}
+            disabled
+            style={{ width: 80 }}
+            defaultValue={batchRecord.PoRate}
+          />
         </Form.Item>
       ),
     },
     {
       title: "MRP",
       dataIndex: "MRP",
-      key: 'MRP',
+      key: "MRP",
       width: 100,
       render: (text, record, index) => (
         <Form.Item
@@ -1561,12 +1645,7 @@ const CreateDirectGRN = () => {
             defaultValue={record.MRP}
             disabled={!!grnHeaderId && record.GrnBatchId}
             onChange={(value) => {
-              handleBatchChange(
-                { target: { value } },
-                "MRP",
-                index,
-                record
-              );
+              handleBatchChange({ target: { value } }, "MRP", index, record);
             }}
             style={{ width: 80 }}
           />
@@ -1576,7 +1655,7 @@ const CreateDirectGRN = () => {
     {
       title: "Discount",
       dataIndex: "DiscountRate",
-      key: 'DiscountRate',
+      key: "DiscountRate",
       width: 100,
       render: (text, record, index) => (
         <Form.Item
@@ -1595,7 +1674,7 @@ const CreateDirectGRN = () => {
     {
       title: "Discount Amt",
       dataIndex: "DiscountAmount",
-      key: 'DiscountAmount',
+      key: "DiscountAmount",
       width: 100,
       render: (text, record, index) => (
         <Form.Item
@@ -1614,11 +1693,15 @@ const CreateDirectGRN = () => {
     {
       title: "CGST",
       dataIndex: "TaxType1",
-      key: 'TaxType1',
+      key: "TaxType1",
       width: 100,
       render: (text, record, index) => (
-        <Form.Item name={[record.key, "TaxType1"]} initialValue={text == 0 ? undefined : text}>
-          <Select allowClear
+        <Form.Item
+          name={[record.key, "TaxType1"]}
+          initialValue={text == 0 ? undefined : text}
+        >
+          <Select
+            allowClear
             onChange={(value) => {
               handleBatchChange(
                 { target: { value } },
@@ -1627,7 +1710,7 @@ const CreateDirectGRN = () => {
                 record
               );
             }}
-          // defaultValue={text}
+            // defaultValue={text}
           >
             {DropDown.TaxType.map((option) => (
               <Option key={option.TaxType1} value={option.TaxType1}>
@@ -1635,13 +1718,13 @@ const CreateDirectGRN = () => {
               </Option>
             ))}
           </Select>
-        </Form.Item >
+        </Form.Item>
       ),
     },
     {
       title: "CGST Amount",
       dataIndex: "TaxAmount1",
-      key: 'TaxAmount1',
+      key: "TaxAmount1",
       width: 100,
       render: (text, record, index) => (
         <Form.Item name={[record.key, "TaxAmount1"]} initialValue={text}>
@@ -1652,11 +1735,15 @@ const CreateDirectGRN = () => {
     {
       title: "SGST",
       dataIndex: "TaxType2",
-      key: 'TaxType2',
+      key: "TaxType2",
       width: 100,
       render: (text, record, index) => (
-        <Form.Item name={[record.key, "TaxType2"]} initialValue={text == 0 ? undefined : text}>
-          <Select allowClear
+        <Form.Item
+          name={[record.key, "TaxType2"]}
+          initialValue={text == 0 ? undefined : text}
+        >
+          <Select
+            allowClear
             onChange={(value) => {
               handleBatchChange(
                 { target: { value } },
@@ -1665,7 +1752,7 @@ const CreateDirectGRN = () => {
                 record
               );
             }}
-          // defaultValue={text}
+            // defaultValue={text}
           >
             {DropDown.TaxType.map((option) => (
               <Option key={option.TaxType1} value={option.TaxType1}>
@@ -1673,13 +1760,13 @@ const CreateDirectGRN = () => {
               </Option>
             ))}
           </Select>
-        </Form.Item >
+        </Form.Item>
       ),
     },
     {
       title: "SGST Amount",
       dataIndex: "TaxAmount2",
-      key: 'TaxAmount2',
+      key: "TaxAmount2",
       width: 100,
       render: (text, record, index) => (
         <Form.Item name={[record.key, "TaxAmount2"]} initialValue={text}>
@@ -1690,7 +1777,7 @@ const CreateDirectGRN = () => {
     {
       title: "Stock Locator",
       dataIndex: "StockLocator",
-      key: 'StockLocator',
+      key: "StockLocator",
       width: 100,
       render: (text, record, index) => (
         <Form.Item name={[record.key, "StockLocator"]} initialValue="Manual">
@@ -1702,7 +1789,7 @@ const CreateDirectGRN = () => {
 
   const validateEqualValue = (_, value) => {
     const va = form1.getFieldsValue();
-    let v = parseFloat(va.TotalPoAmount.toFixed(4))
+    let v = parseFloat(va.TotalPoAmount.toFixed(4));
     if (value === v) {
       return Promise.resolve();
     }
@@ -1922,7 +2009,9 @@ const CreateDirectGRN = () => {
                     },
                   ]}
                 >
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
                     disabledDate={(current) => {
                       const today = new Date();
                       today.setHours(0, 0, 0, 0);
@@ -1946,7 +2035,9 @@ const CreateDirectGRN = () => {
                   label="GRN Date"
                   name="GRNDatestring"
                 >
-                  <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY"
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    format="DD-MM-YYYY"
                     disabledDate={(current) => {
                       const today = new Date();
                       today.setHours(0, 0, 0, 0);
@@ -2015,7 +2106,8 @@ const CreateDirectGRN = () => {
           </Col>
         </Row>
         <Divider style={{ margin: "0" }}></Divider>
-        <CustomTable loading={loading}
+        <CustomTable
+          loading={loading}
           dataSource={data.filter((item) => item.ActiveFlag !== false)}
           columns={columns}
           isFilter={false}
@@ -2043,21 +2135,29 @@ const CreateDirectGRN = () => {
                   <span>Amount : </span>
                 </Col>
                 <Col span={12}>
-                  <InputNumber style={{ width: "100%" }} min={0} disabled value={poAmount} precision={4} />
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    min={0}
+                    disabled
+                    value={poAmount}
+                    precision={4}
+                  />
                 </Col>
               </Row>
             </Form.Item>
-            <Form.Item
-              label=""
-              name="GSTTax"
-              style={{ marginRight: "16px" }}
-            >
+            <Form.Item label="" name="GSTTax" style={{ marginRight: "16px" }}>
               <Row gutter={16} style={{ marginTop: "5px" }}>
                 <Col span={12}>
                   <span>GST Tax : </span>
                 </Col>
                 <Col span={12}>
-                  <InputNumber style={{ width: "100%" }} min={0} disabled value={gstTax} precision={4} />
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    min={0}
+                    disabled
+                    value={gstTax}
+                    precision={4}
+                  />
                 </Col>
               </Row>
             </Form.Item>
@@ -2077,7 +2177,13 @@ const CreateDirectGRN = () => {
                   <span>Total PO Amount :</span>
                 </Col>
                 <Col span={12}>
-                  <InputNumber style={{ width: "100%" }} min={0} disabled value={totaoPoAmount} precision={4} />
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    min={0}
+                    disabled
+                    value={totaoPoAmount}
+                    precision={4}
+                  />
                 </Col>
               </Row>
             </Form.Item>
@@ -2127,16 +2233,17 @@ const CreateDirectGRN = () => {
               </Tag>
             </ColWithSixSpan>
           </Row>
-          <CustomTable loading={loading}
+          <CustomTable
+            loading={loading}
             columns={columnsModel}
             dataSource={
               batchRecord.ProductId
                 ? dataModel.filter(
-                  (item) =>
-                    (item.ProductId == batchRecord.ProductId &&
-                      item.ActiveFlag) ||
-                    (item.ProductId == "" && item.ActiveFlag)
-                )
+                    (item) =>
+                      (item.ProductId == batchRecord.ProductId &&
+                        item.ActiveFlag) ||
+                      (item.ProductId == "" && item.ActiveFlag)
+                  )
                 : initialModelDataSource
             }
             actionColumnName={

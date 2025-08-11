@@ -49,10 +49,12 @@ const DirectGRN = () => {
 
   useEffect(() => {
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-        const apiData = response.data.data;
-        setDirectGRNDropDown(apiData);
-      });
+      customAxios
+        .get(urlGetPurshaseOrderDetails, { params: { type: "Direct GRN" } })
+        .then((response) => {
+          const apiData = response.data.data;
+          setDirectGRNDropDown(apiData);
+        });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
@@ -88,20 +90,20 @@ const DirectGRN = () => {
   };
 
   const handleReport = async (value, record) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const request = {
         PONo: record.GRNNumber,
-        use: 'admin',
+        use: "admin",
         FileType: "pdf", // or 'excel'
-        AppUser: userContext.AppUserName
+        AppUser: userContext.AppUserName,
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       setError(error.message);
     }
   };
@@ -120,13 +122,13 @@ const DirectGRN = () => {
     console.log("respo", response);
 
     if (!response.ok) {
-      setLoading(false)
+      setLoading(false);
       throw new Error("Failed to fetch report");
     }
 
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
-    setLoading(false)
+    setLoading(false);
     return { url, blob };
   }
 
@@ -200,7 +202,11 @@ const DirectGRN = () => {
       },
     },
     {
-      render: (_, record) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
+      render: (_, record) => (
+        <Button type="link" onClick={(value) => handleReport(value, record)}>
+          Report
+        </Button>
+      ),
     },
   ];
 
@@ -390,7 +396,8 @@ const DirectGRN = () => {
           </Col>
         </Row>
       </Form>
-      <CustomTable loading={loading}
+      <CustomTable
+        loading={loading}
         dataSource={filteredData}
         columns={columns}
         isFilter={true}

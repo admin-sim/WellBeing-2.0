@@ -7,7 +7,7 @@ import {
   urlAddNewStoreReturn,
   urlStoreReturnEdit,
   urlStoreReturnShowBatch,
-  urlShowReceiptList
+  urlShowReceiptList,
 } from "../../../../endpoints";
 import Select from "antd/es/select";
 import {
@@ -65,20 +65,21 @@ const CreateStoreReturn = () => {
   const location = useLocation();
   const ReturnHeaderId = location.state.ReturnHeaderId;
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const [efromDate, setEFromDate] = useState(dayjs().subtract(1, "day"));
   const [etoDate, setEToDate] = useState(dayjs());
   const [rfromDate, setRFromDate] = useState(dayjs().subtract(1, "day"));
   const [rtoDate, setRToDate] = useState(dayjs());
   const [recieptDetails, setRecieptDetails] = useState();
-  const [buttonTitle, setButtonTitle] = useState('Save');
-
+  const [buttonTitle, setButtonTitle] = useState("Save");
 
   useEffect(() => {
-    customAxios.get(urlCreateStoreReturn).then((response) => {
-      const apiData = response.data.data;
-      setDropDown(apiData);
-    });
+    customAxios
+      .get(urlCreateStoreReturn, { params: { type: "Store Return" } })
+      .then((response) => {
+        const apiData = response.data.data;
+        setDropDown(apiData);
+      });
   }, []);
 
   const disableEFromDate = (current) => {
@@ -107,7 +108,7 @@ const CreateStoreReturn = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      debugger
+      debugger;
       if (ReturnHeaderId > 0) {
         setButtonTitle("Update");
         try {
@@ -116,14 +117,12 @@ const CreateStoreReturn = () => {
           );
           if (response.status == 200 && response.data.data != null) {
             const editeddata = response.data.data;
-            const products = editeddata.ReturnDetails.map(
-              (item, index) => ({
-                ...item,
-                key: index,
-                ProductName: item.Product,
-                index: index + 1
-              })
-            );
+            const products = editeddata.ReturnDetails.map((item, index) => ({
+              ...item,
+              key: index,
+              ProductName: item.Product,
+              index: index + 1,
+            }));
             setData(products);
 
             const formdata = editeddata.newReturnModel;
@@ -163,34 +162,46 @@ const CreateStoreReturn = () => {
   };
 
   const onFinishModel = async (values) => {
-    setLoading(true)
-    const formdata = form1.getFieldsValue()
-    let ExpDateFrom = ''
-    let ExpDateTo = ''
-    const check = values.Check != undefined ? values.Check : true
+    setLoading(true);
+    const formdata = form1.getFieldsValue();
+    let ExpDateFrom = "";
+    let ExpDateTo = "";
+    const check = values.Check != undefined ? values.Check : true;
     if (check) {
-      ExpDateFrom = efromDate.format('DD-MM-YYYY')
-      ExpDateTo = etoDate.format('DD-MM-YYYY')
+      ExpDateFrom = efromDate.format("DD-MM-YYYY");
+      ExpDateTo = etoDate.format("DD-MM-YYYY");
     }
     const search = {
       Store: formdata.ReturningStore,
       Supplier: formdata.ReturningLocation ? formdata.ReturningLocation : 0,
       Product: values.Product ? values.Product : 0,
-      ExpToString: values.ExpiryDateTo && check ? values.ExpiryDateTo.format('DD-MM-YYYY') : ExpDateFrom,
-      ExpFromString: values.ExpiryDateFrom && check ? values.ExpiryDateFrom.format('DD-MM-YYYY') : ExpDateTo,
-      RecFromString: values.ReceiptDateFrom ? values.ReceiptDateFrom.format('DD-MM-YYYY') : rfromDate.format('DD-MM-YYYY'),
-      RecToString: values.ReceiptDateTo ? values.ReceiptDateTo.format('DD-MM-YYYY') : rtoDate.format('DD-MM-YYYY'),
-    }
+      ExpToString:
+        values.ExpiryDateTo && check
+          ? values.ExpiryDateTo.format("DD-MM-YYYY")
+          : ExpDateFrom,
+      ExpFromString:
+        values.ExpiryDateFrom && check
+          ? values.ExpiryDateFrom.format("DD-MM-YYYY")
+          : ExpDateTo,
+      RecFromString: values.ReceiptDateFrom
+        ? values.ReceiptDateFrom.format("DD-MM-YYYY")
+        : rfromDate.format("DD-MM-YYYY"),
+      RecToString: values.ReceiptDateTo
+        ? values.ReceiptDateTo.format("DD-MM-YYYY")
+        : rtoDate.format("DD-MM-YYYY"),
+    };
     try {
       const response = await customAxios.get(
         `${urlSearchReceipt}?Store=${search.Store}&Supplier=${search.Supplier}&Product=${search.Product}&ExpToString=${search.ExpToString}&ExpFromString=${search.ExpFromString}&RecFromString=${search.RecFromString}&RecToString=${search.RecToString}`
       );
       if (response.status == 200 && response.data.data != null) {
-        const newColumnData = response.data.data.newIndentIssueModel.map((item, index) => {
-          return { ...item, key: item.StockId };
-        });
-        setRecieptDetails(newColumnData)
-        setLoading(false)
+        const newColumnData = response.data.data.newIndentIssueModel.map(
+          (item, index) => {
+            return { ...item, key: item.StockId };
+          }
+        );
+        setRecieptDetails(newColumnData);
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -206,18 +217,16 @@ const CreateStoreReturn = () => {
   //   setInputValues((prevState) => ({ ...prevState, [key]: value }));
   // };
 
-  const onOkModal = () => {
-
-  }
+  const onOkModal = () => {};
 
   const onCancelModel = () => {
-    setIsModalOpen(false)
-  }
+    setIsModalOpen(false);
+  };
 
   const handleOnFinish = async (values) => {
-    debugger
+    debugger;
     if (data.length == 0) {
-      message.warning('Please Add Product/Batch')
+      message.warning("Please Add Product/Batch");
       return false;
     }
 
@@ -229,9 +238,8 @@ const CreateStoreReturn = () => {
           UomId: data[i].UomId,
           BatchNo: data[i].BatchNo,
           ReturnQty: values[i].ReturnQty,
-          EXPDateString: dayjs(data[i].EXPDate).format('DD-MM-YYYY'),
-
-        }
+          EXPDateString: dayjs(data[i].EXPDate).format("DD-MM-YYYY"),
+        };
         products.push(product);
       }
     }
@@ -240,22 +248,22 @@ const CreateStoreReturn = () => {
       StoreId: values.ReturningStore,
       SupplierId: values.ReturningLocation,
       ReturnDatestring: values.ReturningDate.format("DD-MM-YYYY"),
-      ReturnStatus: !issueStatus ? 'Created' : values.Status,
-      ReturnHeaderId: ReturnHeaderId
-    }
+      ReturnStatus: !issueStatus ? "Created" : values.Status,
+      ReturnHeaderId: ReturnHeaderId,
+    };
     const postData = {
       newReturnModel: storeReturn,
       ReturnDetails: products,
-    }
+    };
     try {
       const response = await customAxios.post(urlAddNewStoreReturn, postData, {
         headers: {
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       });
       handleToBack();
     } catch (error) {
-      // Handle error      
+      // Handle error
     }
   };
 
@@ -267,7 +275,7 @@ const CreateStoreReturn = () => {
       const newdata = selectedRowKeys.map((item) => {
         return {
           StockId: item.StockId,
-          StoreId: form1.getFieldValue('ReturningStore'),
+          StoreId: form1.getFieldValue("ReturningStore"),
         };
       });
       const response = await customAxios.post(urlShowReceiptList, newdata, {
@@ -275,13 +283,15 @@ const CreateStoreReturn = () => {
           "Content-Type": "application/json",
         },
       });
-      const newData = response.data.data.newIndentIssueModel.map((item, index) => {
-        return {
-          ...item,
-          key: index,
-          index: index + 1,
-        };
-      });
+      const newData = response.data.data.newIndentIssueModel.map(
+        (item, index) => {
+          return {
+            ...item,
+            key: index,
+            index: index + 1,
+          };
+        }
+      );
       setData(newData);
       form2.resetFields();
       setDataModal([]);
@@ -308,15 +318,13 @@ const CreateStoreReturn = () => {
     // }
   };
 
-  const onFinishFailed = () => {
-
-  }
+  const onFinishFailed = () => {};
 
   const OpenModel = async () => {
     await form1.validateFields(["ReturningStore"]);
     form2.resetFields();
     setIsModalOpen(true);
-    form2.submit()
+    form2.submit();
   };
 
   const handleToBack = () => {
@@ -341,11 +349,10 @@ const CreateStoreReturn = () => {
   const handleSelectChange = (e, key) => {
     const newSelectedRowKeys = e.target.checked
       ? [...selectedRowKeys, key]
-      : selectedRowKeys.filter(k => k !== key);
+      : selectedRowKeys.filter((k) => k !== key);
 
     setSelectedRowKeys(newSelectedRowKeys);
   };
-
 
   const columns = [
     {
@@ -383,7 +390,9 @@ const CreateStoreReturn = () => {
       dataIndex: "BalanceQty",
       key: "ReturnableQty",
       render: (text, record) => {
-        return ReturnHeaderId && ReturnHeaderId > 0 ? record.AvlQuantity : record.BalanceQty;
+        return ReturnHeaderId && ReturnHeaderId > 0
+          ? record.AvlQuantity
+          : record.BalanceQty;
       },
     },
     {
@@ -394,7 +403,8 @@ const CreateStoreReturn = () => {
       render: (text, record) => (
         <>
           <Form.Item
-            name={[record.key, "ReturnQty"]} initialValue={record.ReturnQty}
+            name={[record.key, "ReturnQty"]}
+            initialValue={record.ReturnQty}
             rules={[
               {
                 required: true,
@@ -404,7 +414,9 @@ const CreateStoreReturn = () => {
                 validator: (_, value) => {
                   if (value > record.BalanceQty) {
                     return Promise.reject(
-                      new Error("Return Qty should not be Greater than Returnable.")
+                      new Error(
+                        "Return Qty should not be Greater than Returnable."
+                      )
                     );
                   }
                   return Promise.resolve();
@@ -421,8 +433,7 @@ const CreateStoreReturn = () => {
 
   const isRowSelected = (record) => {
     return selectedRowKeys.some(
-      (row) =>
-        row.StockId === record.StockId
+      (row) => row.StockId === record.StockId
       // row.GrnBatchId === record.GrnBatchId
     );
   };
@@ -430,29 +441,29 @@ const CreateStoreReturn = () => {
   const handleCheckboxChange = (checked, record) => {
     const newSelectedRowKeys = checked
       ? [
-        ...selectedRowKeys,
-        {
-          GRNHeaderId: record.GRNHeaderId,
-          GrnBatchId: record.GrnBatchId,
-          GrnLineId: record.GrnLineId,
+          ...selectedRowKeys,
+          {
+            GRNHeaderId: record.GRNHeaderId,
+            GrnBatchId: record.GrnBatchId,
+            GrnLineId: record.GrnLineId,
 
-          StockId: record.StockId,
-          GRNNumber: record.GRNNumber,
-        },
-      ]
+            StockId: record.StockId,
+            GRNNumber: record.GRNNumber,
+          },
+        ]
       : selectedRowKeys.filter(
-        (key) =>
-          key.GRNHeaderId !== record.GRNHeaderId &&
-          key.GrnBatchId !== record.GrnBatchId
-      );
+          (key) =>
+            key.GRNHeaderId !== record.GRNHeaderId &&
+            key.GrnBatchId !== record.GrnBatchId
+        );
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
   const Modalcolumns = [
     {
       // title: '',
-      dataIndex: 'key',
-      key: 'key',
+      dataIndex: "key",
+      key: "key",
       render: (_, record) => (
         <Checkbox
           checked={isRowSelected(record)}
@@ -485,7 +496,7 @@ const CreateStoreReturn = () => {
   ];
 
   function handleStore() {
-    setData([])
+    setData([]);
   }
 
   return (
@@ -511,14 +522,18 @@ const CreateStoreReturn = () => {
             variant="outlined"
             size="default"
             style={{
-              maxWidth: 1500
+              maxWidth: 1500,
             }}
             form={form1}
             initialValues={{
               ReturningDate: dayjs(),
             }}
           >
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} style={{ padding: '1rem 2rem', marginBottom: '0' }} align="Bottom">
+            <Row
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+              style={{ padding: "1rem 2rem", marginBottom: "0" }}
+              align="Bottom"
+            >
               <Col className="gutter-row" span={8}>
                 <div>
                   <Form.Item
@@ -527,13 +542,20 @@ const CreateStoreReturn = () => {
                     rules={[
                       {
                         required: true,
-                        message: 'Please input!'
-                      }
+                        message: "Please input!",
+                      },
                     ]}
                   >
-                    <Select allowClear placeholder='Select Value' onChange={handleStore}>
+                    <Select
+                      allowClear
+                      placeholder="Select Value"
+                      onChange={handleStore}
+                    >
                       {DropDown.StoreDetails.map((option) => (
-                        <Select.Option key={option.StoreId} value={option.StoreId}>
+                        <Select.Option
+                          key={option.StoreId}
+                          value={option.StoreId}
+                        >
                           {option.StoreType}
                         </Select.Option>
                       ))}
@@ -543,17 +565,26 @@ const CreateStoreReturn = () => {
               </Col>
               <Col className="gutter-row" span={8}>
                 <div>
-                  <Form.Item label="Returned to Location" name="ReturningLocation"
+                  <Form.Item
+                    label="Returned to Location"
+                    name="ReturningLocation"
                     rules={[
                       {
                         required: true,
-                        message: 'Please input!'
-                      }
+                        message: "Please input!",
+                      },
                     ]}
                   >
-                    <Select allowClear placeholder='Select Value' onChange={handleStore}>
+                    <Select
+                      allowClear
+                      placeholder="Select Value"
+                      onChange={handleStore}
+                    >
                       {DropDown.StoreDetails.map((option) => (
-                        <Select.Option key={option.StoreId} value={option.StoreId}>
+                        <Select.Option
+                          key={option.StoreId}
+                          value={option.StoreId}
+                        >
                           {option.StoreType}
                         </Select.Option>
                       ))}
@@ -563,31 +594,42 @@ const CreateStoreReturn = () => {
               </Col>
               <Col className="gutter-row" span={8}>
                 <div>
-                  <Form.Item label="Returning Date" name="ReturningDate"
+                  <Form.Item
+                    label="Returning Date"
+                    name="ReturningDate"
                     rules={[
                       {
                         required: true,
-                        message: 'Please input!'
-                      }
+                        message: "Please input!",
+                      },
                     ]}
                   >
-                    <DatePicker style={{ width: '100%' }} format='DD-MM-YYYY' disabled />
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      format="DD-MM-YYYY"
+                      disabled
+                    />
                   </Form.Item>
                 </div>
               </Col>
               <Col className="gutter-row" span={4}>
                 <div>
-                  <Form.Item label="Status" name="Status"
+                  <Form.Item
+                    label="Status"
+                    name="Status"
                     rules={[
                       {
                         required: issueStatus,
-                        message: 'Please input!'
-                      }
+                        message: "Please input!",
+                      },
                     ]}
                   >
-                    <Select allowClear placeholder='Select Value'>
-                      <Select.Option key='Draft' value='Draft'></Select.Option>
-                      <Select.Option key='Finalize' value='Finalize'></Select.Option>
+                    <Select allowClear placeholder="Select Value">
+                      <Select.Option key="Draft" value="Draft"></Select.Option>
+                      <Select.Option
+                        key="Finalize"
+                        value="Finalize"
+                      ></Select.Option>
                     </Select>
                   </Form.Item>
                   {/* <Form.Item label="Status" name="Status">
@@ -603,21 +645,27 @@ const CreateStoreReturn = () => {
               </Col>
               <Col className="gutter-row" span={6}>
                 <div>
-                  <Form.Item name="SubmitCheck" style={{ marginTop: '30px' }} valuePropName='checked'>
+                  <Form.Item
+                    name="SubmitCheck"
+                    style={{ marginTop: "30px" }}
+                    valuePropName="checked"
+                  >
                     <Checkbox onChange={SubmitChanged}>Submit</Checkbox>
                   </Form.Item>
                 </div>
               </Col>
               <Col className="gutter-row" span={6}>
                 <div>
-                  <Form.Item name="Remarks" style={{ marginTop: '30px' }}>
-                    <Button type='link' onClick={OpenModel}>Search Product/Batch No</Button>
+                  <Form.Item name="Remarks" style={{ marginTop: "30px" }}>
+                    <Button type="link" onClick={OpenModel}>
+                      Search Product/Batch No
+                    </Button>
                   </Form.Item>
                 </div>
               </Col>
             </Row>
-            <Row justify="end" style={{ padding: '0rem 1rem' }}>
-              <Col style={{ marginRight: '10px' }}>
+            <Row justify="end" style={{ padding: "0rem 1rem" }}>
+              <Col style={{ marginRight: "10px" }}>
                 <Form.Item>
                   <Button type="primary" htmlType="submit">
                     {buttonTitle}
@@ -632,7 +680,11 @@ const CreateStoreReturn = () => {
                 </Form.Item>
               </Col>
             </Row>
-            <CustomTable columns={columns} dataSource={data} actionColumn={false} />
+            <CustomTable
+              columns={columns}
+              dataSource={data}
+              actionColumn={false}
+            />
           </Form>
         </Card>
         <Modal
@@ -653,14 +705,14 @@ const CreateStoreReturn = () => {
               span: 16,
             }}
             style={{
-              width: '100%',
+              width: "100%",
             }}
             initialValues={{
               Check: true,
               ExpiryDateFrom: efromDate,
               ExpiryDateTo: etoDate,
               ReceiptDateFrom: rfromDate,
-              ReceiptDateTo: rtoDate
+              ReceiptDateTo: rtoDate,
             }}
             onFinish={onFinishModel}
             onFinishFailed={onFinishFailed}
@@ -672,11 +724,11 @@ const CreateStoreReturn = () => {
                 <Form.Item
                   label="Product"
                   name="Product"
-                  style={{ marginLeft: '10px' }}
+                  style={{ marginLeft: "10px" }}
                   rules={[
                     {
                       required: false,
-                    }
+                    },
                   ]}
                 >
                   <AutoComplete
@@ -696,10 +748,7 @@ const CreateStoreReturn = () => {
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={9}>
-                <Form.Item
-                  label="Expiry Date From"
-                  name="ExpiryDateFrom"
-                >
+                <Form.Item label="Expiry Date From" name="ExpiryDateFrom">
                   <DatePicker
                     value={efromDate}
                     onChange={(date) => setEFromDate(date)}
@@ -710,10 +759,7 @@ const CreateStoreReturn = () => {
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
-                <Form.Item
-                  label="Expiry Date To"
-                  name="ExpiryDateTo"
-                >
+                <Form.Item label="Expiry Date To" name="ExpiryDateTo">
                   <DatePicker
                     value={etoDate}
                     onChange={(date) => setEToDate(date)}
@@ -727,10 +773,7 @@ const CreateStoreReturn = () => {
             <Row>
               <Col className="gutter-row" span={7}></Col>
               <Col className="gutter-row" span={9}>
-                <Form.Item
-                  label="Receipt Date From"
-                  name="ReceiptDateFrom"
-                >
+                <Form.Item label="Receipt Date From" name="ReceiptDateFrom">
                   <DatePicker
                     value={rfromDate}
                     onChange={(date) => setRFromDate(date)}
@@ -741,10 +784,7 @@ const CreateStoreReturn = () => {
                 </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
-                <Form.Item
-                  label="Receipt Date To"
-                  name="ReceiptDateTo"
-                >
+                <Form.Item label="Receipt Date To" name="ReceiptDateTo">
                   <DatePicker
                     value={rtoDate}
                     onChange={(date) => setRToDate(date)}
@@ -780,13 +820,19 @@ const CreateStoreReturn = () => {
             onFinish={addtolist}
             form={form3}
           >
-            <CustomTable columns={Modalcolumns} loading={loading}
+            <CustomTable
+              columns={Modalcolumns}
+              loading={loading}
               dataSource={recieptDetails}
-              locale={{ emptyText: "Nodata" }} actionColumn={false} />
+              locale={{ emptyText: "Nodata" }}
+              actionColumn={false}
+            />
           </Form>
           <Row justify={"end"} style={{ margin: "1rem 1.5rem 0" }}>
             <Form.Item>
-              <Button onClick={addtolist} type="primary">Add To List</Button>
+              <Button onClick={addtolist} type="primary">
+                Add To List
+              </Button>
             </Form.Item>
           </Row>
         </Modal>

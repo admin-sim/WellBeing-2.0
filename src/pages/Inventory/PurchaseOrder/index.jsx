@@ -50,10 +50,12 @@ const PurchaseOrder = () => {
 
   useEffect(() => {
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-        const apiData = response.data.data;
-        setPurchaseOrderDropDown(apiData);
-      });
+      customAxios
+        .get(urlGetPurshaseOrderDetails, { params: { type: "Purchase Order" } })
+        .then((response) => {
+          const apiData = response.data.data;
+          setPurchaseOrderDropDown(apiData);
+        });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
@@ -156,7 +158,11 @@ const PurchaseOrder = () => {
       },
     },
     {
-      render: (_, record) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
+      render: (_, record) => (
+        <Button type="link" onClick={(value) => handleReport(value, record)}>
+          Report
+        </Button>
+      ),
     },
   ];
 
@@ -209,19 +215,19 @@ const PurchaseOrder = () => {
 
   const handleReport = async (value, record) => {
     debugger;
-    setLoading(true)
+    setLoading(true);
     try {
       const request = {
         PONo: record.PONumber,
         FileType: "pdf", // or 'excel'
-        AppUser: userContext.AppUserName
+        AppUser: userContext.AppUserName,
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       setError(error.message);
     }
   };
@@ -240,13 +246,13 @@ const PurchaseOrder = () => {
     console.log("respo", response);
 
     if (!response.ok) {
-      setLoading(false)
+      setLoading(false);
       throw new Error("Failed to fetch report");
     }
 
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
-    setLoading(false)
+    setLoading(false);
     return { url, blob };
   }
 
@@ -396,7 +402,8 @@ const PurchaseOrder = () => {
           </Col>
         </Row>
       </Form>
-      <CustomTable loading={loading}
+      <CustomTable
+        loading={loading}
         dataSource={filteredData}
         columns={columns}
         actionColumn={false}
@@ -405,7 +412,6 @@ const PurchaseOrder = () => {
       />
       <div>
         {error && <div>Error: {error}</div>}
-
 
         <Modal
           title="Report"

@@ -57,15 +57,17 @@ const IndentIssue = () => {
 
   useEffect(() => {
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-        const apiData = response.data.data;
-        setIndentIssueDropDown(apiData);
-      });
+      customAxios
+        .get(urlGetPurshaseOrderDetails, { params: { type: "Store Issue" } })
+        .then((response) => {
+          const apiData = response.data.data;
+          setIndentIssueDropDown(apiData);
+        });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
     form.submit();
-    setDropDownLoading(false)
+    setDropDownLoading(false);
   }, []);
 
   const colorMapping = {
@@ -115,7 +117,7 @@ const IndentIssue = () => {
       key: "IssueNumber",
       sorter: (a, b) => a.IssueNumber - b.IssueNumber,
       sortDirections: ["descend", "ascend"],
-      width: 100
+      width: 100,
     },
     {
       title: "Indent Type",
@@ -224,28 +226,30 @@ const IndentIssue = () => {
       width: 80,
       render: (_, record) => {
         return record.IssueNumber ? (
-          <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>
+          <Button type="link" onClick={(value) => handleReport(value, record)}>
+            Report
+          </Button>
         ) : null;
       },
     },
   ];
 
   const handleReport = async (value, record) => {
-    debugger
-    setLoading(true)
+    debugger;
+    setLoading(true);
     try {
       const request = {
         PONO: record.IssueNumber,
-        use: 'admin',
+        use: "admin",
         FileType: "pdf", // or 'excel'
-        AppUser: userContext.AppUserName
+        AppUser: userContext.AppUserName,
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       setError(error.message);
     }
   };
@@ -263,13 +267,13 @@ const IndentIssue = () => {
     );
 
     if (!response.ok) {
-      setLoading(false)
+      setLoading(false);
       throw new Error("Failed to fetch report");
     }
 
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
-    setLoading(false)
+    setLoading(false);
     return { url, blob };
   }
 
@@ -301,18 +305,19 @@ const IndentIssue = () => {
           }
         )
         .then((response) => {
-          const newColumnData = response.data.data.newIndentIssueModel.map((obj, index) => {
-            return { ...obj, key: index + 1 };
-          });
+          const newColumnData = response.data.data.newIndentIssueModel.map(
+            (obj, index) => {
+              return { ...obj, key: index + 1 };
+            }
+          );
           setFilteredData(newColumnData);
           setLoading(false);
-        })
+        });
     } catch (error) {
       // Handle any errors here
       console.error("Error:", error);
       setLoading(false);
     }
-
   };
 
   const onReset = () => {
@@ -356,7 +361,6 @@ const IndentIssue = () => {
             name="control-hooks"
             layout="vertical"
             variant="outlined"
-
             initialValues={{
               FromDate: dayjs().subtract(1, "day"),
               ToDate: dayjs(),
@@ -414,7 +418,11 @@ const IndentIssue = () => {
               </Col>
               <Col className="gutter-row" span={4}>
                 <Form.Item label="Issuing Store" name="IssuingStore">
-                  <Select allowClear placeholder="Select Value" loading={dropDownLoad}>
+                  <Select
+                    allowClear
+                    placeholder="Select Value"
+                    loading={dropDownLoad}
+                  >
                     {IndentIssueDropdown.StoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
@@ -430,7 +438,11 @@ const IndentIssue = () => {
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
               <Col className="gutter-row" span={6}>
                 <Form.Item name="RequestingStore" label="Requesting Store">
-                  <Select allowClear placeholder="Select Value" loading={dropDownLoad}>
+                  <Select
+                    allowClear
+                    placeholder="Select Value"
+                    loading={dropDownLoad}
+                  >
                     {IndentIssueDropdown.StoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}

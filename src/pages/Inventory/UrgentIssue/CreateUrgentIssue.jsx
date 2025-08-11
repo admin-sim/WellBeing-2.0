@@ -60,17 +60,17 @@ const CreateUrgentIssue = () => {
   const initialDataSource =
     issueId === 0
       ? [
-        {
-          key: counter,
-          ProductName: "",
-          ProductId: "",
-          UomId: "",
-          IssueQty: "",
-          AvlQtyatIssue: "",
-          Remarks: "",
-          ActiveFlag: true,
-        },
-      ]
+          {
+            key: counter,
+            ProductName: "",
+            ProductId: "",
+            UomId: "",
+            IssueQty: "",
+            AvlQtyatIssue: "",
+            Remarks: "",
+            ActiveFlag: true,
+          },
+        ]
       : [];
 
   const [form1] = Form.useForm();
@@ -93,13 +93,15 @@ const CreateUrgentIssue = () => {
 
   useEffect(() => {
     debugger;
-    customAxios.get(urlCreatePurchaseOrder).then((response) => {
-      const apiData = response.data.data;
-      setDropDown(apiData);
-    });
+    customAxios
+      .get(urlCreatePurchaseOrder, { params: { type: "Purchase Order" } })
+      .then((response) => {
+        const apiData = response.data.data;
+        setDropDown(apiData);
+      });
     if (issueId > 0) {
       setButtonTitle("Update");
-      setLoading(true)
+      setLoading(true);
       try {
         customAxios
           .get(`${urlUrgentIssueEdit}?IssueId=${issueId}`)
@@ -109,12 +111,14 @@ const CreateUrgentIssue = () => {
               apiData.newIndentIssueModel != null &&
               apiData.newIndentIssueModel.length > 0
             ) {
-              const products = apiData.newIndentIssueModel.map((item, index) => ({
-                ...item,
-                key: index,
-                AvlQtyatIssue: item.BalanceQty,
-                index: index + 1,
-              }));
+              const products = apiData.newIndentIssueModel.map(
+                (item, index) => ({
+                  ...item,
+                  key: index,
+                  AvlQtyatIssue: item.BalanceQty,
+                  index: index + 1,
+                })
+              );
               setData(products);
               setCounter(products.length);
               setIstablevisible(true);
@@ -139,11 +143,11 @@ const CreateUrgentIssue = () => {
             }));
 
             setDataModal(batch);
-            setLoading(false)
+            setLoading(false);
           });
       } catch (error) {
         console.error("Error fetching data:", error);
-        setLoading(false)
+        setLoading(false);
       }
     }
   }, []);
@@ -156,7 +160,7 @@ const CreateUrgentIssue = () => {
   }, [isModelOpen]);
 
   const getPanelValue1 = async (value, key) => {
-    await form1.validateFields(['IssueingStoreId', 'RequestingStoreId'])
+    await form1.validateFields(["IssueingStoreId", "RequestingStoreId"]);
     if (value === "") {
       form1.setFieldsValue({ [key]: { uom: "" } });
       form1.setFieldsValue({ [key]: { RequestQty: "" } });
@@ -242,7 +246,6 @@ const CreateUrgentIssue = () => {
     setCounter(counter + 1);
   };
 
-
   const OpenBatch = async (record) => {
     debugger;
     try {
@@ -266,8 +269,7 @@ const CreateUrgentIssue = () => {
 
       // Filter dataModel based on ProductId and ActiveFlag
       const filteredDataModel = dataModal.filter(
-        (item) =>
-          item.ProductId === record.ProductId
+        (item) => item.ProductId === record.ProductId
         // &&
         //   item.ActiveFlag === true &&
         //   item.IssueBatchId > 0
@@ -299,7 +301,7 @@ const CreateUrgentIssue = () => {
         const batch = ApiData.Batch.map((item, index) => {
           if (
             item.ProductId ===
-            ApiData.ProductDefinitionModel.ProductDefinitionId &&
+              ApiData.ProductDefinitionModel.ProductDefinitionId &&
             item.ActiveFlag !== false
           ) {
             if (item.IssueBatchId !== 0) {
@@ -407,21 +409,21 @@ const CreateUrgentIssue = () => {
       const updatedDataModel = dataModal.map((item) =>
         item.key === recordKey
           ? {
-            ...item,
-            BatchNo: selectedBatch.BatchNo,
-            StockId: selectedBatch.StockId,
-            IssueBatchId: selectedBatch.IssueBatchId,
-            IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
-            IssueRate: selectedBatch.MRP,
-            //LineAmount:item.LineAmount,
-            BalanceQty: selectedBatch.BalanceQty,
-            EXPDate: selectedBatch.EXPDate
-              ? dayjs(selectedBatch.EXPDate)
-              : null,
-            MRP: selectedBatch.MRP,
-            // qty:item.qty,
-            amount: selectedBatch.amount,
-          }
+              ...item,
+              BatchNo: selectedBatch.BatchNo,
+              StockId: selectedBatch.StockId,
+              IssueBatchId: selectedBatch.IssueBatchId,
+              IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
+              IssueRate: selectedBatch.MRP,
+              //LineAmount:item.LineAmount,
+              BalanceQty: selectedBatch.BalanceQty,
+              EXPDate: selectedBatch.EXPDate
+                ? dayjs(selectedBatch.EXPDate)
+                : null,
+              MRP: selectedBatch.MRP,
+              // qty:item.qty,
+              amount: selectedBatch.amount,
+            }
           : item
       );
       // setDataModel(updatedDataModel);
@@ -453,11 +455,11 @@ const CreateUrgentIssue = () => {
   };
 
   const handleOnFinish = async (values) => {
-    setLoading(true)
+    setLoading(true);
     const newdata = data.filter((item) => item.ProductId && item.ActiveFlag);
     if (newdata.length === 0) {
       message.warning("Please Add Product");
-      setLoading(false)
+      setLoading(false);
       return false;
     }
     const products = newdata
@@ -476,12 +478,11 @@ const CreateUrgentIssue = () => {
     const result = checkActiveBatches(activeProducts, dataModal);
     if (!result.allActiveProductsHaveActiveBatch) {
       message.warning("Please Add BatchDeatils");
-      setLoading(false)
+      setLoading(false);
       return false;
     }
     const sumItems = (items, key) =>
       items.reduce((sum, item) => sum + parseInt(item[key] || 0, 10), 0);
-
 
     const defaultDateTime = new Date().toISOString();
     const finalBatchDetailsWithDefaultExpdate = dataModal.map((batch) => ({
@@ -490,16 +491,17 @@ const CreateUrgentIssue = () => {
       StockLocator: batch.StockLocator ? batch.StockLocator : 0,
     }));
 
-    const activeItems = finalBatchDetailsWithDefaultExpdate.filter((item) => item.ActiveFlag);
+    const activeItems = finalBatchDetailsWithDefaultExpdate.filter(
+      (item) => item.ActiveFlag
+    );
     const totalReceivedQty = sumItems(activeProducts, "IssueQty");
     const totalBatchQuantity = sumItems(activeItems, "IssueQty");
 
     if (totalReceivedQty !== totalBatchQuantity) {
       message.warning("Please enter valid batch details..");
-      setLoading(false)
+      setLoading(false);
       return false;
     }
-
 
     const UrgentIssue = {
       IssueDateString: values.IssuingDate
@@ -512,15 +514,15 @@ const CreateUrgentIssue = () => {
       Remarks: values.Remarks ? values.Remarks : "",
     };
 
-
-    const filteredBatchDataModel = finalBatchDetailsWithDefaultExpdate
-      .filter((item) => {
+    const filteredBatchDataModel = finalBatchDetailsWithDefaultExpdate.filter(
+      (item) => {
         if (item.IssueBatchId > 0) {
           return true; // include all items with IssueBatchId > 0
         } else {
           return item.ActiveFlag === true; // only include items with IssueBatchId = 0 or null and ActiveFlag = true
         }
-      })
+      }
+    );
 
     const postData = {
       newIndentModel: UrgentIssue,
@@ -528,25 +530,20 @@ const CreateUrgentIssue = () => {
         issueId === 0
           ? activeProducts
           : products.filter(
-            (product) =>
-              product.IndentIssueLineId > 0 ||
-              (product.IndentIssueLineId === 0 &&
-                product.ActiveFlag === true)
-          ),
+              (product) =>
+                product.IndentIssueLineId > 0 ||
+                (product.IndentIssueLineId === 0 && product.ActiveFlag === true)
+            ),
 
       Batch: issueId === 0 ? activeItems : filteredBatchDataModel,
     };
 
     try {
-      const response = await customAxios.post(
-        urlAddNewUrgentIssue,
-        postData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await customAxios.post(urlAddNewUrgentIssue, postData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       handleCancel();
     } catch (error) {
@@ -600,8 +597,7 @@ const CreateUrgentIssue = () => {
         });
       setDataModal(filteredDataModel);
       setIsModelOpen(false);
-    }
-    else {
+    } else {
       message.warning("Total Quantity should be equal to Issued Quantity");
     }
   };
@@ -789,8 +785,6 @@ const CreateUrgentIssue = () => {
     setDataModal(newDataModel);
   };
 
-
-
   const BatchAdd = async () => {
     await form2.validateFields();
     form2.resetFields();
@@ -817,8 +811,6 @@ const CreateUrgentIssue = () => {
     setModalCounter((prevCounter) => prevCounter + 1);
   };
 
-
-
   const calculateAmount = (key, quantity, rate) => {
     const qty = quantity ? parseFloat(quantity) : 0;
     const rateValue = rate ? parseFloat(rate) : 0;
@@ -835,12 +827,12 @@ const CreateUrgentIssue = () => {
       prevDataModel.map((item) =>
         item.key === key
           ? {
-            ...item,
-            amount: amount.toFixed(4),
-            qty: qty,
-            IssueQty: qty,
-            LineAmount: amount,
-          }
+              ...item,
+              amount: amount.toFixed(4),
+              qty: qty,
+              IssueQty: qty,
+              LineAmount: amount,
+            }
           : item
       )
     );
@@ -867,56 +859,55 @@ const CreateUrgentIssue = () => {
             style={{ width: 100 }}
             disabled={record?.IssueBatchId > 0}
             onChange={(value) => BatchSelect(value, record.key)}
-          // onSelect={(value, option) => {
-          //   const selectedBatch = batchDetails.find(
-          //     (batch) => batch.StockId === value
-          //   );
+            // onSelect={(value, option) => {
+            //   const selectedBatch = batchDetails.find(
+            //     (batch) => batch.StockId === value
+            //   );
 
+            //   record.StockId = selectedBatch.StockId;
+            //   record.IssueBatchId = selectedBatch.IssueBatchId;
+            //   record.IssueQty = selectedBatch.IssueQty; // Set IssueQty with qty
+            //   record.BatchNo = selectedBatch.BatchNo;
+            //   //record.BalanceQty = selectedBatch.BalanceQty;
+            //   record.EXPDate = selectedBatch.EXPDate
+            //     ? dayjs(selectedBatch.EXPDate)
+            //     : null;
+            //   record.IssueRate = selectedBatch.MRP;
+            //   record.MRP = selectedBatch.MRP;
+            //   record.amount = selectedBatch.amount;
 
-          //   record.StockId = selectedBatch.StockId;
-          //   record.IssueBatchId = selectedBatch.IssueBatchId;
-          //   record.IssueQty = selectedBatch.IssueQty; // Set IssueQty with qty
-          //   record.BatchNo = selectedBatch.BatchNo;
-          //   //record.BalanceQty = selectedBatch.BalanceQty;
-          //   record.EXPDate = selectedBatch.EXPDate
-          //     ? dayjs(selectedBatch.EXPDate)
-          //     : null;
-          //   record.IssueRate = selectedBatch.MRP;
-          //   record.MRP = selectedBatch.MRP;
-          //   record.amount = selectedBatch.amount;
+            //   // Update the form with new values
+            //   form2.setFieldsValue({
+            //     [record.key]: {
+            //       StockId: selectedBatch.StockId,
+            //       IssueBatchId: selectedBatch.IssueBatchId,
+            //       IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
+            //       BatchNo: selectedBatch.BatchNo,
+            //       // LineAmount:item.LineAmount,
+            //       BalanceQty: selectedBatch.BalanceQty,
+            //       EXPDate: selectedBatch.EXPDate
+            //         ? dayjs(selectedBatch.EXPDate)
+            //         : undefined,
+            //       IssueRate: selectedBatch.MRP,
+            //       //qty:selectedBatch.qty,
+            //       amount: 0.0,
+            //     },
+            //   });
 
-          //   // Update the form with new values
-          //   form2.setFieldsValue({
-          //     [record.key]: {
-          //       StockId: selectedBatch.StockId,
-          //       IssueBatchId: selectedBatch.IssueBatchId,
-          //       IssueQty: selectedBatch.IssueQty, // Set IssueQty with qty
-          //       BatchNo: selectedBatch.BatchNo,
-          //       // LineAmount:item.LineAmount,
-          //       BalanceQty: selectedBatch.BalanceQty,
-          //       EXPDate: selectedBatch.EXPDate
-          //         ? dayjs(selectedBatch.EXPDate)
-          //         : undefined,
-          //       IssueRate: selectedBatch.MRP,
-          //       //qty:selectedBatch.qty,
-          //       amount: 0.0,
-          //     },
-          //   });
+            //   // Update the data source
+            //   const updatedDataModal = dataModal.map((item) => {
+            //     if (item.key === record.key) {
+            //       return {
+            //         ...item,
+            //         ...record, // update with new record details
+            //       };
+            //     }
+            //     return item;
+            //   });
 
-          //   // Update the data source
-          //   const updatedDataModal = dataModal.map((item) => {
-          //     if (item.key === record.key) {
-          //       return {
-          //         ...item,
-          //         ...record, // update with new record details
-          //       };
-          //     }
-          //     return item;
-          //   });
-
-          //   // Update the data source state
-          //   setDataModal(updatedDataModal);
-          // }}
+            //   // Update the data source state
+            //   setDataModal(updatedDataModal);
+            // }}
           >
             {batchDetails.map((option) => (
               <Select.Option key={option.StockId} value={option.StockId}>
@@ -1028,8 +1019,8 @@ const CreateUrgentIssue = () => {
               batchRecord.Expiry === "Month wise"
                 ? "MMMM YYYY"
                 : batchRecord.Expiry === "Date wise"
-                  ? "DD-MM-YYYY"
-                  : null
+                ? "DD-MM-YYYY"
+                : null
             }
             disabled
             style={{ width: 140 }}
@@ -1170,9 +1161,11 @@ const CreateUrgentIssue = () => {
               SubmitCheck: false,
             }}
           >
-            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+            <Row
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
               style={{ padding: "1rem 0.5rem", marginBottom: "0" }}
-              align="Bottom">
+              align="Bottom"
+            >
               <Col className="gutter-row" span={4}>
                 <Form.Item label="Issuing Date" name="IssuingDate">
                   <DatePicker
@@ -1203,7 +1196,10 @@ const CreateUrgentIssue = () => {
                     disabled={!!issueId}
                   >
                     {DropDown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                      <Select.Option
+                        key={option.StoreId}
+                        value={option.StoreId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -1228,7 +1224,10 @@ const CreateUrgentIssue = () => {
                     disabled={!!issueId}
                   >
                     {DropDown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                      <Select.Option
+                        key={option.StoreId}
+                        value={option.StoreId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -1296,11 +1295,13 @@ const CreateUrgentIssue = () => {
                 isFilter={false}
                 // actionColumn={false}
                 bordered
-                actionColumnName={<Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={AddProduct}
-                ></Button>}
+                actionColumnName={
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={AddProduct}
+                  ></Button>
+                }
                 onDelete={handleDelete}
               />
             ) : null}
@@ -1336,7 +1337,9 @@ const CreateUrgentIssue = () => {
           >
             <Row>
               <Col className="gutter-row" span={8}>
-                <Tag color="#1890ff">Product: {productDetails?.ProductName}</Tag>
+                <Tag color="#1890ff">
+                  Product: {productDetails?.ProductName}
+                </Tag>
                 {/* <div>
                   <span>
                     Product :{" "}
@@ -1347,7 +1350,9 @@ const CreateUrgentIssue = () => {
                 </div> */}
               </Col>
               <Col className="gutter-row" span={12}>
-                <Tag color="#52c41a">Recieved Qty: {productDetails?.IssueQty}</Tag>
+                <Tag color="#52c41a">
+                  Recieved Qty: {productDetails?.IssueQty}
+                </Tag>
                 {/* <div>
                   <span>
                     Issued Quantity :{" "}
@@ -1364,11 +1369,11 @@ const CreateUrgentIssue = () => {
               dataSource={
                 batchRecord?.ProductId
                   ? dataModal.filter(
-                    (item) =>
-                      (item.ProductId == batchRecord.ProductId &&
-                        item.ActiveFlag) ||
-                      (item.ProductId == "" && item.ActiveFlag)
-                  )
+                      (item) =>
+                        (item.ProductId == batchRecord.ProductId &&
+                          item.ActiveFlag) ||
+                        (item.ProductId == "" && item.ActiveFlag)
+                    )
                   : []
               }
               size="small"

@@ -72,13 +72,14 @@ const UpdateItemReceipt = () => {
   const [indentStatus, setIndentStatus] = useState(false);
   const [indentid, setIndentId] = useState(null);
 
-
   useEffect(() => {
     debugger;
-    customAxios.get(urlCreatePurchaseOrder).then((response) => {
-      const apiData = response.data.data;
-      setDropDown(apiData);
-    });
+    customAxios
+      .get(urlCreatePurchaseOrder, { params: { type: "Purchase Order" } })
+      .then((response) => {
+        const apiData = response.data.data;
+        setDropDown(apiData);
+      });
     if (issueId > 0 || indentReceiptId > 0) {
       customAxios
         .get(
@@ -284,7 +285,7 @@ const UpdateItemReceipt = () => {
       message.warning("Total Quantity should be equal to Issued Quantity");
     }
   };
-  
+
   const columns = [
     {
       title: "Product",
@@ -768,7 +769,10 @@ const UpdateItemReceipt = () => {
                 >
                   <Select disabled>
                     {DropDown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                      <Select.Option
+                        key={option.StoreId}
+                        value={option.StoreId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -788,7 +792,10 @@ const UpdateItemReceipt = () => {
                 >
                   <Select disabled>
                     {DropDown.StoreDetails.map((option) => (
-                      <Select.Option key={option.StoreId} value={option.StoreId}>
+                      <Select.Option
+                        key={option.StoreId}
+                        value={option.StoreId}
+                      >
                         {option.LongName}
                       </Select.Option>
                     ))}
@@ -899,14 +906,16 @@ const UpdateItemReceipt = () => {
                 form={form2}
               >
                 <Tag color="#1890ff">Product: {productDetails.ProductName}</Tag>
-                <Tag color="#52c41a">Issued Quantity: {productDetails.IssueQty}</Tag>
+                <Tag color="#52c41a">
+                  Issued Quantity: {productDetails.IssueQty}
+                </Tag>
                 <Table
                   columns={Batchmodal}
                   dataSource={
                     productDetails?.ProductId
                       ? dataModel.filter(
-                        (item) => item.ProductId === productDetails.ProductId
-                      )
+                          (item) => item.ProductId === productDetails.ProductId
+                        )
                       : []
                   }
                   size="small"

@@ -28,6 +28,7 @@ import {
 import { useNavigate } from "react-router";
 import {
   urlGetPurshaseOrderDetails,
+  urlPatientIndentIndex,
   urlSearchPatientIndent,
 } from "../../../../endpoints.js";
 import PageHeader from "../../../components/PageHeader/index.jsx";
@@ -39,9 +40,9 @@ import { useSelector } from "react-redux";
 
 const PatientIndent = () => {
   const [PatientIndentDropdown, setPatientIndentDropDown] = useState({
-    DocumentType: [],
-    StoreDetails: [],
-    SupplierList: [],
+    // DocumentType: [],
+    IssueingStoreDetails: [],
+    // SupplierList: [],
     DateFormat: [],
   });
   const [paginationSize, setPaginationSize] = useState(5);
@@ -64,7 +65,7 @@ const PatientIndent = () => {
   useEffect(() => {
     debugger
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
+      customAxios.get(urlPatientIndentIndex, {}).then((response) => {
         const apiData = response.data.data;
         setPatientIndentDropDown(apiData);
       });
@@ -388,7 +389,7 @@ const PatientIndent = () => {
                     placeholder="Select Value"
                     onChange={handleStoreChange}
                   >
-                    {PatientIndentDropdown.StoreDetails.map((option) => (
+                    {PatientIndentDropdown.IssueingStoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
                         value={option.StoreId}

@@ -62,10 +62,12 @@ const ItemReceipt = () => {
 
   useEffect(() => {
     try {
-      customAxios.get(urlGetPurshaseOrderDetails, {}).then((response) => {
-        const apiData = response.data.data;
-        setDropDown(apiData);
-      });
+      customAxios
+        .get(urlGetPurshaseOrderDetails, { params: { type: "Purchase Order" } })
+        .then((response) => {
+          const apiData = response.data.data;
+          setDropDown(apiData);
+        });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
@@ -161,7 +163,6 @@ const ItemReceipt = () => {
       dataIndex: "IssueDateString",
       key: "IssueDateString",
       width: 100,
-
     },
     {
       title: "Issueing Store",
@@ -209,9 +210,11 @@ const ItemReceipt = () => {
       // render: (_, record) => <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>,
       render: (_, record) => {
         return record.ReceiptNumber ? (
-          <Button type="link" onClick={(value) => handleReport(value, record)}>Report</Button>
+          <Button type="link" onClick={(value) => handleReport(value, record)}>
+            Report
+          </Button>
         ) : null;
-      }
+      },
     },
     // {
     //   width: 80,
@@ -224,20 +227,20 @@ const ItemReceipt = () => {
   ];
 
   const handleReport = async (value, record) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const request = {
         PONo: record.ReceiptNumber,
-        use: 'admin',
+        use: "admin",
         FileType: "pdf", // or 'excel'
-        AppUser: userContext.AppUserName
+        AppUser: userContext.AppUserName,
       };
       const { url, blob } = await fetchReport(request);
       setReportUrl(url);
       // setBlobData(blob);
       setIsModalVisible(true);
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       setError(error.message);
     }
   };
@@ -255,18 +258,18 @@ const ItemReceipt = () => {
     );
 
     if (!response.ok) {
-      setLoading(false)
+      setLoading(false);
       throw new Error("Failed to fetch report");
     }
 
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
-    setLoading(false)
+    setLoading(false);
     return { url, blob };
   }
 
   const onFinish = async (values) => {
-    debugger
+    debugger;
     setLoading(true);
     try {
       const postData1 = {
@@ -483,11 +486,7 @@ const ItemReceipt = () => {
             <Row justify="end">
               <Col>
                 <Form.Item>
-                  <Button
-                    type="primary"
-                    loading={loading}
-                    htmlType="submit"
-                  >
+                  <Button type="primary" loading={loading} htmlType="submit">
                     Search
                   </Button>
                 </Form.Item>
