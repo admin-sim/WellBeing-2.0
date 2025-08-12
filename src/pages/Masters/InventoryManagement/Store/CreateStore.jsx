@@ -225,9 +225,17 @@ const CreateStore = () => {
         Finalize: item.Finalize == true ? "Y" : "N",
       };
     });
+
+    const newData = data.map((item) => {
+      return {
+        ...item,
+        ProductId: item.ProductId === "" ? 0 : item.ProductId,
+      };
+    });
+
     const postData = {
       newStoreModel: StoreModel,
-      ProductDetails: data,
+      ProductDetails: newData,
       AccessRights: newAccessRights,
     };
     try {
@@ -308,26 +316,16 @@ const CreateStore = () => {
   const handleSelect = (value, option, key) => {
     debugger;
     const updated = data.map((item) =>
-      item.ProductId === 0 && item.key === 0
+      key === item.key
         ? {
             ...item,
-            key: option.ProductId,
+            // key: option.ProductId,
             ProductName: option.value,
             ProductId: option.ProductId,
           }
         : item
     );
     setData(updated);
-    // try {
-    //   customAxios
-    //     .get(`${urlGetProductDetailsById}?ProductId=${option.key}`)
-    //     .then((response) => {
-    //       debugger;
-    //       const apiData = response.data.data;
-    //     });
-    // } catch (error) {
-    //   //console.error("Error fetching purchase order details:", error);
-    // }
   };
 
   function ApplicableChange(e, record) {
@@ -409,8 +407,8 @@ const CreateStore = () => {
     form.validateFields().then(() => {
       setData((prevData) => {
         const newRow = {
-          key: 0,
-          ProductId: 0,
+          key: prevData.length + 1,
+          ProductId: "",
           Product: "",
           MinQty: 0,
           MaxQty: 0,
@@ -422,12 +420,25 @@ const CreateStore = () => {
           IndentBasis: "Reorder Level",
           StockLocatorId: 10108,
           ProductStatus: "True",
-          IsConsumptionAllowed: "Y",
+          Isconsumptionallowed: "Y",
         };
         return [...prevData, newRow];
       });
     });
   };
+
+  function IsconsumptionChange(value, option, key) {
+    debugger;
+    const updated = data.map((item) =>
+      key === item.key
+        ? {
+            ...item,
+            Isconsumptionallowed: value.target.checked ? "Y" : "N",
+          }
+        : item
+    );
+    setData(updated);
+  }
 
   const defaultColumns = [
     {
@@ -617,32 +628,22 @@ const CreateStore = () => {
     },
     {
       title: "Is Consumption Allowed",
-      dataIndex: "IsConsumptionAllowed",
-      key: "IsConsumptionAllowed",
+      dataIndex: "Isconsumptionallowed",
+      key: "Isconsumptionallowed",
       render: (_, record) => (
         <Form.Item
-          name={[record.key, "IsConsumptionAllowed"]}
+          name={[record.key, "Isconsumptionallowed"]}
           valuePropName="checked"
           initialValue={record.Isconsumptionallowed === "Y" ? true : false}
         >
-          <Checkbox />
+          <Checkbox
+            onChange={(value, option) =>
+              IsconsumptionChange(value, option, record.key)
+            }
+          />
         </Form.Item>
       ),
     },
-    // {
-    //   title: (
-    //     <Button
-    //       type="primary"
-    //       icon={<PlusOutlined />}
-    //       onClick={handleAdd}
-    //     ></Button>
-    //   ),
-    //   dataIndex: "add",
-    //   key: "add",
-    //   width: 50,
-    //   // render: (text, record) => <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record)}><DeleteOutlined /></Popconfirm>
-    //   //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>
-    // },
   ];
 
   const items = [
