@@ -364,17 +364,14 @@ const GRNAgainstPO = () => {
                 placeholder="Select Value"
               >
                 {Dropdown.StoreDetails.map((option) => {
-                  if (option.StoreId === 1) {
-                    return (
-                      <Select.Option
-                        key={option.StoreId}
-                        value={option.StoreId}
-                      >
-                        {option.LongName}
-                      </Select.Option>
-                    );
-                  }
-                  return null;
+                  // if (option.StoreId === 1) {
+                  return (
+                    <Select.Option key={option.StoreId} value={option.StoreId}>
+                      {option.LongName}
+                    </Select.Option>
+                  );
+                  // }
+                  // return null;
                 })}
               </Select>
             </Form.Item>

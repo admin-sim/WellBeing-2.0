@@ -66,7 +66,7 @@ const CreateIndent = () => {
   const { TextArea } = Input;
   const { Option } = Select;
   const navigate = useNavigate();
-
+  const [isSingleStage, setIsSingleStage] = useState(false);
   const [istablevisible, setIstablevisible] = useState(false);
   const [autoCompleteOptions, setAutoCompleteOptions] = useState([]);
   const fields = form1.getFieldsValue();
@@ -168,6 +168,18 @@ const CreateIndent = () => {
     });
     setData(newData);
   };
+
+  function handleStoreChange(option) {
+    debugger;
+    setIsSingleStage((prev) => prev || option.IsSingleStage);
+    form1.setFieldsValue({ IndentStatus: "" });
+  }
+
+  function handleStoreChange1(option) {
+    debugger;
+    setIsSingleStage((prev) => prev || option.IsSingleStage);
+    form1.setFieldsValue({ IndentStatus: "" });
+  }
 
   const handleSelectProduct = (value, option, column, record) => {
     debugger;
@@ -717,11 +729,15 @@ const CreateIndent = () => {
                     placeholder="Select Value"
                     onChange={handleSelect}
                     disabled={!!form1.getFieldValue("IndentId")}
+                    onSelect={(value, option) =>
+                      handleStoreChange(option.stage)
+                    }
                   >
                     {DropDown.RequestingStoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
                         value={option.StoreId}
+                        stage={option}
                       >
                         {option.LongName}
                       </Select.Option>
@@ -746,11 +762,15 @@ const CreateIndent = () => {
                     placeholder="Select Value"
                     onChange={handleSelect}
                     disabled={!!form1.getFieldValue("IndentId")}
+                    onSelect={(value, option) =>
+                      handleStoreChange1(option.stage)
+                    }
                   >
                     {DropDown.IssueingStoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
                         value={option.StoreId}
+                        stage={option}
                       >
                         {option.LongName}
                       </Select.Option>
@@ -810,7 +830,9 @@ const CreateIndent = () => {
                   ]}
                 >
                   <Select allowClear placeholder="Select Value">
-                    <Option value="Draft">Draft</Option>
+                    <Option hidden={isSingleStage} value="Draft">
+                      Draft
+                    </Option>
                     <Option value="Pending">Finalize</Option>
                   </Select>
                 </Form.Item>

@@ -87,7 +87,7 @@ const CreateGRNAgainstPO = () => {
   const [buttonTitle, setButtonTitle] = useState("Save");
   const [batches, setBatches] = useState([]);
   const [batchRecord, setBatchRecord] = useState([]);
-
+  const [IsSingleStage, setIsSingleStage] = useState(false);
   const [dropDownLoad, setDropDownLoading] = useState(true);
   const [poAmount, setPoAmount] = useState();
   const [Amount, setAmount] = useState();
@@ -1183,6 +1183,12 @@ const CreateGRNAgainstPO = () => {
     // setCounter(counter + 1);
   };
 
+  function handleStoreChange(option) {
+    debugger;
+    setIsSingleStage(option.IsSingleStage);
+    form1.setFieldsValue({ GRNStatus: "" });
+  }
+
   const Batchmodal = [
     {
       title: "Bar Code",
@@ -1843,11 +1849,15 @@ const CreateGRNAgainstPO = () => {
                     allowClear
                     placeholder="Select Value"
                     disabled={!!GrnHeaderId}
+                    onSelect={(value, option) => {
+                      handleStoreChange(option.stage);
+                    }}
                   >
                     {DropDown.StoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
                         value={option.StoreId}
+                        stage={option}
                       >
                         {option.LongName}
                       </Select.Option>
@@ -2008,7 +2018,9 @@ const CreateGRNAgainstPO = () => {
                   ]}
                 >
                   <Select allowClear placeholder="Select Value">
-                    <Option value="Draft">Draft</Option>
+                    <Option hidden={IsSingleStage} value="Draft">
+                      Draft
+                    </Option>
                     <Option value="Finalize">Finalize</Option>
                   </Select>
                 </Form.Item>

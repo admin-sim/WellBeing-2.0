@@ -72,6 +72,7 @@ const CreateStoreReturn = () => {
   const [rtoDate, setRToDate] = useState(dayjs());
   const [recieptDetails, setRecieptDetails] = useState();
   const [buttonTitle, setButtonTitle] = useState("Save");
+  const [isSingleStage, setIsSingleStage] = useState(false);
 
   useEffect(() => {
     customAxios
@@ -105,6 +106,12 @@ const CreateStoreReturn = () => {
         current.isAfter(dayjs().endOf("day")))
     );
   };
+
+  function handleStoreChange(option) {
+    debugger;
+    setIsSingleStage(option.IsSingleStage);
+    form1.setFieldsValue({ Status: "" });
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -550,11 +557,15 @@ const CreateStoreReturn = () => {
                       allowClear
                       placeholder="Select Value"
                       onChange={handleStore}
+                      onSelect={(value, option) =>
+                        handleStoreChange(option.stage)
+                      }
                     >
                       {DropDown.StoreDetails.map((option) => (
                         <Select.Option
                           key={option.StoreId}
                           value={option.StoreId}
+                          stage={option}
                         >
                           {option.StoreType}
                         </Select.Option>
@@ -580,7 +591,7 @@ const CreateStoreReturn = () => {
                       placeholder="Select Value"
                       onChange={handleStore}
                     >
-                      {DropDown.StoreDetails.map((option) => (
+                      {DropDown.ReturnStoreDetails.map((option) => (
                         <Select.Option
                           key={option.StoreId}
                           value={option.StoreId}
@@ -625,7 +636,11 @@ const CreateStoreReturn = () => {
                     ]}
                   >
                     <Select allowClear placeholder="Select Value">
-                      <Select.Option key="Draft" value="Draft"></Select.Option>
+                      <Select.Option
+                        hidden={isSingleStage}
+                        key="Draft"
+                        value="Draft"
+                      ></Select.Option>
                       <Select.Option
                         key="Finalize"
                         value="Finalize"

@@ -26,6 +26,7 @@ import {
 //import { CloseSquareFilled } from '@ant-design/icons';
 import { useNavigate } from "react-router";
 import {
+  urlCreateStoreReturn,
   urlGetPurshaseOrderDetails,
   urlSearchStoreReturn,
 } from "../../../../endpoints.js";
@@ -40,6 +41,7 @@ const StoreReturn = () => {
   const [StoreReturnDropdown, setStoreReturnDropDown] = useState({
     DocumentType: [],
     StoreDetails: [],
+    ReturnStoreDetails: [],
     SupplierList: [],
     DateFormat: [],
   });
@@ -56,12 +58,10 @@ const StoreReturn = () => {
 
   useEffect(() => {
     try {
-      customAxios
-        .get(urlGetPurshaseOrderDetails, { params: { type: "Store Return" } })
-        .then((response) => {
-          const apiData = response.data.data;
-          setStoreReturnDropDown(apiData);
-        });
+      customAxios.get(urlCreateStoreReturn).then((response) => {
+        const apiData = response.data.data;
+        setStoreReturnDropDown(apiData);
+      });
     } catch (error) {
       console.error("Error fetching purchase order details:", error);
     }
@@ -300,7 +300,7 @@ const StoreReturn = () => {
                   label="Returned To Location"
                 >
                   <Select allowClear placeholder="Select Value">
-                    {StoreReturnDropdown.StoreDetails.map((option) => (
+                    {StoreReturnDropdown.ReturnStoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
                         value={option.StoreId}

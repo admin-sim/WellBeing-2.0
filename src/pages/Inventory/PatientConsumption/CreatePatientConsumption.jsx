@@ -97,6 +97,7 @@ const PatientConsumption = () => {
   const [buttonTitle, setButtonTitle] = useState("Save");
   const [finalBatchDetails, setFinalBatchDetails] = useState([]);
   const [batchRecord, setBatchRecord] = useState();
+  const [isSingleStage, setIsSingleStage] = useState(false);
 
   useEffect(() => {
     customAxios
@@ -1173,9 +1174,11 @@ const PatientConsumption = () => {
     },
   ];
 
-  const handleStoreChange = (value) => {
+  const handleStoreChange = (option) => {
     form2.resetFields();
     setData(initialDataSource);
+    setIsSingleStage(option.IsSingleStage);
+    form1.setFieldsValue({ PoStatus: "" });
     //setData(initialDataSource);
   };
 
@@ -1251,13 +1254,17 @@ const PatientConsumption = () => {
                     <Select
                       allowClear
                       placeholder="Select Value"
-                      onChange={handleStoreChange}
+                      // onChange={handleStoreChange}
                       disabled={!!issueId}
+                      onSelect={(value, option) =>
+                        handleStoreChange(option.stage)
+                      }
                     >
                       {DropDown.StoreDetails.map((option) => (
                         <Select.Option
                           key={option.StoreId}
                           value={option.StoreId}
+                          stage={option}
                         >
                           {option.LongName}
                         </Select.Option>
@@ -1303,6 +1310,7 @@ const PatientConsumption = () => {
                     >
                       <Select allowClear placeholder="Select Value">
                         <Select.Option
+                          hidden={isSingleStage}
                           key="Draft"
                           value="Draft"
                         ></Select.Option>

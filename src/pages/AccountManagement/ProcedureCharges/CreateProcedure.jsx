@@ -12,6 +12,7 @@ import {
   Popconfirm,
   Row,
   Select,
+  Space,
   Table,
 } from "antd";
 import React, { useEffect, useState } from "react";
@@ -23,6 +24,7 @@ import { FaAnglesLeft } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 
 import {
+  urlDeleteSelectedProcedureCharges,
   urlGetCreateProcedure,
   urlGetPatientHeaderDetails,
   urlGetProcedureName,
@@ -50,6 +52,8 @@ function CreateProcedure() {
   const [existingprocedures, setExistingProcedures] = useState(null);
   const [additionalChargesSurgery, setAdditionalChargesSurgery] = useState([]);
   const [providerId, setProviderId] = useState(null);
+  const [disable, setDisable] = useState(false);
+  const [isAdd, setIsAdd] = useState(false);
 
   const navigate = useNavigate();
 
@@ -93,100 +97,102 @@ function CreateProcedure() {
   const [anesthesiaTypeId, setAnesthesiaTypeId] = useState(null);
   const [chargeTypeId, setChargeTypeId] = useState(null);
 
-  useEffect(() => {
-    const fetchProcedureName = async () => {
-      if (anesthesiaTypeId && chargeTypeId && PatientId && EncounterId) {
-        setReceiptInsAmtData([]);
-        form.setFields([]);
-        try {
-          const response = await customAxios.get(
-            `${urlGetProcedureName}?AnesthesiaTypeId=${anesthesiaTypeId}&AnesthesiaChargeTypeId=${chargeTypeId}&Patient=${PatientId}&EncounterId=${EncounterId}`
-          );
+  const fetchProcedureName = async () => {
+    if (anesthesiaTypeId && chargeTypeId && PatientId && EncounterId) {
+      setReceiptInsAmtData([]);
+      form.setFields([]);
+      try {
+        const response = await customAxios.get(
+          `${urlGetProcedureName}?AnesthesiaTypeId=${anesthesiaTypeId}&AnesthesiaChargeTypeId=${chargeTypeId}&Patient=${PatientId}&EncounterId=${EncounterId}`
+        );
 
-          if (response.status === 200 && response.data) {
-            setProcedures(response.data.data.Services);
-            setProviders(response.data.data.Provider);
-            setExistingProcedures(response.data.data.ProcedureCharges);
-            setAdditionalChargesSurgery(
-              response.data.data.AdditionalChargesSurgery
-            );
-            setGroupId(response.data.data.ServiceGroupId ?? 1045);
-            if (response.data.data.ProcedureCharges?.length > 0) {
-              const procedureCharges = response.data.data.ProcedureCharges;
-              const formattedCharges = procedureCharges.map((item, index) => ({
-                key: index + 1,
-                IsChargeable: item.IsChargeable ?? false,
-                ServiceId: item.ProcedureId ?? "",
-                Rate: item.Rate ?? 0,
-                ChargeAmount: item.ChargeAmount ?? 0,
-                ProviderId: providerId ?? 0,
-                Priority: item.Priority ?? 0,
-                DiscP: item.DiscountRate ?? 0,
-                DiscAmount: item.Discount ?? 0,
-                ServiceTax: item.ServiceTax ?? false,
-                NetAmount: item.NetAmount ?? 0,
-                TaxAmount: item.TaxAmount ?? 0,
-                ServiceClassificationID: item.ServiceClassificationID ?? 0,
-              }));
+        if (response.status === 200 && response.data) {
+          setProcedures(response.data.data.Services);
+          setProviders(response.data.data.Provider);
+          setExistingProcedures(response.data.data.ProcedureCharges);
+          const newAdditionalChargesSurgery =
+            response.data.data.AdditionalChargesSurgery.map((item) => ({
+              ...item,
+              ProcedureChargeId: 0,
+              ProcedureChargeDetailId: 0,
+            }));
+          setAdditionalChargesSurgery(newAdditionalChargesSurgery);
+          setGroupId(response.data.data.ServiceGroupId ?? 1045);
+          if (response.data.data.ProcedureCharges?.length > 0) {
+            const procedureCharges = response.data.data.ProcedureCharges;
+            const formattedCharges = procedureCharges.map((item, index) => ({
+              key: index + 1,
+              ProcedureChargeId: item.ProcedureChargeId ?? 0,
+              IsChargeable: item.IsChargeable ?? false,
+              ServiceId: item.ProcedureId ?? "",
+              Rate: item.Rate ?? 0,
+              ChargeAmount: item.ChargeAmount ?? 0,
+              ProviderId: providerId ?? 0,
+              Priority: item.Priority ?? 0,
+              DiscP: item.DiscountRate ?? 0,
+              DiscAmount: item.Discount ?? 0,
+              ServiceTax: item.ServiceTax ?? false,
+              NetAmount: item.NetAmount ?? 0,
+              TaxAmount: item.TaxAmount ?? 0,
+              ServiceClassificationID: item.ServiceClassificationID ?? 0,
+              childrenData:
+                item.ProcedureChargesDetails?.map((detail) => ({
+                  ...detail,
+                  // ChargeAmount: detail.ChargeAmount,
+                  // NetAmount: detail.NetAmount,
+                  SurgeryRuleId: detail.AssociativeServiceId,
+                  ChargeEntryCatalogName: detail.AssociativeServiceName,
+                })) || [],
+            }));
 
-              setReceiptInsAmtData(formattedCharges);
-              form.resetFields();
-              const fieldsToSet = [];
+            setReceiptInsAmtData(formattedCharges);
+            form.resetFields();
+            const fieldsToSet = [];
 
-              formattedCharges.forEach((item, index) => {
-                fieldsToSet.push(
-                  { name: ["IsChargeable", index], value: item.IsChargeable },
-                  { name: ["ServiceId", index], value: item.ServiceId },
-                  { name: ["Rate", index], value: item.Rate },
-                  { name: ["ChargeAmount", index], value: item.ChargeAmount },
-                  { name: ["ProviderId", index], value: item.ProviderId },
-                  { name: ["Priority", index], value: item.Priority },
-                  { name: ["DiscP", index], value: item.DiscP },
-                  { name: ["DiscAmount", index], value: item.DiscAmount },
-                  { name: ["ServiceTax", index], value: item.ServiceTax },
-                  { name: ["NetAmount", index], value: item.NetAmount }
-                );
-              });
+            formattedCharges.forEach((item, index) => {
+              fieldsToSet.push(
+                {
+                  name: ["ProcedureChargeId", index],
+                  value: item.ProcedureChargeId,
+                },
+                { name: ["IsChargeable", index], value: item.IsChargeable },
+                { name: ["ServiceId", index], value: item.ServiceId },
+                { name: ["Rate", index], value: item.Rate },
+                { name: ["ChargeAmount", index], value: item.ChargeAmount },
+                { name: ["ProviderId", index], value: item.ProviderId },
+                { name: ["Priority", index], value: item.Priority },
+                { name: ["DiscP", index], value: item.DiscP },
+                { name: ["DiscAmount", index], value: item.DiscAmount },
+                { name: ["ServiceTax", index], value: item.ServiceTax },
+                { name: ["NetAmount", index], value: item.NetAmount }
+              );
+            });
 
-              form.setFields(fieldsToSet);
-              setTimeout(() => {
-                form.validateFields();
-              }, 0);
-              const newSurgeryData =
-                response.data.data.ProcedureCharges[0].ProcedureChargesDetails.map(
-                  (item) => {
-                    const found =
-                      response.data.data.AdditionalChargesSurgery.find(
-                        (i) =>
-                          i.ChargeEntryCatalogId === item.AssociativeServiceId
-                      );
-
-                    return {
-                      ...item,
-                      SurgeryRuleId: item.AssociativeServiceId,
-                      ...(found || {}),
-                    };
-                  }
-                );
-
-              setAdditionalChargesSurgery(newSurgeryData);
-            } else {
-              setReceiptInsAmtData(initialDataSource);
-              form.resetFields();
-            }
+            form.setFields(fieldsToSet);
+            setTimeout(() => {
+              form.validateFields();
+            }, 0);
+            setDisable(true);
+          } else {
+            setReceiptInsAmtData(initialDataSource);
+            form.resetFields();
           }
-        } catch (error) {
-          console.error("Error fetching procedure name", error);
         }
+      } catch (error) {
+        console.error("Error fetching procedure name", error);
       }
-    };
+    }
+  };
 
+  useEffect(() => {
+    setDisable(false);
     fetchProcedureName();
   }, [anesthesiaTypeId, chargeTypeId, PatientId, EncounterId]);
 
   const initialDataSource = [
     {
       key: 1,
+      ProcedureChargeId: 0,
       IsChargeable: true,
       ServiceId: "",
       Rate: 0,
@@ -264,11 +270,83 @@ function CreateProcedure() {
         `${urlGetServiceChargeforProcedure}?anesthesiaTypeId=${anesthesiaTypeId}&anesthesiaChargeTypeId=${chargeTypeId}&serviceId=${serviceId}`
       );
 
+      receiptInsAmtData;
       if (response.status === 200 && response.data) {
         const priceDef = response.data.data.ServicePriceDefinition;
 
         const price = priceDef?.Price || 0;
         const serviceClassId = priceDef?.ServiceClassificationId || "";
+        receiptInsAmtData;
+
+        const newSurgeryData = additionalChargesSurgery.map(
+          (item, index, arr) => {
+            const Id =
+              item.ProcedureChargeDetailId === 0
+                ? item.SurgeryRuleId
+                : item.ProcedureChargeDetailId;
+            if (index === 0) {
+              form.setFieldsValue({
+                ChargeAmount1: {
+                  [Id]: (price * item.ChargeValue) / 100,
+                },
+                NetAmount1: {
+                  [Id]: (price * item.ChargeValue) / 100,
+                },
+                DiscountRate: {
+                  [Id]: 0,
+                },
+                DiscountAmount: {
+                  [Id]: 0,
+                },
+              });
+              return {
+                ...item,
+                ChargeAmount: (price * item.ChargeValue) / 100,
+                NetAmount: (price * item.ChargeValue) / 100,
+                DiscountRate: 0,
+                DiscountAmount: 0,
+                ProviderId: providerId,
+                IsChargeable: true,
+                ServiceQty: 1,
+                ProcedureChargeDetailId: Id,
+                AssociativeServiceId: item.ChargeEntryCatalogId,
+                ServiceGroupId: groupId,
+              };
+            } else {
+              const prevItem = arr[index - 1];
+              const prevChargeAmount = (price * prevItem.ChargeValue) / 100;
+              form.setFieldsValue({
+                ChargeAmount1: {
+                  [Id]: (prevChargeAmount * item.ChargeValue) / 100,
+                },
+                NetAmount1: {
+                  [Id]: (prevChargeAmount * item.ChargeValue) / 100,
+                },
+                DiscountRate: {
+                  [Id]: 0,
+                },
+                DiscountAmount: {
+                  [Id]: 0,
+                },
+              });
+              return {
+                ...item,
+                ChargeAmount: (prevChargeAmount * item.ChargeValue) / 100,
+                NetAmount: (prevChargeAmount * item.ChargeValue) / 100,
+                DiscountRate: 0,
+                DiscountAmount: 0,
+                ProviderId: providerId,
+                IsChargeable: true,
+                ServiceQty: 1,
+                ProcedureChargeDetailId: Id,
+                AssociativeServiceId: item.ChargeEntryCatalogId,
+                ServiceGroupId: groupId,
+              };
+            }
+          }
+        );
+
+        setAdditionalChargesSurgery(newSurgeryData);
 
         setReceiptInsAmtData((prevData) =>
           prevData.map((item) =>
@@ -281,76 +359,11 @@ function CreateProcedure() {
                   ServiceClassificationID: serviceClassId,
                   DiscP: 0,
                   DiscAmount: 0,
+                  childrenData: newSurgeryData,
                 }
               : item
           )
         );
-
-        const newSurgeryData = additionalChargesSurgery.map(
-          (item, index, arr) => {
-            if (index === 0) {
-              form.setFieldsValue({
-                ChargeAmount: {
-                  [item.SurgeryRuleId]: (price * item.ChargeValue) / 100,
-                },
-                NetAmount: {
-                  [item.SurgeryRuleId]: (price * item.ChargeValue) / 100,
-                },
-                DiscountRate: {
-                  [item.SurgeryRuleId]: 0,
-                },
-                DiscountAmount: {
-                  [item.SurgeryRuleId]: 0,
-                },
-              });
-              return {
-                ...item,
-                ChargeAmount: (price * item.ChargeValue) / 100,
-                NetAmount: (price * item.ChargeValue) / 100,
-                DiscountRate: 0,
-                DiscountAmount: 0,
-                ProviderId: providerId,
-                IsChargeable: true,
-                ServiceQty: 1,
-                AssociativeServiceId: item.ChargeEntryCatalogId,
-                ServiceGroupId: groupId,
-              };
-            } else {
-              const prevItem = arr[index - 1];
-              const prevChargeAmount = (price * prevItem.ChargeValue) / 100;
-              form.setFieldsValue({
-                ChargeAmount: {
-                  [item.SurgeryRuleId]:
-                    (prevChargeAmount * item.ChargeValue) / 100,
-                },
-                NetAmount: {
-                  [item.SurgeryRuleId]:
-                    (prevChargeAmount * item.ChargeValue) / 100,
-                },
-                DiscountRate: {
-                  [item.SurgeryRuleId]: 0,
-                },
-                DiscountAmount: {
-                  [item.SurgeryRuleId]: 0,
-                },
-              });
-              return {
-                ...item,
-                ChargeAmount: (prevChargeAmount * item.ChargeValue) / 100,
-                NetAmount: (prevChargeAmount * item.ChargeValue) / 100,
-                DiscountRate: 0,
-                DiscountAmount: 0,
-                ProviderId: providerId,
-                IsChargeable: true,
-                ServiceQty: 1,
-                AssociativeServiceId: item.ChargeEntryCatalogId,
-                ServiceGroupId: groupId,
-              };
-            }
-          }
-        );
-
-        setAdditionalChargesSurgery(newSurgeryData);
 
         form.setFieldsValue({
           [`Rate`]: { [recordKey - 1]: price },
@@ -368,6 +381,63 @@ function CreateProcedure() {
     }
   };
 
+  function handleAddRow(record) {
+    form.validateFields().then(() => {
+      setReceiptInsAmtData((prevData) => {
+        const newRow = {
+          key: prevData.length + 1,
+          ProcedureChargeId: 0,
+          IsChargeable: true,
+          ServiceId: "",
+          Rate: 0,
+          ChargeAmount: 0,
+          ProviderId: "",
+          Priority: 1,
+          DiscP: 0,
+          DiscAmount: 0,
+          ServiceTax: true,
+          NetAmount: 0,
+          ServiceClassificationID: 0,
+          TaxAmount: 0,
+        };
+        return [...prevData, newRow];
+      });
+      setIsAdd(true);
+    });
+  }
+
+  async function handleInstrumentDelete(record) {
+    try {
+      const response = await customAxios.get(
+        urlDeleteSelectedProcedureCharges,
+        { params: { ProcedureChargeId: record.ProcedureChargeId } }
+      );
+      if (response.status === 200 && response.data) {
+        fetchProcedureName();
+        message.success("Procedure deleted successfully");
+      }
+    } catch (error) {
+      console.error("Failed to fetch procedure details", error);
+    }
+    // const newData = receiptInsAmtData.filter((item) => item.key !== record.key);
+    // setReceiptInsAmtData(newData);
+
+    // // Remove corresponding form fields
+    // const fieldsToRemove = [
+    //   `IsChargeable.${record.key - 1}`,
+    //   `ServiceId.${record.key - 1}`,
+    //   `Rate.${record.key - 1}`,
+    //   `ChargeAmount.${record.key - 1}`,
+    //   `ProviderId.${record.key - 1}`,
+    //   `Priority.${record.key - 1}`,
+    //   `DiscP.${record.key - 1}`,
+    //   `DiscAmount.${record.key - 1}`,
+    //   `ServiceTax.${record.key - 1}`,
+    //   `NetAmount.${record.key - 1}`,
+    // ];
+    // form.setFields(fieldsToRemove.map((name) => ({ name, value: undefined })));
+  }
+
   const receiptInscolumns = [
     {
       title: "Chargeable",
@@ -375,17 +445,25 @@ function CreateProcedure() {
       key: "IsChargeable",
       width: 40,
       render: (text, record) => (
-        <Form.Item
-          name={["IsChargeable", record.key - 1]}
-          valuePropName="checked"
-          initialValue={true}
-        >
-          <Checkbox
-          // onChange={(e) =>
-          //   handleInputChange(e.target.checked, "IsChargeable", record.key)
-          // }
-          ></Checkbox>
-        </Form.Item>
+        <>
+          <Form.Item
+            name={["IsChargeable", record.key - 1]}
+            valuePropName="checked"
+            initialValue={true}
+          >
+            <Checkbox
+              disabled={disable && record.ProcedureChargeId > 0 ? true : false}
+              // onChange={(e) =>
+              //   handleInputChange(e.target.checked, "IsChargeable", record.key)
+              // }
+            ></Checkbox>
+          </Form.Item>
+          <Form.Item
+            hidden
+            initialValue={record.ProcedureChargeId}
+            name={["ProcedureChargeId", record.key - 1]}
+          ></Form.Item>
+        </>
       ),
     },
     {
@@ -399,6 +477,7 @@ function CreateProcedure() {
           rules={[{ required: true, message: "Required" }]}
         >
           <Select
+            disabled={disable && record.ProcedureChargeId > 0 ? true : false}
             onChange={(value) => {
               handleInputChange(value, "ServiceId", record.key);
               fetchProcedureDetails(value, record.key);
@@ -472,6 +551,7 @@ function CreateProcedure() {
           initialValue={providerId}
         >
           <Select
+            disabled={disable && record.ProcedureChargeId > 0 ? true : false}
             onChange={(value) =>
               handleInputChange(value, "ProviderId", record.key)
             }
@@ -496,7 +576,7 @@ function CreateProcedure() {
           // initialValue={record.Branch}
         >
           <Input
-            // disabled
+            disabled={disable && record.ProcedureChargeId > 0 ? true : false}
             min={0}
             defaultValue={text}
             onChange={(e) =>
@@ -517,6 +597,7 @@ function CreateProcedure() {
           //initialValue={record.IfscCode}
         >
           <Input
+            disabled={disable && record.ProcedureChargeId > 0 ? true : false}
             min={0}
             defaultValue={text}
             onChange={(e) =>
@@ -560,6 +641,7 @@ function CreateProcedure() {
           initialValue={true}
         >
           <Checkbox
+            disabled={disable && record.ProcedureChargeId > 0 ? true : false}
             onChange={(e) =>
               handleInputChange(e.target.checked, "ServiceTax", record.key)
             }
@@ -578,7 +660,7 @@ function CreateProcedure() {
           //initialValue={record.AuthRefNo}
         >
           <Input
-            // disabled
+            disabled={disable && record.ProcedureChargeId > 0 ? true : false}
             min={0}
             defaultValue={text}
             onChange={(e) =>
@@ -593,73 +675,85 @@ function CreateProcedure() {
       key: "add",
       width: 50,
       render: (text, record) => (
-        <Popconfirm
-          title="Sure to delete?"
-          onConfirm={() => handleInstrumentDelete(record)}
+        <Space
+          hidden={!disable || !record.ProcedureChargeId > 0 ? true : false}
         >
-          <DeleteOutlined />
-        </Popconfirm>
+          <Popconfirm
+            title="Sure to delete?"
+            onConfirm={() => handleInstrumentDelete(record)}
+          >
+            <Button type="text" icon={<DeleteOutlined />} size="small" />
+          </Popconfirm>
+          <Button
+            hidden={isAdd}
+            type="primary"
+            size="small"
+            icon={<PlusOutlined style={{ fontSize: "12px" }} />}
+            onClick={() => handleAddRow(record)}
+          />
+        </Space>
       ),
-      //<Button type="primary" icon={<DeleteOutlined />} onClick={() => handleDelete(record)}></Button>
     },
   ];
 
   const handleFinish = async (values) => {
-    debugger;
     try {
       let saved = false;
 
       for (const item of receiptInsAmtData) {
-        const charamt = parseFloat(item.ChargeAmount) || 0;
-        const discamt = parseFloat(item.DiscAmount) || 0;
-        const temp = true;
+        if (item.ProcedureChargeId == 0) {
+          const charamt = parseFloat(item.ChargeAmount) || 0;
+          const discamt = parseFloat(item.DiscAmount) || 0;
+          const temp = true;
 
-        if (charamt >= discamt && temp === true) {
-          const object = {
-            FacilityId: 1,
-            PatientId: PatientId,
-            EncounterId: EncounterId,
-            AnesthesiaTypeId: anesthesiaTypeId,
-            AnesthesiaTypeChargeId: chargeTypeId,
-            IsChargeable: item.IsChargeable,
-            ProcedureId: item.ServiceId,
-            Rate: item.Rate,
-            ChargeAmount: item.ChargeAmount,
-            ProviderId: providerId,
-            Priority: item.Priority,
-            Discount: item.DiscAmount,
-            DiscountRate: item.DiscP,
-            ServiceTax: item.ServiceTax || false,
-            TaxAmount: item.TaxAmount || 0,
-            NetAmount: item.NetAmount,
-            ServiceGroupId: groupId,
-            ServiceclassificationId: item.ServiceClassificationID,
-          };
+          if (charamt >= discamt && temp === true) {
+            const object = {
+              FacilityId: 1,
+              PatientId: PatientId,
+              EncounterId: EncounterId,
+              AnesthesiaTypeId: anesthesiaTypeId,
+              AnesthesiaTypeChargeId: chargeTypeId,
+              IsChargeable: item.IsChargeable,
+              ProcedureId: item.ServiceId,
+              Rate: item.Rate,
+              ChargeAmount: item.ChargeAmount,
+              ProviderId: providerId,
+              Priority: item.Priority,
+              Discount: item.DiscAmount,
+              DiscountRate: item.DiscP,
+              ServiceTax: item.ServiceTax || false,
+              TaxAmount: item.TaxAmount || 0,
+              NetAmount: item.NetAmount,
+              ServiceGroupId: groupId,
+              ServiceclassificationId: item.ServiceClassificationID,
+            };
 
-          const procedurelist = additionalChargesSurgery;
+            const procedurelist = item.childrenData;
 
-          const payload = {
-            AddNewProcedureCharges: object,
-            ProcedureChargesDetails: procedurelist,
-          };
+            const payload = {
+              AddNewProcedureCharges: object,
+              ProcedureChargesDetails: procedurelist,
+            };
 
-          const response = await customAxios.post(
-            urlSaveNewProcedureCharges,
-            payload,
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
+            const response = await customAxios.post(
+              urlSaveNewProcedureCharges,
+              payload,
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+
+            if (response.status === 200) {
+              message.success("Procedure saved successfully");
+              fetchProcedureName();
+              setIsAdd(false);
+              saved = true;
             }
-          );
 
-          if (response.status === 200) {
-            //alert("Procedure saved successfully!");
-            message.success("Procedure saved successfully");
-            saved = true;
+            break;
           }
-
-          break; // ✅ exit after saving one, since API only supports single object
         }
       }
 
@@ -672,59 +766,61 @@ function CreateProcedure() {
     }
   };
 
-  const expandDataSource = (additionalChargesSurgery || []).map((i) => {
-    return {
-      ...i,
-    };
-  });
-
   function DiscountRateChange(value, column, record) {
     const discPer = parseFloat(value) || 0;
     const chargeAmount = parseFloat(record.ChargeAmount) || 0;
     const discountAmt = (chargeAmount * discPer) / 100;
     const netAmount = chargeAmount - discountAmt;
 
-    const newSurgeryData = additionalChargesSurgery.map((item) => {
-      if (item.SurgeryRuleId === record.SurgeryRuleId) {
+    const newR = receiptInsAmtData.map((item) => {
+      if (item.ProcedureChargeId === 0) {
         return {
           ...item,
-          NetAmount: netAmount,
-          DiscountRate: value,
-          DiscountAmount: discountAmt,
+          childrenData: item.childrenData.map((child) => {
+            if (child.SurgeryRuleId === record.SurgeryRuleId) {
+              return {
+                ...child,
+                ChargeAmount: chargeAmount,
+                DiscountRate: discPer,
+                DiscountAmount: discountAmt,
+                // NetAmount1: netAmount,
+                NetAmount: netAmount,
+              };
+            }
+            return child;
+          }),
         };
       }
       return item;
     });
 
-    setAdditionalChargesSurgery(newSurgeryData);
+    setReceiptInsAmtData(newR);
 
     form.setFieldsValue({
       DiscountAmount: {
-        [record.SurgeryRuleId]: discountAmt,
+        [record.ProcedureChargeDetailId]: discountAmt,
       },
-      NetAmount: {
-        [record.SurgeryRuleId]: netAmount,
+      NetAmount1: {
+        [record.ProcedureChargeDetailId]: netAmount,
       },
     });
-    //   return {
-    //     ...item,
-    //     DiscountRate: discPer,
-    //     DiscountAmount: discountAmt,
-    //     NetAmount: netAmount,
-    //   };
-    // }
   }
 
   const expandColumns = [
-    { title: "Associated Services", dataIndex: "ChargeEntryCatalogName" },
+    {
+      title: "Associated Services",
+      dataIndex: "ChargeEntryCatalogName",
+      key: "key",
+    },
     {
       title: "Provider",
       dataIndex: "ProviderId",
+      key: "key",
       width: 200,
       render: (text, record, index) => (
         <>
           <Form.Item
-            name={["ProviderId", record.SurgeryRuleId]}
+            name={["ProviderId", record.ProcedureChargeDetailId]}
             rules={[
               {
                 required: true,
@@ -733,7 +829,9 @@ function CreateProcedure() {
             ]}
             initialValue={providerId}
           >
-            <Select>
+            <Select
+              disabled={disable && record.ProcedureChargeId > 0 ? true : false}
+            >
               {providers?.map((option) => (
                 <Option key={option.ProviderId} value={option.ProviderId}>
                   {`${option.ProviderFirstName} ${option.ProviderLastName}`}
@@ -742,7 +840,7 @@ function CreateProcedure() {
             </Select>
           </Form.Item>
           <Form.Item
-            name={["IsChargeable", record.SurgeryRuleId]}
+            name={["IsChargeable", record.ProcedureChargeDetailId]}
             initialValue={true}
             hidden
             valuePropName="checked"
@@ -750,8 +848,15 @@ function CreateProcedure() {
             <Checkbox />
           </Form.Item>
           <Form.Item
-            name={["AssociativeServiceId", record.SurgeryRuleId]}
+            name={["AssociativeServiceId", record.ProcedureChargeDetailId]}
             initialValue={record.ChargeEntryCatalogId}
+            hidden
+          >
+            <input />
+          </Form.Item>
+          <Form.Item
+            name={["ProcedureChargeDetailId", record.ProcedureChargeDetailId]}
+            initialValue={record.ProcedureChargeDetailId}
             hidden
           >
             <input />
@@ -762,9 +867,10 @@ function CreateProcedure() {
     {
       title: "Qty",
       dataIndex: "ServiceQty",
+      key: "key",
       render: (text, record) => (
         <Form.Item
-          name={["ServiceQty", record.SurgeryRuleId]}
+          name={["ServiceQty", record.ProcedureChargeDetailId]}
           style={{ width: "100%" }}
           initialValue={1}
         >
@@ -774,15 +880,17 @@ function CreateProcedure() {
     },
     {
       title: "Charge Amount",
-      dataIndex: "ChargeAmount",
+      dataIndex: "ChargeAmount1",
+      key: "key",
       render: (text, record) => (
         <Form.Item
-          name={["ChargeAmount", record.SurgeryRuleId]}
+          name={["ChargeAmount1", record.ProcedureChargeDetailId]}
           style={{ width: "100%" }}
           rules={[{ required: true, message: "Required" }]}
           initialValue={record.ChargeAmount}
         >
           <InputNumber
+            disabled={disable && record.ProcedureChargeId > 0 ? true : false}
             style={{ width: "100%" }}
             min={0}
             // onChange={(value) => handleInputChange(value, "Rate", record.key)}
@@ -793,14 +901,16 @@ function CreateProcedure() {
     {
       title: "Disc(%)",
       dataIndex: "DiscountRate",
+      key: "key",
       render: (text, record) => (
         <Form.Item
-          name={["DiscountRate", record.SurgeryRuleId]}
+          name={["DiscountRate", record.ProcedureChargeDetailId]}
           style={{ width: "100%" }}
           rules={[{ required: true, message: "Required" }]}
           initialValue={record.DiscountRate}
         >
           <InputNumber
+            disabled={disable && record.ProcedureChargeId > 0 ? true : false}
             style={{ width: "100%" }}
             min={0}
             max={100}
@@ -814,9 +924,10 @@ function CreateProcedure() {
     {
       title: "Discount",
       dataIndex: "DiscountAmount",
+      key: "key",
       render: (text, record) => (
         <Form.Item
-          name={["DiscountAmount", record.SurgeryRuleId]}
+          name={["DiscountAmount", record.ProcedureChargeDetailId]}
           style={{ width: "100%" }}
           rules={[{ required: true, message: "Required" }]}
           initialValue={record.DiscountAmount}
@@ -827,15 +938,17 @@ function CreateProcedure() {
     },
     {
       title: "Net Amount",
-      dataIndex: "NetAmount",
+      dataIndex: "NetAmount1",
+      key: "key",
       render: (text, record) => (
         <Form.Item
-          name={["NetAmount", record.SurgeryRuleId]}
+          name={["NetAmount1", record.ProcedureChargeDetailId]}
           style={{ width: "100%" }}
           rules={[{ required: true, message: "Required" }]}
           initialValue={record.NetAmount}
         >
           <InputNumber
+            disabled={disable && record.ProcedureChargeId > 0 ? true : false}
             value={record.NetAmount}
             style={{ width: "100%" }}
             min={0}
@@ -845,10 +958,10 @@ function CreateProcedure() {
     },
   ];
 
-  const expandedRowRender = () => (
+  const expandedRowRender = (record) => (
     <Table
       columns={expandColumns}
-      dataSource={expandDataSource}
+      dataSource={record.childrenData || []}
       pagination={false}
     />
   );
@@ -936,22 +1049,12 @@ function CreateProcedure() {
           </ColWithSixSpan>
         </Row>
 
-        {/* The Form now only contains the table and action buttons */}
         <Form
           form={form}
           layout="vertical"
           size="small"
           onFinish={handleFinish}
         >
-          {/* <Table
-            dataSource={receiptInsAmtData}
-            columns={receiptInscolumns}
-            rowClassName={(record) => (record.disabled ? "disabled-row" : "")}
-            size="small"
-            bordered
-            pagination={false}
-            style={{ marginBottom: 24 }}
-          /> */}
           <Table
             columns={receiptInscolumns}
             expandable={{

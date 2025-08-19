@@ -72,6 +72,7 @@ const CreateVendorReturn = () => {
   const [ptoDate, setPToDate] = useState(dayjs());
   const [vfromDate, setVFromDate] = useState(dayjs());
   const [vtoDate, setVToDate] = useState(dayjs());
+  const [isSingleStage, setIsSingleStage] = useState(false);
 
   const pdisableToDate = (current) => {
     return current && current.isBefore(pfromDate, "day");
@@ -80,6 +81,12 @@ const CreateVendorReturn = () => {
   const vdisableToDate = (current) => {
     return current && current.isBefore(vfromDate, "day");
   };
+
+  function handleStoreChange(option) {
+    debugger;
+    setIsSingleStage(option.IsSingleStage);
+    form1.setFieldsValue({ ReturnStatus: "" });
+  }
 
   useEffect(() => {
     customAxios
@@ -599,11 +606,18 @@ const CreateVendorReturn = () => {
                       },
                     ]}
                   >
-                    <Select allowClear placeholder="Select Value">
+                    <Select
+                      allowClear
+                      placeholder="Select Value"
+                      onSelect={(value, option) =>
+                        handleStoreChange(option.stage)
+                      }
+                    >
                       {DropDown.StoreDetails.map((option) => (
                         <Select.Option
                           key={option.StoreId}
                           value={option.StoreId}
+                          stage={option}
                         >
                           {option.LongName}
                         </Select.Option>
@@ -673,7 +687,11 @@ const CreateVendorReturn = () => {
                     ]}
                   >
                     <Select allowClear placeholder="Select Value">
-                      <Select.Option key="Draft" value="Draft"></Select.Option>
+                      <Select.Option
+                        hidden={isSingleStage}
+                        key="Draft"
+                        value="Draft"
+                      ></Select.Option>
                       <Select.Option
                         key="Finalize"
                         value="Finalize"

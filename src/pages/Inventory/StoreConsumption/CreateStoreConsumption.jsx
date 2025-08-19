@@ -111,6 +111,7 @@ const CreateStoreConsumption = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [buttonTitle, setButtonTitle] = useState("Save");
   // const tableRef = useRef(null);
+  const [isSingleStage, setIsSingleStage] = useState(false);
 
   useEffect(() => {
     customAxios
@@ -169,6 +170,12 @@ const CreateStoreConsumption = () => {
   const handleSaveModal = () => {
     form3.submit();
   };
+
+  function handleStoreChange(option) {
+    debugger;
+    setIsSingleStage(option.IsSingleStage);
+    form1.setFieldsValue({ ConsumptionStatus: "" });
+  }
 
   const onFinishModel = async () => {
     await form3.validateFields();
@@ -1132,11 +1139,15 @@ const CreateStoreConsumption = () => {
                       placeholder="Select Value"
                       allowClear
                       onChange={handleStore}
+                      onSelect={(value, option) =>
+                        handleStoreChange(option.stage)
+                      }
                     >
                       {DropDown.StoreDetails.map((option) => (
                         <Select.Option
                           key={option.StoreId}
                           value={option.StoreId}
+                          stage={option}
                         >
                           {option.LongName}
                         </Select.Option>
@@ -1172,7 +1183,11 @@ const CreateStoreConsumption = () => {
                     ]}
                   >
                     <Select allowClear placeholder="Select Value">
-                      <Select.Option key="Draft" value="Draft"></Select.Option>
+                      <Select.Option
+                        hidden={isSingleStage}
+                        key="Draft"
+                        value="Draft"
+                      ></Select.Option>
                       <Select.Option
                         key="Finalize"
                         value="Finalize"

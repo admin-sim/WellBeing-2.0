@@ -57,6 +57,7 @@ const CreateOpeningStock = () => {
   const location = useLocation();
   const [alternateUoms, setAlternateUoms] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isSingleStage, setIsSingleStage] = useState(false);
 
   const GRNHeaderId = location.state.GRNHeaderId;
 
@@ -227,6 +228,12 @@ const CreateOpeningStock = () => {
       setProductOptions(newOptions);
     }
   };
+
+  function handleStoreChange(option) {
+    debugger;
+    setIsSingleStage(option.IsSingleStage);
+    form1.setFieldsValue({ GRNStatus: "" });
+  }
 
   const onOkModal = async () => {
     debugger;
@@ -1417,11 +1424,15 @@ const CreateOpeningStock = () => {
                     placeholder="Select Value"
                     loading={dropDownLoad}
                     disabled={!!GRNHeaderId}
+                    onSelect={(value, option) =>
+                      handleStoreChange(option.stage)
+                    }
                   >
                     {DropDown.StoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
                         value={option.StoreId}
+                        stage={option}
                       >
                         {option.LongName}
                       </Select.Option>
@@ -1453,7 +1464,11 @@ const CreateOpeningStock = () => {
                   ]}
                 >
                   <Select allowClear placeholder="Select Value">
-                    <Select.Option key="Draft" value="Draft"></Select.Option>
+                    <Select.Option
+                      hidden={isSingleStage}
+                      key="Draft"
+                      value="Draft"
+                    ></Select.Option>
                     <Select.Option
                       key="Finalize"
                       value="Finalize"

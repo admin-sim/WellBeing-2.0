@@ -77,6 +77,7 @@ const CreatePurchaseOrder = () => {
   const [poAmount, setPoAmount] = useState();
   const [GSTTax, setGSTTax] = useState();
   const [alternateUoms, setAlternateUoms] = useState([]);
+  const [isSingleStage, setIsSingleStage] = useState(false);
 
   const initialDataSource =
     PoHeaderId === 0
@@ -721,6 +722,12 @@ const CreatePurchaseOrder = () => {
     form2.resetFields();
   };
 
+  function handleStoreChange(option) {
+    debugger;
+    setIsSingleStage(option.IsSingleStage);
+    form1.setFieldsValue({ PoStatus: "" });
+  }
+
   const handleSaveModal = async () => {
     debugger;
     await form2.validateFields();
@@ -1323,10 +1330,15 @@ const CreatePurchaseOrder = () => {
                 loading={dropDownLoad}
                 allowClear
                 placeholder="Select Value"
+                onSelect={(value, option) => handleStoreChange(option.stage)}
               >
                 {/* <Option value="">Select Value</Option> */}
                 {DropDown.StoreDetails.map((option) => (
-                  <Select.Option key={option.StoreId} value={option.StoreId}>
+                  <Select.Option
+                    key={option.StoreId}
+                    value={option.StoreId}
+                    stage={option}
+                  >
                     {option.LongName}
                   </Select.Option>
                 ))}
@@ -1389,7 +1401,9 @@ const CreatePurchaseOrder = () => {
               ]}
             >
               <Select allowClear placeholder="Select Value">
-                <Option value="Draft">Draft</Option>
+                <Option hidden={isSingleStage} value="Draft">
+                  Draft
+                </Option>
                 <Option value="Pending">Finalize</Option>
               </Select>
             </Form.Item>

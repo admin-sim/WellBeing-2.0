@@ -665,3 +665,7 @@ export const urlCreateIndent = `${baseURL}/api/Indent/CreateIndent`;
 export const urlPatientIndentIndex = `${baseURL}/api/PatientIndent/PatientIndentIndex`;
 export const urlCreatePatientIndent = `${baseURL}/api/PatientIndent/CreatePatientIndent`;
 export const urlPatientIssueIndex = `${baseURL}/api/PatientIssue/PatientIssueIndex`;
+ 
+
+
+export const urlRefreshToken = `${baseURL}/api/User/RefreshToken`;

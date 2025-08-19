@@ -8,10 +8,7 @@ function ProcedureCharges() {
   const navigate = useNavigate();
 
   const handleOnSubmit = (values) => {
-    debugger;
     const url = `/CreateProcedure`;
-    console.log("Values ", values);
-
     navigate(url, {
       state: {
         patientId: values.patientId,

@@ -137,6 +137,7 @@ const CreateDirectGRN = () => {
   const [dropDownLoad, setDropDownLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [taxTemp, setTaxTemp] = useState();
+  const [isSingleStage, setIsSingleStage] = useState(false);
 
   useEffect(() => {
     customAxios
@@ -1313,6 +1314,12 @@ const CreateDirectGRN = () => {
     });
   };
 
+  function handleStoreChange(option) {
+    debugger;
+    setIsSingleStage(option.IsSingleStage);
+    form1.setFieldsValue({ GRNStatus: "" });
+  }
+
   const handleBatchChange = async (e, column, index, record) => {
     const value = e.target.value;
     let updatedData = [...dataModel];
@@ -1885,11 +1892,15 @@ const CreateDirectGRN = () => {
                     allowClear
                     placeholder="Select Value"
                     disabled={!!grnHeaderId}
+                    onSelect={(value, option) =>
+                      handleStoreChange(option.stage)
+                    }
                   >
                     {DropDown.StoreDetails.map((option) => (
                       <Select.Option
                         key={option.StoreId}
                         value={option.StoreId}
+                        stage={option}
                       >
                         {option.LongName}
                       </Select.Option>
@@ -2058,7 +2069,11 @@ const CreateDirectGRN = () => {
                   ]}
                 >
                   <Select allowClear placeholder="Select Value">
-                    <Select.Option key="Draft" value="Draft"></Select.Option>
+                    <Select.Option
+                      hidden={isSingleStage}
+                      key="Draft"
+                      value="Draft"
+                    ></Select.Option>
                     <Select.Option
                       key="Finalize"
                       value="Finalize"
