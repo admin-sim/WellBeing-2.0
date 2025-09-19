@@ -190,6 +190,10 @@ import RadiologyResultEntry from "./pages/Laboratory/RadiologyResultEntry/index.
 import RadiologyVerification from "./pages/Laboratory/RadiologyVerification/index.jsx";
 import ManagePackages from "./pages/AccountManagement/ManagePackages/index.jsx";
 import CreateManagePackages from "./pages/AccountManagement/ManagePackages/CreateManagePackages.jsx";
+import AdmissionDeposit from "./pages/Masters/GeneralMasters/AccountManagement/AdmissionDeposit/index.jsx";
+import DefaultTariffPlan from "./pages/Masters/GeneralMasters/AccountManagement/DefaultTariffPlan";
+import CreateAdmissionDeposit from "./pages/Masters/GeneralMasters/AccountManagement/AdmissionDeposit/CreateAdmissionDeposit";
+
 function ProtectedRoute({ children }) {
   const token = Cookies.get("authToken");
 
@@ -1669,7 +1673,30 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
+            <Route
+              path="/AdmissionDeposit"
+              element={
+                <ProtectedRoute>
+                  <AdmissionDeposit />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/DefaultTariffPlan"
+              element={
+                <ProtectedRoute>
+                  <DefaultTariffPlan />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/CreateAdmissionDeposit"
+              element={
+                <ProtectedRoute>
+                  <CreateAdmissionDeposit />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<Error />} />
           </Route>
           <Route path="login" element={<Login />} />

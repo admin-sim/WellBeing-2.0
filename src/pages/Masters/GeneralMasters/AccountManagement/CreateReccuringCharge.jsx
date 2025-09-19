@@ -5,7 +5,6 @@ import {
   Input,
   Select,
   Form,
-  notification,
   Layout,
   message,
   Row,
@@ -15,17 +14,15 @@ import {
 } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import {
-  urlCreateAccomodationChargeAtribute,
   urlCreateRecuringCharge,
   urlGetAllAutocompleteRecurringServicesAsync,
-  urlSaveNewChargeAttribute,
   urlSaveRecurringChargesModel,
 } from "../../../../../endpoints";
 import customAxios from "../../../../components/customAxios/customAxios";
 import { useNavigate } from "react-router";
 import Title from "antd/es/typography/Title";
 import dayjs from "dayjs";
-import moment from "moment";
+
 const { Option } = Select;
 
 const CreateReccuringCharge = () => {
@@ -111,7 +108,7 @@ const CreateReccuringCharge = () => {
           //className="form-item-no-padding"
         >
           <Select
-            placeholder="Select Facility"
+           // placeholder="Select Facility"
             allowClear
             style={{ width: 100 }}
             onChange={(value) =>
@@ -191,7 +188,6 @@ const CreateReccuringCharge = () => {
       title: "Service",
       dataIndex: "service",
       editable: true,
-      width: 230,
       render: (_, record) => (
         <Form.Item
           name={`service-${record.key}`}
@@ -202,7 +198,7 @@ const CreateReccuringCharge = () => {
             showSearch
             placeholder="Select Service"
             allowClear
-            style={{ width: 230 }}
+            style={{ width: 120 }}
             filterOption={false} // Disable client-side filtering
             onSearch={(value) => fetchRemoteServices(value)} // Trigger API call on search
             onChange={(value) =>
@@ -219,7 +215,6 @@ const CreateReccuringCharge = () => {
         </Form.Item>
       ),
     },
-
     {
       title: "IsProvider",
       dataIndex: "isProviderMandatory",
@@ -312,7 +307,6 @@ const CreateReccuringCharge = () => {
         </Form.Item>
       ),
     },
-
     {
       title: "Quantity",
       dataIndex: "quantity",
@@ -327,10 +321,10 @@ const CreateReccuringCharge = () => {
               message: "quantity required!",
             },
           ]}
-          style={{ margin: 0 }}
+          style={{ margin: 0, width: 80 }}
         >
           <Input
-            size="small" // ✅ key change
+            size="small" 
             type="number"
             value={record.quantity}
             onChange={(e) =>
@@ -399,7 +393,6 @@ const CreateReccuringCharge = () => {
         </Form.Item>
       ),
     },
-
     {
       title: "Value",
       dataIndex: "value",
@@ -468,7 +461,7 @@ const CreateReccuringCharge = () => {
   };
 
   const handleSubmit = async () => {
-    debugger;
+   
     try {
       // Trigger form validation
       const isValid = await form.validateFields();
@@ -539,6 +532,7 @@ const CreateReccuringCharge = () => {
           minHeight: "max-content",
           borderRadius: "10px",
           padding: "20px",
+          
         }}
       >
         <Row
@@ -572,9 +566,9 @@ const CreateReccuringCharge = () => {
             style={{ margin: 0, padding: 0 }}
             rowKey="key"
             size="small"
+            scroll={{ x: "max-content" }}
           />
         </Form>
-
         <Row justify="end" style={{ margin: "1rem" }}>
           <Col style={{ marginRight: "10px" }}>
             <Button type="primary" onClick={handleSubmit}>
@@ -591,4 +585,5 @@ const CreateReccuringCharge = () => {
     </Layout>
   );
 };
+
 export default CreateReccuringCharge;

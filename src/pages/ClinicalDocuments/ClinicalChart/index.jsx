@@ -19,6 +19,7 @@ import Investigation from "../Components/Investigation.jsx";
 import {
   urlGetPatientHeaderDetails,
   urlGetAllPatientComplaints,
+  urlGetTemplateDataByProviderId,
 } from "../../../../endpoints";
 import customAxios from "../../../components/customAxios/customAxios";
 import dayjs from "dayjs";
@@ -42,6 +43,7 @@ function ClinicalChart() {
     PatientVital: [],
     ClinicalAdvices: [],
   });
+  const [tdata, setTdata] = useState([]);
 
   useEffect(() => {
     const fetch = async () => {
@@ -73,6 +75,23 @@ function ClinicalChart() {
     fetchDataHeader();
   }, []);
 
+  useEffect(() => {
+    async function fetchTemplateData() {
+      try {
+        const response = await customAxios.get(`
+          ${urlGetTemplateDataByProviderId}?PatientId=${Patient.PatientId}&EncounterId=${Patient.Encounter}&ProviderId=${Patient.ProviderId}`);
+        const data = await response.data.data;
+        setTdata(data);
+        setTemplateEditorData(data[0].TempData || data[0].ObservedValues);
+        setEditorKey((prevKey) => prevKey + 1);
+      } catch (error) {
+        console.error("Error fetching template data:", error);
+      }
+    }
+
+    fetchTemplateData();
+  }, []);
+
   const handleUpdate = (value) => {
     setInitialData(value);
   };
@@ -89,7 +108,6 @@ function ClinicalChart() {
   }
 
   function handleVitals(params) {
-    debugger;
     setInitialData((prevState) => ({
       ...prevState,
       PatientVital: params,
@@ -179,7 +197,6 @@ function ClinicalChart() {
                 />
               ),
             },
-
             {
               label: (
                 <Badge dot={initialData.NewAllergyList.length > 0}>
@@ -297,13 +314,25 @@ function ClinicalChart() {
       children: (
         <Tabs
           tabPosition="left"
-          items={[
-            {
-              label: `Template`,
-              key: 11,
-              children: <ClinicalTemplate Patient={Patient} />
-            },
-          ]}
+          items={
+            tdata && tdata.length > 0
+              ? tdata.map((item) => ({
+                  label: (
+                    <Badge dot={item.someCondition}>
+                      {item.TempName ?? "Template"}&nbsp;&nbsp;
+                    </Badge>
+                  ),
+                  key: item.TID,
+                  children: <ClinicalTemplate Patient={Patient} Data={item} />,
+                }))
+              : [
+                  {
+                    label: "New Template",
+                    key: "new",
+                    children: <ClinicalTemplate Patient={Patient} Data={""} />,
+                  },
+                ]
+          }
         />
       ),
     },

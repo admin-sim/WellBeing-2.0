@@ -12,36 +12,36 @@ function ClinicalTemplate(Patient) {
   const location = useLocation();
   const navigate = useNavigate();
   const [editorKey, setEditorKey] = useState(0);
-  const [templateEditorData, setTemplateEditorData] = useState("");
-  const [tdata, setTdata] = useState("");
+  const [templateEditorData, setTemplateEditorData] = useState(Patient.Data.TempData);
+  const [tdata, setTdata] = useState(Patient.Data);
 
-  useEffect(() => {
-    async function fetchTemplateData() {
-      try {
-        const response = await customAxios.get(`
-          ${urlGetTemplateDataByProviderId}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&ProviderId=${Patient.Patient.ProviderId}`);
-        const data = await response.data.data;
-        setTdata(data);
-        setTemplateEditorData(data.TempData || data.ObservedValues);
-        setEditorKey((prevKey) => prevKey + 1);
-      } catch (error) {
-        console.error("Error fetching template data:", error);
-      }
-    }
+  // useEffect(() => {
+  //   async function fetchTemplateData() {
+  //     try {
+  //       const response = await customAxios.get(`
+  //         ${urlGetTemplateDataByProviderId}?PatientId=${Patient.Patient.PatientId}&EncounterId=${Patient.Patient.Encounter}&ProviderId=${Patient.Patient.ProviderId}`);
+  //       const data = await response.data.data;
+  //       setTdata(data);
+  //       setTemplateEditorData(data.TempData || data.ObservedValues);
+  //       setEditorKey((prevKey) => prevKey + 1);
+  //     } catch (error) {
+  //       console.error("Error fetching template data:", error);
+  //     }
+  //   }
 
-    fetchTemplateData();
-  }, []);
+  //   fetchTemplateData();
+  // }, []);
 
   async function handleSaveTemplate() {
     debugger;
     if (templateEditorData !== (tdata?.TempData || "")) {
       const postData = {
-        CTId: tdata?.CTId ?? 0,
+        CTId: tdata?.TID ?? 0,
         PatientId: Patient.Patient.PatientId,
         EncounterId: Patient.Patient.Encounter,
         ProviderId: Patient.Patient.ProviderId,
         ObservedValues: templateEditorData,
-        TempGrpId: tdata?.TempGroupID ?? 0,
+        TempGrpId: tdata?.TID ?? 0,
         TempName: tdata?.TempName,
         FacilityId: 1,
       };

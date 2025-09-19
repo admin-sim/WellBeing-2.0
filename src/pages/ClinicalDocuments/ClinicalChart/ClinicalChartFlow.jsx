@@ -21,6 +21,7 @@ import { useNavigate } from "react-router";
 import PageHeader from "../../../components/PageHeader/index";
 import UhidSelectComponet from "../../../components/UhidSelectComponent/index";
 import CkEditor from "../../../components/CKEditor";
+import CustomTable from "../../../components/customTable";
 
 function ClinicalChartFlow() {
   const [form1] = Form.useForm();
@@ -86,7 +87,6 @@ function ClinicalChartFlow() {
   };
 
   async function handleSelectPatient(params) {
-    debugger;
     SelectPatient(params);
   }
 
@@ -118,21 +118,9 @@ function ClinicalChartFlow() {
       title: "Name",
       dataIndex: "PatientFirstName",
     },
-    // {
-    //   title: "Template",
-    //   dataIndex: "GeneratedEncounterId",
-    //   render: (text, record) => {
-    //     return (
-    //       <Button type="link" onClick={() => handleTemplateClick(record)}>
-    //         Template
-    //       </Button>
-    //     );
-    //   },
-    // },
   ];
 
   async function handleSelectUHID(va, op) {
-    debugger;
     if (op != undefined) {
       form1.setFieldsValue({ PatientId: op.data.PatientId });
       form1.setFieldsValue({
@@ -155,7 +143,6 @@ function ClinicalChartFlow() {
   };
 
   const handleTemplateClick = async (record) => {
-    debugger;
     setCurrentRecord(record); // Store current record
     let templateData = "";
 
@@ -259,7 +246,6 @@ function ClinicalChartFlow() {
             layout="vertical"
             form={form1}
             onFinish={async (values) => {
-              debugger;
               setLoading(true);
               const response = await customAxios.get(
                 `${urlGetAllEncounterByPatientId}?PatientId=${values.PatientId}`
@@ -320,18 +306,11 @@ function ClinicalChartFlow() {
               onChange={onTabChange}
               tabBarGutter={0}
               activeKey={defaultActiveKey}
-              // type="card"
               style={{ marginTop: "1rem" }}
-              // tabBarStyle={{ display: "flex", justifyContent: "right" }}
             >
               <Tabs.TabPane
                 tab={
                   <div
-                    // style={{
-                    //     width: "3vw",
-                    //     textAlign: "center",
-                    //     fontWeight: "600",
-                    // }}
                     style={{
                       width: "15vw",
                       textAlign: "center",
@@ -350,17 +329,10 @@ function ClinicalChartFlow() {
                   </div>
                 }
                 key="1"
-              >
-                {/* <Table columns={columns} dataSource={tableData} /> */}
-              </Tabs.TabPane>
+              ></Tabs.TabPane>
               <Tabs.TabPane
                 tab={
                   <div
-                    // style={{
-                    //     width: "3vw",
-                    //     textAlign: "center",
-                    //     fontWeight: "600",
-                    // }}
                     style={{
                       width: "15vw",
                       textAlign: "center",
@@ -379,17 +351,10 @@ function ClinicalChartFlow() {
                   </div>
                 }
                 key="22"
-              >
-                {/* <Table columns={columns} dataSource={tableData} /> */}
-              </Tabs.TabPane>
+              ></Tabs.TabPane>
               <Tabs.TabPane
                 tab={
                   <div
-                    // style={{
-                    //     width: "3vw",
-                    //     textAlign: "center",
-                    //     fontWeight: "600",
-                    // }}
                     style={{
                       width: "15vw",
                       textAlign: "center",
@@ -408,17 +373,10 @@ function ClinicalChartFlow() {
                   </div>
                 }
                 key="23"
-              >
-                {/* <Table columns={columns} dataSource={tableData} /> */}
-              </Tabs.TabPane>
+              ></Tabs.TabPane>
               <Tabs.TabPane
                 tab={
                   <div
-                    // style={{
-                    //     width: "3vw",
-                    //     textAlign: "center",
-                    //     fontWeight: "600",
-                    // }}
                     style={{
                       width: "15vw",
                       textAlign: "center",
@@ -437,17 +395,10 @@ function ClinicalChartFlow() {
                   </div>
                 }
                 key="24"
-              >
-                {/* <Table columns={columns} dataSource={tableData} /> */}
-              </Tabs.TabPane>
+              ></Tabs.TabPane>
               <Tabs.TabPane
                 tab={
                   <div
-                    // style={{
-                    //     width: "3vw",
-                    //     textAlign: "center",
-                    //     fontWeight: "600",
-                    // }}
                     style={{
                       width: "15vw",
                       textAlign: "center",
@@ -467,12 +418,15 @@ function ClinicalChartFlow() {
                   </div>
                 }
                 key="25"
-              >
-                {/* <Table columns={columns} dataSource={tableData} loading={loading} /> */}
-              </Tabs.TabPane>
+              ></Tabs.TabPane>
             </Tabs>
           </div>
-          <Table columns={columns} dataSource={tableData} loading={loading} />
+          <CustomTable
+            columns={columns}
+            dataSource={tableData}
+            loading={loading}
+            isFilter={true}
+          />
         </Card>
       </div>
       <div>
@@ -488,10 +442,6 @@ function ClinicalChartFlow() {
           maskClosable={false}
           footer={null}
           onCancel={handleCancelModel}
-          //   bodyStyle={{
-          //     maxHeight: "70vh", // Set max height
-          //     overflowY: "auto", // Enable vertical scroll
-          //   }}
         >
           {ckModalOpen && (
             <CkEditor

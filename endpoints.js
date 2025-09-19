@@ -645,15 +645,9 @@ export const urlDeactivateseletededP = `${baseURL}/api/Package/Deactivateseleted
 export const urlSearchPatientAccountcharge = `${baseURL}/api/Package/SearchPatientAccountcharge`; 
 export const urlIncludeInPackage = `${baseURL}/api/Package/IncludeInPackage`; 
 
-//  export  const urlGetWardCategory1 = `${baseURL}/api/BedManager/GetWardCategory`;
-//  export const urlShowWards = `${baseURL}/api/BedManager/ShowWards`;
-//  export const urlShowAwaitingPatients1 = `${baseURL}/api/BedManager/ShowAwaitingPatients`;
-//  export const urlShowRequests = `${baseURL}/api/BedManager/ShowRequests`;
-
 // Bed Management Endpoints
 export const urlGetWardCategory1 = `${baseURL}/api/BedManager/Index`
 export const urlShowWards = `${baseURL}/api/BedManager/ShowWards`;
-// export const urlShowPatientsList = `${baseURL}/api/BedManager/ShowPatientsList`;
 export const urlShowAwaitingPatients1 = `${baseURL}/api/BedManager/ShowAwaitingPatients`;
 export const urlShowRequests = `${baseURL}/api/BedManager/ShowRequests`;
 export const urlGetTemplateDataByProviderId = `${baseURL}/api/ClinicalChart/GetTemplateDataByProviderId`;
@@ -666,6 +660,14 @@ export const urlPatientIndentIndex = `${baseURL}/api/PatientIndent/PatientIndent
 export const urlCreatePatientIndent = `${baseURL}/api/PatientIndent/CreatePatientIndent`;
 export const urlPatientIssueIndex = `${baseURL}/api/PatientIssue/PatientIssueIndex`;
  
-
-
 export const urlRefreshToken = `${baseURL}/api/User/RefreshToken`;
+
+export const urlGetTariffData = `${baseURL}/api/DefaultTariffPlan/Index`; 
+export const urlGetTariffPlanForFacility = `${baseURL}/api/DefaultTariffPlan/GetTariffPlanForFacility`;
+export const urlSaveNewDefaultTariffPlan = `${baseURL}/api/DefaultTariffPlan/SaveNewDefaultTariffPlan`;
+export const urlDeleteDefaultTariff = `${baseURL}/api/DefaultTariffPlan/DeleteDefaultTariff`;
+export const urlEditDefaultTariff = `${baseURL}/api/DefaultTariffPlan/EditDefaultTariff`;
+export const urlGetAdmissionDeposit = `${baseURL}/api/AdmissionDeposit/Index`;
+export const urlCreateAdmissionDeposit = `${baseURL}/api/AdmissionDeposit/Create`;
+export const urlSaveNewAdmissionDeposit = `${baseURL}/api/AdmissionDeposit/SaveNewAdmissionDeposit`;
+export const urlDeleteDeposit = `${baseURL}/api/AdmissionDeposit/DeleteDeposit`;
