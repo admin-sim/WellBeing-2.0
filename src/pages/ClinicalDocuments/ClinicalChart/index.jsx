@@ -76,21 +76,25 @@ function ClinicalChart() {
   }, []);
 
   useEffect(() => {
-    async function fetchTemplateData() {
-      try {
-        const response = await customAxios.get(`
-          ${urlGetTemplateDataByProviderId}?PatientId=${Patient.PatientId}&EncounterId=${Patient.Encounter}&ProviderId=${Patient.ProviderId}`);
-        const data = await response.data.data;
-        setTdata(data);
-        setTemplateEditorData(data[0].TempData || data[0].ObservedValues);
-        setEditorKey((prevKey) => prevKey + 1);
-      } catch (error) {
-        console.error("Error fetching template data:", error);
-      }
-    }
-
     fetchTemplateData();
   }, []);
+
+  async function fetchTemplateData() {
+    try {
+      const response = await customAxios.get(`
+          ${urlGetTemplateDataByProviderId}?PatientId=${Patient.PatientId}&EncounterId=${Patient.Encounter}&ProviderId=${Patient.ProviderId}`);
+      const data = await response.data.data;
+      setTdata(data);
+      setTemplateEditorData(data[0].TempData || data[0].ObservedValues);
+      setEditorKey((prevKey) => prevKey + 1);
+    } catch (error) {
+      console.error("Error fetching template data:", error);
+    }
+  }
+
+  function handleSubmit() {
+    fetchTemplateData();
+  }
 
   const handleUpdate = (value) => {
     setInitialData(value);
@@ -323,13 +327,25 @@ function ClinicalChart() {
                     </Badge>
                   ),
                   key: item.TID,
-                  children: <ClinicalTemplate Patient={Patient} Data={item} />,
+                  children: (
+                    <ClinicalTemplate
+                      Patient={Patient}
+                      Data={item}
+                      handleSubmit={handleSubmit}
+                    />
+                  ),
                 }))
               : [
                   {
                     label: "New Template",
                     key: "new",
-                    children: <ClinicalTemplate Patient={Patient} Data={""} />,
+                    children: (
+                      <ClinicalTemplate
+                        Patient={Patient}
+                        Data={""}
+                        handleSubmit={handleSubmit}
+                      />
+                    ),
                   },
                 ]
           }

@@ -8,12 +8,12 @@ import {
 } from "../../../../endpoints";
 import customAxios from "../../../components/customAxios/customAxios";
 
-function ClinicalTemplate(Patient) {
+function ClinicalTemplate({ Patient, Data, handleSubmit }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [editorKey, setEditorKey] = useState(0);
-  const [templateEditorData, setTemplateEditorData] = useState(Patient.Data.TempData);
-  const [tdata, setTdata] = useState(Patient.Data);
+  const [templateEditorData, setTemplateEditorData] = useState(Data.TempData);
+  const [tdata, setTdata] = useState(Data);
 
   // useEffect(() => {
   //   async function fetchTemplateData() {
@@ -33,13 +33,12 @@ function ClinicalTemplate(Patient) {
   // }, []);
 
   async function handleSaveTemplate() {
-    debugger;
     if (templateEditorData !== (tdata?.TempData || "")) {
       const postData = {
         CTId: tdata?.TID ?? 0,
-        PatientId: Patient.Patient.PatientId,
-        EncounterId: Patient.Patient.Encounter,
-        ProviderId: Patient.Patient.ProviderId,
+        PatientId: Patient.PatientId,
+        EncounterId: Patient.Encounter,
+        ProviderId: Patient.ProviderId,
         ObservedValues: templateEditorData,
         TempGrpId: tdata?.TID ?? 0,
         TempName: tdata?.TempName,
@@ -57,6 +56,7 @@ function ClinicalTemplate(Patient) {
 
       if (response.status === 200 && response.data.data === "Success") {
         message.success("Template saved successfully");
+        handleSubmit();
       }
     } else {
       message.warning("No changes made to the template.");
