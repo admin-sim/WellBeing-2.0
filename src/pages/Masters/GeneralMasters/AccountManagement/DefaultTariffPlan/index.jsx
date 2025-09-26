@@ -43,6 +43,7 @@ function DefaultTariffPlan() {
     setIsLookUpModalVisible(true);
     setIsEditing(false);
     setIsSubmitClicked(false);
+    setDisable(false);
     form.resetFields();
   };
 
@@ -267,6 +268,7 @@ function DefaultTariffPlan() {
     setStateData(record);
     setLoading(true);
     setIsEditing(true);
+    setDisable(!record.PayerId);
     customAxios
       .get(`${urlEditDefaultTariff}?DefaultTariffId=${record.DefaultTariffId}`)
       .then((response) => {

@@ -1,33 +1,10 @@
-import {
-  Form,
-  Input,
-  Button,
-  DatePicker,
-  Card,
-  Row,
-  Col,
-  Layout,
-  Table,
-  Tooltip,
-  Spin,
-  Space,
-  AutoComplete,
-  Select,
-  Modal,
-} from "antd";
-import {
-  MinusCircleOutlined,
-  CheckCircleOutlined,
-  PlusCircleOutlined,
-  CloseSquareFilled,
-} from "@ant-design/icons";
+import { Form, Button, DatePicker, Row, Col, Layout, Spin, Select } from "antd";
 import {
   urlAutocompleteProduct,
   urlAutocomplete,
   urlGetPurshaseOrderDetails,
 } from "../../../../endpoints.js";
 import customAxios from "../../../components/customAxios/customAxios.jsx";
-import { useNavigate } from "react-router";
 import PageHeader from "../../../components/PageHeader/index.jsx";
 import { ColWithSixSpan } from "../../../components/customGridColumns/index.jsx";
 import { useState, useEffect } from "react";
@@ -35,10 +12,9 @@ import dayjs from "dayjs";
 import { useSelector } from "react-redux";
 
 const StockItemLedgerReport = () => {
-  const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [productOptions, setProductOptions] = useState([]);
-  const [productId, setProductId] = useState();
+  // const [productOptions, setProductOptions] = useState([]);
+  // const [productId, setProductId] = useState();
   const [reportUrl, setReportUrl] = useState(null);
   const [error, setError] = useState(null);
   const [blobData, setBlobData] = useState(null);
@@ -70,7 +46,9 @@ const StockItemLedgerReport = () => {
 
   const fetchDataHeader = async () => {
     try {
-      const response = await customAxios.get(`${urlGetPurshaseOrderDetails}`);
+      const response = await customAxios.get(urlGetPurshaseOrderDetails, {
+        params: { type: "Purchase Order" },
+      });
       if (response.status === 200 && response.data != null) {
         const userdetail = response.data.data;
         setDrpoDown(userdetail);
@@ -92,7 +70,6 @@ const StockItemLedgerReport = () => {
   };
 
   const onFinish = async (values) => {
-    debugger;
     setLoading(true); // Show the loader when fetching the report
     setError(null); // Reset previous errors
 
@@ -143,26 +120,25 @@ const StockItemLedgerReport = () => {
     form.resetFields(); // Reset the form fields to their initial values
   };
 
-  const handleSearch = async (searchText) => {
-    debugger;
-    if (searchText) {
-      const response = await customAxios.get(
-        `${urlAutocompleteProduct}?Product=${searchText}`
-      );
-      const apiData = response.data.data;
+  // const handleSearch = async (searchText) => {
+  //   if (searchText) {
+  //     const response = await customAxios.get(
+  //       `${urlAutocompleteProduct}?Product=${searchText}`
+  //     );
+  //     const apiData = response.data.data;
 
-      const newOptions = apiData.map((item) => ({
-        value: item.LongName,
-        key: item.ProductId,
-        UomId: item.UOMPrimaryUOM,
-      }));
-      setProductOptions(newOptions);
-    }
-  };
+  //     const newOptions = apiData.map((item) => ({
+  //       value: item.LongName,
+  //       key: item.ProductId,
+  //       UomId: item.UOMPrimaryUOM,
+  //     }));
+  //     setProductOptions(newOptions);
+  //   }
+  // };
 
-  const handleSelect = (value, option, column) => {
-    setProductId(option.key);
-  };
+  // const handleSelect = (value, option, column) => {
+  //   setProductId(option.key);
+  // };
 
   return (
     <Layout style={{ width: "100%" }}>
@@ -233,7 +209,7 @@ const StockItemLedgerReport = () => {
                 >
                   <Select
                     showSearch
-                    placeholder="Select the User"
+                    placeholder="Select a Product"
                     style={{ width: "100%" }}
                     onChange={(value) => console.log(value)}
                     optionFilterProp="children"

@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import { PlusCircleOutlined } from "@ant-design/icons";
-import { Spin, Layout, message } from "antd";
+import { Spin, Layout, message, notification } from "antd";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../../../../../components/PageHeader";
 import CustomTable from "../../../../../components/customTable";
@@ -52,21 +52,29 @@ const AdmissionDeposit = () => {
   }, []);
 
   const handledelete = async (record) => {
-    debugger;
-    try {
-      const response = await customAxios.post(urlDeleteDeposit, null, {
+      try {
+         const response = await customAxios.post(urlDeleteDeposit, null, {
         params: {
           ID: record.AdmissionDepositId,
         },
       });
-      if (response.status === 200 && response.data.data === true) {
-        message.success("Deleted Successfully..");
-        fetchData();
+        if (response.data && response.data.data === "Success") {
+          notification.success({
+            message: "Deleted Successfully",
+          });
+          fetchData();
+        } else {
+          notification.error({
+            message: "Deletion Unsuccessful",
+          });
+        }
+      } catch (error) {
+        console.error("Error deleting record:", error);
+        notification.error({
+          message: "Error deleting record",
+        });
       }
-    } catch (error) {
-      message.error("Delete failed!");
-    }
-  };
+    };
 
   const columns = [
     {
