@@ -23,6 +23,7 @@ import {
   message,
   Select,
   Spin,
+  FloatButton,
 } from "antd";
 import Search from "antd/es/input/Search";
 import Title from "antd/es/typography/Title";
@@ -37,7 +38,7 @@ import {
   urlGetWards,
   urlShowAcceptOrReject,
   urlShowAwaitingPatients,
-  urlShowModal
+  urlShowModal,
 } from "../../../../../endpoints";
 import React, { useEffect, useState } from "react";
 import CustomTable from "../../../../components/customTable";
@@ -71,18 +72,21 @@ function InPatientManagement() {
   const [banner, setBanner] = useState({});
   const [dischargeBedModalOpen, setDischargeBedModalOpen] = useState(false);
   const [acceptRejectModalOpen, setAcceptRejectModalOpen] = useState(false);
-  const [dischargeInitiationModalOpen, setDischargeInitiationModalOpen] = useState(false)
-  const [amendDischargeBedModalOpen, setAmendDischargeBedModalOpen] = useState(false);
+  const [dischargeInitiationModalOpen, setDischargeInitiationModalOpen] =
+    useState(false);
+  const [amendDischargeBedModalOpen, setAmendDischargeBedModalOpen] =
+    useState(false);
   const [showAwaitingPatient, setShowAwaitingPatient] = useState({
     IncomingRequestForTransfer: [],
     OutgoingRequestForTransfer: [],
     AwaitingPatients: [],
-    AdtTypes: []
+    AdtTypes: [],
   });
 
-  const [cancelDischargeBedModalOpen, setCancelDischargeBedModalOpen] = useState(false);
+  const [cancelDischargeBedModalOpen, setCancelDischargeBedModalOpen] =
+    useState(false);
   const [directTransferModalOpen, setDirectTransferModalOpen] = useState(false);
-  const [flag, setFlag] = useState(0)
+  const [flag, setFlag] = useState(0);
   const [dropDown1, setDropDown1] = useState({
     NewWardModel: {},
     RequestedPatientDetails: {},
@@ -90,7 +94,7 @@ function InPatientManagement() {
     PatientsCurrentDetails: {},
     Wards: [],
     Beds: [],
-  })
+  });
 
   const [dropDown, setDropDown] = useState({
     FacilityDepartment: [],
@@ -105,7 +109,7 @@ function InPatientManagement() {
     MovementDetails: {},
   });
 
-  const [patientData, setPatientData] = useState({})
+  const [patientData, setPatientData] = useState({});
 
   const fetchDataHeader = async (bed) => {
     try {
@@ -117,7 +121,7 @@ function InPatientManagement() {
         setPatientData(detailsheader);
       } else {
       }
-    } catch (error) { }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -141,10 +145,9 @@ function InPatientManagement() {
         return updatedDropdown;
       });
     }
-  }
+  };
 
   const handleDropdown = async (value, SLId, Id, PId) => {
-    debugger;
     if (Id === 1) {
       const response = await customAxios.get(
         `${urlGetServiceLocation}?FacilityDepartmentId=${value}`
@@ -215,7 +218,6 @@ function InPatientManagement() {
   };
 
   async function GetUnBlockedBeds(params) {
-    debugger
     const response = await customAxios.get(
       `${urlGetUnBlockedBeds}?ServiceLocationId=${params}`
     );
@@ -224,7 +226,7 @@ function InPatientManagement() {
   const handleMenuClick = async (e) => {
     setTableLoading(true);
     if (e !== undefined) {
-      GetUnBlockedBeds(e)
+      GetUnBlockedBeds(e);
       const response = await customAxios.get(
         `${urlGetWardAndBannerData}?LocationId=${e}&Flag=${1}`
       );
@@ -239,10 +241,12 @@ function InPatientManagement() {
       } else {
         console.log("data is not clear ");
       }
-      await customAxios.get(`${urlShowAwaitingPatients}?LocationId=${e}&Flag=${0}`).then((response) => {
-        setShowAwaitingPatient(response.data.data);
-        bed.ServiceLocationId = e
-      });
+      await customAxios
+        .get(`${urlShowAwaitingPatients}?LocationId=${e}&Flag=${0}`)
+        .then((response) => {
+          setShowAwaitingPatient(response.data.data);
+          bed.ServiceLocationId = e;
+        });
     } else {
       setTableLoading(false);
       console.log("click", e);
@@ -273,11 +277,10 @@ function InPatientManagement() {
   );
 
   const ReLoad = (value) => {
-    debugger
-    if (value == 'Start') {
-      setTableLoading(true)
-    } else if (value == 'End') {
-      setTableLoading(false)
+    if (value == "Start") {
+      setTableLoading(true);
+    } else if (value == "End") {
+      setTableLoading(false);
     } else {
       handleMenuClick(value);
     }
@@ -314,30 +317,32 @@ function InPatientManagement() {
   ];
 
   async function OpenModal(key, bed) {
-    debugger
     try {
       const response = await customAxios.get(
-        `${urlShowModal}?Id=${parseInt(key)}&PatientID=${bed.PatientID
-        }&LocationID=${bed.ServiceLocationId}&WardCategoryId=${bed.WardCategoryID
-        }&BedStatus=${null}&EncounterId=${bed.EncounterId
+        `${urlShowModal}?Id=${parseInt(key)}&PatientID=${
+          bed.PatientID
+        }&LocationID=${bed.ServiceLocationId}&WardCategoryId=${
+          bed.WardCategoryID
+        }&BedStatus=${null}&EncounterId=${
+          bed.EncounterId
         }&FromDate=${null}&ToDate=${null}&flag=${1}`
       );
       if (response.status === 200 && response.data.data != null) {
         setDropDown(response.data.data);
-        if (key == '1') {
-          setFlag(1)
-          setDirectTransferModalOpen(true)
-        } else if (key == '5') {
-          setDischargeInitiationModalOpen(true)
-        } else if (key == '10') {
-          setDischargeBedModalOpen(true)
-        } else if (key == '11') {
-          setCancelDischargeBedModalOpen(true)
-        } else if (key == '12') {
-          setAmendDischargeBedModalOpen(true)
+        if (key == "1") {
+          setFlag(1);
+          setDirectTransferModalOpen(true);
+        } else if (key == "5") {
+          setDischargeInitiationModalOpen(true);
+        } else if (key == "10") {
+          setDischargeBedModalOpen(true);
+        } else if (key == "11") {
+          setCancelDischargeBedModalOpen(true);
+        } else if (key == "12") {
+          setAmendDischargeBedModalOpen(true);
         } else {
-          setFlag(2)
-          setDirectTransferModalOpen(true)
+          setFlag(2);
+          setDirectTransferModalOpen(true);
         }
       } else {
         console.error("Failed to fetch patient details");
@@ -348,46 +353,43 @@ function InPatientManagement() {
   }
 
   function TransferRequest() {
-    debugger
   }
 
   function DischargeInitiation(key, bed) {
-    debugger
   }
 
   const handleAwaitingMenuClick = ({ key, bed }) => {
-    debugger
     switch (key) {
       case "1":
-        setBed(bed)
+        setBed(bed);
         fetchDataHeader(bed);
-        OpenModal(key, bed)
+        OpenModal(key, bed);
         break;
       case "2":
-        setBed(bed)
+        setBed(bed);
         fetchDataHeader(bed);
-        OpenModal(key, bed)
+        OpenModal(key, bed);
         break;
         break;
       case "5":
-        setBed(bed)
+        setBed(bed);
         fetchDataHeader(bed);
-        OpenModal(key, bed)
+        OpenModal(key, bed);
         break;
       case "10":
-        setBed(bed)
+        setBed(bed);
         fetchDataHeader(bed);
-        OpenModal(key, bed)
+        OpenModal(key, bed);
         break;
       case "11":
-        setBed(bed)
+        setBed(bed);
         fetchDataHeader(bed);
-        OpenModal(key, bed)
+        OpenModal(key, bed);
         break;
       case "12":
-        setBed(bed)
+        setBed(bed);
         fetchDataHeader(bed);
-        OpenModal(key, bed)
+        OpenModal(key, bed);
         break;
       default:
         message.success("Unknown option selected");
@@ -413,8 +415,12 @@ function InPatientManagement() {
           <Dropdown
             arrow
             menu={{
-              items: bed.DischargeStatus == 'Initiated' ? dischargeMenuItems : menuItems,
-              onClick: (info) => handleAwaitingMenuClick({ key: info.key, bed })
+              items:
+                bed.DischargeStatus == "Initiated"
+                  ? dischargeMenuItems
+                  : menuItems,
+              onClick: (info) =>
+                handleAwaitingMenuClick({ key: info.key, bed }),
             }}
             trigger={["click"]}
           >
@@ -428,28 +434,29 @@ function InPatientManagement() {
   const groupedBeds = groupBedsByWard();
   const firstWardKey = Object.keys(groupedBeds)[0];
 
-  const IncomingTransfer = (value) => {
+  const IncomingTransfer = (value) => {};
 
-  };
-
-  const OutgoingTransfer = () => { };
+  const OutgoingTransfer = () => {};
 
   const handleInRequest = async (value) => {
-    debugger
     try {
-      const response = await customAxios.get(`${urlShowAcceptOrReject}?PatientID=${value.PatientID}&LocationId=${bed.ServiceLocationId}&CurrentBedId=${0}&AdtID=${value.AdtId}&Type=${1}&WardCategoryID=${0}&BedStatus=${0}&WardId=${0}`)
+      const response = await customAxios.get(
+        `${urlShowAcceptOrReject}?PatientID=${value.PatientID}&LocationId=${
+          bed.ServiceLocationId
+        }&CurrentBedId=${0}&AdtID=${
+          value.AdtId
+        }&Type=${1}&WardCategoryID=${0}&BedStatus=${0}&WardId=${0}`
+      );
       if (response.status == 200) {
         const bed1 = {
           PatientID: response.data.data.PatientsCurrentDetails.PatientID,
-          EncounterId: response.data.data.PatientsCurrentDetails.EncounterId
-        }
-        fetchDataHeader(bed1)
-        setDropDown1(response.data.data)
-        setAcceptRejectModalOpen(true)
+          EncounterId: response.data.data.PatientsCurrentDetails.EncounterId,
+        };
+        fetchDataHeader(bed1);
+        setDropDown1(response.data.data);
+        setAcceptRejectModalOpen(true);
       }
-    } catch (ex) {
-
-    }
+    } catch (ex) {}
   };
 
   return (
@@ -715,14 +722,18 @@ function InPatientManagement() {
                           }}
                         >
                           <span>Incoming Transfer Request</span>
-                          <Tag color="#2db7f5">{showAwaitingPatient.IncomingRequestForTransfer.length}</Tag>
+                          <Tag color="#2db7f5">
+                            {
+                              showAwaitingPatient.IncomingRequestForTransfer
+                                .length
+                            }
+                          </Tag>
                         </div>
                       }
                       key="3"
                     >
                       <div>
                         {/* {showAwaitingPatient.IncomingRequestForTransfer.map((item, index) => {
-                          debugger
                           if (item.AdtStatus == "Confirmed") {
                             return <Tag>{item.PatientName / item.AdtStatus}</Tag>
                           } else {
@@ -766,7 +777,12 @@ function InPatientManagement() {
                           }}
                         >
                           <span>Outgoing Transfer Request</span>
-                          <Tag color="#2db7f5">{showAwaitingPatient.OutgoingRequestForTransfer.length}</Tag>
+                          <Tag color="#2db7f5">
+                            {
+                              showAwaitingPatient.OutgoingRequestForTransfer
+                                .length
+                            }
+                          </Tag>
                         </div>
                       }
                       key="4"
@@ -807,7 +823,9 @@ function InPatientManagement() {
                           }}
                         >
                           <span>Awaiting Patients</span>
-                          <Tag color="#2db7f5">{showAwaitingPatient.AwaitingPatients.length}</Tag>
+                          <Tag color="#2db7f5">
+                            {showAwaitingPatient.AwaitingPatients.length}
+                          </Tag>
                         </div>
                       }
                       key="1"
@@ -843,44 +861,60 @@ function InPatientManagement() {
           patient={patientData}
           open={directTransferModalOpen}
           flag={flag}
-          handleClose={() => { ReLoad(showAwaitingPatient.NewWardModel.ServiceLocationId), setDirectTransferModalOpen(false), setFlag(0) }}
-        // handleClose={Close}
+          handleClose={() => {
+            ReLoad(showAwaitingPatient.NewWardModel.ServiceLocationId),
+              setDirectTransferModalOpen(false),
+              setFlag(0);
+          }}
+          // handleClose={Close}
         />
         <DischargeInitiationModal
           bed={bed}
           Dropdown={dropDown}
           patient={patientData}
           open={dischargeInitiationModalOpen}
-          handleClose={() => { ReLoad(showAwaitingPatient.NewWardModel.ServiceLocationId), setDischargeInitiationModalOpen(false) }}
-        // handleClose={() => setDischargeInitiationModalOpen(false)}
-        // handleClose={Close}
+          handleClose={() => {
+            ReLoad(showAwaitingPatient.NewWardModel.ServiceLocationId),
+              setDischargeInitiationModalOpen(false);
+          }}
+          // handleClose={() => setDischargeInitiationModalOpen(false)}
+          // handleClose={Close}
         />
         <DischargeModal
           bed={bed}
           Dropdown={dropDown}
           patient={patientData}
           open={dischargeBedModalOpen}
-          handleClose={() => { ReLoad(showAwaitingPatient.NewWardModel.ServiceLocationId), setDischargeBedModalOpen(false) }}
-        // handleClose={() => setDischargeBedModalOpen(false)}
-        // handleClose={Close}
+          handleClose={() => {
+            ReLoad(showAwaitingPatient.NewWardModel.ServiceLocationId),
+              setDischargeBedModalOpen(false);
+          }}
+          // handleClose={() => setDischargeBedModalOpen(false)}
+          // handleClose={Close}
         />
         <CancelDischargeInitiationModal
           bed={bed}
           Dropdown={dropDown}
           patient={patientData}
           open={cancelDischargeBedModalOpen}
-          handleClose={() => { ReLoad(showAwaitingPatient.NewWardModel.ServiceLocationId), setCancelDischargeBedModalOpen(false) }}
-        // handleClose={() => setCancelDischargeBedModalOpen(false)}
-        // handleClose={Close}
+          handleClose={() => {
+            ReLoad(showAwaitingPatient.NewWardModel.ServiceLocationId),
+              setCancelDischargeBedModalOpen(false);
+          }}
+          // handleClose={() => setCancelDischargeBedModalOpen(false)}
+          // handleClose={Close}
         />
         <AmendDischargeInitiationModal
           bed={bed}
           Dropdown={dropDown}
           patient={patientData}
           open={amendDischargeBedModalOpen}
-          handleClose={() => { ReLoad(showAwaitingPatient.NewWardModel.ServiceLocationId), setAmendDischargeBedModalOpen(false) }}
-        // handleClose={() => setAmendDischargeBedModalOpen(false)}
-        // handleClose={Close}
+          handleClose={() => {
+            ReLoad(showAwaitingPatient.NewWardModel.ServiceLocationId),
+              setAmendDischargeBedModalOpen(false);
+          }}
+          // handleClose={() => setAmendDischargeBedModalOpen(false)}
+          // handleClose={Close}
         />
         <AcceptRejectModal
           bed={bed}
@@ -888,9 +922,19 @@ function InPatientManagement() {
           patient={patientData}
           open={acceptRejectModalOpen}
           handleDropdown={handleDropdown1}
-          handleClose={() => { ReLoad(showAwaitingPatient.NewWardModel.ServiceLocationId), setAcceptRejectModalOpen(false) }}
-        // handleClose={() => setAmendDischargeBedModalOpen(false)}
-        // handleClose={Close}
+          handleClose={() => {
+            ReLoad(showAwaitingPatient.NewWardModel.ServiceLocationId),
+              setAcceptRejectModalOpen(false);
+          }}
+          // handleClose={() => setAmendDischargeBedModalOpen(false)}
+          // handleClose={Close}
+        />
+        <FloatButton.BackTop
+          style={{
+            // left: "50%",
+            // transform: "translateX(-50%)",
+            bottom: 20,
+          }}
         />
       </Layout>
     </>

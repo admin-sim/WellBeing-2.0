@@ -43,6 +43,10 @@ import MedicalCodeModal from "./MedicalCodeModal";
 import TurnAroundTimeTableModal from "./TurnAroundTimeTableModal";
 import PackageIndicationModal from "./PackageIndicationModal";
 import dayjs from "dayjs";
+import CustomTable from "../../../../components/customTable";
+import { v4 as uuidv4 } from "uuid";
+import { set } from "lodash";
+
 const { Panel } = Collapse;
 function CreateService() {
   const [form] = Form.useForm();
@@ -83,6 +87,7 @@ function CreateService() {
   const [isRadiologyChecked, setIsRadiologyChecked] = useState(false);
   const [filteredTemplates, setFilteredTemplates] = useState([]);
   const [testoptions, setTestOptions] = useState([]);
+  const [packageLine, setPackageLine] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -114,7 +119,6 @@ function CreateService() {
   }, []);
 
   const EditServiceData = async () => {
-    debugger;
     if (ServiceId > 0) {
       try {
         const response = await customAxios.get(
@@ -156,6 +160,19 @@ function CreateService() {
             IsAssociateCharge: data.IsAssociateCharge,
             IsSurgeryCharge: data.IsSurgeryCharge,
           });
+          const pa = response.data.data.ServicePackage.map((i) => {
+            return {
+              ...i,
+              key: uuidv4(),
+              Indicator: { id: i.IndicatorId, text: i.IndicatorName },
+              UomName: i.ServiceUomName,
+              IsExcluded: i.IsExcluded === "Y" ? "True" : "False",
+              IsReplaceable: i.IsReplaceable === "Y" ? "True" : "False",
+              AllowFund: i.AllowFund === "Y" ? "True" : "False",
+            };
+          });
+
+          setPackageInd(pa);
 
           if (data.IsFromTestValues) {
             setIsTestValuesDisabled(false);
@@ -269,7 +286,6 @@ function CreateService() {
   ];
 
   const onFinish = async (values) => {
-    debugger;
     values.ServiceClassificationId = Serviceclassificationid;
     values.ServiceId = ServiceId ? ServiceId : 0;
     values.IsAtomic = values.IsAtomic ? "True" : "False";
@@ -290,6 +306,10 @@ function CreateService() {
     values.IsFromTestValues = values.IsFromTestValues ? true : false;
     values.IsRadiology = values.IsRadiology ? true : false;
     values.IsSubTest = values.IsSubTest ? true : false;
+    const pkg = packageInd.filter((item) => item.ServicePackageId);
+    const newpkg = packageInd.filter(
+      (item) => !item.ServicePackageId && item.ActiveFlag !== false
+    );
 
     const Service = {
       AddNewService: values,
@@ -297,7 +317,8 @@ function CreateService() {
       ListServiceTat: null,
       ListServiceMedicalCode: null,
       ServiceLabAttribute: null,
-      ServicePackage: packageInd?.length > 0 ? packageInd : null,
+      NewServicePackage: pkg?.length > 0 ? pkg : null,
+      ServicePackage: newpkg?.length > 0 ? newpkg : null,
     };
 
     const url = ServiceId ? urlUpdateService : urlAddNewService;
@@ -384,16 +405,16 @@ function CreateService() {
   };
 
   const handlePackageIndicatiotrSubmit = (values) => {
-    const valuesArray = Array.isArray(values) ? values : [values];
-
-    const valuesWithKeys = valuesArray.map((value, index) => ({
-      ...value,
-      key: keyCounterPAK + index,
-    }));
-
-    setKeyCounterPAK(keyCounterPAK + valuesArray.length);
-
-    setPackageInd((prev) => [...prev, ...valuesWithKeys]);
+    let pag;
+    if (values.key === "0") {
+      values.key = uuidv4();
+      pag = [...packageInd, { ...values }];
+    } else {
+      pag = packageInd.map((item) =>
+        item.key === values.key ? { ...item, ...values } : item
+      );
+    }
+    setPackageInd(pag);
   };
 
   const columns = [
@@ -423,63 +444,6 @@ function CreateService() {
       key: "EndAgeUnitShortName",
     },
   ];
-  // const columnsPackageInd = [
-  //   {
-  //     title: "Indicator",
-  //     dataIndex: "OrderPriorityId",
-  //     key: "OrderPriorityId",
-  //   },
-  //   {
-  //     title: "Description",
-  //     dataIndex: "TatValue",
-  //     key: "TatValue",
-  //   },
-  //   {
-  //     title: "Excluded",
-  //     dataIndex: "UOM",
-  //     key: "UOM",
-  //   },
-  //   {
-  //     title: "Replacable",
-  //     dataIndex: "OrderPriorityId",
-  //     key: "OrderPriorityId",
-  //   },
-  //   {
-  //     title: "Qty",
-  //     dataIndex: "TatValue",
-  //     key: "TatValue",
-  //   },
-  //   {
-  //     title: "UOM",
-  //     dataIndex: "UOM",
-  //     key: "UOM",
-  //   },
-  //   {
-  //     title: "Amt",
-  //     dataIndex: "UOM",
-  //     key: "UOM",
-  //   },
-  //   {
-  //     title: "Pref",
-  //     dataIndex: "UOM",
-  //     key: "UOM",
-  //   },
-  //   {
-  //     title: "Pkg Price",
-  //     dataIndex: "UOM",
-  //     key: "UOM",
-  //   },
-  //   {
-  //     title: "Allowed Refund",
-  //     dataIndex: "UOM",
-  //     key: "UOM",
-  //   },
-  //   {
-  //     title: "Refund Amount",
-  //     dataIndex: "UOM",
-  //     key: "UOM",
-  //   },
-  // ];
 
   const columnsPackageInd = [
     {
@@ -487,16 +451,23 @@ function CreateService() {
       dataIndex: ["Indicator", "text"],
     },
     {
+      width: 200,
       title: "Description",
       dataIndex: ["DescriptionName"],
     },
     {
       title: "Excluded",
       dataIndex: "IsExcluded",
+      render: (text) => {
+        return text === "True" || text === "Y" ? "Yes" : "No";
+      },
     },
     {
       title: "Replaceable",
       dataIndex: "IsReplaceable",
+      render: (text) => {
+        return text === "True" || text === "Y" ? "Yes" : "No";
+      },
     },
     {
       title: "Qty",
@@ -513,6 +484,9 @@ function CreateService() {
     {
       title: "Preference",
       dataIndex: "Preference",
+      render: (text) => {
+        return text === "Q" ? "Quantity" : "Amount";
+      },
     },
     {
       title: "PackagePrice",
@@ -521,28 +495,31 @@ function CreateService() {
     {
       title: "Allowed Refund",
       dataIndex: "AllowFund",
+      render: (text) => {
+        return text === "True" || text === "Y" ? "Yes" : "No";
+      },
     },
     {
       title: "Refund Amt",
       dataIndex: "MaximunRefundAmount",
     },
-    {
-      title: "Action",
-      dataIndex: "Action",
-      delete: "delete",
-      render: (text, record) => (
-        <Button
-          type="link"
-          onClick={() => {
-            setPackageInd((prev) =>
-              prev.filter((item) => item.key !== record.key)
-            );
-          }}
-        >
-          Delete
-        </Button>
-      ),
-    },
+    // {
+    //   title: "Action",
+    //   dataIndex: "Action",
+    //   delete: "delete",
+    //   render: (text, record) => (
+    //     <Button
+    //       type="link"
+    //       onClick={() => {
+    //         setPackageInd((prev) =>
+    //           prev.filter((item) => item.key !== record.key)
+    //         );
+    //       }}
+    //     >
+    //       Delete
+    //     </Button>
+    //   ),
+    // },
   ];
 
   const columnsTurnAroundTime = [
@@ -591,7 +568,19 @@ function CreateService() {
     },
   ];
 
-  const handleClick = () => {};
+  const handleEdit = (record) => {
+    setPackageLine(record);
+    setIsPackageModalVisible(true);
+  };
+  const handleDelete = (record) => {
+    const newpkg = packageInd.map((item) => {
+      if (item.key === record.key) {
+        return { ...item, ActiveFlag: false };
+      }
+      return item;
+    });
+    setPackageInd(newpkg);
+  };
 
   return (
     <>
@@ -949,7 +938,7 @@ function CreateService() {
                       </Row>
                     </Col>
                   </Row>
-                  <Table
+                  {/* <Table
                     // style={{ padding: '0rem 2rem' }}
                     dataSource={packageInd}
                     columns={columnsPackageInd}
@@ -961,12 +950,23 @@ function CreateService() {
                       ),
                     }}
                     bordered
-                  ></Table>
+                  ></Table> */}
+                  <CustomTable
+                    dataSource={packageInd.filter(
+                      (item) => item.ActiveFlag !== false
+                    )}
+                    columns={columnsPackageInd}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
                   <PackageIndicationModal
                     options={serviceDropDown}
                     open={ispackageModalVisible}
-                    handleClose={() => setIsPackageModalVisible(false)}
+                    handleClose={() => (
+                      setIsPackageModalVisible(false), setPackageLine(null)
+                    )}
                     handleSubmit={handlePackageIndicatiotrSubmit}
+                    packageLine={packageLine}
                   />
                 </Panel>
               </Collapse>

@@ -24,10 +24,53 @@ import {
 } from "../../../../../endpoints";
 import { debounce } from "lodash";
 import customAxios from "../../../../components/customAxios/customAxios";
-function PackageIndicationModal({ options, open, handleClose, handleSubmit }) {
+
+function PackageIndicationModal({
+  options,
+  open,
+  handleClose,
+  handleSubmit,
+  packageLine,
+}) {
   const [form] = Form.useForm();
 
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchData();
+  }, [packageLine]);
+
+  async function fetchData() {
+    if (packageLine) {
+      try {
+        IndicatorOnchange(null, {
+          children: packageLine.IndicatorName,
+        });
+        form.setFieldsValue({
+          ServiceId: packageLine.ServiceId,
+          ServicePackageId: packageLine.ServicePackageId,
+          DescriptionName: packageLine.DescriptionName,
+          Indicator: packageLine.IndicatorId,
+          IndicatorDescriptionId: packageLine.DescriptionId,
+          IndicatorDescription: packageLine.DescriptionName,
+          NetAmount: packageLine.MaxAmount,
+          IsExcluded: packageLine.IsExcluded === "True" ? true : false,
+          IsReplaceable: packageLine.IsReplaceable === "True" ? true : false,
+          UOM: packageLine.ServiceUom,
+          MaxQty: packageLine.MaxQty,
+          MaxAmount: packageLine.MaxAmount,
+          Preference: packageLine.Preference === "Q" ? "Quantity" : "Amount",
+          AllowFund: packageLine.AllowFund === "True" ? true : false,
+          MaximunRefundAmount: packageLine.MaximunRefundAmount,
+          PkgPrice: packageLine.PkgPrice,
+          ReplaceableDescriptionName: packageLine.ReplaceableDescriptionName,
+          ReplaceableDescriptionId: packageLine.ReplaceableDescriptionId,
+        });
+      } catch (error) {
+        console.error("Error fetching service data:", error);
+      }
+    }
+  }
 
   const handleCancel = () => {
     form.resetFields();
@@ -39,39 +82,33 @@ function PackageIndicationModal({ options, open, handleClose, handleSubmit }) {
       (opt) => opt.LookupID === values.Indicator
     );
 
-    const description = data.find(
-      (item) => item.Id === values.IndicatorDescriptionId
-    );
-
     const uom = options.Uoms.find((opt) => opt.UomId === values.UOM);
 
     const transformedValues = {
       ...values,
+      key: packageLine ? packageLine.key : "0",
       Indicator: {
         id: indicator?.LookupID,
         text: indicator?.LookupDescription,
       },
       IndicatorId: indicator?.LookupID || null,
-      DescriptionId: description?.Id || null,
-      DescriptionName: description?.Name || "",
-      IsExcluded: values.IsExcluded ? "Yes" : "No",
-      IsReplaceable: values.IsReplaceable ? "Yes" : "No",
-      ReplaceableDescriptionName: values.ReplaceableDescriptionName || "",
-      ReplaceableDescriptionId: values.ReplaceableDescriptionId || null,
+      IsExcluded: values.IsExcluded ? "True" : "False",
+      IsReplaceable: values.IsReplaceable ? "True" : "False",
+      DescriptionName: values.IndicatorDescription,
+      DescriptionId: values.IndicatorDescriptionId,
       MaxQty: values.MaxQty ? parseInt(values.MaxQty) : 0,
-      UomName: uom?.ShortName || "",
+      UomName: uom?.LongName + " (" + uom?.ShortName + ")" || "",
       ServiceUom: uom?.UomId || 0,
       MaxAmount: values.MaxAmount ? parseFloat(values.MaxAmount) : 0,
       Preference: values.Preference === "Quantity" ? "Q" : "A",
       PkgPrice: values.PkgPrice ? parseInt(values.PkgPrice) : 0,
-      AllowFund: values.AllowFund ? "Yes" : "No",
+      AllowFund: values.AllowFund ? "True" : "False",
       MaximunRefundAmount: values.MaximunRefundAmount
         ? parseInt(values.MaximunRefundAmount)
         : 0,
       ServicePackageId: values.ServicePackageId || null,
       ServiceId: values.ServiceId || null,
     };
-    
 
     handleSubmit(transformedValues);
     handleCancel();
@@ -81,17 +118,14 @@ function PackageIndicationModal({ options, open, handleClose, handleSubmit }) {
 
   const [url, setUrl] = useState();
   const [data, setData] = useState([]);
-  const [value, setValue] = useState(undefined);
   const [fetching, setFetching] = useState(false);
   const [descriptionDisabled, setDescriptionDisabled] = useState(true);
   const IndicatorOnchange = (value, option) => {
-    console.log("Selected value:", value);
-    console.log("Selected option:", option);
     form.setFieldsValue({ IndicatorDescriptionId: undefined });
+    form.setFieldsValue({ IndicatorDescription: undefined });
     setData([]);
 
     form.resetFields(["IndicatorDescriptionId"]); // Corrected to use an array
-    // Update the URL based on the selected option
     if (option.children !== "All") {
       setDescriptionDisabled(false);
       switch (option.children) {
@@ -110,7 +144,6 @@ function PackageIndicationModal({ options, open, handleClose, handleSubmit }) {
     }
   };
   const fetchOptions = async (value) => {
-    debugger;
     if (!url || !value) {
       setData([]);
       //message.warning('Please Select Indicator First..')
@@ -129,6 +162,13 @@ function PackageIndicationModal({ options, open, handleClose, handleSubmit }) {
     }
     setFetching(false);
   };
+
+  function IndicatorDescription(value) {
+    form.setFieldsValue({
+      IndicatorDescription: data.find((item) => item.Id === value).Name,
+      IndicatorDescriptionId: data.find((item) => item.Id === value).Id,
+    });
+  }
 
   const debounceFetchOptions = useCallback(debounce(fetchOptions, 800), [url]);
   return (
@@ -177,17 +217,24 @@ function PackageIndicationModal({ options, open, handleClose, handleSubmit }) {
                 </Form.Item>
               </Col>
               <Col span={8}>
-                <Form.Item name="IndicatorDescriptionId" label="Description">
-                  {/* <Input style={{ width: "100%" }} /> */}
+                <Form.Item
+                  name="IndicatorDescription"
+                  label="Description"
+                  rules={[
+                    {
+                      required: !descriptionDisabled,
+                      message: "Please select Description",
+                    },
+                  ]}
+                >
                   <Select
                     showSearch
-                    value={value}
                     allowClear
                     placeholder="Select an option"
                     notFoundContent={fetching ? <Spin size="small" /> : null}
                     filterOption={false}
                     onSearch={debounceFetchOptions}
-                    onChange={(newValue) => setValue(newValue)}
+                    onChange={(value) => IndicatorDescription(value)}
                     disabled={descriptionDisabled}
                     style={{ width: "100%" }}
                   >
@@ -224,7 +271,7 @@ function PackageIndicationModal({ options, open, handleClose, handleSubmit }) {
                   name="ReplaceableDescriptionName"
                   label="Replaceable Description"
                 >
-                  <Input style={{ width: "100%" }} />
+                  <Input style={{ width: "100%" }} disabled />
                 </Form.Item>
               </Col>
               <Col span={6}>
@@ -255,8 +302,10 @@ function PackageIndicationModal({ options, open, handleClose, handleSubmit }) {
               <Form.Item name="ServiceId" hidden>
                 <Input />
               </Form.Item>
-
               <Form.Item name="ServicePackageId" hidden>
+                <Input />
+              </Form.Item>
+              <Form.Item name="IndicatorDescriptionId" hidden>
                 <Input />
               </Form.Item>
             </Row>
