@@ -22,7 +22,7 @@ function TurnAroundTimeTableModal({
   open,
   handleClose,
   handleSubmit,
-  record
+  record,
 }) {
   const [form] = Form.useForm();
 
@@ -34,16 +34,15 @@ function TurnAroundTimeTableModal({
   };
 
   const onFinishForAddChargeParameters = async (values) => {
-    debugger;
     const TatUomOption = options?.Uoms.find(
       (option) => option.UomId === values.TatUom
     );
 
     const finalValues = {
       ...values,
-      key: record ? record?.key : uuidv4(),
+      key: record ? record.key : "0",
       TatUomShortName: TatUomOption?.ShortName,
-      ActiveFlag: true
+      ActiveFlag: true,
     };
 
     handleSubmit(finalValues);
@@ -56,7 +55,7 @@ function TurnAroundTimeTableModal({
         TatId: record?.TatId,
         OrderPriorityId: record?.OrderPriorityId,
         TatValue: record?.TatValue,
-        UOM: record?.UOM
+        TatUom: record?.TatUom,
       });
     } else {
       form.resetFields();
@@ -83,14 +82,23 @@ function TurnAroundTimeTableModal({
           >
             <Row gutter={16}>
               <Col span={8}>
-                <Form.Item name="OrderPriorityId" label="Ordering Priority" rules={[{ required: true }]}>
+                <Form.Item
+                  name="OrderPriorityId"
+                  label="Ordering Priority"
+                  rules={[{ required: true }]}
+                >
                   <Select>
                     <Select.Option key="Asap" value="Asap"></Select.Option>
-                    <Select.Option key="Routine" value="Routine"></Select.Option>
+                    <Select.Option
+                      key="Routine"
+                      value="Routine"
+                    ></Select.Option>
                     <Select.Option key="Stat" value="Stat"></Select.Option>
                   </Select>
                 </Form.Item>
-                <Form.Item name="TatId" hidden><Input /></Form.Item>
+                <Form.Item name="TatId" hidden>
+                  <Input />
+                </Form.Item>
               </Col>
               <Col className="gutter-row" span={8}>
                 <Form.Item
@@ -109,10 +117,7 @@ function TurnAroundTimeTableModal({
                 >
                   <Select>
                     {options?.Uoms.map((option) => (
-                      <Select.Option
-                        key={option.UomId}
-                        value={option.UomId}
-                      >
+                      <Select.Option key={option.UomId} value={option.UomId}>
                         {option.ShortName}
                       </Select.Option>
                     ))}
@@ -123,10 +128,14 @@ function TurnAroundTimeTableModal({
             <Row gutter={16} justify="end">
               <Col>
                 <Form.Item>
-                  <Button type="primary" htmlType="submit" style={{ marginRight: '8px' }}>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    style={{ marginRight: "8px" }}
+                  >
                     Submit
                   </Button>
-                  <Button type="default" onClick={handleCancel} >
+                  <Button type="default" onClick={handleCancel}>
                     Cancel
                   </Button>
                 </Form.Item>

@@ -1,6 +1,7 @@
 import {
   ArrowLeftOutlined,
   EditOutlined,
+  LoadingOutlined,
   PlusCircleFilled,
   PlusCircleOutlined,
   PlusOutlined,
@@ -23,6 +24,7 @@ import {
   Table,
   Tooltip,
   DatePicker,
+  Spin,
 } from "antd";
 import { useForm } from "antd/es/form/Form";
 import Title from "antd/es/typography/Title";
@@ -46,6 +48,7 @@ import dayjs from "dayjs";
 import CustomTable from "../../../../components/customTable";
 import { v4 as uuidv4 } from "uuid";
 import { set } from "lodash";
+import { render } from "react-dom";
 
 const { Panel } = Collapse;
 function CreateService() {
@@ -70,7 +73,7 @@ function CreateService() {
   const [turnAroundTime, setTurnAroundTime] = useState([]);
   const [packageInd, setPackageInd] = useState([]);
   const [medicalCode, setMedicalCode] = useState([]);
-  const [keyCounter, setKeyCounter] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [keyCounterTAT, setKeyCounterTAT] = useState(0);
   const [keyCounterPAK, setKeyCounterPAK] = useState(0);
   const [keyCounterMED, setKeyCounterMED] = useState(0);
@@ -88,6 +91,10 @@ function CreateService() {
   const [filteredTemplates, setFilteredTemplates] = useState([]);
   const [testoptions, setTestOptions] = useState([]);
   const [packageLine, setPackageLine] = useState(null);
+  const [ageLine, setAgeLine] = useState(null);
+  const [tatLine, setTatLine] = useState(null);
+  const [medicalLine, setMediaclLine] = useState(null);
+  const antIcon = <LoadingOutlined style={{ fontSize: 48 }} spin />;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -119,6 +126,7 @@ function CreateService() {
   }, []);
 
   const EditServiceData = async () => {
+    setLoading(true);
     if (ServiceId > 0) {
       try {
         const response = await customAxios.get(
@@ -174,6 +182,31 @@ function CreateService() {
 
           setPackageInd(pa);
 
+          const age = response.data.data.ListServiceOrdering.map((i) => {
+            return {
+              ...i,
+              key: uuidv4(),
+            };
+          });
+          setAgeGenderRestriction(age);
+
+          const tat = response.data.data.ListServiceTat.map((i) => {
+            return {
+              ...i,
+              key: uuidv4(),
+              TatUomShortName: i.TatUomName,
+            };
+          });
+          setTurnAroundTime(tat);
+
+          const med = response.data.data.ListServiceMedicalCode.map((i) => {
+            return {
+              ...i,
+              key: uuidv4(),
+            };
+          });
+          setMedicalCode(med);
+
           if (data.IsFromTestValues) {
             setIsTestValuesDisabled(false);
             setResultTypeDisable(true);
@@ -184,11 +217,14 @@ function CreateService() {
             setTemplateDisable(false);
             setResultTypeDisable(true);
           }
+          setLoading(false);
         } else {
           console.error("Failed to fetch patient details");
+          setLoading(false);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
+        setLoading(false);
       }
     }
   };
@@ -311,11 +347,31 @@ function CreateService() {
       (item) => !item.ServicePackageId && item.ActiveFlag !== false
     );
 
+    const age = ageGenderRestriction.filter(
+      (item) => item.ServiceOrderAttributeId
+    );
+    const newage = ageGenderRestriction.filter(
+      (item) => !item.ServiceOrderAttributeId && item.ActiveFlag !== false
+    );
+
+    const tat = turnAroundTime.filter((item) => item.TatId);
+    const newtat = turnAroundTime.filter(
+      (item) => !item.TatId && item.ActiveFlag !== false
+    );
+
+    const med = medicalCode.filter((item) => item.MedicalCodeId);
+    const newmed = medicalCode.filter(
+      (item) => !item.MedicalCodeId && item.ActiveFlag !== false
+    );
+
     const Service = {
       AddNewService: values,
-      ListServiceOrdering: null,
-      ListServiceTat: null,
-      ListServiceMedicalCode: null,
+      ListServiceOrdering: age?.length > 0 ? age : null,
+      ListServiceTat: tat?.length > 0 ? tat : null,
+      ListServiceMedicalCode: med?.length > 0 ? med : null,
+      NewGender: newage?.length > 0 ? newage : null,
+      NewListServiceTat: newtat?.length > 0 ? newtat : null,
+      NewMedicalCode: newmed?.length > 0 ? newmed : null,
       ServiceLabAttribute: null,
       NewServicePackage: pkg?.length > 0 ? pkg : null,
       ServicePackage: newpkg?.length > 0 ? newpkg : null,
@@ -366,42 +422,73 @@ function CreateService() {
   };
 
   const handleSubmit = (values) => {
-    console.log(values);
-    const valuesArray = Array.isArray(values) ? values : [values];
+    // console.log(values);
+    // const valuesArray = Array.isArray(values) ? values : [values];
 
-    const valuesWithKeys = valuesArray.map((value, index) => ({
-      ...value,
-      key: keyCounter + index,
-    }));
+    // const valuesWithKeys = valuesArray.map((value, index) => ({
+    //   ...value,
+    //   key: keyCounter + index,
+    // }));
 
-    setKeyCounter(keyCounter + valuesArray.length);
+    // setKeyCounter(keyCounter + valuesArray.length);
 
-    setAgeGenderRestriction((prev) => [...prev, ...valuesWithKeys]);
+    // setAgeGenderRestriction((prev) => [...prev, ...valuesWithKeys]);
+    let pag;
+    if (values.key === "0") {
+      values.key = uuidv4();
+      pag = [...ageGenderRestriction, { ...values }];
+    } else {
+      pag = ageGenderRestriction.map((item) =>
+        item.key === values.key ? { ...item, ...values } : item
+      );
+    }
+    setAgeGenderRestriction(pag);
   };
 
   const handleMedicalCodeSubmit = (values) => {
-    const valuesArray = Array.isArray(values) ? values : [values];
+    // const valuesArray = Array.isArray(values) ? values : [values];
 
-    const valuesWithKeys = valuesArray.map((value, index) => ({
-      ...value,
-      key: keyCounterMED + index,
-    }));
+    // const valuesWithKeys = valuesArray.map((value, index) => ({
+    //   ...value,
+    //   key: keyCounterMED + index,
+    // }));
 
-    setKeyCounterMED(keyCounterMED + valuesArray.length);
+    // setKeyCounterMED(keyCounterMED + valuesArray.length);
 
-    setMedicalCode((prev) => [...prev, ...valuesWithKeys]);
+    // setMedicalCode((prev) => [...prev, ...valuesWithKeys]);
+    let pag;
+    if (values.key === "0") {
+      values.key = uuidv4();
+      pag = [...medicalCode, { ...values }];
+    } else {
+      pag = medicalCode.map((item) =>
+        item.key === values.key ? { ...item, ...values } : item
+      );
+    }
+    setMedicalCode(pag);
   };
+
   const handleTurnAroundTimeSubmit = (values) => {
-    const valuesArray = Array.isArray(values) ? values : [values];
+    // const valuesArray = Array.isArray(values) ? values : [values];
 
-    const valuesWithKeys = valuesArray.map((value, index) => ({
-      ...value,
-      key: keyCounterTAT + index,
-    }));
+    // const valuesWithKeys = valuesArray.map((value, index) => ({
+    //   ...value,
+    //   key: keyCounterTAT + index,
+    // }));
 
-    setKeyCounterTAT(keyCounterTAT + valuesArray.length);
+    // setKeyCounterTAT(keyCounterTAT + valuesArray.length);
 
-    setTurnAroundTime((prev) => [...prev, ...valuesWithKeys]);
+    // setTurnAroundTime((prev) => [...prev, ...valuesWithKeys]);
+    let pag;
+    if (values.key === "0") {
+      values.key = uuidv4();
+      pag = [...turnAroundTime, { ...values }];
+    } else {
+      pag = turnAroundTime.map((item) =>
+        item.key === values.key ? { ...item, ...values } : item
+      );
+    }
+    setTurnAroundTime(pag);
   };
 
   const handlePackageIndicatiotrSubmit = (values) => {
@@ -430,8 +517,8 @@ function CreateService() {
     },
     {
       title: "Age Unit",
-      dataIndex: "StartAgeUnitShortName",
-      key: "StartAgeUnitShortName",
+      dataIndex: "StartAgeUomName",
+      key: "StartAgeUomName",
     },
     {
       title: "End Age",
@@ -440,8 +527,8 @@ function CreateService() {
     },
     {
       title: "Age Unit",
-      dataIndex: "EndAgeUnitShortName",
-      key: "EndAgeUnitShortName",
+      dataIndex: "EndAgeUomName",
+      key: "EndAgeUomName",
     },
   ];
 
@@ -489,7 +576,7 @@ function CreateService() {
       },
     },
     {
-      title: "PackagePrice",
+      title: "Package Price",
       dataIndex: "PkgPrice",
     },
     {
@@ -535,8 +622,8 @@ function CreateService() {
     },
     {
       title: "Tat UOM",
-      dataIndex: "UOM",
-      key: "UOM",
+      dataIndex: "TatUomShortName",
+      key: "TatUomShortName",
     },
   ];
 
@@ -558,20 +645,54 @@ function CreateService() {
     },
     {
       title: "Status",
-      dataIndex: "Status",
-      key: "Status",
+      dataIndex: "ActiveFlag",
+      key: "ActiveFlag",
+      render: (text) => (text ? "Active" : "Hidden"),
     },
-    {
-      title: "Action",
-      dataIndex: "Action",
-      key: "Action",
-    },
+    // {
+    //   title: "Action",
+    //   dataIndex: "Action",
+    //   key: "Action",
+    // },
   ];
+
+  const handleEdit1 = (record, type) => {
+    if (type === "M") {
+      setMediaclLine(record);
+      setIsMedicalModalVisible(true);
+    } else if (type === "T") {
+      setTatLine(record);
+      setIsTurnAroundTimeModalVisible(true);
+    } else if (type === "O") {
+      setAgeLine(record);
+      setIsModalVisible(true);
+    }
+  };
+
+  const handleDelete1 = (record, type) => {
+    let temp = ageGenderRestriction;
+
+    if (type === "O") temp = ageGenderRestriction;
+    if (type === "M") temp = medicalCode;
+    if (type === "T") temp = turnAroundTime;
+
+    const newpkg = temp.map((item) => {
+      if (item.key === record.key) {
+        return { ...item, ActiveFlag: false };
+      }
+      return item;
+    });
+
+    if (type === "O") setAgeGenderRestriction(newpkg);
+    if (type === "M") setMedicalCode(newpkg);
+    if (type === "T") setTurnAroundTime(newpkg);
+  };
 
   const handleEdit = (record) => {
     setPackageLine(record);
     setIsPackageModalVisible(true);
   };
+
   const handleDelete = (record) => {
     const newpkg = packageInd.map((item) => {
       if (item.key === record.key) {
@@ -583,7 +704,7 @@ function CreateService() {
   };
 
   return (
-    <>
+    <Spin spinning={loading} indicator={antIcon}>
       <Layout>
         <div
           style={{
@@ -1192,13 +1313,16 @@ function CreateService() {
                   <OrderingAttributeModal
                     options={serviceDropDown}
                     open={isModalVisible}
-                    handleClose={() => setIsModalVisible(false)}
+                    handleClose={() => (
+                      setIsModalVisible(false), setAgeLine(null)
+                    )}
                     handleSubmit={handleSubmit}
+                    record={ageLine}
                     // discountDetails={discountDetails}
                     // setCharges={setCharges}
                   />
                 </Row>
-                <Table
+                {/* <Table
                   // style={{ padding: '0rem 2rem' }}
                   dataSource={ageGenderRestriction}
                   columns={columns}
@@ -1210,7 +1334,15 @@ function CreateService() {
                     ),
                   }}
                   bordered
-                ></Table>
+                ></Table> */}
+                <CustomTable
+                  columns={columns}
+                  dataSource={(ageGenderRestriction || {}).filter(
+                    (item) => item.ActiveFlag !== false
+                  )}
+                  onDelete={(e) => handleDelete1(e, "O")}
+                  onEdit={(e) => handleEdit1(e, "O")}
+                />
               </Panel>
             </Collapse>
 
@@ -1301,7 +1433,7 @@ function CreateService() {
                 }
                 key="4"
               >
-                <Table
+                {/* <Table
                   // style={{ padding: '0rem 2rem' }}
                   dataSource={turnAroundTime}
                   columns={columnsTurnAroundTime}
@@ -1313,13 +1445,23 @@ function CreateService() {
                     ),
                   }}
                   bordered
-                ></Table>
+                ></Table> */}
+                <CustomTable
+                  columns={columnsTurnAroundTime}
+                  dataSource={(turnAroundTime || {}).filter(
+                    (item) => item.ActiveFlag !== false
+                  )}
+                  onEdit={(e) => handleEdit1(e, "T")}
+                  onDelete={(e) => handleDelete1(e, "T")}
+                />
                 <TurnAroundTimeTableModal
                   options={serviceDropDown}
                   open={isTurnAroundTimeModalVisible}
-                  handleClose={() => setIsTurnAroundTimeModalVisible(false)}
+                  handleClose={() => (
+                    setIsTurnAroundTimeModalVisible(false), setTatLine(null)
+                  )}
                   handleSubmit={handleTurnAroundTimeSubmit}
-
+                  record={tatLine}
                   // discountDetails={discountDetails}
                   // setCharges={setCharges}
                 />
@@ -1345,7 +1487,7 @@ function CreateService() {
                 }
                 key="5"
               >
-                <Table
+                {/* <Table
                   // style={{ padding: '0rem 2rem' }}
                   dataSource={medicalCode}
                   columns={columnMedicalCode}
@@ -1357,12 +1499,23 @@ function CreateService() {
                   }}
                   bordered
                   pagination={false}
-                ></Table>
+                ></Table> */}
+                <CustomTable
+                  columns={columnMedicalCode}
+                  dataSource={(medicalCode || {}).filter(
+                    (item) => item.ActiveFlag !== false
+                  )}
+                  onEdit={(e) => handleEdit1(e, "M")}
+                  onDelete={(e) => handleDelete1(e, "M")}
+                />
                 <MedicalCodeModal
                   options={serviceDropDown}
                   open={isMedicalModalVisible}
-                  handleClose={() => setIsMedicalModalVisible(false)}
+                  handleClose={() => (
+                    setIsMedicalModalVisible(false), setMediaclLine(null)
+                  )}
                   handleSubmit={handleMedicalCodeSubmit}
+                  record={medicalLine}
                   // discountDetails={discountDetails}
                   // setCharges={setCharges}
                 />
@@ -1388,7 +1541,7 @@ function CreateService() {
           </Form>
         </div>
       </Layout>
-    </>
+    </Spin>
   );
 }
 

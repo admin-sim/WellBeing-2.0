@@ -17,7 +17,13 @@ import { v4 as uuidv4 } from "uuid";
 const { Text } = Typography;
 //import { urlUpdateDiscount } from "../../../endpoints";
 import { useEffect } from "react";
-function MedicalCodeModal({ options, open, handleClose, handleSubmit, record }) {
+function MedicalCodeModal({
+  options,
+  open,
+  handleClose,
+  handleSubmit,
+  record,
+}) {
   const [form] = Form.useForm();
 
   const [loading, setLoading] = useState(false);
@@ -28,16 +34,14 @@ function MedicalCodeModal({ options, open, handleClose, handleSubmit, record }) 
   };
 
   const onFinishForAddChargeParameters = async (values) => {
-    debugger
     const genderOption = options?.MedicalCodeTypes.find(
       (option) => option.LookupID === values.MedicalCodeTypeId
     );
 
     const finalValues = {
       ...values,
-      key: record ? record?.key : uuidv4(),
+      key: record ? record.key : "0",
       MedicalCodeTypeName: genderOption?.LookupDescription,
-      ActiveFlag1: true
     };
 
     handleSubmit(finalValues);
@@ -45,20 +49,24 @@ function MedicalCodeModal({ options, open, handleClose, handleSubmit, record }) 
   };
 
   useEffect(() => {
-    if (record) {
-      form.setFieldsValue({
-        MedicalCodeId: record?.MedicalCodeId,
-        MedicalCodeTypeId: record?.MedicalCodeTypeId,
-        Version: record?.Version,
-        MedicalCodeTypeDescription: record?.MedicalCodeTypeDescription,
-        ActiveFlag: record?.ActiveFlag,
-        ActiveFlag1: true
-      });
-    } else {
-      form.resetFields();
-    }
-  }, [record, form]);
+    fetchMedicalCodeTypes(record);
+  }, [record]);
 
+  async function fetchMedicalCodeTypes(record) {
+    if (record) {
+      try {
+        form.setFieldsValue({
+          MedicalCodeId: record?.MedicalCodeId,
+          MedicalCodeTypeId: record?.MedicalCodeTypeId,
+          Version: record?.Version,
+          MedicalCodeTypeDescription: record?.MedicalCodeTypeDescription,
+          ActiveFlag: record?.ActiveFlag,
+        });
+      } catch (err) {
+        // form.resetFields();
+      }
+    }
+  }
 
   return (
     <div>
@@ -85,7 +93,7 @@ function MedicalCodeModal({ options, open, handleClose, handleSubmit, record }) 
                   label="MedicalCodeTypes"
                   rules={[{ required: true }]}
                 >
-                  <Select placeholder='Select Medical Code'>
+                  <Select placeholder="Select Medical Code">
                     {options?.MedicalCodeTypes.map((option) => (
                       <Select.Option
                         key={option.LookupID}
@@ -96,7 +104,9 @@ function MedicalCodeModal({ options, open, handleClose, handleSubmit, record }) 
                     ))}
                   </Select>
                 </Form.Item>
-                <Form.Item name='MedicalCodeId' hidden><Input /></Form.Item>
+                <Form.Item name="MedicalCodeId" hidden>
+                  <Input />
+                </Form.Item>
               </Col>
               <Col span={12}>
                 <Form.Item
@@ -119,8 +129,12 @@ function MedicalCodeModal({ options, open, handleClose, handleSubmit, record }) 
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item name="ActiveFlag" label="Status" rules={[{ required: true }]}>
-                  <Select placeholder='Select Status'>
+                <Form.Item
+                  name="ActiveFlag"
+                  label="Status"
+                  rules={[{ required: true }]}
+                >
+                  <Select placeholder="Select Status">
                     <Select.Option value={true}>Active</Select.Option>
                     <Select.Option value={false}>Hidden</Select.Option>
                   </Select>
@@ -130,10 +144,14 @@ function MedicalCodeModal({ options, open, handleClose, handleSubmit, record }) 
             <Row gutter={16} justify="end">
               <Col>
                 <Form.Item>
-                  <Button type="primary" htmlType="submit" style={{ marginRight: '8px' }}>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    style={{ marginRight: "8px" }}
+                  >
                     Submit
                   </Button>
-                  <Button type="default" onClick={handleCancel} >
+                  <Button type="default" onClick={handleCancel}>
                     Cancel
                   </Button>
                 </Form.Item>

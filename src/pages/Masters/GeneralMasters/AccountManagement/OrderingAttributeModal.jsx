@@ -18,7 +18,13 @@ import customAxios from "../../../../components/customAxios/customAxios";
 //import { urlUpdateDiscount } from "../../../endpoints";
 import { useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
-function OrderingAttributeModal({ options, record, open, handleClose, handleSubmit }) {
+function OrderingAttributeModal({
+  options,
+  record,
+  open,
+  handleClose,
+  handleSubmit,
+}) {
   const [form] = Form.useForm();
 
   const [loading, setLoading] = useState(false);
@@ -41,11 +47,16 @@ function OrderingAttributeModal({ options, record, open, handleClose, handleSubm
 
     const finalValues = {
       ...values,
-      key: record ? record?.key : uuidv4(),
+      key: record ? record.key : "0",
       GenderType: genderOption?.LookupDescription,
-      StartAgeUnitShortName: startAgeUnitOption?.ShortName,
-      EndAgeUnitShortName: endAgeUnitOption?.ShortName,
-      ActiveFlag: true
+      StartAgeUomName:
+        startAgeUnitOption?.ShortName +
+        " (" +
+        startAgeUnitOption?.LongName +
+        ")",
+      EndAgeUomName:
+        endAgeUnitOption?.ShortName + " (" + endAgeUnitOption?.LongName + ")",
+      ActiveFlag: true,
     };
 
     handleSubmit(finalValues);
@@ -60,7 +71,7 @@ function OrderingAttributeModal({ options, record, open, handleClose, handleSubm
         StartAgeUom: record?.StartAgeUom,
         EndAge: record?.EndAge,
         EndAgeUom: record?.EndAgeUom,
-        ServiceOrderAttributeId: record?.ServiceOrderAttributeId
+        ServiceOrderAttributeId: record?.ServiceOrderAttributeId,
       });
     } else {
       form.resetFields();
@@ -103,7 +114,9 @@ function OrderingAttributeModal({ options, record, open, handleClose, handleSubm
                     ))}
                   </Select>
                 </Form.Item>
-                <Form.Item hidden name="ServiceOrderAttributeId"><Input /></Form.Item>
+                <Form.Item hidden name="ServiceOrderAttributeId">
+                  <Input />
+                </Form.Item>
               </Col>
               <Col span={8}>
                 <Form.Item
@@ -111,7 +124,7 @@ function OrderingAttributeModal({ options, record, open, handleClose, handleSubm
                   label="Start Age"
                   rules={[{ required: true }]}
                 >
-                  <Input style={{ width: "100%" }} />
+                  <InputNumber min={0} style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
               <Col span={8}>
@@ -128,7 +141,7 @@ function OrderingAttributeModal({ options, record, open, handleClose, handleSubm
                   <Select>
                     {options?.Uoms.map((option) => (
                       <Select.Option key={option.UomId} value={option.UomId}>
-                        {option.ShortName}
+                        {option.ShortName + " (" + option?.LongName + ")"}
                       </Select.Option>
                     ))}
                   </Select>
@@ -140,7 +153,7 @@ function OrderingAttributeModal({ options, record, open, handleClose, handleSubm
                   label="End Age"
                   rules={[{ required: true }]}
                 >
-                  <Input style={{ width: "100%" }} />
+                  <InputNumber min={0} style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
               <Col span={10}>
@@ -154,7 +167,7 @@ function OrderingAttributeModal({ options, record, open, handleClose, handleSubm
                   <Select>
                     {options?.Uoms.map((option) => (
                       <Select.Option key={option.UomId} value={option.UomId}>
-                        {option.ShortName}
+                        {option.ShortName + " (" + option?.LongName + ")"}
                       </Select.Option>
                     ))}
                   </Select>
