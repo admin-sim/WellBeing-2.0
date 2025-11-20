@@ -227,6 +227,7 @@ function CreateService() {
         setLoading(false);
       }
     }
+    setLoading(false)
   };
 
   useEffect(() => {
