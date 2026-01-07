@@ -51,6 +51,11 @@ const AdmissionDeposit = () => {
     fetchData();
   }, []);
 
+   const handleEdit = (record) => {
+    debugger;
+      navigate("/CreateAdmissionDeposit", { state: { AdmissionDepositId: record.AdmissionDepositId } });
+  };
+
   const handledelete = async (record) => {
       try {
          const response = await customAxios.post(urlDeleteDeposit, null, {
@@ -131,6 +136,7 @@ const AdmissionDeposit = () => {
               actionColumn={true}
               isFilter={true}
               onDelete={handledelete}
+              onEdit={handleEdit}
             />
           </Spin>
         </div>

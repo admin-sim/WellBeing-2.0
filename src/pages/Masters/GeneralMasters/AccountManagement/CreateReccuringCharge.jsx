@@ -11,17 +11,21 @@ import {
   Col,
   Checkbox,
   DatePicker,
+  Spin,
 } from "antd";
-import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { MinusCircleOutlined, PlusOutlined,LeftOutlined } from "@ant-design/icons";
 import {
   urlCreateRecuringCharge,
   urlGetAllAutocompleteRecurringServicesAsync,
   urlSaveRecurringChargesModel,
+  urlGetAllRecuringcharges,
 } from "../../../../../endpoints";
 import customAxios from "../../../../components/customAxios/customAxios";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import Title from "antd/es/typography/Title";
 import dayjs from "dayjs";
+import { v4 as uuidv4 } from "uuid";
+import PageHeader from "../../../../components/PageHeader";
 
 const { Option } = Select;
 
@@ -35,10 +39,19 @@ const CreateReccuringCharge = () => {
   const [form] = Form.useForm();
   const [services, setServices] = useState([]);
   const [loadingServices, setLoadingServices] = useState(false);
+   const location = useLocation();
+  const RecurringChargesId = location.state?.RecurringChargesId;
+  const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
     fetchData();
-  }, []);
+     if (RecurringChargesId) {
+      fetchExistingById(RecurringChargesId);
+    }
+  }, [RecurringChargesId]);
+
+  
 
   const fetchData = async () => {
     //setLoading(true);
@@ -55,10 +68,63 @@ const CreateReccuringCharge = () => {
     //setLoading(false);
   };
 
+  const fetchExistingById = async (id) => {
+    setLoading(true);
+    try {
+      const response = await customAxios.get(`${urlGetAllRecuringcharges}`);
+      if (response.status == 200 && response.data.data != null) {
+        const list = response.data.data?.RecurringChargesList;
+        const found = list.find((item) => item.RecurringChargesId === id);
+
+        if (found) {
+          const row = {
+            key: uuidv4(),
+            facilityName: found.FacilityId,
+            accommodationType: found.AccommodationType,
+            patientType: found.PatientType,
+            service: found.ServiceId,
+            isProviderMandatory: found.IsProviderMandatory,
+            isRuleApplicable: found.IsRuleApplicable,
+            effectiveFrom: dayjs(found.SEffectiveFrom, "DD-MM-YYYY"),
+            effectiveTo: dayjs(found.SEffectiveTo, "DD-MM-YYYY"),
+            quantity: found.Quantity,
+            rate: found.Rate,
+            chargefrequency: found.ChargeFrequency,
+            value: found.Value,
+            Active: found.Active,
+            RecurringChargesId: found.RecurringChargesId,
+          };
+          setData([row]);
+          // Ensure the service option for this existing record is available
+          // so Select can render the service name (label) instead of just the id.
+          setServices((prev) => {
+            try {
+              const exists = (prev || []).some((s) => s.Id === found.ServiceId);
+              if (exists) return prev;
+              const name =
+                found.ServiceName ||
+                found.Name ||
+                found.ServiceDescription ||
+                found.Service ||
+                found.ServiceId;
+              return [{ Id: found.ServiceId, Name: name }, ...(prev || [])];
+            } catch (e) {
+              return prev;
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching existing record:", error);
+    }
+    setLoading(false);
+  };
+
+
   // Add a new row to the table
   const addRow = () => {
     const newData = {
-      key: count,
+      key: uuidv4(),
       facilityName: "", // Default value for the select
       accommodationType: "", // Default value for the select
       patientType: "",
@@ -188,9 +254,10 @@ const CreateReccuringCharge = () => {
       title: "Service",
       dataIndex: "service",
       editable: true,
-      render: (_, record) => (
+        render: (_, record, index) => (
         <Form.Item
-          name={`service-${record.key}`}
+          name={`service-${index}`}
+          initialValue={record.service}
           rules={[{ required: true, message: "Level of Service is required!" }]}
           style={{ margin: 0 }}
         >
@@ -280,6 +347,14 @@ const CreateReccuringCharge = () => {
             onChange={(date) =>
               handleFieldChange(date, record.key, "effectiveFrom")
             }
+            disabledDate={(current) => {
+              try {
+                // Allow only today's date for Effective From
+                return !(current && current.isSame(dayjs(), 'day'));
+              } catch (e) {
+                return false;
+              }
+            }}
           />
         </Form.Item>
       ),
@@ -289,7 +364,7 @@ const CreateReccuringCharge = () => {
       dataIndex: "effectiveTo",
       editable: true,
       render: (_, record) => (
-        <Form.Item
+         <Form.Item
           name={`effectiveTo-${record.key}`}
           initialValue={record.effectiveTo}
           rules={[{ required: true, message: "Effective To is required!" }]}
@@ -303,6 +378,16 @@ const CreateReccuringCharge = () => {
             onChange={(date) =>
               handleFieldChange(date, record.key, "effectiveTo")
             }
+            disabledDate={(current) => {
+              try {
+                // If Effective From exists, disable dates earlier than it
+                const from = record.effectiveFrom;
+                if (!from) return false;
+                return current && current.isBefore(from, 'day');
+              } catch (e) {
+                return false;
+              }
+            }}
           />
         </Form.Item>
       ),
@@ -485,6 +570,8 @@ const CreateReccuringCharge = () => {
           Rate: item.rate,
           ChargeFrequency: item.chargefrequency, // Add the correct value for ChargeFrequency
           Value: item.value,
+           ActiveFlag: item.ActiveFlag || true,
+          RecurringChargesId: item.RecurringChargesId || 0,
         }));
 
         // Call the API with the prepared data
@@ -535,28 +622,15 @@ const CreateReccuringCharge = () => {
           
         }}
       >
-        <Row
-          style={{
-            padding: "0.5rem 2rem 0.5rem 2rem",
-            backgroundColor: "#40A2E3",
-            borderRadius: "10px 10px 0px 0px ",
-          }}
-        >
-          <Col span={16}>
-            <Title
-              level={4}
-              style={{
-                color: "white",
-                fontWeight: 500,
-                margin: 0,
-                paddingTop: 0,
-              }}
-            >
-              ReccuringCharge
-            </Title>
-          </Col>
-        </Row>
+        <PageHeader
+          title={"Create Reccuring Charge"}
+          buttonLabel={"Back"}
+          buttonIcon={<LeftOutlined style={{ fontSize: "20px" }} />}
+          onButtonClick={() => navigate("/ReccuringCharge")}
+        />
+        
         <Form form={form} name="accommodation-form">
+           <Spin spinning={loading}>
           <Table
             bordered
             dataSource={data}
@@ -568,6 +642,7 @@ const CreateReccuringCharge = () => {
             size="small"
             scroll={{ x: "max-content" }}
           />
+          </Spin>
         </Form>
         <Row justify="end" style={{ margin: "1rem" }}>
           <Col style={{ marginRight: "10px" }}>

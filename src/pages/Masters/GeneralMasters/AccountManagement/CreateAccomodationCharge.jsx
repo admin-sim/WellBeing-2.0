@@ -10,13 +10,17 @@ import {
   message,
   Row,
   Col,
+  Spin,
 } from "antd";
-import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import { urlCreateAccomodationChargeAtribute, urlSaveNewChargeAttribute } from "../../../../../endpoints";
+import { MinusCircleOutlined, PlusOutlined,LeftOutlined } from "@ant-design/icons";
+import { urlCreateAccomodationChargeAtribute, urlSaveNewChargeAttribute, urlGetAllAccomodationChargeAtribute } from "../../../../../endpoints";
 import customAxios from "../../../../components/customAxios/customAxios";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import Title from "antd/es/typography/Title";
 const { Option } = Select;
+import PageHeader from "../../../../components/PageHeader";
+import { v4 as uuidv4 } from 'uuid';
+
 
 const CreateAccomodationCharge = () => {
   const [data, setData] = useState([]);
@@ -25,9 +29,18 @@ const CreateAccomodationCharge = () => {
   const [accommodationType, setAccommodationType] = useState([]);
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const location = useLocation();
+  const AccommodationAttributeId = location.state?.AccommodationAttributeId;
+const [loading, setLoading] = useState(false);
+
+
+
   useEffect(() => {
     fetchData();
-  }, []);
+    if (AccommodationAttributeId) {
+      fetchExistingById(AccommodationAttributeId);
+    }
+  }, [AccommodationAttributeId]);
 
   const fetchData = async () => {
     //setLoading(true);
@@ -45,16 +58,47 @@ const CreateAccomodationCharge = () => {
     //setLoading(false);
   };
 
+const fetchExistingById = async (id) => {
+  debugger;
+setLoading(true);
+  try {
+  const response = await customAxios.get(`${urlGetAllAccomodationChargeAtribute}`);
+  if ( response.status === 200 && response.data?.data?.AccommodationTypeAttributeList) {
+    const list = response.data.data.AccommodationTypeAttributeList;
+     const found = list.find((x) => String(x.AccommodationAttributeId) === String(id));
+            if (found) {
+              const row = {
+                key: uuidv4(),
+                facilityName: found.FacilityId,
+                accommodationType: found.AccommodationType,
+                levelOfService: found.LevelOfService,
+                minChargeHours: found.MinimumChargeHour,
+                dischargeGraceHour:found.DischargeGraceHour,
+                dischargeBedBlockHour:found.DischargeBedBlockHour,
+                status: found.ActiveFlag,
+                AccommodationAttributeId: found.AccommodationAttributeId,
+              };
+              setData([row]);
+            }
+ }
+} catch (error) {
+  console.error('Error fetching existing data by ID:', error);
+}
+setLoading(false);
+};
+
+
   // Add a new row to the table
   const addRow = () => {
     const newData = {
-      key: count,
+      key: uuidv4(),
       facilityName: "", // Default value for the select
       accommodationType: "", // Default value for the select
       levelOfService: "",
       minChargeHours: "",
       dischargeGraceHour: "",
       dischargeBedBlockHour: "",
+      status: "",
     };
     setData([...data, newData]);
     setCount(count + 1);
@@ -278,6 +322,8 @@ const CreateAccomodationCharge = () => {
             MinimumChargeHour: item.minChargeHours,
             DischargeGraceHour: item.dischargeGraceHour,
             DischargeBedBlockHour: item.dischargeBedBlockHour,
+            ActiveFlag: item.status || true,
+            AccommodationAttributeId: item.AccommodationAttributeId || 0, // Use existing ID or 0 for new entries
         }));
 
         // Call the API with the prepared data
@@ -329,29 +375,14 @@ const CreateAccomodationCharge = () => {
           padding: "20px",
         }}
       >
-                  <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Accomodation Charge Attribute
-              </Title>
-            </Col>
+                <PageHeader
+            title={"Accommodation Charge Attribute"}
+            buttonLabel={"Back"}
+            onButtonClick={()=> navigate("/AccomodationCharge")}
+            buttonIcon={<LeftOutlined />}></PageHeader>
 
-          </Row>
         <Form form={form} name="accommodation-form">
+          <Spin spinning={loading}>
           <Table
             bordered
             dataSource={data}
@@ -360,6 +391,7 @@ const CreateAccomodationCharge = () => {
             pagination={false}
             rowKey="key"
           />
+          </Spin>
         </Form>
 
         <Row justify="end" style={{margin:"1rem"}}>

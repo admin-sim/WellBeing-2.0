@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation  } from "react-router-dom";
 
 import PageHeader from "../../../../../components/PageHeader";
 import {
@@ -19,11 +19,11 @@ import {
   Row,
   Col,
   message,
-  InputNumber,
+  Input,
 } from "antd";
 import customAxios from "../../../../../components/customAxios/customAxios";
 
-import { urlCreateAdmissionDeposit, urlSaveNewAdmissionDeposit } from "../../../../../../endpoints";
+import { urlCreateAdmissionDeposit, urlSaveNewAdmissionDeposit,urlGetAdmissionDeposit } from "../../../../../../endpoints";
 import { v4 as uuidv4 } from 'uuid';
 
 const CreateAdmissionDeposit = () => {
@@ -36,7 +36,9 @@ const CreateAdmissionDeposit = () => {
   const [accommodationType, setAccommodationType] = useState([]);
   const [patientType, setPatientType] = useState([]);
 
-
+  const location = useLocation();
+  const AdmissionDepositId = location.state?.AdmissionDepositId;
+  const [loading, setLoading] = useState(false);
 
   const addRow = async () => {
     try {
@@ -67,7 +69,10 @@ const CreateAdmissionDeposit = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+     if (AdmissionDepositId) {
+      fetchExistingById(AdmissionDepositId);
+    }
+  }, [AdmissionDepositId]);
 
   const fetchData = async () => {
     
@@ -84,16 +89,58 @@ const CreateAdmissionDeposit = () => {
    
   };
 
-  const handleFieldChange = (e, column, index, record) => {
-      const value = e.target.value;
-    let newData = [...data];
-   newData = newData.map((item) => {
-    if (item.key === record.key) {
-        return { ...item, [column]: value };
+  const fetchExistingById = async (id) => {
+    debugger;
+    setLoading(true);
+    try {
+      const response = await customAxios.get(`${urlGetAdmissionDeposit}`);
+      if (
+        response.status === 200 &&
+        response.data?.data?.AdmissionDepositList
+      ) {
+        const list = response.data.data.AdmissionDepositList;
+        const found = list.find(
+          (x) => String(x.AdmissionDepositId) === String(id)
+        );
+        if (found) {
+          const row = {
+            key: uuidv4(),
+            facilityName: found.FacilityId,
+            accommodationType: found.AccommodationType,
+            patientType: found.PatientType,
+            admissionDeposit: found.DepositAmount,
+            status: found.ActiveFlag,
+            AdmissionDepositId: found.AdmissionDepositId,
+          };
+          setData([row]);
+        }
       }
-      return item;
-    });
-    setData(newData);
+    } catch (error) {
+      console.error("Error fetching existing data by ID:", error);
+    }
+    setLoading(false);
+  };
+
+  // const handleFieldChange = (e, column, index, record) => {
+  //     const value = e.target.value;
+  //   let newData = [...data];
+  //  newData = newData.map((item) => {
+  //   if (item.key === record.key) {
+  //       return { ...item, [column]: value };
+  //     }
+  //     return item;
+  //   });
+  //   setData(newData);
+  // };
+
+  const handleFieldChange = (value, key, column) => {
+    debugger;
+    const newData = [...data];
+    const index = newData.findIndex((item) => key === item.key);
+    if (index > -1) {
+      newData[index][column] = value;
+      setData(newData);
+    }
   };
 
   const handleSubmit = async () => {
@@ -110,7 +157,7 @@ const CreateAdmissionDeposit = () => {
             PatientType: item.patientType,
             DepositAmount: item.admissionDeposit,
             ActiveFlag: item.status,
-
+            AdmissionDepositId: item.AdmissionDepositId || 0,
         }));
 
         // Call the API with the prepared data
@@ -154,7 +201,7 @@ const CreateAdmissionDeposit = () => {
       editable: true,
       render: (_, record, index) => (
         <Form.Item
-          name={[record.key,"facilityName"]} // Ensure dynamic naming with index
+          name={`facilityName-${index}`} // Ensure dynamic naming with index
           initialValue={record.facilityName}
           rules={[{ required: true, message: "Facility Name is required!" }]}
           style={{ margin: 0 }}
@@ -163,7 +210,7 @@ const CreateAdmissionDeposit = () => {
             placeholder="Select Facility"
             allowClear
 	    onChange={(value) =>
-              handleFieldChange({target:{value}}, "facilityName", index, record)
+              handleFieldChange(value, record.key, "facilityName")
             }
           >
             {facilities?.map((option) => (
@@ -182,7 +229,7 @@ const CreateAdmissionDeposit = () => {
       editable: true,
       render: (_, record, index) => (
         <Form.Item
-          name={[record.key,"accommodationType"]} // Ensure dynamic naming with index
+          name={`accommodationType-${index}`} // Ensure dynamic naming with index
           initialValue={record.accommodationType}
           rules={[
             { required: true, message: "Accommodation Type is required!" },
@@ -193,7 +240,7 @@ const CreateAdmissionDeposit = () => {
             placeholder="Select Accommodation Type"
             allowClear
              onChange={(value) =>
-              handleFieldChange({target:{value}}, "accommodationType", index, record)
+              handleFieldChange(value, record.key, "accommodationType")
             }
           >
             {accommodationType?.map((option) => (
@@ -212,7 +259,7 @@ const CreateAdmissionDeposit = () => {
       editable: true,
       render: (_, record, index) => (
         <Form.Item
-          name={[record.key, "patientType"]} // Ensure dynamic naming with index
+          name={`patientType-${index}`} // Ensure dynamic naming with index
           initialValue={record.patientType}
           rules={[{ required: true, message: "Patient Type is required!" }]}
           style={{ margin: 0 }}
@@ -221,7 +268,7 @@ const CreateAdmissionDeposit = () => {
             placeholder="Select patientType"
             allowClear
               onChange={(value) =>
-              handleFieldChange({target:{value}}, "patientType", index, record)
+              handleFieldChange(value, record.key, "patientType")
             }
           >
             {patientType?.map((option) => (
@@ -240,18 +287,20 @@ const CreateAdmissionDeposit = () => {
       editable: true,
       render: (_, record) => (
         <Form.Item
-          name={[record.key,"admissionDeposit"]}
+          name={`admissionDeposit-${record.key}`}
           initialValue={record.admissionDeposit}
           rules={[
             { required: true, message: "Admission Deposit is required!" },
           ]}
           style={{ margin: 0 }}
         >
-          <InputNumber min={0}
-          style={{ width: '100%' }}
+          <Input
+            //min={0}
+            type="number"
+            style={{ width: "100%" }}
             value={record.admissionDeposit}
-            onChange={(value) =>
-              handleFieldChange({target:{value}}, "admissionDeposit", null, record)
+            onChange={(e) =>
+              handleFieldChange(e.target.value, record.key, "admissionDeposit")
             }
           />
         </Form.Item>
@@ -264,7 +313,7 @@ const CreateAdmissionDeposit = () => {
       editable: true,
       render: (_, record, index) => (
         <Form.Item
-          name={[record.key,"status"]}
+          name={`status-${index}`} // Ensure dynamic naming with index
           initialValue={record.status}
           rules={[{ required: true, message: "Status is required!" }]}
           style={{ margin: 0 }}
@@ -275,7 +324,7 @@ const CreateAdmissionDeposit = () => {
             style={{ width: 100 }}
             // onChange={(value) => handleFieldChange(value, record.key, "status")}
             onChange={(value) =>
-              handleFieldChange({target:{value}}, "status", index, record)
+              handleFieldChange(value, record.key, "status")
             }
           >
             <Select.Option key={true} value={true}>

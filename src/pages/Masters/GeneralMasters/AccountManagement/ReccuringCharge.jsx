@@ -7,6 +7,7 @@ import { urlDeleteAttribute, urlDeleteRecuringCharges, urlGetAllAccomodationChar
 import CustomTable from "../../../../components/customTable";
 import { useNavigate } from "react-router";
 import { EditOutlined,DeleteOutlined } from "@ant-design/icons";
+import PageHeader from "../../../../components/PageHeader";
 
 function ReccuringCharge() {
   const [columnData, setColumnData] = useState();
@@ -64,12 +65,12 @@ function ReccuringCharge() {
     {
       title: "Is Provider mandatory",
       dataIndex: "IsProviderMandatory",
-      render: (text, record) => (record.IsProviderMandatory == "Y" ? "Yes" : "No"),
+      render: (value) => (value === true ? "Yes" : "No"),
     },
     {
       title: "Is rule applicable",
       dataIndex: "IsRuleApplicable",
-      render: (text, record) => (record.IsRuleApplicable == "Y" ? "Yes" : "No"),
+      render: (value) => (value === true ? "Yes" : "No"),
     },
     {
       title: "Effective From",
@@ -110,6 +111,10 @@ function ReccuringCharge() {
     navigate("/CreateReccuringCharge");
   };
 
+   const handleEdit = (record) => {
+    navigate("/CreateReccuringCharge", { state: { RecurringChargesId: record.RecurringChargesId } });
+  }
+
 
   const handledelete = async(record) => {
     debugger;
@@ -138,41 +143,20 @@ function ReccuringCharge() {
             borderRadius: "10px",
           }}
         >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
+          <PageHeader
+          title="Recurring Charges"
+          buttonLabel={"Add"}
+          buttonIcon={<PlusCircleOutlined  style={{fontSize:"20px"}}/>}
+          onButtonClick={handleAddAutoCharge}
           >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Recurring Charges
-              </Title>
-            </Col>
-            <Col offset={5} span={3}>
-              <Button
-                icon={<PlusCircleOutlined />}
-                onClick={() => handleAddAutoCharge()}
-              >
-                Add
-              </Button>
-            </Col>
-          </Row>
+          </PageHeader>
 
           <Spin spinning={loading}>
             <CustomTable
               columns={columns}
               dataSource={columnData}
               onDelete={handledelete}
+              onEdit={handleEdit}
             />
           </Spin>
         </div>

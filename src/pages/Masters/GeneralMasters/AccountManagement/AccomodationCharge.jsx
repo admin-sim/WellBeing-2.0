@@ -7,6 +7,7 @@ import { urlDeleteAttribute, urlGetAllAccomodationChargeAtribute, urlGetAllAutoC
 import CustomTable from "../../../../components/customTable";
 import { useNavigate } from "react-router";
 import { EditOutlined,DeleteOutlined } from "@ant-design/icons";
+import PageHeader from "../../../../components/PageHeader";
 
 function AccomodationCharge() {
   const [columnData, setColumnData] = useState();
@@ -78,9 +79,10 @@ function AccomodationCharge() {
     
   ];
 
-  const handleAddAutoCharge = () => {
-    navigate("/CreateAccomodationCharge");
-  };
+ 
+  const handleEdit = (record) => {
+    navigate("/CreateAccomodationCharge", { state: { AccommodationAttributeId: record.AccommodationAttributeId } });
+  }
 
 
   const handledelete = async(record) => {
@@ -110,41 +112,19 @@ function AccomodationCharge() {
             borderRadius: "10px",
           }}
         >
-          <Row
-            style={{
-              padding: "0.5rem 2rem 0.5rem 2rem",
-              backgroundColor: "#40A2E3",
-              borderRadius: "10px 10px 0px 0px ",
-            }}
-          >
-            <Col span={16}>
-              <Title
-                level={4}
-                style={{
-                  color: "white",
-                  fontWeight: 500,
-                  margin: 0,
-                  paddingTop: 0,
-                }}
-              >
-                Accomodation Charge Attribute
-              </Title>
-            </Col>
-            <Col offset={5} span={3}>
-              <Button
-                icon={<PlusCircleOutlined />}
-                onClick={() => handleAddAutoCharge()}
-              >
-                Add
-              </Button>
-            </Col>
-          </Row>
+          <PageHeader
+            title={"Accommodation Charge Attribute"}
+            buttonLabel={"Add"}
+            onButtonClick={()=> navigate("/CreateAccomodationCharge")}
+            buttonIcon={<PlusCircleOutlined />}></PageHeader>
+
 
           <Spin spinning={loading}>
             <CustomTable
               columns={columns}
               dataSource={columnData}
               onDelete={handledelete}
+              onEdit={handleEdit}
             />
           </Spin>
         </div>

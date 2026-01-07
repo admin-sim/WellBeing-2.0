@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from "react";
-import {
-  Col,
-  Form,
-  Row,
-  Select,
-  Divider,
-} from "antd";
-import {
-  PlusCircleOutlined,
-} from "@ant-design/icons";
+import { Col, Form, Row, Select, Divider, Button } from "antd";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import Layout from "antd/es/layout/layout";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import {
   urlGetAllServiceGroups,
   urlGetServiceClassificationsForServiceGroup,
@@ -42,6 +34,53 @@ const Service = () => {
     };
     fetchData();
   }, []);
+
+  const location = useLocation();
+
+  // If navigated back from CreateService with a selected classification,
+
+  useEffect(() => {
+    debugger;
+    const preSelectedClassification = location?.state?.serviceclassificationid;
+
+    if (preSelectedClassification && serviceGroups.length > 0) {
+      let foundServiceGroupId = null;
+      const findGroupForClassification = async () => {
+        for (const group of serviceGroups) {
+          try {
+            const response = await customAxios.get(
+              `${urlGetServiceClassificationsForServiceGroup}?ServiceGroupId=${group.LookupID}`
+            );
+            if (
+              response.status === 200 &&
+              response.data.data.ServiceClassifications != null
+            ) {
+              const classifications = response.data.data.ServiceClassifications;
+              const found = classifications.find(
+                (c) => c.ServiceClassificationId === preSelectedClassification
+              );
+              if (found) {
+                foundServiceGroupId = group.LookupID;
+                // Set both dropdowns
+                form.setFieldsValue({ ServiceGroups: foundServiceGroupId });
+                setServiceClassifications(classifications);
+                form.setFieldsValue({
+                  ServiceClassifications: preSelectedClassification,
+                });
+                handleServiceClassificationChange(preSelectedClassification);
+                break;
+              }
+            }
+          } catch (error) {
+            console.error("Error searching for classification:", error);
+          }
+        }
+      };
+
+      findGroupForClassification();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location?.state, serviceGroups.length]);
 
   const handleServiceGroupChange = async (value) => {
     if (value != null) {
@@ -95,7 +134,9 @@ const Service = () => {
     try {
       await form.validateFields();
       const serviceid = 0;
-      navigate("/CreateService", { state: { serviceclassificationid, serviceid } });
+      navigate("/CreateService", {
+        state: { serviceclassificationid, serviceid },
+      });
     } catch (error) {
       console.log("Validation failed:", error);
     }
@@ -104,7 +145,9 @@ const Service = () => {
     try {
       await form.validateFields();
       const serviceid = value.ServiceId;
-      navigate("/CreateService", { state: { serviceclassificationid, serviceid } });
+      navigate("/CreateService", {
+        state: { serviceclassificationid, serviceid },
+      });
     } catch (error) {
       console.log("Validation failed:", error);
     }
@@ -126,8 +169,6 @@ const Service = () => {
     //   // Handle any errors that occur during the API call
     //   console.error("Error fetching services:", error);
     // }
-
-
   };
 
   const columns = [
@@ -246,6 +287,29 @@ const Service = () => {
                   </Select>
                 </Form.Item>
               </div>
+            </Col>
+            <Col className="gutter-row" span={6}>
+              <Form.Item label=" ">
+                <Button
+                  type="default"
+                  danger
+                  onClick={async () => {
+                    try {
+                      await form.validateFields();
+                      setServices([]);
+                      setServiceClassificationId(null);
+                      form.setFieldsValue({
+                        ServiceGroups: null,
+                        ServiceClassifications: null,
+                      });
+                    } catch (error) {
+                      console.log("Validation failed:", error);
+                    }
+                  }}
+                >
+                  Reset
+                </Button>
+              </Form.Item>
             </Col>
           </Row>
         </Form>

@@ -8,11 +8,12 @@ function navigate401(navigate) {
 }
 
 const customAxios = axios.create({
+  baseURL: `${import.meta.env.VITE_API_URL}/api`,
   // Define default headers here
   headers: {
     "Content-Type": "application/json", // Add other default headers as needed
   },
-  withCredentials: true 
+  withCredentials: true,
 });
 
 // Add an interceptor to set the Authorization header if a token is available
@@ -38,7 +39,7 @@ customAxios.interceptors.response.use(
     // If the response indicates that the token has expired...
     if (error.response.status === 401) {
       console.log("401...");
-      
+
       const navigate = useNavigate();
       navigate401(navigate); // Call navigate401 and pass the navigate function
     }

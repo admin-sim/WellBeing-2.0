@@ -94,10 +94,12 @@ function CreateService() {
   const [ageLine, setAgeLine] = useState(null);
   const [tatLine, setTatLine] = useState(null);
   const [medicalLine, setMediaclLine] = useState(null);
+  const [labelType, setLabelType] = useState([]);
   const antIcon = <LoadingOutlined style={{ fontSize: 48 }} spin />;
 
   useEffect(() => {
     const fetchData = async () => {
+      debugger;
       try {
         const response = await customAxios.get(
           `${urlCreateNewService}?ServiceClassificationId=${Serviceclassificationid}`
@@ -111,6 +113,7 @@ function CreateService() {
           setServiceClassificationName(data.ServiceClassificationName);
           setTemplateList(data.templateListmodel);
           setServiceDropDown(data);
+          setLabelType(data.LabelType);
         } else {
           console.error("Failed to fetch patient details");
         }
@@ -126,6 +129,7 @@ function CreateService() {
   }, []);
 
   const EditServiceData = async () => {
+    debugger;
     setLoading(true);
     if (ServiceId > 0) {
       try {
@@ -154,6 +158,7 @@ function CreateService() {
             TestValues: data.TestValues,
             NormalValForTestVal: data.NormalValForTestVal,
             LabUOM: data.LabUOM,
+            LabelType: data.LabelType,
             // Pakages
             PackageToDate: dayjs(data.PackageToDateString, "DD-MM-YYYY"),
             PackageNumberEncounter: data.PackageNumberEncounter,
@@ -227,7 +232,7 @@ function CreateService() {
         setLoading(false);
       }
     }
-    setLoading(false)
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -323,6 +328,8 @@ function CreateService() {
   ];
 
   const onFinish = async (values) => {
+    debugger;
+    
     values.ServiceClassificationId = Serviceclassificationid;
     values.ServiceId = ServiceId ? ServiceId : 0;
     values.IsAtomic = values.IsAtomic ? "True" : "False";
@@ -343,6 +350,8 @@ function CreateService() {
     values.IsFromTestValues = values.IsFromTestValues ? true : false;
     values.IsRadiology = values.IsRadiology ? true : false;
     values.IsSubTest = values.IsSubTest ? true : false;
+    values.LabelType = values.LabelType;
+
     const pkg = packageInd.filter((item) => item.ServicePackageId);
     const newpkg = packageInd.filter(
       (item) => !item.ServicePackageId && item.ActiveFlag !== false
@@ -392,7 +401,11 @@ function CreateService() {
         });
         form.resetFields();
         const url = "/Service";
-        navigate(url);
+        navigate(url, {
+          state: {
+            serviceclassificationid: Serviceclassificationid,
+          },
+        });
       } else {
         notification.error({
           message: "Error",
@@ -423,6 +436,7 @@ function CreateService() {
   };
 
   const handleSubmit = (values) => {
+    debugger;
     // console.log(values);
     // const valuesArray = Array.isArray(values) ? values : [values];
 
@@ -739,7 +753,15 @@ function CreateService() {
               <Button
                 className="dfja"
                 icon={<ArrowLeftOutlined style={{ fontSize: "1.1rem" }} />}
-                onClick={() => navigate("/Service")}
+                // onClick={() => navigate("/Service")}
+                onClick={() => {
+                  const url = "/Service";
+                  navigate(url, {
+                    state: {
+                      serviceclassificationid: Serviceclassificationid,
+                    },
+                  });
+                }}
               >
                 Back to list
               </Button>
@@ -1218,6 +1240,28 @@ function CreateService() {
                         </Form.Item>
                       </Col>
                     </Row>
+                    <Row>
+                       <Col span={4}>
+                        <Form.Item name="LabelType" label="Label Type">
+                          <Select
+                           
+                            style={{ width: "100%" }}
+                            placeholder="Select Label Type"
+                            allowClear
+                           
+                          >
+                            {labelType.map((option) => (
+                              <Select.Option
+                                key={option.LookupID}
+                                value={option.LookupID}
+                              >
+                                {option.LookupDescription}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                    </Row>
                   </Col>
                 </Row>
               </Panel>
@@ -1533,7 +1577,17 @@ function CreateService() {
               </Col>
               <Col span={2}>
                 <Form.Item>
-                  <Button type="default" onClick={() => navigate("/Service")}>
+                  <Button
+                    type="default"
+                    onClick={() => {
+                      const url = "/Service";
+                      navigate(url, {
+                        state: {
+                          serviceclassificationid: Serviceclassificationid,
+                        },
+                      });
+                    }}
+                  >
                     Cancel
                   </Button>
                 </Form.Item>
