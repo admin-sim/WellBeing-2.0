@@ -647,7 +647,6 @@ export default ClinicalChartFlow;
 //     ];
 
 //     const onFinish = async (values) => {
-//         debugger;
 //     };
 
 //     const onReset = () => {
